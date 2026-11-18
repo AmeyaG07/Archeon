@@ -42,60 +42,74 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (StringUtils.hasText(jwt)) {
             try {
+                // 1. Mandatory JWT Validation (Signature, Expiration, Issuer, Audience)
                 if (!tokenProvider.validateToken(jwt)) {
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized: Invalid or expired JWT token");
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized: Invalid, malformed or expired JWT token");
                     return;
                 }
 
                 String jti = tokenProvider.getJtiFromJwt(jwt);
+                String fid = tokenProvider.getFamilyIdFromJwt(jwt);
                 String username = tokenProvider.getUsernameFromJwt(jwt);
                 Date issuedAt = tokenProvider.getIssuedAtFromJwt(jwt);
                 Long tokenVersion = tokenProvider.getTokenVersionFromJwt(jwt);
                 String role = tokenProvider.getRoleFromJwt(jwt);
 
-                // 1. JTI-level Revocation Check
+                if (!StringUtils.hasText(username)) {
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized: Missing subject in JWT token");
+                    return;
+                }
+
+                // 2. JTI-level Revocation Check
                 if (jti != null && tokenRevocationService.isTokenRevoked(jti)) {
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized: Token has been revoked");
                     return;
                 }
 
-                // 2. User Account-level Invalidation Timestamp Check
-                if (username != null && tokenRevocationService.isUserRevoked(username, issuedAt)) {
+                // 3. P3-07: Session Family-level Revocation Check (Immediate Access Token Invalidation)
+                if (fid != null && tokenRevocationService.isFamilyRevoked(fid)) {
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized: Session family has been revoked");
+                    return;
+                }
+
+                // 4. User Account-level Invalidation Timestamp Check
+                if (tokenRevocationService.isUserRevoked(username, issuedAt)) {
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized: User session has been revoked");
                     return;
                 }
 
-                // 3. Database User Active-Status, Token Version, and Role Demotion Checks
-                if (username != null) {
-                    Optional<UserEntity> userOpt = userRepository.findByUsername(username);
-                    if (userOpt.isPresent()) {
-                        UserEntity user = userOpt.get();
+                // 5. P3-03: Strict Database User Validation (Reject Deleted or Nonexistent Users)
+                Optional<UserEntity> userOpt = userRepository.findByUsername(username);
+                if (userOpt.isEmpty()) {
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized: User account does not exist or has been deleted");
+                    return;
+                }
 
-                        // Account disablement
-                        if (!user.isEnabled()) {
-                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized: Account is disabled");
-                            return;
-                        }
+                UserEntity user = userOpt.get();
 
-                        // Token version invalidation (e.g. after logout-all or security reset)
-                        if (user.getTokenVersion() != null && tokenVersion != null && tokenVersion < user.getTokenVersion()) {
-                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized: Token version superseded");
-                            return;
-                        }
+                // Account disablement check
+                if (!user.isEnabled()) {
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized: Account is disabled");
+                    return;
+                }
 
-                        // Role demotion check
-                        if (user.getRole() != null && role != null) {
-                            String normTokenRole = role.startsWith("ROLE_") ? role : "ROLE_" + role;
-                            String normUserRole = user.getRole().startsWith("ROLE_") ? user.getRole() : "ROLE_" + user.getRole();
-                            if (!normTokenRole.equals(normUserRole)) {
-                                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized: User role has changed or demoted");
-                                return;
-                            }
-                        }
+                // Token version invalidation check
+                if (user.getTokenVersion() != null && tokenVersion != null && tokenVersion < user.getTokenVersion()) {
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized: Token version superseded");
+                    return;
+                }
+
+                // Role demotion check
+                if (user.getRole() != null && role != null) {
+                    String normTokenRole = role.startsWith("ROLE_") ? role : "ROLE_" + role;
+                    String normUserRole = user.getRole().startsWith("ROLE_") ? user.getRole() : "ROLE_" + user.getRole();
+                    if (!normTokenRole.equals(normUserRole)) {
+                        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized: User role has changed or demoted");
+                        return;
                     }
                 }
 
-                // 4. Populate SecurityContextHolder with validated principal and roles
+                // 6. Populate SecurityContextHolder with validated principal and roles
                 List<SimpleGrantedAuthority> authorities;
                 if (StringUtils.hasText(role)) {
                     String authName = role.startsWith("ROLE_") ? role : "ROLE_" + role;

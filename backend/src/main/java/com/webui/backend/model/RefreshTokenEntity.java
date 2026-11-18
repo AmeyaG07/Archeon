@@ -45,9 +45,17 @@ public class RefreshTokenEntity {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "consumed_at")
+    private LocalDateTime consumedAt;
+
     @Column(name = "device_info")
     private String deviceInfo;
 
     @Column(name = "ip_address")
     private String ipAddress;
+
+    @Version
+    @Builder.Default
+    @Column(nullable = false)
+    private Long version = 0L;
 }

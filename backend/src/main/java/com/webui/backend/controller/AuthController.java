@@ -22,6 +22,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.SecureRandom;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -46,6 +47,8 @@ public class AuthController {
 
     @Autowired
     private TokenRevocationService tokenRevocationService;
+
+    // Injected services and repositories
 
     @Data
     @NoArgsConstructor
@@ -125,13 +128,14 @@ public class AuthController {
                     .body(Map.of("error", "Account is disabled"));
         }
 
-        // 1. Generate Access Token (15 minutes)
-        String accessToken = jwtTokenProvider.generateToken(user.getUsername(), user.getRole(), user.getTokenVersion());
+        String familyId = UUID.randomUUID().toString();
+
+        // 1. Generate Access Token (15 minutes) with familyId claim
+        String accessToken = jwtTokenProvider.generateToken(user.getUsername(), user.getRole(), user.getTokenVersion(), familyId);
 
         // 2. Generate Refresh Token (7 days) & Family Tracking
         String rawRefreshToken = generateSecureRandomToken();
         String tokenHash = TokenHashUtil.hashToken(rawRefreshToken);
-        String familyId = UUID.randomUUID().toString();
 
         String deviceInfo = httpRequest.getHeader("User-Agent");
         String ipAddress = httpRequest.getRemoteAddr();
@@ -181,21 +185,13 @@ public class AuthController {
 
         // 1. Check if token was already revoked
         if (tokenEntity.isRevoked()) {
-            // Suspicious reuse of revoked token -> revoke entire family
             refreshTokenRepository.revokeFamily(tokenEntity.getFamilyId());
+            tokenRevocationService.revokeFamily(tokenEntity.getFamilyId());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", "Refresh token has been revoked"));
         }
 
-        // 2. Check if token was already used (REUSE DETECTION)
-        if (tokenEntity.isUsed()) {
-            // Compromise detected! Revoke the entire family
-            refreshTokenRepository.revokeFamily(tokenEntity.getFamilyId());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "Refresh token reuse detected. Token family invalidated"));
-        }
-
-        // 3. Check expiration
+        // 2. Check expiration
         if (tokenEntity.getExpiresAt().isBefore(LocalDateTime.now())) {
             tokenEntity.setRevoked(true);
             refreshTokenRepository.save(tokenEntity);
@@ -203,21 +199,73 @@ public class AuthController {
                     .body(Map.of("error", "Refresh token has expired"));
         }
 
-        // 4. Verify User is still active and valid
+        // 3. Verify user active status in DB
         Optional<UserEntity> userOpt = userRepository.findByUsername(tokenEntity.getUsername());
         if (userOpt.isEmpty() || !userOpt.get().isEnabled()) {
             refreshTokenRepository.revokeFamily(tokenEntity.getFamilyId());
+            tokenRevocationService.revokeFamily(tokenEntity.getFamilyId());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", "User account disabled or not found"));
         }
 
         UserEntity user = userOpt.get();
 
-        // 5. ROTATE: Mark current token as used
-        tokenEntity.setUsed(true);
-        refreshTokenRepository.save(tokenEntity);
+        // 4. Token Reuse / Replay Detection on already-consumed tokens
+        LocalDateTime now = LocalDateTime.now();
+        if (tokenEntity.isUsed()) {
+            LocalDateTime consumedAt = tokenEntity.getConsumedAt();
+            boolean isRecentConcurrencyConflict = consumedAt != null &&
+                    Duration.between(consumedAt, now).toMillis() < 3000L;
 
-        // 6. Issue new Refresh Token in the SAME family
+            if (isRecentConcurrencyConflict) {
+                // Distinguish normal concurrency conflict: Reject parallel request without destroying the family
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body(Map.of("error", "Concurrent refresh conflict: Token was already consumed by a parallel request"));
+            } else {
+                // Confirmed token replay: REVOKE the entire family
+                refreshTokenRepository.revokeFamily(tokenEntity.getFamilyId());
+                tokenRevocationService.revokeFamily(tokenEntity.getFamilyId());
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "Refresh token reuse detected. Token family invalidated"));
+            }
+        }
+
+        // 5. P3-01: ATOMIC SINGLE-USE CONSUMPTION (Prevents concurrent dual rotation)
+        int consumed = refreshTokenRepository.consumeTokenIfUnused(tokenHash, now);
+
+        if (consumed == 0) {
+            // Re-fetch token entity since clearAutomatically flushed and cleared the persistence context
+            RefreshTokenEntity freshToken = refreshTokenRepository.findByTokenHash(tokenHash).orElse(tokenEntity);
+
+            if (freshToken.isRevoked()) {
+                tokenRevocationService.revokeFamily(freshToken.getFamilyId());
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "Refresh token has been revoked"));
+            }
+
+            if (freshToken.isUsed()) {
+                LocalDateTime consumedAt = freshToken.getConsumedAt();
+                boolean isRecentConcurrencyConflict = consumedAt != null &&
+                        Duration.between(consumedAt, now).toMillis() < 3000L;
+
+                if (isRecentConcurrencyConflict) {
+                    // Distinguish normal concurrency conflict: Reject parallel request without destroying the family
+                    return ResponseEntity.status(HttpStatus.CONFLICT)
+                            .body(Map.of("error", "Concurrent refresh conflict: Token was already consumed by a parallel request"));
+                } else {
+                    // Confirmed token replay: REVOKE the entire family
+                    refreshTokenRepository.revokeFamily(freshToken.getFamilyId());
+                    tokenRevocationService.revokeFamily(freshToken.getFamilyId());
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                            .body(Map.of("error", "Refresh token reuse detected. Token family invalidated"));
+                }
+            }
+
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "Concurrent refresh conflict: Token was already consumed by a parallel request"));
+        }
+
+        // 5. Issue new Refresh Token in the SAME family
         String newRawRefreshToken = generateSecureRandomToken();
         String newTokenHash = TokenHashUtil.hashToken(newRawRefreshToken);
 
@@ -230,16 +278,17 @@ public class AuthController {
                 .familyId(tokenEntity.getFamilyId())
                 .used(false)
                 .revoked(false)
-                .createdAt(LocalDateTime.now())
-                .expiresAt(LocalDateTime.now().plusSeconds(jwtTokenProvider.getRefreshExpirationMs() / 1000))
+                .createdAt(now)
+                .expiresAt(now.plusSeconds(jwtTokenProvider.getRefreshExpirationMs() / 1000))
                 .deviceInfo(StringUtils.hasText(deviceInfo) ? deviceInfo : tokenEntity.getDeviceInfo())
                 .ipAddress(StringUtils.hasText(ipAddress) ? ipAddress : tokenEntity.getIpAddress())
                 .build();
 
         refreshTokenRepository.save(nextTokenEntity);
 
-        // 7. Issue new Access Token
-        String newAccessToken = jwtTokenProvider.generateToken(user.getUsername(), user.getRole(), user.getTokenVersion());
+        // 6. Issue new Access Token containing the familyId (`fid`)
+        String newAccessToken = jwtTokenProvider.generateToken(
+                user.getUsername(), user.getRole(), user.getTokenVersion(), tokenEntity.getFamilyId());
         long expiresIn = jwtTokenProvider.getJwtExpirationMs() / 1000;
 
         return ResponseEntity.ok(new AuthResponse(
@@ -256,22 +305,43 @@ public class AuthController {
     public ResponseEntity<?> logout(@RequestBody(required = false) LogoutRequest request,
                                     HttpServletRequest httpRequest,
                                     Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthenticated"));
+        }
+
+        String currentUsername = authentication.getName();
+
+        // 1. Revoke current Access Token by JTI and Family ID
         String authHeader = httpRequest.getHeader("Authorization");
         if (StringUtils.hasText(authHeader) && authHeader.startsWith("Bearer ")) {
             String jwt = authHeader.substring(7);
             String jti = jwtTokenProvider.getJtiFromJwt(jwt);
+            String fid = jwtTokenProvider.getFamilyIdFromJwt(jwt);
             long remainingTtl = jwtTokenProvider.getRemainingTtlMs(jwt);
             if (jti != null) {
                 tokenRevocationService.revokeToken(jti, remainingTtl);
             }
+            if (fid != null) {
+                tokenRevocationService.revokeFamily(fid);
+                refreshTokenRepository.revokeFamily(fid);
+            }
         }
 
+        // 2. P3-02: Revoke Refresh Token with Ownership Verification and Complete Family Revocation
         if (request != null && StringUtils.hasText(request.getRefreshToken())) {
             String hash = TokenHashUtil.hashToken(request.getRefreshToken());
-            refreshTokenRepository.findByTokenHash(hash).ifPresent(rt -> {
-                rt.setRevoked(true);
-                refreshTokenRepository.save(rt);
-            });
+            Optional<RefreshTokenEntity> rtOpt = refreshTokenRepository.findByTokenHash(hash);
+            if (rtOpt.isPresent()) {
+                RefreshTokenEntity rt = rtOpt.get();
+                // Reject cross-user token revocation
+                if (!currentUsername.equals(rt.getUsername())) {
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                            .body(Map.of("error", "Cannot revoke refresh token belonging to another user"));
+                }
+                // Revoke complete token family to eliminate race conditions
+                refreshTokenRepository.revokeFamily(rt.getFamilyId());
+                tokenRevocationService.revokeFamily(rt.getFamilyId());
+            }
         }
 
         return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
@@ -324,12 +394,10 @@ public class AuthController {
             // Active if any token in the family is not revoked and not expired
             boolean active = tokens.stream().anyMatch(t -> !t.isRevoked() && t.getExpiresAt().isAfter(now));
 
-            // Most recent token for device and ip metadata
             RefreshTokenEntity latest = tokens.stream()
                     .max(Comparator.comparing(RefreshTokenEntity::getCreatedAt))
                     .orElse(tokens.get(0));
 
-            // Earliest token for creation time of the session
             RefreshTokenEntity earliest = tokens.stream()
                     .min(Comparator.comparing(RefreshTokenEntity::getCreatedAt))
                     .orElse(tokens.get(0));
@@ -366,7 +434,11 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Cannot revoke session belonging to another user"));
         }
 
+        // 1. Revoke in DB
         refreshTokenRepository.revokeFamily(familyId);
+
+        // 2. P3-07: Immediately invalidate existing in-flight access tokens for this session family
+        tokenRevocationService.revokeFamily(familyId);
 
         return ResponseEntity.ok(Map.of("message", "Session revoked successfully"));
     }

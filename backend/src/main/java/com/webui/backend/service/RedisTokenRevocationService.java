@@ -17,6 +17,7 @@ public class RedisTokenRevocationService implements TokenRevocationService {
 
     private static final String JTI_KEY_PREFIX = "archeon:revoked_token:";
     private static final String USER_KEY_PREFIX = "archeon:user_revoked_at:";
+    private static final String FAMILY_KEY_PREFIX = "archeon:revoked_family:";
 
     @Autowired
     public RedisTokenRevocationService(StringRedisTemplate redisTemplate) {
@@ -87,6 +88,37 @@ public class RedisTokenRevocationService implements TokenRevocationService {
         } catch (Exception ex) {
             // FAIL CLOSED
             throw new TokenRevocationUnavailableException("Redis unavailable during user revocation check: " + ex.getMessage(), ex);
+        }
+    }
+
+    @Override
+    public void revokeFamily(String familyId) {
+        if (familyId == null) {
+            return;
+        }
+        try {
+            // Blacklist session family for at least 24 hours
+            redisTemplate.opsForValue().set(
+                    FAMILY_KEY_PREFIX + familyId,
+                    "revoked",
+                    Duration.ofHours(24)
+            );
+        } catch (Exception ex) {
+            throw new TokenRevocationUnavailableException("Redis unavailable during family revocation: " + ex.getMessage(), ex);
+        }
+    }
+
+    @Override
+    public boolean isFamilyRevoked(String familyId) {
+        if (familyId == null) {
+            return false;
+        }
+        try {
+            Boolean hasKey = redisTemplate.hasKey(FAMILY_KEY_PREFIX + familyId);
+            return Boolean.TRUE.equals(hasKey);
+        } catch (Exception ex) {
+            // FAIL CLOSED
+            throw new TokenRevocationUnavailableException("Redis unavailable during family revocation check: " + ex.getMessage(), ex);
         }
     }
 }

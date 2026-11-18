@@ -5,9 +5,11 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
+import java.util.Set;
 import java.util.UUID;
 
 @Component
@@ -34,15 +36,19 @@ public class JwtTokenProvider {
     }
 
     public String generateToken(String username, String role) {
-        return generateToken(username, role, 0L);
+        return generateToken(username, role, 0L, null);
     }
 
     public String generateToken(String username, String role, Long tokenVersion) {
+        return generateToken(username, role, tokenVersion, null);
+    }
+
+    public String generateToken(String username, String role, Long tokenVersion, String familyId) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
         String jti = UUID.randomUUID().toString();
 
-        return Jwts.builder()
+        JwtBuilder builder = Jwts.builder()
                 .issuer(expectedIssuer)
                 .audience().add(expectedAudience).and()
                 .subject(username)
@@ -51,8 +57,13 @@ public class JwtTokenProvider {
                 .claim("ver", tokenVersion != null ? tokenVersion : 0L)
                 .issuedAt(now)
                 .expiration(expiryDate)
-                .signWith(getSigningKey())
-                .compact();
+                .signWith(getSigningKey());
+
+        if (familyId != null) {
+            builder.claim("fid", familyId);
+        }
+
+        return builder.compact();
     }
 
     public String generateCustomToken(String username, String role, Long tokenVersion,
@@ -107,6 +118,11 @@ public class JwtTokenProvider {
         return claims != null ? claims.getId() : null;
     }
 
+    public String getFamilyIdFromJwt(String token) {
+        Claims claims = getClaimsSafely(token);
+        return claims != null ? claims.get("fid", String.class) : null;
+    }
+
     public Long getTokenVersionFromJwt(String token) {
         Claims claims = getClaimsSafely(token);
         if (claims != null) {
@@ -145,13 +161,15 @@ public class JwtTokenProvider {
                     .parseSignedClaims(authToken)
                     .getPayload();
 
-            // Validate issuer if present
-            if (claims.getIssuer() != null && !expectedIssuer.equals(claims.getIssuer())) {
+            // P3-04: Mandatory Issuer Validation (Must be exactly expectedIssuer)
+            String issuer = claims.getIssuer();
+            if (!StringUtils.hasText(issuer) || !expectedIssuer.equals(issuer)) {
                 return false;
             }
 
-            // Validate audience if present
-            if (claims.getAudience() != null && !claims.getAudience().isEmpty() && !claims.getAudience().contains(expectedAudience)) {
+            // P3-04: Mandatory Audience Validation (Must contain expectedAudience)
+            Set<String> audience = claims.getAudience();
+            if (audience == null || audience.isEmpty() || !audience.contains(expectedAudience)) {
                 return false;
             }
 

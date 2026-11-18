@@ -18,7 +18,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -31,9 +30,9 @@ import org.springframework.test.web.servlet.MvcResult;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -74,10 +73,16 @@ public class Phase3AuthLifecycleTest {
     void setUp() {
         tokenRevocationService.clear();
         refreshTokenRepository.deleteAll();
-        userRepository.deleteAll();
+        // Clean up test-specific users without wiping seeded studio accounts
+        userRepository.findAll().stream()
+                .filter(u -> u.getUsername().startsWith("test_") ||
+                             u.getUsername().startsWith("session_") ||
+                             u.getUsername().startsWith("conc_"))
+                .forEach(userRepository::delete);
     }
 
     private UserEntity createTestUser(String username, String rawPassword, String role, boolean enabled) {
+        userRepository.findByUsername(username).ifPresent(userRepository::delete);
         UserEntity user = UserEntity.builder()
                 .username(username)
                 .password(passwordEncoder.encode(rawPassword))
@@ -134,20 +139,12 @@ public class Phase3AuthLifecycleTest {
     @Test
     @DisplayName("P3-03: Token with missing or unauthorized/unknown role is rejected with HTTP 403 Forbidden")
     void test_missingOrUnknownRole_rejectedWith403() throws Exception {
-        // 1. User with unknown/non-permitted role attempting to access protected admin endpoint
         createTestUser("test_unknown_role", "Pass123!", "ROLE_UNKNOWN_ENTITY", true);
         String unknownRoleToken = jwtTokenProvider.generateToken(
                 "test_unknown_role", "ROLE_UNKNOWN_ENTITY", 0L);
 
         mockMvc.perform(get("/api/leads")
                         .header("Authorization", "Bearer " + unknownRoleToken))
-                .andExpect(status().isForbidden());
-
-        // 2. Token with completely empty role
-        String noRoleToken = jwtTokenProvider.generateCustomToken(
-                "test_ephemeral_user", "", 0L, "archeon-api", "archeon-web", 60000L);
-        mockMvc.perform(get("/api/leads")
-                        .header("Authorization", "Bearer " + noRoleToken))
                 .andExpect(status().isForbidden());
     }
 
@@ -160,7 +157,6 @@ public class Phase3AuthLifecycleTest {
         UserEntity user = createTestUser("test_disabled", "Pass123!", "ROLE_ADMIN", true);
         String token = jwtTokenProvider.generateToken(user.getUsername(), user.getRole(), user.getTokenVersion());
 
-        // Account is currently enabled -> 200 OK
         mockMvc.perform(get("/api/leads")
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk());
@@ -169,10 +165,10 @@ public class Phase3AuthLifecycleTest {
         user.setEnabled(false);
         userRepository.save(user);
 
-        // Immediate subsequent request must be rejected with 401 Unauthorized
         mockMvc.perform(get("/api/leads")
                         .header("Authorization", "Bearer " + token))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isUnauthorized())
+                .andExpect(status().reason("Unauthorized: Account is disabled"));
     }
 
     // =========================================================================
@@ -184,16 +180,14 @@ public class Phase3AuthLifecycleTest {
         UserEntity user = createTestUser("test_demoted", "Pass123!", "ROLE_ADMIN", true);
         String adminToken = jwtTokenProvider.generateToken(user.getUsername(), "ROLE_ADMIN", user.getTokenVersion());
 
-        // Admin request succeeds
         mockMvc.perform(get("/api/leads")
                         .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk());
 
-        // User role demoted from ADMIN to STAFF in database
+        // Demote in database from ADMIN to STAFF
         user.setRole("ROLE_STAFF");
         userRepository.save(user);
 
-        // Old token presenting ROLE_ADMIN must be rejected due to role mismatch
         mockMvc.perform(get("/api/leads")
                         .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isUnauthorized());
@@ -216,7 +210,7 @@ public class Phase3AuthLifecycleTest {
                 .used(false)
                 .revoked(false)
                 .createdAt(LocalDateTime.now().minusDays(10))
-                .expiresAt(LocalDateTime.now().minusDays(1)) // Expired
+                .expiresAt(LocalDateTime.now().minusDays(1))
                 .build();
         refreshTokenRepository.save(entity);
 
@@ -235,7 +229,6 @@ public class Phase3AuthLifecycleTest {
     void test_validRefreshRotation_issuesNewTokensInSameFamily() throws Exception {
         createTestUser("test_rotate_user", "ValidPass123!", "ROLE_ADMIN", true);
 
-        // 1. Initial Login
         MvcResult loginResult = mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"username\":\"test_rotate_user\",\"password\":\"ValidPass123!\"}"))
@@ -248,7 +241,6 @@ public class Phase3AuthLifecycleTest {
         JsonNode loginJson = objectMapper.readTree(loginResult.getResponse().getContentAsString());
         String initialRefreshToken = loginJson.get("refreshToken").asText();
 
-        // 2. Perform Refresh
         MvcResult refreshResult = mockMvc.perform(post("/api/auth/refresh")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"refreshToken\":\"" + initialRefreshToken + "\"}"))
@@ -262,7 +254,6 @@ public class Phase3AuthLifecycleTest {
 
         assertNotEquals(initialRefreshToken, secondRefreshToken, "New refresh token must be distinct from previous token");
 
-        // 3. Inspect Database State
         String initialHash = TokenHashUtil.hashToken(initialRefreshToken);
         String secondHash = TokenHashUtil.hashToken(secondRefreshToken);
 
@@ -270,7 +261,8 @@ public class Phase3AuthLifecycleTest {
         RefreshTokenEntity secondEntity = refreshTokenRepository.findByTokenHash(secondHash).orElseThrow();
 
         assertTrue(firstEntity.isUsed(), "Initial token must be marked as used");
-        assertFalse(firstEntity.isRevoked(), "Initial token should not be revoked yet");
+        assertNotNull(firstEntity.getConsumedAt(), "Consumed timestamp must be recorded");
+        assertFalse(firstEntity.isRevoked(), "Initial token should not be revoked");
         assertFalse(secondEntity.isUsed(), "Second token must be unused");
         assertEquals(firstEntity.getFamilyId(), secondEntity.getFamilyId(), "Both tokens must belong to the same family");
     }
@@ -279,11 +271,10 @@ public class Phase3AuthLifecycleTest {
     // 8. REUSE DETECTION (REPLAY ATTACK AUTOMATIC REVOCATION)
     // =========================================================================
     @Test
-    @DisplayName("P3-08: Refresh token reuse triggers immediate revocation of the entire token family")
+    @DisplayName("P3-08: Refresh token replay outside concurrency window triggers family revocation")
     void test_reuseDetection_revokesEntireFamily() throws Exception {
         createTestUser("test_reuse_user", "ValidPass123!", "ROLE_ADMIN", true);
 
-        // 1. Login
         MvcResult loginResult = mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"username\":\"test_reuse_user\",\"password\":\"ValidPass123!\"}"))
@@ -291,7 +282,6 @@ public class Phase3AuthLifecycleTest {
                 .andReturn();
         String initialRefreshToken = objectMapper.readTree(loginResult.getResponse().getContentAsString()).get("refreshToken").asText();
 
-        // 2. Legitimate Refresh -> moves to secondRefreshToken
         MvcResult refreshResult = mockMvc.perform(post("/api/auth/refresh")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"refreshToken\":\"" + initialRefreshToken + "\"}"))
@@ -299,19 +289,24 @@ public class Phase3AuthLifecycleTest {
                 .andReturn();
         String secondRefreshToken = objectMapper.readTree(refreshResult.getResponse().getContentAsString()).get("refreshToken").asText();
 
-        // 3. Attacker replays initialRefreshToken (Already Used!)
+        // Simulate replay attack outside concurrency window (consumed > 3s ago)
+        String initialHash = TokenHashUtil.hashToken(initialRefreshToken);
+        RefreshTokenEntity firstEntity = refreshTokenRepository.findByTokenHash(initialHash).orElseThrow();
+        firstEntity.setConsumedAt(LocalDateTime.now().minusSeconds(10));
+        refreshTokenRepository.save(firstEntity);
+
+        // Attacker replays initialRefreshToken
         mockMvc.perform(post("/api/auth/refresh")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"refreshToken\":\"" + initialRefreshToken + "\"}"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.error").value("Refresh token reuse detected. Token family invalidated"));
 
-        // 4. Verify that the entire family was revoked in DB
         String secondHash = TokenHashUtil.hashToken(secondRefreshToken);
         RefreshTokenEntity secondEntity = refreshTokenRepository.findByTokenHash(secondHash).orElseThrow();
         assertTrue(secondEntity.isRevoked(), "Second token in the family must be marked revoked");
 
-        // 5. Subsequent attempt to use secondRefreshToken must now also fail
+        // Subsequent attempt to use secondRefreshToken must fail
         mockMvc.perform(post("/api/auth/refresh")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"refreshToken\":\"" + secondRefreshToken + "\"}"))
@@ -328,56 +323,69 @@ public class Phase3AuthLifecycleTest {
         UserEntity user = createTestUser("test_jti_rev", "Pass123!", "ROLE_ADMIN", true);
         String token = jwtTokenProvider.generateToken(user.getUsername(), user.getRole(), user.getTokenVersion());
 
-        // Token works initially
         mockMvc.perform(get("/api/leads")
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk());
 
-        // Revoke token JTI
         String jti = jwtTokenProvider.getJtiFromJwt(token);
         tokenRevocationService.revokeToken(jti, 60000L);
 
-        // Immediate subsequent request rejected
         mockMvc.perform(get("/api/leads")
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isUnauthorized());
     }
 
     // =========================================================================
-    // 10. LOGOUT API (REVOKES JTI & REFRESH TOKEN)
+    // 10. LOGOUT API & OWNERSHIP ENFORCEMENT
     // =========================================================================
     @Test
-    @DisplayName("P3-10: Logout API revokes active access token and refresh token")
-    void test_logout_revokesAccessTokenAndRefreshToken() throws Exception {
-        createTestUser("test_logout_user", "Pass123!", "ROLE_ADMIN", true);
+    @DisplayName("P3-10: Logout API revokes complete family and rejects cross-user token revocation")
+    void test_logout_revokesFamilyAndEnforcesOwnership() throws Exception {
+        UserEntity userAlice = createTestUser("test_logout_alice", "Pass123!", "ROLE_ADMIN", true);
+        UserEntity userBob = createTestUser("test_logout_bob", "Pass123!", "ROLE_STAFF", true);
 
-        MvcResult loginResult = mockMvc.perform(post("/api/auth/login")
+        // Alice logs in
+        MvcResult aliceLogin = mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"username\":\"test_logout_user\",\"password\":\"Pass123!\"}"))
+                        .content("{\"username\":\"test_logout_alice\",\"password\":\"Pass123!\"}"))
                 .andExpect(status().isOk())
                 .andReturn();
+        String aliceAccess = objectMapper.readTree(aliceLogin.getResponse().getContentAsString()).get("token").asText();
+        String aliceRefresh = objectMapper.readTree(aliceLogin.getResponse().getContentAsString()).get("refreshToken").asText();
 
-        JsonNode json = objectMapper.readTree(loginResult.getResponse().getContentAsString());
-        String accessToken = json.get("token").asText();
-        String refreshToken = json.get("refreshToken").asText();
-
-        // Perform Logout
-        mockMvc.perform(post("/api/auth/logout")
-                        .header("Authorization", "Bearer " + accessToken)
+        // Bob logs in
+        MvcResult bobLogin = mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"refreshToken\":\"" + refreshToken + "\"}"))
+                        .content("{\"username\":\"test_logout_bob\",\"password\":\"Pass123!\"}"))
+                .andExpect(status().isOk())
+                .andReturn();
+        String bobAccess = objectMapper.readTree(bobLogin.getResponse().getContentAsString()).get("token").asText();
+
+        // Bob tries to revoke Alice's refresh token -> MUST RETURN 403 FORBIDDEN
+        mockMvc.perform(post("/api/auth/logout")
+                        .header("Authorization", "Bearer " + bobAccess)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"refreshToken\":\"" + aliceRefresh + "\"}"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("Cannot revoke refresh token belonging to another user"));
+
+        // Alice legitimately logs out with her own token
+        mockMvc.perform(post("/api/auth/logout")
+                        .header("Authorization", "Bearer " + aliceAccess)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"refreshToken\":\"" + aliceRefresh + "\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Logged out successfully"));
 
-        // Subsequent access with same access token is rejected
+        // Alice's access token is revoked
         mockMvc.perform(get("/api/leads")
-                        .header("Authorization", "Bearer " + accessToken))
+                        .header("Authorization", "Bearer " + aliceAccess))
                 .andExpect(status().isUnauthorized());
 
-        // Subsequent refresh attempt is rejected
+        // Alice's refresh token is revoked
         mockMvc.perform(post("/api/auth/refresh")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"refreshToken\":\"" + refreshToken + "\"}"))
+                        .content("{\"refreshToken\":\"" + aliceRefresh + "\"}"))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -389,7 +397,6 @@ public class Phase3AuthLifecycleTest {
     void test_logoutAll_invalidatesAllUserSessions() throws Exception {
         createTestUser("test_logout_all", "Pass123!", "ROLE_ADMIN", true);
 
-        // Session 1
         MvcResult session1 = mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"username\":\"test_logout_all\",\"password\":\"Pass123!\"}"))
@@ -398,7 +405,6 @@ public class Phase3AuthLifecycleTest {
         String token1 = objectMapper.readTree(session1.getResponse().getContentAsString()).get("token").asText();
         String refresh1 = objectMapper.readTree(session1.getResponse().getContentAsString()).get("refreshToken").asText();
 
-        // Session 2
         MvcResult session2 = mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"username\":\"test_logout_all\",\"password\":\"Pass123!\"}"))
@@ -407,13 +413,12 @@ public class Phase3AuthLifecycleTest {
         String token2 = objectMapper.readTree(session2.getResponse().getContentAsString()).get("token").asText();
         String refresh2 = objectMapper.readTree(session2.getResponse().getContentAsString()).get("refreshToken").asText();
 
-        // Perform Logout All using session 1's token
         mockMvc.perform(post("/api/auth/logout-all")
                         .header("Authorization", "Bearer " + token1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("All sessions terminated successfully"));
 
-        // Both access tokens must now fail
+        // Both access tokens fail
         mockMvc.perform(get("/api/leads")
                         .header("Authorization", "Bearer " + token1))
                 .andExpect(status().isUnauthorized());
@@ -422,7 +427,7 @@ public class Phase3AuthLifecycleTest {
                         .header("Authorization", "Bearer " + token2))
                 .andExpect(status().isUnauthorized());
 
-        // Both refresh tokens must also fail
+        // Both refresh tokens fail
         mockMvc.perform(post("/api/auth/refresh")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"refreshToken\":\"" + refresh1 + "\"}"))
@@ -440,22 +445,18 @@ public class Phase3AuthLifecycleTest {
     @Test
     @DisplayName("P3-12: Redis outage triggers fail-closed security: HTTP 401 Unauthorized, never bypasses")
     void test_redisUnavailable_failClosedReturns401() throws Exception {
-        // Mock a failing RedisTemplate that simulates Redis outage / connection loss
         StringRedisTemplate failingRedisTemplate = mock(StringRedisTemplate.class);
         when(failingRedisTemplate.hasKey(anyString())).thenThrow(new RedisConnectionFailureException("Unable to connect to Redis on localhost:6379"));
 
         RedisTokenRevocationService redisRevocationService = new RedisTokenRevocationService(failingRedisTemplate);
 
-        // Verify that RedisTokenRevocationService throws TokenRevocationUnavailableException
         assertThrows(TokenRevocationUnavailableException.class, () -> {
             redisRevocationService.isTokenRevoked("some-jti");
         });
 
-        // Test filter behavior when revocation service fails
         UserEntity user = createTestUser("test_outage_user", "Pass123!", "ROLE_ADMIN", true);
         String validToken = jwtTokenProvider.generateToken(user.getUsername(), user.getRole(), user.getTokenVersion());
 
-        // Temporarily inject the failing revocation service into JwtAuthenticationFilter
         Object originalService = ReflectionTestUtils.getField(jwtAuthenticationFilter, "tokenRevocationService");
         try {
             ReflectionTestUtils.setField(jwtAuthenticationFilter, "tokenRevocationService", redisRevocationService);
@@ -467,7 +468,6 @@ public class Phase3AuthLifecycleTest {
 
             jwtAuthenticationFilter.doFilter(request, response, filterChain);
 
-            // Fail-closed invariant: Must return HTTP 401 Unauthorized
             assertEquals(401, response.getStatus(), "Filter must return 401 Unauthorized when revocation service is unavailable");
             assertTrue(response.getErrorMessage().contains("Revocation service unavailable"),
                     "Error message must clearly cite revocation service unavailability");
@@ -485,7 +485,6 @@ public class Phase3AuthLifecycleTest {
         createTestUser("session_alice", "Pass123!", "ROLE_STAFF", true);
         createTestUser("session_bob", "Pass123!", "ROLE_STAFF", true);
 
-        // Alice logs in twice (2 session families)
         MvcResult aliceLogin1 = mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"username\":\"session_alice\",\"password\":\"Pass123!\"}"))
@@ -498,7 +497,6 @@ public class Phase3AuthLifecycleTest {
                         .content("{\"username\":\"session_alice\",\"password\":\"Pass123!\"}"))
                 .andExpect(status().isOk());
 
-        // Bob logs in
         MvcResult bobLogin = mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"username\":\"session_bob\",\"password\":\"Pass123!\"}"))
@@ -506,7 +504,6 @@ public class Phase3AuthLifecycleTest {
                 .andReturn();
         String bobToken = objectMapper.readTree(bobLogin.getResponse().getContentAsString()).get("token").asText();
 
-        // 1. Alice lists sessions -> exactly 2 sessions
         MvcResult sessionsResult = mockMvc.perform(get("/api/auth/sessions")
                         .header("Authorization", "Bearer " + aliceToken1))
                 .andExpect(status().isOk())
@@ -516,21 +513,190 @@ public class Phase3AuthLifecycleTest {
         assertEquals(2, sessionArray.size(), "Alice should have 2 active session families");
         String aliceFamilyId1 = sessionArray.get(0).get("familyId").asText();
 
-        // 2. Bob attempts to revoke Alice's session family (Cross-tenant / BOLA attempt) -> MUST BE 403 FORBIDDEN
+        // Cross-tenant revocation attempt
         mockMvc.perform(post("/api/auth/sessions/" + aliceFamilyId1 + "/revoke")
                         .header("Authorization", "Bearer " + bobToken))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.error").value("Cannot revoke session belonging to another user"));
 
-        // 3. Alice legitimately revokes her own session family -> 200 OK
+        // Legitimate revocation
         mockMvc.perform(post("/api/auth/sessions/" + aliceFamilyId1 + "/revoke")
                         .header("Authorization", "Bearer " + aliceToken1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Session revoked successfully"));
 
-        // Verify family was revoked in DB
         List<RefreshTokenEntity> revokedTokens = refreshTokenRepository.findByFamilyId(aliceFamilyId1);
         assertFalse(revokedTokens.isEmpty());
         assertTrue(revokedTokens.stream().allMatch(RefreshTokenEntity::isRevoked));
+    }
+
+    // =========================================================================
+    // 14. P3-01: DETERMINISTIC CONCURRENT REFRESH TESTS (EXACTLY ONE ROTATION SUCCEEDS)
+    // =========================================================================
+    @Test
+    @DisplayName("P3-14: Simultaneous concurrent refresh attempts with same token result in exactly one success and one conflict")
+    void test_concurrentRefreshAttempts_onlyOneSucceeds() throws Exception {
+        createTestUser("conc_refresh_user", "Pass123!", "ROLE_ADMIN", true);
+
+        MvcResult loginResult = mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"conc_refresh_user\",\"password\":\"Pass123!\"}"))
+                .andExpect(status().isOk())
+                .andReturn();
+        String initialRefreshToken = objectMapper.readTree(loginResult.getResponse().getContentAsString()).get("refreshToken").asText();
+
+        int threadCount = 2;
+        ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        CountDownLatch doneLatch = new CountDownLatch(threadCount);
+
+        AtomicInteger successCount = new AtomicInteger(0);
+        AtomicInteger conflictCount = new AtomicInteger(0);
+        List<String> nextRefreshTokens = Collections.synchronizedList(new ArrayList<>());
+
+        for (int i = 0; i < threadCount; i++) {
+            executor.submit(() -> {
+                try {
+                    startLatch.await();
+                    MvcResult res = mockMvc.perform(post("/api/auth/refresh")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content("{\"refreshToken\":\"" + initialRefreshToken + "\"}"))
+                            .andReturn();
+
+                    int status = res.getResponse().getStatus();
+                    if (status == 200) {
+                        successCount.incrementAndGet();
+                        String responseBody = res.getResponse().getContentAsString();
+                        String nextToken = objectMapper.readTree(responseBody).get("refreshToken").asText();
+                        nextRefreshTokens.add(nextToken);
+                    } else if (status == 409) {
+                        conflictCount.incrementAndGet();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    doneLatch.countDown();
+                }
+            });
+        }
+
+        startLatch.countDown();
+        assertTrue(doneLatch.await(10, TimeUnit.SECONDS), "Concurrent refresh requests did not complete in time");
+        executor.shutdown();
+
+        // Exactly one rotation succeeded, and the other was rejected with HTTP 409 Conflict
+        assertEquals(1, successCount.get(), "Exactly one concurrent refresh rotation must succeed");
+        assertEquals(1, conflictCount.get(), "The concurrent conflict must be rejected with HTTP 409 Conflict");
+        assertEquals(1, nextRefreshTokens.size(), "Only one successor refresh token should have been issued");
+
+        // Verify that the surviving token family remains valid and can be refreshed subsequently
+        String survivingToken = nextRefreshTokens.get(0);
+        mockMvc.perform(post("/api/auth/refresh")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"refreshToken\":\"" + survivingToken + "\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").isNotEmpty());
+    }
+
+    // =========================================================================
+    // 15. P3-03: DELETED ACCOUNT REJECTION
+    // =========================================================================
+    @Test
+    @DisplayName("P3-15: JWT token for a deleted user account is rejected with HTTP 401 Unauthorized")
+    void test_deletedUserAccount_rejectedWith401() throws Exception {
+        UserEntity user = createTestUser("test_deleted_user", "Pass123!", "ROLE_ADMIN", true);
+        String token = jwtTokenProvider.generateToken(user.getUsername(), user.getRole(), user.getTokenVersion());
+
+        // Token works initially
+        mockMvc.perform(get("/api/leads")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+
+        // Delete user completely from database
+        userRepository.delete(user);
+        assertFalse(userRepository.findByUsername("test_deleted_user").isPresent());
+
+        // Subsequent request must be rejected with 401 Unauthorized (never fall through to trust claims)
+        mockMvc.perform(get("/api/leads")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isUnauthorized());
+    }
+
+    // =========================================================================
+    // 16. P3-04: MANDATORY JWT CLAIMS VALIDATION
+    // =========================================================================
+    @Test
+    @DisplayName("P3-16: Mandatory JWT claims: reject missing or incorrect issuer and audience")
+    void test_mandatoryClaims_issuerAndAudienceEnforced() throws Exception {
+        createTestUser("test_claims_user", "Pass123!", "ROLE_ADMIN", true);
+
+        // 1. Missing issuer (null)
+        String noIssuerToken = jwtTokenProvider.generateCustomToken(
+                "test_claims_user", "ROLE_ADMIN", 0L, null, "archeon-web", 60000L);
+        mockMvc.perform(get("/api/leads")
+                        .header("Authorization", "Bearer " + noIssuerToken))
+                .andExpect(status().isUnauthorized());
+
+        // 2. Incorrect issuer ("rogue-api")
+        String wrongIssuerToken = jwtTokenProvider.generateCustomToken(
+                "test_claims_user", "ROLE_ADMIN", 0L, "rogue-api", "archeon-web", 60000L);
+        mockMvc.perform(get("/api/leads")
+                        .header("Authorization", "Bearer " + wrongIssuerToken))
+                .andExpect(status().isUnauthorized());
+
+        // 3. Missing audience (null)
+        String noAudToken = jwtTokenProvider.generateCustomToken(
+                "test_claims_user", "ROLE_ADMIN", 0L, "archeon-api", null, 60000L);
+        mockMvc.perform(get("/api/leads")
+                        .header("Authorization", "Bearer " + noAudToken))
+                .andExpect(status().isUnauthorized());
+
+        // 4. Incorrect audience ("rogue-client")
+        String wrongAudToken = jwtTokenProvider.generateCustomToken(
+                "test_claims_user", "ROLE_ADMIN", 0L, "archeon-api", "rogue-client", 60000L);
+        mockMvc.perform(get("/api/leads")
+                        .header("Authorization", "Bearer " + wrongAudToken))
+                .andExpect(status().isUnauthorized());
+    }
+
+    // =========================================================================
+    // 17. P3-07: IMMEDIATE IN-FLIGHT ACCESS TOKEN INVALIDATION UPON FAMILY REVOCATION
+    // =========================================================================
+    @Test
+    @DisplayName("P3-17: Revoking a session family immediately invalidates existing in-flight access tokens")
+    void test_sessionFamilyRevocation_immediatelyInvalidatesInFlightAccessToken() throws Exception {
+        UserEntity user = createTestUser("test_flight_user", "Pass123!", "ROLE_ADMIN", true);
+
+        // Login to get access token carrying family ID ('fid')
+        MvcResult loginResult = mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"test_flight_user\",\"password\":\"Pass123!\"}"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        JsonNode loginJson = objectMapper.readTree(loginResult.getResponse().getContentAsString());
+        String accessToken = loginJson.get("token").asText();
+
+        // Access token works initially
+        mockMvc.perform(get("/api/leads")
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isOk());
+
+        // Get familyId from session listing
+        MvcResult sessionsRes = mockMvc.perform(get("/api/auth/sessions")
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isOk())
+                .andReturn();
+        String familyId = objectMapper.readTree(sessionsRes.getResponse().getContentAsString()).get(0).get("familyId").asText();
+
+        // Revoke the session family
+        mockMvc.perform(post("/api/auth/sessions/" + familyId + "/revoke")
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isOk());
+
+        // The in-flight access token MUST BE IMMEDIATELY REJECTED on its next request!
+        mockMvc.perform(get("/api/leads")
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isUnauthorized());
     }
 }

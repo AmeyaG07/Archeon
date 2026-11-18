@@ -17,6 +17,9 @@ public class InMemoryTokenRevocationService implements TokenRevocationService {
     // Username -> revocation epoch timestamp
     private final Map<String, Long> userRevocationTimestamps = new ConcurrentHashMap<>();
 
+    // Family ID -> revocation epoch timestamp
+    private final Map<String, Long> revokedFamilies = new ConcurrentHashMap<>();
+
     @Override
     public void revokeToken(String jti, long ttlMs) {
         if (jti != null) {
@@ -59,8 +62,33 @@ public class InMemoryTokenRevocationService implements TokenRevocationService {
         return tokenIssuedAt.getTime() <= revokedAt;
     }
 
+    @Override
+    public void revokeFamily(String familyId) {
+        if (familyId != null) {
+            // Keep revoked family for 24 hours
+            revokedFamilies.put(familyId, System.currentTimeMillis() + 86400000L);
+        }
+    }
+
+    @Override
+    public boolean isFamilyRevoked(String familyId) {
+        if (familyId == null) {
+            return false;
+        }
+        Long expiry = revokedFamilies.get(familyId);
+        if (expiry == null) {
+            return false;
+        }
+        if (System.currentTimeMillis() > expiry) {
+            revokedFamilies.remove(familyId);
+            return false;
+        }
+        return true;
+    }
+
     public void clear() {
         revokedJtis.clear();
         userRevocationTimestamps.clear();
+        revokedFamilies.clear();
     }
 }

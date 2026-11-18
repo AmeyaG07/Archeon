@@ -11,4 +11,8 @@ public interface TokenRevocationService {
     void revokeAllForUser(String username);
 
     boolean isUserRevoked(String username, Date tokenIssuedAt);
+
+    void revokeFamily(String familyId);
+
+    boolean isFamilyRevoked(String familyId);
 }
