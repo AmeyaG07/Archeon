@@ -10,13 +10,21 @@ import com.webui.backend.repository.UserRepository;
 import com.webui.backend.service.MakerCheckerApprovalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.env.Environment;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
 
 @Component
+@Profile({"dev", "development", "test", "local", "default"})
 public class DataInitializer implements CommandLineRunner {
+
+    @Autowired
+    private Environment environment;
 
     @Autowired
     private UserRepository userRepository;
@@ -44,6 +52,10 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        if (!isSeedingPermitted()) {
+            return;
+        }
+
         // 1. Seed Studio Personnel & Operational Role Users
         seedUserIfMissing("admin", "ROLE_ADMIN");
         seedUserIfMissing("admin_mandar", "ROLE_ADMIN");
@@ -177,6 +189,31 @@ public class DataInitializer implements CommandLineRunner {
                     "RCPT-GRANITE-881"
             );
         }
+    }
+
+    private boolean isSeedingPermitted() {
+        if (environment == null) {
+            return false;
+        }
+
+        String[] activeProfiles = environment.getActiveProfiles();
+        List<String> activeList = Arrays.asList(activeProfiles);
+
+        // Strictly reject if any production, staging, or live profile is active
+        if (activeList.contains("prod") ||
+                activeList.contains("production") ||
+                activeList.contains("staging") ||
+                activeList.contains("live")) {
+            return false;
+        }
+
+        // Allowlist verification: seeding is only permitted in dev, test, local, or default profiles
+        return activeList.isEmpty() ||
+                activeList.contains("default") ||
+                activeList.contains("dev") ||
+                activeList.contains("development") ||
+                activeList.contains("test") ||
+                activeList.contains("local");
     }
 
     private void seedUserIfMissing(String username, String role) {
