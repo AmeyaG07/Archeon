@@ -128,6 +128,18 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PATCH, "/api/operational-projects/*/tasks/*/status").hasAnyRole("ADMIN", "STAFF", "PROJECT_MANAGER", "PRINCIPAL_ARCHITECT", "VENDOR")
                         .requestMatchers(HttpMethod.GET, "/api/operational-projects/**").hasAnyRole("ADMIN", "STAFF", "PROJECT_MANAGER", "PRINCIPAL_ARCHITECT", "CLIENT", "VENDOR")
 
+                        // F. Document Management System (Phase 4.3)
+                        .requestMatchers(HttpMethod.POST, "/api/documents/upload").hasAnyRole("ADMIN", "STAFF", "PROJECT_MANAGER", "PRINCIPAL_ARCHITECT", "CLIENT", "VENDOR")
+                        .requestMatchers(HttpMethod.POST, "/api/documents/*/versions").hasAnyRole("ADMIN", "STAFF", "PROJECT_MANAGER", "PRINCIPAL_ARCHITECT", "CLIENT", "VENDOR")
+                        .requestMatchers(HttpMethod.PATCH, "/api/documents/*/classification").hasAnyRole("ADMIN", "STAFF", "PROJECT_MANAGER", "PRINCIPAL_ARCHITECT")
+                        .requestMatchers(HttpMethod.POST, "/api/documents/*/permissions").hasAnyRole("ADMIN", "STAFF", "PROJECT_MANAGER", "PRINCIPAL_ARCHITECT")
+                        .requestMatchers(HttpMethod.DELETE, "/api/documents/*/permissions/*").hasAnyRole("ADMIN", "STAFF", "PROJECT_MANAGER", "PRINCIPAL_ARCHITECT")
+                        .requestMatchers(HttpMethod.POST, "/api/documents/*/archive").hasAnyRole("ADMIN", "STAFF", "PROJECT_MANAGER", "PRINCIPAL_ARCHITECT")
+                        .requestMatchers(HttpMethod.POST, "/api/documents/*/restore").hasAnyRole("ADMIN", "STAFF", "PROJECT_MANAGER", "PRINCIPAL_ARCHITECT")
+                        .requestMatchers(HttpMethod.POST, "/api/documents/*/release-quarantine").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/documents/*/audit").hasAnyRole("ADMIN", "STAFF", "PROJECT_MANAGER", "PRINCIPAL_ARCHITECT")
+                        .requestMatchers(HttpMethod.GET, "/api/documents/**").hasAnyRole("ADMIN", "STAFF", "PROJECT_MANAGER", "PRINCIPAL_ARCHITECT", "FINANCE_MANAGER", "FINANCE_MAKER", "FINANCE_CHECKER", "FINANCE_AUDIT", "CLIENT", "VENDOR")
+
                         // 3. Protected Leads (Studio Staff / Admin only)
                         .requestMatchers(HttpMethod.GET, "/api/leads").hasAnyRole("ADMIN", "STAFF")
                         .requestMatchers(HttpMethod.PATCH, "/api/leads/**").hasAnyRole("ADMIN", "STAFF")
