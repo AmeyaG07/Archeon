@@ -21,6 +21,10 @@ spring:
     console:
       enabled: true
       path: /h2-console
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: false
 
 app:
   legal:

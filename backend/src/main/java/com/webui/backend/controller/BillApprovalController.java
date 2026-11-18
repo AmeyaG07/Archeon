@@ -91,6 +91,11 @@ public class BillApprovalController {
         try {
             BillApprovalEntity approval = approvalService.approvePrimary(billId, approver);
             return ResponseEntity.ok(approval);
+        } catch (org.springframework.orm.ObjectOptimisticLockingFailureException | jakarta.persistence.OptimisticLockException e) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.CONFLICT).body(Map.of(
+                    "error", "The bill was modified concurrently by another transaction. Please reload and try again.",
+                    "status", 409
+            ));
         } catch (IllegalStateException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
@@ -105,6 +110,11 @@ public class BillApprovalController {
         try {
             BillApprovalEntity approval = approvalService.approveSecondary(billId, approver);
             return ResponseEntity.ok(approval);
+        } catch (org.springframework.orm.ObjectOptimisticLockingFailureException | jakarta.persistence.OptimisticLockException e) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.CONFLICT).body(Map.of(
+                    "error", "The bill was modified concurrently by another transaction. Please reload and try again.",
+                    "status", 409
+            ));
         } catch (IllegalStateException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
@@ -116,8 +126,15 @@ public class BillApprovalController {
             return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).body(Map.of("error", "Authentication required"));
         }
         String rejecter = auth.getName();
-        BillApprovalEntity approval = approvalService.rejectBill(billId, rejecter, request.getReason());
-        return ResponseEntity.ok(approval);
+        try {
+            BillApprovalEntity approval = approvalService.rejectBill(billId, rejecter, request.getReason());
+            return ResponseEntity.ok(approval);
+        } catch (org.springframework.orm.ObjectOptimisticLockingFailureException | jakarta.persistence.OptimisticLockException e) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.CONFLICT).body(Map.of(
+                    "error", "The bill was modified concurrently by another transaction. Please reload and try again.",
+                    "status", 409
+            ));
+        }
     }
 
     @GetMapping("/all")

@@ -93,6 +93,11 @@ public class FinancialOperationsController {
             return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(org.springframework.http.HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+        } catch (org.springframework.orm.ObjectOptimisticLockingFailureException | jakarta.persistence.OptimisticLockException e) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.CONFLICT).body(Map.of(
+                    "error", "The record was modified concurrently by another transaction. Please reload and try again.",
+                    "status", 409
+            ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
@@ -111,6 +116,11 @@ public class FinancialOperationsController {
         try {
             PaymentTransactionEntity tx = financialOperationsService.verifyPayment(transactionId, verifier, notes);
             return ResponseEntity.ok(tx);
+        } catch (org.springframework.orm.ObjectOptimisticLockingFailureException | jakarta.persistence.OptimisticLockException e) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.CONFLICT).body(Map.of(
+                    "error", "The record was modified concurrently by another transaction. Please reload and try again.",
+                    "status", 409
+            ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
@@ -129,6 +139,11 @@ public class FinancialOperationsController {
             return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(org.springframework.http.HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+        } catch (org.springframework.orm.ObjectOptimisticLockingFailureException | jakarta.persistence.OptimisticLockException e) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.CONFLICT).body(Map.of(
+                    "error", "The record was modified concurrently by another transaction. Please reload and try again.",
+                    "status", 409
+            ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
@@ -147,6 +162,11 @@ public class FinancialOperationsController {
                     req.getSitePurpose(), req.getReceiptRef()
             );
             return ResponseEntity.ok(csh);
+        } catch (org.springframework.orm.ObjectOptimisticLockingFailureException | jakarta.persistence.OptimisticLockException e) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.CONFLICT).body(Map.of(
+                    "error", "The record was modified concurrently by another transaction. Please reload and try again.",
+                    "status", 409
+            ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
@@ -166,6 +186,11 @@ public class FinancialOperationsController {
                     ref, counterparty, req.isAcknowledge(), req.getNotes()
             );
             return ResponseEntity.ok(csh);
+        } catch (org.springframework.orm.ObjectOptimisticLockingFailureException | jakarta.persistence.OptimisticLockException e) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.CONFLICT).body(Map.of(
+                    "error", "The record was modified concurrently by another transaction. Please reload and try again.",
+                    "status", 409
+            ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
@@ -180,6 +205,11 @@ public class FinancialOperationsController {
         try {
             CashSettlementEntity csh = financialOperationsService.financeApproveCashSettlement(ref, approver);
             return ResponseEntity.ok(csh);
+        } catch (org.springframework.orm.ObjectOptimisticLockingFailureException | jakarta.persistence.OptimisticLockException e) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.CONFLICT).body(Map.of(
+                    "error", "The record was modified concurrently by another transaction. Please reload and try again.",
+                    "status", 409
+            ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }

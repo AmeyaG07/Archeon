@@ -57,4 +57,7 @@ public class PaymentTransactionEntity {
 
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Version
+    private Long version;
 }
