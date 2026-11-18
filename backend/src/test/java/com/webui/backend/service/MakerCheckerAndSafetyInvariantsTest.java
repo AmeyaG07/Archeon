@@ -226,7 +226,7 @@ public class MakerCheckerAndSafetyInvariantsTest {
     void test_FIN11_paymentProofUploadAndFinanceReconciliationLifecycle() {
         String billId = randomBillId();
         BigDecimal billTotal = new BigDecimal("200000.00");
-        approvalService.initiateBillApproval(billId, billTotal, "VND-TEST-11", "PRJ-01", "maker_user");
+        approvalService.initiateBillApproval(billId, billTotal, "VND-TEST-11", "client_user", "PRJ-01", "maker_user");
 
         // 1. Client submits payment proof of ₹80,000
         com.webui.backend.model.PaymentTransactionEntity tx1 = financialOperationsService.submitPaymentProof(

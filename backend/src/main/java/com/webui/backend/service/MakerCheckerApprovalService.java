@@ -33,6 +33,11 @@ public class MakerCheckerApprovalService {
      */
     @Transactional
     public BillApprovalEntity initiateBillApproval(String billId, BigDecimal amount, String vendorId, String projectId, String initiatorId) {
+        return initiateBillApproval(billId, amount, vendorId, null, projectId, initiatorId);
+    }
+
+    @Transactional
+    public BillApprovalEntity initiateBillApproval(String billId, BigDecimal amount, String vendorId, String clientId, String projectId, String initiatorId) {
         BigDecimal safeAmount = amount.setScale(2, RoundingMode.HALF_UP);
 
         // Anti-split detection: Check if cumulative bills for this vendor + project within rolling window exceed threshold
@@ -47,6 +52,7 @@ public class MakerCheckerApprovalService {
                 .amount(safeAmount)
                 .currency("INR")
                 .vendorId(vendorId)
+                .clientId(clientId)
                 .projectId(projectId)
                 .initiatorId(initiatorId)
                 .status("PENDING_PRIMARY")

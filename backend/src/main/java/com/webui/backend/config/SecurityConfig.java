@@ -1,6 +1,7 @@
 package com.webui.backend.config;
 
 import com.webui.backend.security.JwtAuthenticationFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -61,23 +62,58 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint((request, response, authException) ->
+                                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized: " + authException.getMessage()))
+                        .accessDeniedHandler((request, response, accessDeniedException) ->
+                                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Forbidden: " + accessDeniedException.getMessage()))
+                )
                 .authorizeHttpRequests(auth -> auth
-                        // Public Read endpoints
+                        // 1. Explicitly Public Read & Auth Endpoints
+                        .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/projects/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/manifesto/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/approvals/config").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/approvals/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/approvals/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/leads").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/leads").permitAll()
-                        .requestMatchers(HttpMethod.PATCH, "/api/leads/**").permitAll()
-                        .requestMatchers("/api/finance/**").permitAll()
-                        .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
-                        // Admin Mutation endpoints
+
+                        // 2. Protected Leads (Studio Staff / Admin only)
+                        .requestMatchers(HttpMethod.GET, "/api/leads").hasAnyRole("ADMIN", "STAFF")
+                        .requestMatchers(HttpMethod.PATCH, "/api/leads/**").hasAnyRole("ADMIN", "STAFF")
+
+                        // 3. Protected Bill Approvals (Maker-Checker / Finance / Admin)
+                        .requestMatchers(HttpMethod.POST, "/api/approvals/initiate").hasAnyRole("ADMIN", "FINANCE_MAKER", "STAFF")
+                        .requestMatchers(HttpMethod.POST, "/api/approvals/*/approve-primary").hasAnyRole("ADMIN", "FINANCE_CHECKER", "FINANCE_CHECKER_1")
+                        .requestMatchers(HttpMethod.POST, "/api/approvals/*/approve-secondary").hasAnyRole("ADMIN", "FINANCE_CHECKER_2", "FINANCE_MANAGER")
+                        .requestMatchers(HttpMethod.POST, "/api/approvals/*/reject").hasAnyRole("ADMIN", "FINANCE_CHECKER", "FINANCE_MANAGER")
+                        .requestMatchers(HttpMethod.GET, "/api/approvals/**").hasAnyRole("ADMIN", "FINANCE_MAKER", "FINANCE_CHECKER", "FINANCE_MANAGER", "STAFF")
+
+                        // 4. Protected Financial Operations (Role-Separated)
+                        // A. Specific Cash Register Rules (Internal Only for GET /cash/**)
+                        .requestMatchers(HttpMethod.GET, "/api/finance/cash/**").hasAnyRole("ADMIN", "FINANCE_MANAGER", "STAFF", "SITE_SUPERVISOR")
+                        .requestMatchers(HttpMethod.POST, "/api/finance/cash/initiate").hasAnyRole("ADMIN", "SITE_SUPERVISOR", "STAFF")
+                        .requestMatchers(HttpMethod.POST, "/api/finance/cash/*/respond").hasAnyRole("ADMIN", "VENDOR", "CLIENT")
+                        .requestMatchers(HttpMethod.POST, "/api/finance/cash/*/approve").hasAnyRole("ADMIN", "FINANCE_MANAGER")
+
+                        // B. Reports (Finance / Audit / Admin only)
+                        .requestMatchers(HttpMethod.GET, "/api/finance/reports/**").hasAnyRole("ADMIN", "FINANCE_MANAGER", "FINANCE_AUDIT", "STAFF")
+
+                        // C. Client & Vendor Permitted Financial Endpoints
+                        .requestMatchers(HttpMethod.POST, "/api/finance/payment-proof").hasAnyRole("ADMIN", "CLIENT", "VENDOR", "STAFF")
+                        .requestMatchers(HttpMethod.POST, "/api/finance/verify-payment/**").hasAnyRole("ADMIN", "FINANCE_LEAD", "FINANCE_MANAGER")
+                        .requestMatchers(HttpMethod.POST, "/api/finance/dispute").hasAnyRole("ADMIN", "CLIENT", "VENDOR")
+                        .requestMatchers(HttpMethod.GET, "/api/finance/bills/**").hasAnyRole("ADMIN", "FINANCE_MANAGER", "STAFF", "CLIENT", "VENDOR")
+                        .requestMatchers(HttpMethod.GET, "/api/finance/transactions/**").hasAnyRole("ADMIN", "FINANCE_MANAGER", "STAFF", "CLIENT", "VENDOR")
+
+                        // D. Fallback for any other /api/finance/** GET (Internal only)
+                        .requestMatchers(HttpMethod.GET, "/api/finance/**").hasAnyRole("ADMIN", "FINANCE_MANAGER", "STAFF")
+
+                        // 5. Admin Mutation Fallback
                         .requestMatchers(HttpMethod.POST, "/api/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/**").hasRole("ADMIN")
+
+                        // 6. Strict Authentication on Any Remaining Request
                         .anyRequest().authenticated()
                 );
 

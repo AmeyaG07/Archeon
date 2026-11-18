@@ -355,7 +355,7 @@ public class SecurityAndRbacIntegrationTest {
     void test_billDispute_bolaEnforcement() throws Exception {
         String billId = randomBillId();
         // Bill assigned to CLIENT-ALPHA and VENDOR-ALPHA
-        approvalService.initiateBillApproval(billId, new BigDecimal("10000.00"), "VENDOR-ALPHA", "PROJ-101", "maker_user", "CLIENT-ALPHA");
+        approvalService.initiateBillApproval(billId, new BigDecimal("10000.00"), "VENDOR-ALPHA", "CLIENT-ALPHA", "PROJ-101", "maker_user");
 
         // 1. Cross-client (CLIENT-BETA) attempts to dispute CLIENT-ALPHA's bill -> 403 Forbidden
         String clientBetaToken = jwtTokenProvider.generateToken("CLIENT-BETA", "ROLE_CLIENT");
@@ -381,7 +381,7 @@ public class SecurityAndRbacIntegrationTest {
     @DisplayName("FINDING-03: Unauthorized vendor cannot view bill transactions (HTTP 403), assigned vendor can (HTTP 200)")
     void test_billTransactions_bolaEnforcement() throws Exception {
         String billId = randomBillId();
-        approvalService.initiateBillApproval(billId, new BigDecimal("25000.00"), "VENDOR-ALPHA", "PROJ-102", "maker_user", "CLIENT-ALPHA");
+        approvalService.initiateBillApproval(billId, new BigDecimal("25000.00"), "VENDOR-ALPHA", "CLIENT-ALPHA", "PROJ-102", "maker_user");
 
         // 1. Cross-vendor (VENDOR-BETA) queries transactions -> 403 Forbidden
         String vendorBetaToken = jwtTokenProvider.generateToken("VENDOR-BETA", "ROLE_VENDOR");
@@ -401,7 +401,7 @@ public class SecurityAndRbacIntegrationTest {
     @DisplayName("FINDING-03: Unauthorized client cannot submit payment proof for another client's bill (HTTP 403)")
     void test_paymentProof_crossClientBlocked() throws Exception {
         String billId = randomBillId();
-        approvalService.initiateBillApproval(billId, new BigDecimal("50000.00"), "VENDOR-ALPHA", "PROJ-103", "maker_user", "CLIENT-ALPHA");
+        approvalService.initiateBillApproval(billId, new BigDecimal("50000.00"), "VENDOR-ALPHA", "CLIENT-ALPHA", "PROJ-103", "maker_user");
 
         String clientBetaToken = jwtTokenProvider.generateToken("CLIENT-BETA", "ROLE_CLIENT");
         mockMvc.perform(post("/api/finance/payment-proof")
@@ -460,5 +460,113 @@ public class SecurityAndRbacIntegrationTest {
                         .content("{\"acknowledge\":false,\"notes\":\"I changed my mind\"}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("Cash settlement is already finalized and settled; counterparty response cannot be altered."));
+    }
+
+    // =========================================================================
+    // 10. UNASSIGNED LEGACY BILLS & NO TRUST-ON-FIRST-USE (TOFU)
+    // =========================================================================
+
+    @Test
+    @DisplayName("FINDING-03-HARDEN: Unassigned legacy bill is inaccessible to clients/vendors, accessible to internal staff")
+    void test_unassignedLegacyBill_blockedFromClientAndVendor_allowedForInternalStaff() throws Exception {
+        String billId = randomBillId();
+        // Create an unassigned legacy bill (clientId is null)
+        approvalService.initiateBillApproval(billId, new BigDecimal("45000.00"), "VND-LEGACY-01", "PROJ-LEGACY", "maker_legacy");
+
+        // 1. Client attempts to access unassigned bill -> 403 Forbidden
+        String clientToken = jwtTokenProvider.generateToken("client_random", "ROLE_CLIENT");
+        mockMvc.perform(get("/api/finance/bills/" + billId + "/transactions")
+                        .header("Authorization", "Bearer " + clientToken))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("Access denied: Principal 'client_random' is not authorized to access or mutate bill " + billId));
+
+        // 2. Unrelated Vendor attempts to access unassigned bill -> 403 Forbidden
+        String vendorToken = jwtTokenProvider.generateToken("vnd_random", "ROLE_VENDOR");
+        mockMvc.perform(get("/api/finance/bills/" + billId + "/transactions")
+                        .header("Authorization", "Bearer " + vendorToken))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("Access denied: Principal 'vnd_random' is not authorized to access or mutate bill " + billId));
+
+        // 3. Authorized Internal Staff (FINANCE_MANAGER) accesses unassigned legacy bill -> 200 OK
+        String financeToken = jwtTokenProvider.generateToken("finance_mgr", "ROLE_FINANCE_MANAGER");
+        mockMvc.perform(get("/api/finance/bills/" + billId + "/transactions")
+                        .header("Authorization", "Bearer " + financeToken))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("FINDING-03-HARDEN: Client cannot claim unassigned bill via first access (Zero TOFU)")
+    void test_invalidOwnershipClaims_cannotClaimViaFirstAccess() throws Exception {
+        String billId = randomBillId();
+        approvalService.initiateBillApproval(billId, new BigDecimal("60000.00"), "VND-LEGACY-02", "PROJ-LEGACY", "maker_legacy");
+
+        // Attacker attempts to claim bill via dispute endpoint
+        String attackerToken = jwtTokenProvider.generateToken("client_attacker", "ROLE_CLIENT");
+        mockMvc.perform(post("/api/finance/dispute")
+                        .header("Authorization", "Bearer " + attackerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"billId\":\"" + billId + "\",\"reason\":\"Claiming unassigned bill\"}"))
+                .andExpect(status().isForbidden());
+
+        // Verify that bill in repository STILL has null clientId (ownership was NOT established on first access)
+        BillApprovalEntity bill = billApprovalRepository.findByBillId(billId).orElseThrow();
+        org.junit.jupiter.api.Assertions.assertNull(bill.getClientId(), "Legacy bill clientId MUST remain null; first access must never establish ownership.");
+    }
+
+    // =========================================================================
+    // 11. FINANCIAL CSV EXPORT AUTHORIZATION RESTRICTIONS
+    // =========================================================================
+
+    @Test
+    @DisplayName("CSV-01: Anonymous and client/vendor roles blocked from financial CSV export; staff/admin allowed")
+    void test_exportBillsCsv_authorizationRestrictions() throws Exception {
+        // 1. Anonymous -> 401 Unauthorized
+        mockMvc.perform(get("/api/finance/reports/export-bills-csv"))
+                .andExpect(status().isUnauthorized());
+
+        // 2. Client role -> 403 Forbidden
+        String clientToken = jwtTokenProvider.generateToken("client_user", "ROLE_CLIENT");
+        mockMvc.perform(get("/api/finance/reports/export-bills-csv")
+                        .header("Authorization", "Bearer " + clientToken))
+                .andExpect(status().isForbidden());
+
+        // 3. Vendor role -> 403 Forbidden
+        String vendorToken = jwtTokenProvider.generateToken("vendor_user", "ROLE_VENDOR");
+        mockMvc.perform(get("/api/finance/reports/export-bills-csv")
+                        .header("Authorization", "Bearer " + vendorToken))
+                .andExpect(status().isForbidden());
+
+        // 4. Admin role -> 200 OK with CSV text
+        String adminToken = jwtTokenProvider.generateToken("admin_user", "ROLE_ADMIN");
+        mockMvc.perform(get("/api/finance/reports/export-bills-csv")
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Type", org.hamcrest.Matchers.containsString("text/csv")));
+    }
+
+    // =========================================================================
+    // 12. CONFLICTING / DUPLICATE PRIMARY APPROVAL STATE ENFORCEMENT
+    // =========================================================================
+
+    @Test
+    @DisplayName("CONCUR-01: Conflicting or duplicate primary approval is rejected with HTTP 400")
+    void test_conflictingPrimaryApproval_stateValidationEnforced() throws Exception {
+        String billId = randomBillId();
+        approvalService.initiateBillApproval(billId, new BigDecimal("150000.00"), "VND-CONCUR", "CLIENT-CONCUR", "PRJ-CONCUR", "maker_user");
+
+        String checker1Token = jwtTokenProvider.generateToken("checker_1", "ROLE_FINANCE_CHECKER");
+        String checker2Token = jwtTokenProvider.generateToken("checker_2", "ROLE_FINANCE_CHECKER");
+
+        // First approval succeeds
+        mockMvc.perform(post("/api/approvals/" + billId + "/approve-primary")
+                        .header("Authorization", "Bearer " + checker1Token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("PENDING_SECONDARY"));
+
+        // Second conflicting primary approval on the same bill is rejected (HTTP 400)
+        mockMvc.perform(post("/api/approvals/" + billId + "/approve-primary")
+                        .header("Authorization", "Bearer " + checker2Token))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Bill is not in PENDING_PRIMARY status: PENDING_SECONDARY"));
     }
 }
