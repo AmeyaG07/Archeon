@@ -72,13 +72,45 @@ public class SecurityConfig {
                         // 1. Explicitly Public Read & Auth Endpoints
                         .requestMatchers("/api/auth/login", "/api/auth/refresh").permitAll()
                         .requestMatchers("/api/auth/logout", "/api/auth/logout-all", "/api/auth/sessions/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/invitations/accept").permitAll()
+                        .requestMatchers("/api/users/me", "/api/users/change-password").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/projects/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/manifesto/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/approvals/config").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/leads").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
 
-                        // 2. Protected Leads (Studio Staff / Admin only)
+                        // 2. Protected Identity Domain (Users, Clients, Vendors, Invitations)
+                        // A. User Administration (Admin Only)
+                        .requestMatchers(HttpMethod.GET, "/api/users").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/users/*/role").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/users/*/status").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/users/*").authenticated()
+
+                        // B. Client Management & Self-Service
+                        .requestMatchers(HttpMethod.GET, "/api/clients/me").hasRole("CLIENT")
+                        .requestMatchers(HttpMethod.PUT, "/api/clients/me").hasRole("CLIENT")
+                        .requestMatchers(HttpMethod.GET, "/api/clients", "/api/clients/").hasAnyRole("ADMIN", "STAFF")
+                        .requestMatchers(HttpMethod.POST, "/api/clients", "/api/clients/").hasAnyRole("ADMIN", "STAFF")
+                        .requestMatchers(HttpMethod.PATCH, "/api/clients/*/status").hasAnyRole("ADMIN", "STAFF")
+                        .requestMatchers(HttpMethod.POST, "/api/clients/*/invite").hasAnyRole("ADMIN", "STAFF")
+                        .requestMatchers(HttpMethod.GET, "/api/clients/**").hasAnyRole("ADMIN", "STAFF", "CLIENT")
+                        .requestMatchers(HttpMethod.PUT, "/api/clients/**").hasAnyRole("ADMIN", "STAFF", "CLIENT")
+
+                        // C. Vendor Management & Self-Service
+                        .requestMatchers(HttpMethod.GET, "/api/vendors/me").hasRole("VENDOR")
+                        .requestMatchers(HttpMethod.PUT, "/api/vendors/me").hasRole("VENDOR")
+                        .requestMatchers(HttpMethod.GET, "/api/vendors", "/api/vendors/").hasAnyRole("ADMIN", "STAFF")
+                        .requestMatchers(HttpMethod.POST, "/api/vendors", "/api/vendors/").hasAnyRole("ADMIN", "STAFF")
+                        .requestMatchers(HttpMethod.PATCH, "/api/vendors/*/status").hasAnyRole("ADMIN", "STAFF")
+                        .requestMatchers(HttpMethod.POST, "/api/vendors/*/invite").hasAnyRole("ADMIN", "STAFF")
+                        .requestMatchers(HttpMethod.GET, "/api/vendors/**").hasAnyRole("ADMIN", "STAFF", "VENDOR")
+                        .requestMatchers(HttpMethod.PUT, "/api/vendors/**").hasAnyRole("ADMIN", "STAFF", "VENDOR")
+
+                        // D. User Invitations Management
+                        .requestMatchers("/api/invitations/**").hasAnyRole("ADMIN", "STAFF")
+
+                        // 3. Protected Leads (Studio Staff / Admin only)
                         .requestMatchers(HttpMethod.GET, "/api/leads").hasAnyRole("ADMIN", "STAFF")
                         .requestMatchers(HttpMethod.PATCH, "/api/leads/**").hasAnyRole("ADMIN", "STAFF")
 

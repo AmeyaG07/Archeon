@@ -33,6 +33,15 @@ public class FinancialOperationsService {
     @Autowired
     private AuditEventRepository auditEventRepository;
 
+    @Autowired(required = false)
+    private com.webui.backend.repository.UserRepository userRepository;
+
+    @Autowired(required = false)
+    private com.webui.backend.repository.ClientRepository clientRepository;
+
+    @Autowired(required = false)
+    private com.webui.backend.repository.VendorRepository vendorRepository;
+
     /**
      * BOLA / Object-Level Authorization Protection (FINDING-03)
      * Verifies that the authenticated principal is an authorized party for the bill.
@@ -77,7 +86,37 @@ public class FinancialOperationsService {
             return;
         }
 
-        // 5. Client who has an existing payment transaction recorded on this bill
+        // 5. Check if authenticated user is mapped to a Client or Vendor entity linked to this bill
+        if (userRepository != null) {
+            java.util.Optional<com.webui.backend.model.UserEntity> userOpt = userRepository.findByUsername(actorId);
+            if (userOpt.isPresent()) {
+                com.webui.backend.model.UserEntity user = userOpt.get();
+                if (user.getClientId() != null && bill.getClientId() != null) {
+                    if (bill.getClientId().equalsIgnoreCase(user.getClientId().toString())) {
+                        return;
+                    }
+                    if (clientRepository != null) {
+                        java.util.Optional<com.webui.backend.model.ClientEntity> clientOpt = clientRepository.findById(user.getClientId());
+                        if (clientOpt.isPresent() && clientOpt.get().getClientReference().equalsIgnoreCase(bill.getClientId())) {
+                            return;
+                        }
+                    }
+                }
+                if (user.getVendorId() != null && bill.getVendorId() != null) {
+                    if (bill.getVendorId().equalsIgnoreCase(user.getVendorId().toString())) {
+                        return;
+                    }
+                    if (vendorRepository != null) {
+                        java.util.Optional<com.webui.backend.model.VendorEntity> vendorOpt = vendorRepository.findById(user.getVendorId());
+                        if (vendorOpt.isPresent() && vendorOpt.get().getVendorReference().equalsIgnoreCase(bill.getVendorId())) {
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+
+        // 6. Client who has an existing payment transaction recorded on this bill
         boolean hasExistingTransaction = paymentTransactionRepository.findByBillIdOrderByCreatedAtDesc(bill.getBillId())
                 .stream().anyMatch(tx -> tx.getPayerId() != null && tx.getPayerId().equalsIgnoreCase(actorId));
         if (hasExistingTransaction) {
