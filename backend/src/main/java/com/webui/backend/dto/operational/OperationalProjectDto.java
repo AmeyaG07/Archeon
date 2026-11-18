@@ -1,5 +1,7 @@
 package com.webui.backend.dto.operational;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -230,6 +232,8 @@ public class OperationalProjectDto {
         private String description;
         private LocalDate dueDate;
         private String responsibleOwner;
+        @Min(value = 0, message = "Billed percentage cannot be negative")
+        @Max(value = 100, message = "Billed percentage cannot exceed 100")
         private Integer billedPercentage;
     }
 
@@ -244,6 +248,8 @@ public class OperationalProjectDto {
         private LocalDate dueDate;
         private LocalDate completionDate;
         private String responsibleOwner;
+        @Min(value = 0, message = "Billed percentage cannot be negative")
+        @Max(value = 100, message = "Billed percentage cannot exceed 100")
         private Integer billedPercentage;
     }
 

@@ -12,6 +12,8 @@ import java.util.UUID;
 public interface ProjectVendorAssignmentRepository extends JpaRepository<ProjectVendorAssignmentEntity, UUID> {
     List<ProjectVendorAssignmentEntity> findByProjectId(UUID projectId);
     List<ProjectVendorAssignmentEntity> findByVendorId(UUID vendorId);
+    List<ProjectVendorAssignmentEntity> findByVendorIdAndStatus(UUID vendorId, String status);
+    List<ProjectVendorAssignmentEntity> findByProjectIdAndStatus(UUID projectId, String status);
     Optional<ProjectVendorAssignmentEntity> findByProjectIdAndVendorId(UUID projectId, UUID vendorId);
     boolean existsByProjectIdAndVendorId(UUID projectId, UUID vendorId);
     boolean existsByProjectIdAndVendorIdAndStatus(UUID projectId, UUID vendorId, String status);

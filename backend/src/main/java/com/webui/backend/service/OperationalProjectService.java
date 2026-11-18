@@ -79,6 +79,10 @@ public class OperationalProjectService {
     @Autowired
     private AuditEventRepository auditEventRepository;
 
+    private static final Set<String> ALLOWED_PM_ROLES = Set.of(
+            "ROLE_PROJECT_MANAGER", "ROLE_ADMIN", "ROLE_PRINCIPAL_ARCHITECT", "ROLE_STAFF"
+    );
+
     // ==========================================
     // Security Helper & Authorization Checks
     // ==========================================
@@ -109,6 +113,39 @@ public class OperationalProjectService {
                 .orElseThrow(() -> new AccessDeniedException("User not found: " + auth.getName()));
     }
 
+    private String validateAndResolveProjectManager(String pmUsername) {
+        if (!StringUtils.hasText(pmUsername)) {
+            return null;
+        }
+        String trimmed = pmUsername.trim();
+        UserEntity pmUser = userRepository.findByUsername(trimmed)
+                .orElseThrow(() -> new IllegalArgumentException("Assigned project manager user does not exist: " + trimmed));
+
+        if (!pmUser.isEnabled() || (pmUser.getStatus() != null && !"ACTIVE".equalsIgnoreCase(pmUser.getStatus()))) {
+            throw new IllegalStateException("Assigned project manager user is inactive or suspended: " + trimmed);
+        }
+
+        if (!ALLOWED_PM_ROLES.contains(pmUser.getRole())) {
+            throw new IllegalArgumentException("User " + trimmed + " has role " + pmUser.getRole()
+                    + ", which is not authorized for project manager assignment. Allowed roles: " + ALLOWED_PM_ROLES);
+        }
+
+        return trimmed;
+    }
+
+    private void checkNotArchived(OperationalProjectEntity project, String operation) {
+        if ("ARCHIVED".equalsIgnoreCase(project.getStatus())) {
+            throw new IllegalStateException("Security Invariant Violation: Cannot " + operation
+                    + " on an ARCHIVED project (" + project.getProjectReference() + "). Project is sealed.");
+        }
+    }
+
+    private void validateBilledPercentage(Integer percentage) {
+        if (percentage != null && (percentage < 0 || percentage > 100)) {
+            throw new IllegalArgumentException("Milestone billed percentage must be between 0 and 100 inclusive. Received: " + percentage);
+        }
+    }
+
     /**
      * BOLA / Tenant Isolation Check for Operational Projects
      */
@@ -130,13 +167,13 @@ public class OperationalProjectService {
             throw new AccessDeniedException("Access denied: You are not authorized to access project " + project.getProjectReference());
         }
 
-        // 2. Vendor User Access Check
+        // 2. Vendor User Access Check - requires ACTIVE assignment
         if ("ROLE_VENDOR".equals(user.getRole())) {
             if (user.getVendorId() != null &&
-                    vendorAssignmentRepository.existsByProjectIdAndVendorId(project.getId(), user.getVendorId())) {
+                    vendorAssignmentRepository.existsByProjectIdAndVendorIdAndStatus(project.getId(), user.getVendorId(), "ACTIVE")) {
                 return;
             }
-            throw new AccessDeniedException("Access denied: You are not assigned to project " + project.getProjectReference());
+            throw new AccessDeniedException("Access denied: You do not have an active assignment on project " + project.getProjectReference());
         }
 
         throw new AccessDeniedException("Access denied: Insufficient privileges for project " + project.getProjectReference());
@@ -161,8 +198,14 @@ public class OperationalProjectService {
     // Mappers
     // ==========================================
 
-    private OperationalProjectSummaryResponse toSummary(OperationalProjectEntity p, Map<UUID, ClientEntity> clientMap) {
+    private OperationalProjectSummaryResponse toSummary(OperationalProjectEntity p, Map<UUID, ClientEntity> clientMap, Authentication auth) {
         ClientEntity client = clientMap.get(p.getClientId());
+        UserEntity currentUser = getAuthenticatedUser(auth);
+        boolean isVendor = "ROLE_VENDOR".equals(currentUser.getRole());
+
+        // Invariant: Vendors must NEVER receive contractValue or budgetAllocated
+        BigDecimal summaryContractValue = isVendor ? null : p.getContractValue();
+
         return OperationalProjectSummaryResponse.builder()
                 .id(p.getId())
                 .projectReference(p.getProjectReference())
@@ -176,7 +219,7 @@ public class OperationalProjectService {
                 .progressPercentage(p.getProgressPercentage())
                 .startDate(p.getStartDate())
                 .expectedCompletionDate(p.getExpectedCompletionDate())
-                .contractValue(p.getContractValue())
+                .contractValue(summaryContractValue)
                 .version(p.getVersion())
                 .build();
     }
@@ -237,7 +280,20 @@ public class OperationalProjectService {
                 .build();
     }
 
-    private VendorAssignmentResponse toVendorAssignmentResponse(ProjectVendorAssignmentEntity a, OperationalProjectEntity p, VendorEntity v) {
+    private VendorAssignmentResponse toVendorAssignmentResponse(ProjectVendorAssignmentEntity a, OperationalProjectEntity p, VendorEntity v, Authentication auth) {
+        UserEntity currentUser = getAuthenticatedUser(auth);
+        boolean isClient = "ROLE_CLIENT".equals(currentUser.getRole());
+        boolean isVendor = "ROLE_VENDOR".equals(currentUser.getRole());
+
+        // Invariant: Clients must NEVER see vendor subcontract contract amounts (contractor rates)
+        // Vendors must ONLY see their own contract amount, never other vendors' amounts
+        BigDecimal amount = a.getContractAmount();
+        if (isClient) {
+            amount = null;
+        } else if (isVendor && !a.getVendorId().equals(currentUser.getVendorId())) {
+            amount = null;
+        }
+
         return VendorAssignmentResponse.builder()
                 .id(a.getId())
                 .projectId(a.getProjectId())
@@ -248,7 +304,7 @@ public class OperationalProjectService {
                 .vendorCategory(v != null ? v.getCategory() : null)
                 .scopeOfWork(a.getScopeOfWork())
                 .status(a.getStatus())
-                .contractAmount(a.getContractAmount())
+                .contractAmount(amount)
                 .assignedBy(a.getAssignedBy())
                 .assignedAt(a.getAssignedAt())
                 .completedAt(a.getCompletedAt())
@@ -295,13 +351,15 @@ public class OperationalProjectService {
             throw new IllegalArgumentException("Project reference already in use: " + ref);
         }
 
+        String validatedPm = validateAndResolveProjectManager(req.getProjectManagerUsername());
+
         OperationalProjectEntity project = OperationalProjectEntity.builder()
                 .projectReference(ref)
                 .name(req.getName().trim())
                 .description(req.getDescription())
                 .projectType(projectType)
                 .clientId(req.getClientId())
-                .projectManagerUsername(req.getProjectManagerUsername())
+                .projectManagerUsername(validatedPm)
                 .siteAddress(req.getSiteAddress())
                 .contractValue(req.getContractValue())
                 .budgetAllocated(req.getBudgetAllocated())
@@ -361,13 +419,16 @@ public class OperationalProjectService {
             tasks = taskRepository.findByProjectIdOrderByDueDateAsc(id);
         }
 
-        // Mask overall financials for vendors
+        // Mask overall financials based on role:
+        // - Vendors NEVER receive contractValue or budgetAllocated
+        // - Clients receive contractValue, but NEVER receive internal budgetAllocated
+        // - Internal staff receive both
         BigDecimal contractVal = "ROLE_VENDOR".equals(user.getRole()) ? null : p.getContractValue();
-        BigDecimal budgetAlloc = "ROLE_VENDOR".equals(user.getRole()) ? null : p.getBudgetAllocated();
+        BigDecimal budgetAlloc = ("ROLE_VENDOR".equals(user.getRole()) || "ROLE_CLIENT".equals(user.getRole())) ? null : p.getBudgetAllocated();
 
         List<VendorAssignmentResponse> assignmentResponses = assignments.stream()
                 .filter(a -> !"ROLE_VENDOR".equals(user.getRole()) || a.getVendorId().equals(user.getVendorId()))
-                .map(a -> toVendorAssignmentResponse(a, p, vendorMap.get(a.getVendorId())))
+                .map(a -> toVendorAssignmentResponse(a, p, vendorMap.get(a.getVendorId()), auth))
                 .collect(Collectors.toList());
 
         return OperationalProjectResponse.builder()
@@ -434,8 +495,11 @@ public class OperationalProjectService {
             if (user.getVendorId() == null) {
                 return Collections.emptyList();
             }
-            List<ProjectVendorAssignmentEntity> assignments = vendorAssignmentRepository.findByVendorId(user.getVendorId());
+            List<ProjectVendorAssignmentEntity> assignments = vendorAssignmentRepository.findByVendorIdAndStatus(user.getVendorId(), "ACTIVE");
             Set<UUID> projectIds = assignments.stream().map(ProjectVendorAssignmentEntity::getProjectId).collect(Collectors.toSet());
+            if (projectIds.isEmpty()) {
+                return Collections.emptyList();
+            }
             list = projectRepository.findAllById(projectIds);
             if (StringUtils.hasText(statusFilter)) {
                 String filter = statusFilter.trim().toUpperCase();
@@ -449,7 +513,7 @@ public class OperationalProjectService {
         Map<UUID, ClientEntity> clientMap = clientRepository.findAllById(clientIds).stream()
                 .collect(Collectors.toMap(ClientEntity::getId, c -> c));
 
-        return list.stream().map(p -> toSummary(p, clientMap)).collect(Collectors.toList());
+        return list.stream().map(p -> toSummary(p, clientMap, auth)).collect(Collectors.toList());
     }
 
     @Transactional
@@ -460,6 +524,7 @@ public class OperationalProjectService {
                 .orElseThrow(() -> new IllegalArgumentException("Operational project not found: " + id));
 
         validateProjectAccess(p, auth);
+        checkNotArchived(p, "update project details");
 
         if (StringUtils.hasText(req.getName())) {
             p.setName(req.getName().trim());
@@ -474,7 +539,8 @@ public class OperationalProjectService {
             }
         }
         if (req.getProjectManagerUsername() != null) {
-            p.setProjectManagerUsername(req.getProjectManagerUsername().trim());
+            String validatedPm = validateAndResolveProjectManager(req.getProjectManagerUsername());
+            p.setProjectManagerUsername(validatedPm);
         }
         if (req.getSiteAddress() != null) {
             p.setSiteAddress(req.getSiteAddress().trim());
@@ -524,9 +590,19 @@ public class OperationalProjectService {
         OperationalProjectEntity p = projectRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Operational project not found: " + id));
 
+        validateProjectAccess(p, auth);
+
         String newStatus = req.getStatus() != null ? req.getStatus().trim().toUpperCase() : null;
         if (!ALLOWED_PROJECT_STATUSES.contains(newStatus)) {
             throw new IllegalArgumentException("Invalid status: " + req.getStatus() + ". Allowed: " + ALLOWED_PROJECT_STATUSES);
+        }
+
+        // Invariant: If project is currently ARCHIVED, only ROLE_ADMIN can transition status out of ARCHIVED
+        if ("ARCHIVED".equalsIgnoreCase(p.getStatus()) && !"ARCHIVED".equalsIgnoreCase(newStatus)) {
+            boolean isAdmin = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+            if (!isAdmin) {
+                throw new IllegalStateException("Security Invariant Violation: Only studio administrators can reactivate an ARCHIVED project.");
+            }
         }
 
         p.setStatus(newStatus);
@@ -575,6 +651,8 @@ public class OperationalProjectService {
         OperationalProjectEntity project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("Operational project not found: " + projectId));
 
+        checkNotArchived(project, "assign vendor");
+
         if (req.getVendorId() == null) {
             throw new IllegalArgumentException("Vendor ID is mandatory for assignment");
         }
@@ -616,7 +694,7 @@ public class OperationalProjectService {
                         project.getProjectReference(), vendor.getVendorReference()))
                 .build());
 
-        return toVendorAssignmentResponse(saved, project, vendor);
+        return toVendorAssignmentResponse(saved, project, vendor, auth);
     }
 
     @Transactional(readOnly = true)
@@ -637,7 +715,7 @@ public class OperationalProjectService {
         Map<UUID, VendorEntity> vendorMap = vendorRepository.findAllById(vendorIds).stream()
                 .collect(Collectors.toMap(VendorEntity::getId, v -> v));
 
-        return list.stream().map(a -> toVendorAssignmentResponse(a, project, vendorMap.get(a.getVendorId()))).collect(Collectors.toList());
+        return list.stream().map(a -> toVendorAssignmentResponse(a, project, vendorMap.get(a.getVendorId()), auth)).collect(Collectors.toList());
     }
 
     @Transactional
@@ -646,6 +724,8 @@ public class OperationalProjectService {
 
         OperationalProjectEntity project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("Operational project not found: " + projectId));
+
+        checkNotArchived(project, "update vendor assignment status");
 
         ProjectVendorAssignmentEntity assignment = vendorAssignmentRepository.findByProjectIdAndVendorId(projectId, vendorId)
                 .orElseThrow(() -> new IllegalArgumentException("Vendor assignment not found for vendor " + vendorId));
@@ -676,7 +756,7 @@ public class OperationalProjectService {
                         project.getProjectReference(), vendor != null ? vendor.getVendorReference() : vendorId, newStatus))
                 .build());
 
-        return toVendorAssignmentResponse(saved, project, vendor);
+        return toVendorAssignmentResponse(saved, project, vendor, auth);
     }
 
     // ==========================================
@@ -689,6 +769,8 @@ public class OperationalProjectService {
 
         OperationalProjectEntity project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("Operational project not found: " + projectId));
+
+        checkNotArchived(project, "create phase");
 
         if (!StringUtils.hasText(req.getName())) {
             throw new IllegalArgumentException("Phase name is mandatory");
@@ -740,6 +822,10 @@ public class OperationalProjectService {
     public PhaseResponse updatePhase(UUID projectId, UUID phaseId, UpdatePhaseRequest req, Authentication auth) {
         validateStaffOrPm(auth);
 
+        OperationalProjectEntity project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new IllegalArgumentException("Operational project not found: " + projectId));
+        checkNotArchived(project, "update phase");
+
         ProjectPhaseEntity phase = phaseRepository.findById(phaseId)
                 .orElseThrow(() -> new IllegalArgumentException("Project phase not found: " + phaseId));
 
@@ -777,6 +863,10 @@ public class OperationalProjectService {
     public PhaseResponse updatePhaseStatus(UUID projectId, UUID phaseId, UpdatePhaseStatusRequest req, Authentication auth) {
         validateStaffOrPm(auth);
 
+        OperationalProjectEntity project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new IllegalArgumentException("Operational project not found: " + projectId));
+        checkNotArchived(project, "update phase status");
+
         ProjectPhaseEntity phase = phaseRepository.findById(phaseId)
                 .orElseThrow(() -> new IllegalArgumentException("Project phase not found: " + phaseId));
 
@@ -808,6 +898,7 @@ public class OperationalProjectService {
 
         OperationalProjectEntity project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("Operational project not found: " + projectId));
+        checkNotArchived(project, "create milestone");
 
         if (!StringUtils.hasText(req.getTitle())) {
             throw new IllegalArgumentException("Milestone title is mandatory");
@@ -815,6 +906,8 @@ public class OperationalProjectService {
         if (req.getDueDate() == null) {
             throw new IllegalArgumentException("Milestone due date is mandatory");
         }
+
+        validateBilledPercentage(req.getBilledPercentage());
 
         if (req.getPhaseId() != null) {
             ProjectPhaseEntity phase = phaseRepository.findById(req.getPhaseId())
@@ -873,6 +966,10 @@ public class OperationalProjectService {
     public MilestoneResponse updateMilestone(UUID projectId, UUID milestoneId, UpdateMilestoneRequest req, Authentication auth) {
         validateStaffOrPm(auth);
 
+        OperationalProjectEntity project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new IllegalArgumentException("Operational project not found: " + projectId));
+        checkNotArchived(project, "update milestone");
+
         ProjectMilestoneEntity milestone = milestoneRepository.findById(milestoneId)
                 .orElseThrow(() -> new IllegalArgumentException("Milestone not found: " + milestoneId));
 
@@ -896,6 +993,7 @@ public class OperationalProjectService {
             milestone.setResponsibleOwner(req.getResponsibleOwner().trim());
         }
         if (req.getBilledPercentage() != null) {
+            validateBilledPercentage(req.getBilledPercentage());
             milestone.setBilledPercentage(req.getBilledPercentage());
         }
 
@@ -907,6 +1005,10 @@ public class OperationalProjectService {
     @Transactional
     public MilestoneResponse updateMilestoneStatus(UUID projectId, UUID milestoneId, UpdateMilestoneStatusRequest req, Authentication auth) {
         validateStaffOrPm(auth);
+
+        OperationalProjectEntity project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new IllegalArgumentException("Operational project not found: " + projectId));
+        checkNotArchived(project, "update milestone status");
 
         ProjectMilestoneEntity milestone = milestoneRepository.findById(milestoneId)
                 .orElseThrow(() -> new IllegalArgumentException("Milestone not found: " + milestoneId));
@@ -922,6 +1024,13 @@ public class OperationalProjectService {
 
         milestone.setStatus(newStatus);
         if ("COMPLETED".equals(newStatus)) {
+            boolean hasUnfinishedTasks = taskRepository.findByProjectIdOrderByDueDateAsc(projectId)
+                    .stream()
+                    .filter(t -> milestoneId.equals(t.getMilestoneId()))
+                    .anyMatch(t -> !"DONE".equals(t.getStatus()));
+            if (hasUnfinishedTasks) {
+                throw new IllegalStateException("Cannot complete milestone with pending or unfinished tasks");
+            }
             milestone.setCompletionDate(req.getCompletionDate() != null ? req.getCompletionDate() : LocalDate.now());
         }
 
@@ -940,6 +1049,7 @@ public class OperationalProjectService {
 
         OperationalProjectEntity project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("Operational project not found: " + projectId));
+        checkNotArchived(project, "create task");
 
         if (!StringUtils.hasText(req.getTitle())) {
             throw new IllegalArgumentException("Task title is mandatory");
@@ -967,8 +1077,8 @@ public class OperationalProjectService {
         }
 
         if (req.getAssignedVendorId() != null) {
-            if (!vendorAssignmentRepository.existsByProjectIdAndVendorId(projectId, req.getAssignedVendorId())) {
-                throw new IllegalArgumentException("Vendor " + req.getAssignedVendorId() + " is not assigned to this project.");
+            if (!vendorAssignmentRepository.existsByProjectIdAndVendorIdAndStatus(projectId, req.getAssignedVendorId(), "ACTIVE")) {
+                throw new IllegalArgumentException("Vendor " + req.getAssignedVendorId() + " does not have an active assignment on this project.");
             }
         }
 
@@ -1044,6 +1154,10 @@ public class OperationalProjectService {
     public TaskResponse updateTask(UUID projectId, UUID taskId, UpdateTaskRequest req, Authentication auth) {
         validateStaffOrPm(auth);
 
+        OperationalProjectEntity project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new IllegalArgumentException("Operational project not found: " + projectId));
+        checkNotArchived(project, "update task");
+
         ProjectTaskEntity task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new IllegalArgumentException("Task not found: " + taskId));
 
@@ -1067,8 +1181,8 @@ public class OperationalProjectService {
             task.setAssignedTo(req.getAssignedTo().trim());
         }
         if (req.getAssignedVendorId() != null) {
-            if (!vendorAssignmentRepository.existsByProjectIdAndVendorId(projectId, req.getAssignedVendorId())) {
-                throw new IllegalArgumentException("Vendor " + req.getAssignedVendorId() + " is not assigned to this project.");
+            if (!vendorAssignmentRepository.existsByProjectIdAndVendorIdAndStatus(projectId, req.getAssignedVendorId(), "ACTIVE")) {
+                throw new IllegalArgumentException("Vendor " + req.getAssignedVendorId() + " does not have an active assignment on this project.");
             }
             task.setAssignedVendorId(req.getAssignedVendorId());
         }
@@ -1090,6 +1204,10 @@ public class OperationalProjectService {
 
     @Transactional
     public TaskResponse updateTaskStatus(UUID projectId, UUID taskId, UpdateTaskStatusRequest req, Authentication auth) {
+        OperationalProjectEntity project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new IllegalArgumentException("Operational project not found: " + projectId));
+        checkNotArchived(project, "update task status");
+
         ProjectTaskEntity task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new IllegalArgumentException("Task not found: " + taskId));
 
@@ -1099,8 +1217,12 @@ public class OperationalProjectService {
 
         UserEntity user = getAuthenticatedUser(auth);
 
-        // Authorization: Staff/PM can update any task; Vendor can update ONLY their assigned tasks
+        // Authorization: Staff/PM can update any task; Vendor can update ONLY their assigned tasks and must have an ACTIVE assignment
         if ("ROLE_VENDOR".equals(user.getRole())) {
+            if (user.getVendorId() == null ||
+                    !vendorAssignmentRepository.existsByProjectIdAndVendorIdAndStatus(projectId, user.getVendorId(), "ACTIVE")) {
+                throw new AccessDeniedException("Access denied: Active project vendor assignment required to update tasks");
+            }
             if (task.getAssignedVendorId() == null || !task.getAssignedVendorId().equals(user.getVendorId())) {
                 throw new AccessDeniedException("Access denied: You can only update tasks assigned to your vendor organization");
             }

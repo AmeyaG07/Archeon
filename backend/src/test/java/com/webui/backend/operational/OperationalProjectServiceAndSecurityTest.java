@@ -180,6 +180,16 @@ public class OperationalProjectServiceAndSecurityTest {
                 .status("ACTIVE")
                 .build());
 
+        userAdmin = userRepository.findByUsername("admin_mandar").orElseGet(() ->
+                userRepository.save(UserEntity.builder()
+                        .username("admin_mandar")
+                        .password("$2a$10$dummyHashAdmin")
+                        .role("ROLE_ADMIN")
+                        .enabled(true)
+                        .status("ACTIVE")
+                        .build())
+        );
+
         authAdmin = new UsernamePasswordAuthenticationToken(
                 "admin_mandar", null, List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
         authStaff = new UsernamePasswordAuthenticationToken(
@@ -460,5 +470,298 @@ public class OperationalProjectServiceAndSecurityTest {
         assertNotNull(portfolioProjects);
         assertFalse(portfolioProjects.isEmpty());
         assertTrue(portfolioProjects.stream().anyMatch(p -> p.getId().equals("the-monolith-sanctuary")));
+    }
+
+    // ==========================================
+    // 8. Finding 4.2-01: Terminated Vendor Access
+    // ==========================================
+
+    @Test
+    public void testTerminatedVendorImmediateAccessRevocation() {
+        OperationalProjectResponse proj = projectService.createProject(CreateOperationalProjectRequest.builder()
+                .name("Revocation Verification Residence")
+                .projectType("RESIDENTIAL_ARCHITECTURE")
+                .clientId(testClientA.getId())
+                .contractValue(new BigDecimal("8000000.00"))
+                .build(), authStaff);
+
+        // 1. Assign Vendor A as ACTIVE
+        VendorAssignmentResponse assignment = projectService.assignVendor(proj.getId(), AssignVendorRequest.builder()
+                .vendorId(testVendorA.getId())
+                .scopeOfWork("Marble Flooring")
+                .contractAmount(new BigDecimal("2000000.00"))
+                .build(), authStaff);
+
+        assertEquals("ACTIVE", assignment.getStatus());
+
+        // Active vendor can read project
+        OperationalProjectResponse activeView = projectService.getProjectById(proj.getId(), authVendorA);
+        assertEquals(proj.getId(), activeView.getId());
+
+        // Active vendor sees project in list
+        List<OperationalProjectSummaryResponse> activeList = projectService.listProjects(authVendorA, null);
+        assertTrue(activeList.stream().anyMatch(p -> p.getId().equals(proj.getId())));
+
+        // 2. Terminate Vendor A assignment
+        VendorAssignmentResponse terminated = projectService.updateVendorAssignmentStatus(proj.getId(), testVendorA.getId(),
+                UpdateVendorAssignmentStatusRequest.builder().status("TERMINATED").notes("Terminated due to scope revision").build(), authStaff);
+        assertEquals("TERMINATED", terminated.getStatus());
+
+        // Invariant: Terminated vendor CANNOT access project detail
+        assertThrows(AccessDeniedException.class, () ->
+                projectService.getProjectById(proj.getId(), authVendorA));
+
+        // Invariant: Terminated vendor list does NOT return the project
+        List<OperationalProjectSummaryResponse> terminatedList = projectService.listProjects(authVendorA, null);
+        assertFalse(terminatedList.stream().anyMatch(p -> p.getId().equals(proj.getId())));
+
+        // Invariant: Terminated vendor CANNOT list tasks
+        assertThrows(AccessDeniedException.class, () ->
+                projectService.listTasks(proj.getId(), authVendorA));
+
+        // Invariant: Internal staff still retains historical visibility of the terminated assignment
+        List<VendorAssignmentResponse> staffVendorList = projectService.listProjectVendors(proj.getId(), authStaff);
+        assertEquals(1, staffVendorList.size());
+        assertEquals("TERMINATED", staffVendorList.get(0).getStatus());
+    }
+
+    // ==========================================
+    // 9. Finding 4.2-02: Project Manager Validation
+    // ==========================================
+
+    @Test
+    public void testProjectManagerValidationPositiveAndNegative() {
+        // Create dedicated PM and inactive users
+        userRepository.findByUsername("op_user_pm").ifPresent(userRepository::delete);
+        userRepository.findByUsername("op_user_inactive_pm").ifPresent(userRepository::delete);
+
+        UserEntity userPm = userRepository.save(UserEntity.builder()
+                .username("op_user_pm")
+                .password("$2a$10$dummyHashPm")
+                .role("ROLE_PROJECT_MANAGER")
+                .enabled(true)
+                .status("ACTIVE")
+                .build());
+
+        UserEntity userInactivePm = userRepository.save(UserEntity.builder()
+                .username("op_user_inactive_pm")
+                .password("$2a$10$dummyHashInactive")
+                .role("ROLE_PROJECT_MANAGER")
+                .enabled(false)
+                .status("DEACTIVATED")
+                .build());
+
+        // 1. Positive: Valid PM with ROLE_PROJECT_MANAGER
+        OperationalProjectResponse proj = projectService.createProject(CreateOperationalProjectRequest.builder()
+                .name("Validated PM Project")
+                .projectType("RESIDENTIAL_ARCHITECTURE")
+                .clientId(testClientA.getId())
+                .projectManagerUsername("op_user_pm")
+                .build(), authStaff);
+
+        assertEquals("op_user_pm", proj.getProjectManagerUsername());
+
+        // 2. Negative: Nonexistent username
+        assertThrows(IllegalArgumentException.class, () ->
+                projectService.createProject(CreateOperationalProjectRequest.builder()
+                        .name("Nonexistent PM Project")
+                        .projectType("RESIDENTIAL_ARCHITECTURE")
+                        .clientId(testClientA.getId())
+                        .projectManagerUsername("ghost_pm_user_404")
+                        .build(), authStaff));
+
+        // 3. Negative: Inactive/Deactivated PM
+        assertThrows(IllegalStateException.class, () ->
+                projectService.createProject(CreateOperationalProjectRequest.builder()
+                        .name("Inactive PM Project")
+                        .projectType("RESIDENTIAL_ARCHITECTURE")
+                        .clientId(testClientA.getId())
+                        .projectManagerUsername("op_user_inactive_pm")
+                        .build(), authStaff));
+
+        // 4. Negative: User with unauthorized role (e.g. ROLE_CLIENT or ROLE_VENDOR)
+        assertThrows(IllegalArgumentException.class, () ->
+                projectService.createProject(CreateOperationalProjectRequest.builder()
+                        .name("Client As PM Project")
+                        .projectType("RESIDENTIAL_ARCHITECTURE")
+                        .clientId(testClientA.getId())
+                        .projectManagerUsername("op_user_client_a")
+                        .build(), authStaff));
+
+        // 5. Positive: Reassign manager via updateProject to another authorized user (admin)
+        OperationalProjectResponse updated = projectService.updateProject(proj.getId(),
+                UpdateOperationalProjectRequest.builder()
+                        .projectManagerUsername("admin_mandar")
+                        .build(), authStaff);
+
+        assertEquals("admin_mandar", updated.getProjectManagerUsername());
+
+        // Clean up
+        userRepository.delete(userPm);
+        userRepository.delete(userInactivePm);
+    }
+
+    // ==========================================
+    // 10. Finding 4.2-03: Financial Data Masking
+    // ==========================================
+
+    @Test
+    public void testFinancialDataMaskingAcrossAllRolesAndEndpoints() {
+        OperationalProjectResponse proj = projectService.createProject(CreateOperationalProjectRequest.builder()
+                .name("Financial Masking Studio Estate")
+                .projectType("COMMERCIAL_INTERIOR")
+                .clientId(testClientA.getId())
+                .contractValue(new BigDecimal("15000000.00"))
+                .budgetAllocated(new BigDecimal("11000000.00"))
+                .build(), authStaff);
+
+        // Assign Vendor A
+        projectService.assignVendor(proj.getId(), AssignVendorRequest.builder()
+                .vendorId(testVendorA.getId())
+                .scopeOfWork("Glazing and Curtain Wall")
+                .contractAmount(new BigDecimal("3500000.00"))
+                .build(), authStaff);
+
+        // 1. Vendor calling listProjects: contractValue must be null
+        List<OperationalProjectSummaryResponse> vendorProjects = projectService.listProjects(authVendorA, null);
+        assertFalse(vendorProjects.isEmpty());
+        OperationalProjectSummaryResponse vendorSummary = vendorProjects.stream()
+                .filter(p -> p.getId().equals(proj.getId()))
+                .findFirst().orElseThrow();
+        assertNull(vendorSummary.getContractValue(), "Vendor must never receive contractValue in summary list");
+
+        // 2. Vendor calling getProjectById: contractValue and budgetAllocated must be null
+        OperationalProjectResponse vendorDetail = projectService.getProjectById(proj.getId(), authVendorA);
+        assertNull(vendorDetail.getContractValue(), "Vendor must never receive contractValue in detail view");
+        assertNull(vendorDetail.getBudgetAllocated(), "Vendor must never receive budgetAllocated in detail view");
+
+        // 3. Client calling getProjectById: contractValue is visible, but budgetAllocated must be null
+        OperationalProjectResponse clientDetail = projectService.getProjectById(proj.getId(), authClientA);
+        assertNotNull(clientDetail.getContractValue(), "Client should see their project contract value");
+        assertEquals(new BigDecimal("15000000.00"), clientDetail.getContractValue());
+        assertNull(clientDetail.getBudgetAllocated(), "Client must never receive internal studio budgetAllocated");
+
+        // 4. Client calling getProjectById: vendor contractAmount must be null
+        assertFalse(clientDetail.getAssignedVendors().isEmpty());
+        assertNull(clientDetail.getAssignedVendors().get(0).getContractAmount(),
+                "Client must never see vendor subcontractor amounts");
+
+        // 5. Staff calling getProjectById: receives all financials
+        OperationalProjectResponse staffDetail = projectService.getProjectById(proj.getId(), authStaff);
+        assertEquals(new BigDecimal("15000000.00"), staffDetail.getContractValue());
+        assertEquals(new BigDecimal("11000000.00"), staffDetail.getBudgetAllocated());
+        assertEquals(new BigDecimal("3500000.00"), staffDetail.getAssignedVendors().get(0).getContractAmount());
+    }
+
+    // ==========================================
+    // 11. Finding 4.2-04: Archived Project Mutations
+    // ==========================================
+
+    @Test
+    public void testArchivedProjectRejectsAllMutations() {
+        OperationalProjectResponse proj = projectService.createProject(CreateOperationalProjectRequest.builder()
+                .name("Sealed Vault Archive Project")
+                .projectType("RESIDENTIAL_ARCHITECTURE")
+                .clientId(testClientA.getId())
+                .build(), authStaff);
+
+        // Soft-archive the project
+        projectService.archiveProject(proj.getId(), authStaff);
+
+        // 1. Updating details must be rejected
+        assertThrows(IllegalStateException.class, () ->
+                projectService.updateProject(proj.getId(),
+                        UpdateOperationalProjectRequest.builder().name("Mutated Name").build(), authStaff));
+
+        // 2. Assigning vendor must be rejected
+        assertThrows(IllegalStateException.class, () ->
+                projectService.assignVendor(proj.getId(),
+                        AssignVendorRequest.builder().vendorId(testVendorA.getId()).scopeOfWork("Work").build(), authStaff));
+
+        // 3. Creating phase must be rejected
+        assertThrows(IllegalStateException.class, () ->
+                projectService.createPhase(proj.getId(),
+                        CreatePhaseRequest.builder().name("New Phase").sequenceOrder(1).build(), authStaff));
+
+        // 4. Creating milestone must be rejected
+        assertThrows(IllegalStateException.class, () ->
+                projectService.createMilestone(proj.getId(),
+                        CreateMilestoneRequest.builder().title("New Milestone").dueDate(LocalDate.now()).build(), authStaff));
+
+        // 5. Creating task must be rejected
+        assertThrows(IllegalStateException.class, () ->
+                projectService.createTask(proj.getId(),
+                        CreateTaskRequest.builder().title("New Task").build(), authStaff));
+
+        // 6. Non-admin attempting to transition out of ARCHIVED must fail
+        assertThrows(IllegalStateException.class, () ->
+                projectService.updateProjectStatus(proj.getId(),
+                        UpdateProjectStatusRequest.builder().status("IN_PROGRESS").build(), authStaff));
+
+        // 7. Admin CAN reactivate project out of ARCHIVED
+        OperationalProjectResponse unarchived = projectService.updateProjectStatus(proj.getId(),
+                UpdateProjectStatusRequest.builder().status("IN_PROGRESS").notes("Reopened by studio admin").build(), authAdmin);
+        assertEquals("IN_PROGRESS", unarchived.getStatus());
+
+        // 8. Re-archive to verify historical read access
+        projectService.archiveProject(proj.getId(), authAdmin);
+        OperationalProjectResponse readView = projectService.getProjectById(proj.getId(), authStaff);
+        assertNotNull(readView);
+        assertEquals("ARCHIVED", readView.getStatus());
+    }
+
+    // ==========================================
+    // 12. Finding 4.2-05: Milestone Billing Validation
+    // ==========================================
+
+    @Test
+    public void testMilestoneBilledPercentageValidation() {
+        OperationalProjectResponse proj = projectService.createProject(CreateOperationalProjectRequest.builder()
+                .name("Milestone Billing Validation Complex")
+                .projectType("COMMERCIAL_INTERIOR")
+                .clientId(testClientA.getId())
+                .build(), authStaff);
+
+        // 1. Negative percentage must fail
+        assertThrows(IllegalArgumentException.class, () ->
+                projectService.createMilestone(proj.getId(), CreateMilestoneRequest.builder()
+                        .title("Negative Billed Milestone")
+                        .dueDate(LocalDate.now().plusWeeks(2))
+                        .billedPercentage(-5)
+                        .build(), authStaff));
+
+        // 2. Greater than 100 percentage must fail
+        assertThrows(IllegalArgumentException.class, () ->
+                projectService.createMilestone(proj.getId(), CreateMilestoneRequest.builder()
+                        .title("Exorbitant Billed Milestone")
+                        .dueDate(LocalDate.now().plusWeeks(2))
+                        .billedPercentage(105)
+                        .build(), authStaff));
+
+        // 3. Zero percentage succeeds
+        MilestoneResponse zeroMs = projectService.createMilestone(proj.getId(), CreateMilestoneRequest.builder()
+                .title("Zero Percent Milestone")
+                .dueDate(LocalDate.now().plusWeeks(2))
+                .billedPercentage(0)
+                .build(), authStaff);
+        assertEquals(0, zeroMs.getBilledPercentage());
+
+        // 4. 100 percentage succeeds
+        MilestoneResponse hundredMs = projectService.createMilestone(proj.getId(), CreateMilestoneRequest.builder()
+                .title("Full Percent Milestone")
+                .dueDate(LocalDate.now().plusWeeks(4))
+                .billedPercentage(100)
+                .build(), authStaff);
+        assertEquals(100, hundredMs.getBilledPercentage());
+
+        // 5. Valid mid-range update succeeds
+        MilestoneResponse updatedMs = projectService.updateMilestone(proj.getId(), zeroMs.getId(),
+                UpdateMilestoneRequest.builder().billedPercentage(40).build(), authStaff);
+        assertEquals(40, updatedMs.getBilledPercentage());
+
+        // 6. Invalid update percentage fails
+        assertThrows(IllegalArgumentException.class, () ->
+                projectService.updateMilestone(proj.getId(), zeroMs.getId(),
+                        UpdateMilestoneRequest.builder().billedPercentage(150).build(), authStaff));
     }
 }
