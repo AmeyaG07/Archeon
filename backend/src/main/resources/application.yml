@@ -57,7 +57,13 @@ app:
 
   jwt:
     secret: "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970"
-    expiration-ms: 86400000 # 24 hours
+    expiration-ms: 900000 # 15 minutes
+    refresh-expiration-ms: 604800000 # 7 days
+    issuer: "archeon-api"
+    audience: "archeon-web"
+
+  security:
+    revocation-strategy: ${APP_SECURITY_REVOCATION_STRATEGY:in-memory}
 
   cors:
     allowed-origins: "http://localhost:3000,http://127.0.0.1:3000"

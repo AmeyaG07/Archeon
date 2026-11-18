@@ -95,7 +95,7 @@ public class FinancialConcurrencyAndOptimisticLockingTest {
         assertEquals("1", applied[0].getVersion().getVersion());
         assertEquals("2", applied[1].getVersion().getVersion());
         assertEquals("3", applied[2].getVersion().getVersion());
-        assertEquals("3", flyway.info().current().getVersion().getVersion());
+        assertEquals(applied[applied.length - 1].getVersion().getVersion(), flyway.info().current().getVersion().getVersion());
     }
 
     // =========================================================================

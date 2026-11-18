@@ -23,4 +23,12 @@ public class UserEntity {
     private String password;
 
     private String role; // e.g. "ROLE_ADMIN", "ROLE_USER"
+
+    @Builder.Default
+    @Column(nullable = false)
+    private boolean enabled = true;
+
+    @Builder.Default
+    @Column(name = "token_version", nullable = false)
+    private Long tokenVersion = 0L;
 }

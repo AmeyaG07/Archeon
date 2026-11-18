@@ -70,7 +70,8 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         // 1. Explicitly Public Read & Auth Endpoints
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/auth/login", "/api/auth/refresh").permitAll()
+                        .requestMatchers("/api/auth/logout", "/api/auth/logout-all", "/api/auth/sessions/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/projects/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/manifesto/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/approvals/config").permitAll()
