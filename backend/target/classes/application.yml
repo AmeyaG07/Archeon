@@ -1,0 +1,59 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: archeon-backend
+  datasource:
+    # Defaults to in-memory PostgreSQL-mode H2 for instant local runtime, seamlessly overridden by SPRING_DATASOURCE_URL
+    url: ${SPRING_DATASOURCE_URL:jdbc:h2:mem:archeon_db;DB_CLOSE_DELAY=-1;MODE=PostgreSQL}
+    username: ${SPRING_DATASOURCE_USERNAME:sa}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER:org.h2.Driver}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+app:
+  legal:
+    brand-name: "ArcheOn Design Studio"
+    business-display-name: "MB's ArcheOn Design Studio"
+    principal: "Ar. Mandar Bhalekar"
+    social-handle: "@mbs_archeon_ds"
+    office-address: "1st Floor, Krishna-Kunj, 90, Dharempeth Layout, opposite Aaji Aajoba Park, Deendayal Nagar, Nagpur, Maharashtra 440022, India."
+    maps-url: "https://maps.app.goo.gl/wLidaC62gQLccoNY8"
+    legal-entity-name: "PENDING BUSINESS CONFIRMATION"
+    official-office-address: "1st Floor, Krishna-Kunj, 90, Dharempeth Layout, opposite Aaji Aajoba Park, Deendayal Nagar, Nagpur, Maharashtra 440022, India."
+    gstin: "PENDING BUSINESS CONFIRMATION"
+
+  approval:
+    high-value-threshold: 100000.00
+    currency: "INR"
+    status: "PROVISIONAL (PENDING BUSINESS APPROVAL)"
+    split-prevention-window-hours: 48
+
+  whatsapp:
+    enabled: false
+    phone-number-id: ${WHATSAPP_PHONE_NUMBER_ID:PENDING_CONFIRMATION}
+    access-token: ${WHATSAPP_ACCESS_TOKEN:PENDING_CONFIRMATION}
+    business-account-id: ${WHATSAPP_BUSINESS_ACCOUNT_ID:PENDING_CONFIRMATION}
+    webhook-verify-token: ${WHATSAPP_WEBHOOK_VERIFY_TOKEN:PENDING_CONFIRMATION}
+    reminder-interval-days: 3
+    quiet-hours-start: 21
+    quiet-hours-end: 9
+    max-reminders-cap: 5
+
+  jwt:
+    secret: "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970"
+    expiration-ms: 86400000 # 24 hours
+
+  cors:
+    allowed-origins: "http://localhost:3000,http://127.0.0.1:3000"
