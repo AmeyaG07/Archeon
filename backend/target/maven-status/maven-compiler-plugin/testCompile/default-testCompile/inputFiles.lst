@@ -1,1 +1,10 @@
+D:\WEBUI\backend\src\test\java\com\webui\backend\concurrency\FinancialConcurrencyAndOptimisticLockingTest.java
+D:\WEBUI\backend\src\test\java\com\webui\backend\config\ProductionBootstrapHardeningTest.java
+D:\WEBUI\backend\src\test\java\com\webui\backend\config\ProductionProfileContextTest.java
+D:\WEBUI\backend\src\test\java\com\webui\backend\document\ClamAvMalwareScannerTest.java
+D:\WEBUI\backend\src\test\java\com\webui\backend\document\DocumentServiceAndSecurityTest.java
+D:\WEBUI\backend\src\test\java\com\webui\backend\identity\BusinessIdentityServiceAndSecurityTest.java
+D:\WEBUI\backend\src\test\java\com\webui\backend\operational\OperationalProjectServiceAndSecurityTest.java
+D:\WEBUI\backend\src\test\java\com\webui\backend\security\Phase3AuthLifecycleTest.java
+D:\WEBUI\backend\src\test\java\com\webui\backend\security\SecurityAndRbacIntegrationTest.java
 D:\WEBUI\backend\src\test\java\com\webui\backend\service\MakerCheckerAndSafetyInvariantsTest.java

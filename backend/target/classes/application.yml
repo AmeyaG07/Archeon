@@ -21,6 +21,14 @@ spring:
     console:
       enabled: true
       path: /h2-console
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+  servlet:
+    multipart:
+      max-file-size: 25MB
+      max-request-size: 30MB
 
 app:
   legal:
@@ -52,8 +60,29 @@ app:
     max-reminders-cap: 5
 
   jwt:
-    secret: "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970"
-    expiration-ms: 86400000 # 24 hours
+    secret: ${APP_JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+    expiration-ms: 900000 # 15 minutes
+    refresh-expiration-ms: 604800000 # 7 days
+    issuer: "archeon-api"
+    audience: "archeon-web"
+
+  security:
+    revocation-strategy: ${APP_SECURITY_REVOCATION_STRATEGY:in-memory}
 
   cors:
     allowed-origins: "http://localhost:3000,http://127.0.0.1:3000"
+
+  storage:
+    provider: ${APP_STORAGE_PROVIDER:LOCAL_PRIVATE}
+    local:
+      base-dir: ${APP_STORAGE_LOCAL_BASE_DIR:./storage/private}
+    max-file-size-mb: ${APP_STORAGE_MAX_FILE_SIZE_MB:25}
+
+  dms:
+    malware-scan-mode: ${APP_DMS_MALWARE_SCAN_MODE:DETERMINISTIC_MOCK}
+    clamav:
+      host: ${APP_DMS_CLAMAV_HOST:localhost}
+      port: ${APP_DMS_CLAMAV_PORT:3310}
+      connection-timeout-ms: ${APP_DMS_CLAMAV_CONNECTION_TIMEOUT_MS:3000}
+      read-timeout-ms: ${APP_DMS_CLAMAV_READ_TIMEOUT_MS:10000}
+
