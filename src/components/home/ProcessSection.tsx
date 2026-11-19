@@ -68,9 +68,55 @@ export function ProcessSection({
   return (
     <section
       id="process"
-      className="bg-[#F2F0EB] py-24 sm:py-32"
+      className="relative overflow-hidden bg-[#F2F0EB] py-24 sm:py-32"
     >
-      <div className="editorial-container">
+      {/* Thematic Background: Sequential Construction Blueprint Conduit & Stage Nodes */}
+      <div className="pointer-events-none absolute inset-0 -z-0 overflow-hidden select-none">
+        {/* Soft Shifting Stage Light */}
+        <div
+          className="absolute top-1/3 -left-32 h-[550px] w-[550px] rounded-full blur-[110px]"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(217, 119, 36, 0.08) 0%, rgba(182, 138, 74, 0.03) 50%, transparent 75%)",
+          }}
+        />
+
+        {/* Faint Sequential Stage Conduit SVG */}
+        <svg
+          className="absolute inset-0 h-full w-full opacity-[0.07]"
+          viewBox="0 0 1440 900"
+          preserveAspectRatio="xMidYMid slice"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          {/* Vertical Milestone Axis Lines */}
+          <line x1="80" y1="0" x2="80" y2="900" stroke="#B68A4A" strokeWidth="1" strokeDasharray="3 5" />
+          <line x1="280" y1="0" x2="280" y2="900" stroke="#777777" strokeWidth="0.6" strokeDasharray="6 8" />
+          <line x1="1360" y1="0" x2="1360" y2="900" stroke="#B68A4A" strokeWidth="0.8" strokeDasharray="4 6" />
+
+          {/* Sequential Step Pulse Nodes */}
+          <g fill="#D97724">
+            <circle cx="80" cy="220" r="4" className="animate-ping" style={{ animationDuration: "3s" }} />
+            <circle cx="80" cy="220" r="3" />
+            <circle cx="80" cy="420" r="4" className="animate-ping" style={{ animationDuration: "3.5s" }} />
+            <circle cx="80" cy="420" r="3" />
+            <circle cx="80" cy="620" r="4" className="animate-ping" style={{ animationDuration: "4s" }} />
+            <circle cx="80" cy="620" r="3" />
+            <circle cx="80" cy="800" r="4" className="animate-ping" style={{ animationDuration: "4.5s" }} />
+            <circle cx="80" cy="800" r="3" />
+          </g>
+
+          {/* Technical Stage Milestone Stamps */}
+          <g fill="#B68A4A" fontFamily="monospace" fontSize="8.5" letterSpacing="2.5">
+            <text x="100" y="215">MILESTONE 01 // DISCOVERY & BRIEF</text>
+            <text x="100" y="415">MILESTONE 02 // VOLUMETRIC SYNTHESIS</text>
+            <text x="100" y="615">MILESTONE 03 // TECTONIC COORDINATION</text>
+            <text x="100" y="795">MILESTONE 04 // CRAFTSMANSHIP & REALISATION</text>
+          </g>
+        </svg>
+      </div>
+
+      <div className="editorial-container relative z-10">
         {/* Introduction */}
         <div className="grid gap-10 lg:grid-cols-12 lg:items-end">
           <div className="lg:col-span-7">

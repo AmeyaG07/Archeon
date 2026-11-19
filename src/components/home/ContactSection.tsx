@@ -19,8 +19,55 @@ export function ContactSection({
       id="contact"
       className="relative overflow-hidden bg-[#111111] py-24 text-[#F2F0EB] sm:py-32"
     >
-      {/* Ambient Horizon Glow */}
-      <div className="pointer-events-none absolute -bottom-32 left-1/2 h-[320px] w-[640px] -translate-x-1/2 rounded-full bg-gradient-to-t from-[#D97724]/20 via-[#B68A4A]/10 to-transparent blur-[80px]" />
+      {/* Thematic Background: Nagpur Studio Radar Geographic Scan & Breathing Horizon Glow */}
+      <div className="pointer-events-none absolute inset-0 -z-0 overflow-hidden select-none">
+        {/* Breathing Amber / Terracotta Horizon Glow */}
+        <div className="absolute -bottom-40 left-1/2 h-[420px] w-[900px] -translate-x-1/2 rounded-full bg-gradient-to-t from-[#C8621E]/25 via-[#D97724]/12 to-transparent blur-[100px] animate-[pulse_6s_ease-in-out_infinite]" />
+
+        {/* Top-Right Ambient Beacon */}
+        <div
+          className="absolute -top-32 right-10 h-[500px] w-[500px] rounded-full blur-[100px]"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(200, 98, 30, 0.12) 0%, rgba(184, 137, 74, 0.05) 50%, transparent 75%)",
+          }}
+        />
+
+        {/* Nagpur Geographic Coordinates Radar Scan SVG */}
+        <svg
+          className="absolute inset-0 h-full w-full opacity-[0.09]"
+          viewBox="0 0 1440 900"
+          preserveAspectRatio="xMidYMid slice"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          {/* Concentric Radar Rings from Nagpur Studio Hub */}
+          <g transform="translate(1080, 420)">
+            <circle cx="0" cy="0" r="380" stroke="#B8894A" strokeWidth="0.8" strokeDasharray="4 8" />
+            <circle cx="0" cy="0" r="280" stroke="#C8621E" strokeWidth="0.8" strokeDasharray="3 6" />
+            <circle cx="0" cy="0" r="180" stroke="#B8894A" strokeWidth="1" strokeDasharray="2 4" />
+            <circle cx="0" cy="0" r="90" stroke="#C8621E" strokeWidth="1" />
+            <circle cx="0" cy="0" r="6" fill="#C8621E" className="animate-ping" style={{ animationDuration: "3s" }} />
+            <circle cx="0" cy="0" r="4" fill="#F59E0B" />
+
+            {/* Rotating Radar Sweep Line */}
+            <g className="animate-[spin_18s_linear_infinite]">
+              <line x1="0" y1="0" x2="380" y2="0" stroke="#D97724" strokeWidth="1.2" strokeOpacity="0.8" />
+            </g>
+          </g>
+
+          {/* Coordinate Crosshairs & Latitude / Longitude Grids */}
+          <line x1="0" y1="420" x2="1440" y2="420" stroke="#FFFFFF" strokeWidth="0.5" strokeDasharray="6 6" strokeOpacity="0.3" />
+          <line x1="1080" y1="0" x2="1080" y2="900" stroke="#FFFFFF" strokeWidth="0.5" strokeDasharray="6 6" strokeOpacity="0.3" />
+
+          {/* Telemetry Coordinate Stamps */}
+          <g fill="#D97724" fontFamily="monospace" fontSize="9" letterSpacing="2.5">
+            <text x="1095" y="405">RADAR CENTER // 21.1458° N, 79.0882° E</text>
+            <text x="1095" y="440">SANCTUARY BEACON // NAGPUR HUB</text>
+            <text x="60" y="412">LATITUDE PARALLEL // 21.1458° N</text>
+          </g>
+        </svg>
+      </div>
 
       <div className="editorial-container relative z-10">
         <div className="grid gap-16 lg:grid-cols-12">

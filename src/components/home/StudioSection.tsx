@@ -16,7 +16,127 @@ export function StudioSection() {
       id="studio"
       className="relative overflow-hidden bg-[#F2F0EB] py-24 md:py-36"
     >
-      <div className="editorial-container">
+      {/* Thematic Background: Architectural Drafting Grid & Golden Ratio Blueprint Spiral */}
+      <div className="pointer-events-none absolute inset-0 -z-0 overflow-hidden select-none">
+        {/* Shifting Warm Travertine Radial Light */}
+        <div
+          className="absolute -top-32 right-0 h-[600px] w-[600px] rounded-full blur-[100px]"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(182, 138, 74, 0.12) 0%, rgba(217, 119, 36, 0.04) 50%, transparent 75%)",
+          }}
+        />
+        <div
+          className="absolute -bottom-40 left-10 h-[500px] w-[500px] rounded-full blur-[90px]"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(165, 138, 100, 0.09) 0%, transparent 70%)",
+          }}
+        />
+
+        {/* SVG Drafting Grid & Rotating Compass Arcs */}
+        <svg
+          className="absolute inset-0 h-full w-full opacity-[0.08]"
+          viewBox="0 0 1440 900"
+          preserveAspectRatio="xMidYMid slice"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <defs>
+            <pattern
+              id="studio-drafting-grid"
+              width="60"
+              height="60"
+              patternUnits="userSpaceOnUse"
+            >
+              <path
+                d="M 60 0 L 0 0 0 60"
+                fill="none"
+                stroke="#777777"
+                strokeWidth="0.5"
+                strokeOpacity="0.4"
+              />
+              <circle cx="60" cy="60" r="1" fill="#B68A4A" fillOpacity="0.6" />
+            </pattern>
+          </defs>
+          <rect width="1440" height="900" fill="url(#studio-drafting-grid)" />
+
+          {/* Rotating Golden Section / Compass Rings */}
+          <g className="animate-[spin_60s_linear_infinite] origin-[1100px_350px]">
+            <circle
+              cx="1100"
+              cy="350"
+              r="280"
+              stroke="#B68A4A"
+              strokeWidth="1"
+              strokeDasharray="6 8"
+            />
+            <circle
+              cx="1100"
+              cy="350"
+              r="210"
+              stroke="#B68A4A"
+              strokeWidth="0.8"
+              strokeDasharray="3 5"
+            />
+            <circle
+              cx="1100"
+              cy="350"
+              r="140"
+              stroke="#777777"
+              strokeWidth="0.6"
+              strokeDasharray="4 6"
+            />
+            <line
+              x1="820"
+              y1="350"
+              x2="1380"
+              y2="350"
+              stroke="#B68A4A"
+              strokeWidth="0.8"
+              strokeDasharray="4 8"
+            />
+            <line
+              x1="1100"
+              y1="70"
+              x2="1100"
+              y2="630"
+              stroke="#B68A4A"
+              strokeWidth="0.8"
+              strokeDasharray="4 8"
+            />
+          </g>
+
+          {/* Drafting Crosshairs & Datum Lines */}
+          <g
+            stroke="#B68A4A"
+            strokeWidth="0.8"
+            strokeDasharray="4 6"
+            strokeOpacity="0.6"
+          >
+            <line x1="0" y1="280" x2="1440" y2="280" />
+            <line x1="0" y1="640" x2="1440" y2="640" />
+            <line x1="380" y1="0" x2="380" y2="900" />
+            <line x1="1060" y1="0" x2="1060" y2="900" />
+          </g>
+
+          {/* CAD Dimension Markers */}
+          <g
+            fill="#A58A64"
+            fontFamily="monospace"
+            fontSize="9"
+            letterSpacing="2"
+            opacity="0.75"
+          >
+            <text x="390" y="272">DATUM // ATELIER 01</text>
+            <text x="390" y="632">SECTION // PHILOSOPHY A-A</text>
+            <text x="1070" y="272">GOLDEN RATIO φ // 1.618</text>
+            <text x="1070" y="632">ELEVATION // +03.400M</text>
+          </g>
+        </svg>
+      </div>
+
+      <div className="editorial-container relative z-10">
         <div className="grid grid-cols-1 gap-14 lg:grid-cols-12 lg:gap-10">
 
           {/* Section Label with Signature Drafting Compass Animation */}
