@@ -24,7 +24,7 @@ export default function VendorCashSettlementsPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await apiFetch("/api/finance/cash/all");
+      const res = await apiFetch("/api/finance/cash/my-settlements");
       const list = await res.json();
       if (Array.isArray(list)) {
         const records: VendorCashSettlementRecord[] = list.map((s: any) => {

@@ -69,24 +69,43 @@ export default function AdminVendorsPage() {
     }
   }, [authLoading, isAuthenticated, loadVendors, router]);
 
+  const [actionFeedback, setActionFeedback] = useState<{ message: string; link?: string; type: "success" | "error" } | null>(null);
+
   const handleInviteVendor = async (vendorId: string) => {
-    await apiFetch(`/api/invitations/vendor/${vendorId}`, {
-      method: "POST",
-    }).catch(async () => {
-      await apiFetch("/api/invitations/send", {
+    setActionFeedback(null);
+    try {
+      const res = await apiFetch(`/api/vendors/${vendorId}/invite`, {
         method: "POST",
-        body: { targetId: vendorId, type: "VENDOR" },
       });
-    });
-    await loadVendors();
+      const data = await res.json();
+      const inviteUrl = data.invitationUrl || (data.rawToken ? `/auth/accept-invitation?token=${data.rawToken}` : undefined);
+      setActionFeedback({
+        type: "success",
+        message: `Dual invitation successfully dispatched for vendor (${data.email || "recipient"}).`,
+        link: inviteUrl,
+      });
+      await loadVendors();
+    } catch (err: unknown) {
+      setActionFeedback({
+        type: "error",
+        message: err instanceof Error ? err.message : "Failed to issue vendor invitation.",
+      });
+    }
   };
 
   const handleUpdateStatus = async (vendorId: string, status: AdminVendorStatus) => {
-    await apiFetch(`/api/vendors/${vendorId}`, {
-      method: "PUT",
-      body: { status: status.toUpperCase() },
-    });
-    await loadVendors();
+    try {
+      await apiFetch(`/api/vendors/${vendorId}/status`, {
+        method: "PATCH",
+        body: { status: status.toUpperCase() },
+      });
+      await loadVendors();
+    } catch (err: unknown) {
+      setActionFeedback({
+        type: "error",
+        message: err instanceof Error ? err.message : "Failed to update vendor status.",
+      });
+    }
   };
 
   const handleUpdatePortalAccess = async (vendorId: string, action: "resend" | "revoke") => {
@@ -99,6 +118,31 @@ export default function AdminVendorsPage() {
 
   return (
     <div className="p-4 sm:p-8">
+      {actionFeedback && (
+        <div
+          className={`mb-6 p-4 rounded text-sm font-mono flex items-center justify-between ${
+            actionFeedback.type === "success"
+              ? "bg-[#25221D] text-[#E0D8C3] border border-[#d97706]/40"
+              : "bg-red-950/40 text-red-300 border border-red-800"
+          }`}
+        >
+          <div>
+            <p className="font-semibold">{actionFeedback.message}</p>
+            {actionFeedback.link && (
+              <p className="mt-1 text-xs text-stone-400 break-all select-all">
+                Activation Link: <span className="text-[#d97706]">{actionFeedback.link}</span>
+              </p>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => setActionFeedback(null)}
+            className="text-stone-400 hover:text-white text-xs uppercase ml-4"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
       <AdminVendorManagement
         vendors={vendors}
         loading={loading}

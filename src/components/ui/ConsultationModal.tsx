@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Send, CheckCircle2, MessageSquare, MapPin, Navigation } from "lucide-react";
 import { siteConfig } from "@/config/siteConfig";
 import { useAudio } from "@/providers/AudioProvider";
+import { apiFetch } from "@/lib/api";
 
 interface ConsultationModalProps {
   isOpen: boolean;
@@ -43,10 +44,9 @@ export function ConsultationModal({
     setIsSubmitting(true);
 
     try {
-      const res = await fetch("http://localhost:8080/api/leads", {
+      const res = await apiFetch("/api/leads", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+        body: {
           clientName: formData.name,
           phone: formData.mobile,
           email: formData.email,
@@ -56,7 +56,7 @@ export function ConsultationModal({
           estimatedTimeline: formData.targetDate,
           projectBrief: formData.brief,
           whatsappOptIn: formData.whatsappConsent
-        })
+        }
       });
 
       if (res.ok) {

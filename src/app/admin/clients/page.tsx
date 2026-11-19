@@ -66,25 +66,43 @@ export default function AdminClientsPage() {
     }
   }, [authLoading, isAuthenticated, loadClients, router]);
 
+  const [actionFeedback, setActionFeedback] = useState<{ message: string; link?: string; type: "success" | "error" } | null>(null);
+
   const handleInviteClient = async (clientId: string) => {
-    await apiFetch(`/api/invitations/client/${clientId}`, {
-      method: "POST",
-    }).catch(async () => {
-      // Fallback: send invitation via generic endpoint
-      await apiFetch("/api/invitations/send", {
+    setActionFeedback(null);
+    try {
+      const res = await apiFetch(`/api/clients/${clientId}/invite`, {
         method: "POST",
-        body: { targetId: clientId, type: "CLIENT" },
       });
-    });
-    await loadClients();
+      const data = await res.json();
+      const inviteUrl = data.invitationUrl || (data.rawToken ? `/auth/accept-invitation?token=${data.rawToken}` : undefined);
+      setActionFeedback({
+        type: "success",
+        message: `Dual invitation successfully dispatched for client (${data.email || "recipient"}).`,
+        link: inviteUrl,
+      });
+      await loadClients();
+    } catch (err: unknown) {
+      setActionFeedback({
+        type: "error",
+        message: err instanceof Error ? err.message : "Failed to issue client invitation.",
+      });
+    }
   };
 
   const handleUpdateStatus = async (clientId: string, status: AdminClientStatus) => {
-    await apiFetch(`/api/clients/${clientId}`, {
-      method: "PUT",
-      body: { status: status.toUpperCase() },
-    });
-    await loadClients();
+    try {
+      await apiFetch(`/api/clients/${clientId}/status`, {
+        method: "PATCH",
+        body: { status: status.toUpperCase() },
+      });
+      await loadClients();
+    } catch (err: unknown) {
+      setActionFeedback({
+        type: "error",
+        message: err instanceof Error ? err.message : "Failed to update client status.",
+      });
+    }
   };
 
   const handleUpdatePortalAccess = async (clientId: string, action: "resend" | "revoke") => {
@@ -97,6 +115,31 @@ export default function AdminClientsPage() {
 
   return (
     <div className="p-4 sm:p-8">
+      {actionFeedback && (
+        <div
+          className={`mb-6 p-4 rounded text-sm font-mono flex items-center justify-between ${
+            actionFeedback.type === "success"
+              ? "bg-[#25221D] text-[#E0D8C3] border border-[#d97706]/40"
+              : "bg-red-950/40 text-red-300 border border-red-800"
+          }`}
+        >
+          <div>
+            <p className="font-semibold">{actionFeedback.message}</p>
+            {actionFeedback.link && (
+              <p className="mt-1 text-xs text-stone-400 break-all select-all">
+                Activation Link: <span className="text-[#d97706]">{actionFeedback.link}</span>
+              </p>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => setActionFeedback(null)}
+            className="text-stone-400 hover:text-white text-xs uppercase ml-4"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
       <AdminClientManagement
         clients={clients}
         loading={loading}

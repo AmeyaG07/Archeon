@@ -32,7 +32,7 @@ export default function AdminDashboardPage() {
       // 2. Fetch active projects overview
       let projects: AdminProjectSummary[] = [];
       try {
-        const projRes = await apiFetch("/api/projects/operational");
+        const projRes = await apiFetch("/api/operational-projects");
         const projList = await projRes.json();
         if (Array.isArray(projList)) {
           projects = projList.slice(0, 5).map((p: any) => ({

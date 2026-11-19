@@ -257,3 +257,79 @@ export async function logoutApi(): Promise<void> {
     clearAuthSession();
   }
 }
+
+export interface InvitationValidationResult {
+  valid: boolean;
+  status: string; // PENDING, EXPIRED, REVOKED, ACCEPTED, INVALID
+  email?: string;
+  recipientName?: string;
+  targetRole?: string;
+  expiresAt?: string;
+  message?: string;
+}
+
+export async function validateInvitationApi(token: string): Promise<InvitationValidationResult> {
+  const baseUrl = resolveApiBaseUrl();
+  const url = new URL("/api/invitations/validate", baseUrl);
+  if (token) {
+    url.searchParams.set("token", token);
+  }
+  const res = await fetch(url.toString(), {
+    method: "GET",
+    headers: {
+      "Accept": "application/json",
+      "Cache-Control": "no-cache",
+    },
+  });
+  if (!res.ok) {
+    const errorBody = await res.json().catch(() => ({}));
+    return {
+      valid: false,
+      status: errorBody.status || "INVALID",
+      message: errorBody.error || errorBody.message || "Invitation is invalid or unrecognized",
+    };
+  }
+  return res.json();
+}
+
+export interface AcceptInvitationPayload {
+  token: string;
+  username: string;
+  password: string;
+  fullName?: string;
+  phone?: string;
+}
+
+export interface AcceptInvitationResult {
+  success: boolean;
+  message: string;
+  user: {
+    id: string;
+    username: string;
+    role: string;
+    fullName?: string;
+    email: string;
+    phone?: string;
+    clientId?: string;
+    vendorId?: string;
+  };
+}
+
+export async function acceptInvitationApi(payload: AcceptInvitationPayload): Promise<AcceptInvitationResult> {
+  const baseUrl = resolveApiBaseUrl();
+  const res = await fetch(`${baseUrl}/api/invitations/accept`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const errorMsg = body?.error || body?.message || `Activation failed with status ${res.status}`;
+    throw new Error(errorMsg);
+  }
+  return body;
+}
