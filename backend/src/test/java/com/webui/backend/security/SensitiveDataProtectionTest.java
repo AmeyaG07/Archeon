@@ -10,6 +10,7 @@ import com.webui.backend.repository.VendorRepository;
 import com.webui.backend.security.crypto.AesGcmEncryptionService;
 import com.webui.backend.security.crypto.SensitiveDataMasker;
 import com.webui.backend.security.crypto.VendorBankDetailsEncryptionConverter;
+import com.webui.backend.security.crypto.VendorBankingDataMigrationService;
 import com.webui.backend.service.VendorService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -57,6 +58,9 @@ public class SensitiveDataProtectionTest {
 
     @Autowired
     private SensitiveDataMasker sensitiveDataMasker;
+
+    @Autowired
+    private VendorBankingDataMigrationService migrationService;
 
     private Authentication adminAuth;
     private Authentication financeAuth;
@@ -194,12 +198,27 @@ public class SensitiveDataProtectionTest {
     }
 
     @Test
-    @DisplayName("MASK-02: GSTIN masking format 27ABCDE****1Z5")
+    @DisplayName("MASK-02: GSTIN masking format 27ABCDE****F1Z5 preserves exact 15-character length and check chars")
     void testSensitiveDataMasker_Gstin() {
-        assertEquals("27ABCDE****1Z5", sensitiveDataMasker.maskGstin("27ABCDE1234F1Z5"));
-        assertEquals("07AAAAA****1ZX", sensitiveDataMasker.maskGstin("07AAAAA0000A1ZX"));
+        String masked = sensitiveDataMasker.maskGstin("27ABCDE1234F1Z5");
+        assertEquals("27ABCDE****F1Z5", masked);
+        assertEquals(15, masked.length(), "Masked GSTIN must preserve exact 15-character length");
+        assertEquals("27ABCDE", masked.substring(0, 7), "State code and 5 alpha PAN prefix must be preserved");
+        assertEquals("****", masked.substring(7, 11), "4 numeric PAN digits must be masked with 4 asterisks");
+        assertEquals('F', masked.charAt(11), "PAN final character must be preserved");
+        assertEquals("1Z5", masked.substring(12), "Entity code, 'Z', and checksum characters must be preserved");
+
+        // Another valid GSTIN
+        assertEquals("07AAAAA****A1ZX", sensitiveDataMasker.maskGstin("07AAAAA0000A1ZX"));
+
+        // Null and empty handling
         assertNull(sensitiveDataMasker.maskGstin(null));
         assertEquals("", sensitiveDataMasker.maskGstin(""));
+        assertEquals("   ", sensitiveDataMasker.maskGstin("   "));
+
+        // Malformed / non-standard inputs
+        assertEquals("****", sensitiveDataMasker.maskGstin("1234"));
+        assertEquals("12**56", sensitiveDataMasker.maskGstin("123456"));
     }
 
     @Test
@@ -290,7 +309,7 @@ public class SensitiveDataProtectionTest {
         assertFalse(staffView.getPan().contains("1234"));
 
         // Verify GSTIN is masked
-        assertEquals("27ABCDE****1Z5", staffView.getGstin());
+        assertEquals("27ABCDE****F1Z5", staffView.getGstin());
         assertFalse(staffView.getGstin().contains("1234"));
 
         // Verify Bank Details JSON is masked
@@ -312,7 +331,7 @@ public class SensitiveDataProtectionTest {
 
         for (VendorResponse v : list) {
             assertEquals("ABCDE****F", v.getPan());
-            assertEquals("27ABCDE****1Z5", v.getGstin());
+            assertEquals("27ABCDE****F1Z5", v.getGstin());
             assertTrue(v.getBankDetailsJson().contains("********1012"));
             assertFalse(v.getBankDetailsJson().contains("987654321012"));
         }
@@ -426,5 +445,126 @@ public class SensitiveDataProtectionTest {
 
         assertThrows(AccessDeniedException.class, () ->
                 vendorService.getVendorById(created.getId(), vendorBAuth));
+    }
+
+    // =========================================================================
+    // SECTION 5: CONVERTER INITIALIZATION, MEMORY VISIBILITY & CONCURRENCY TESTS
+    // =========================================================================
+
+    @Test
+    @DisplayName("CONV-01: Converter supports default constructor via volatile static holder")
+    void testConverter_DefaultConstructor_WithStaticHolder() {
+        VendorBankDetailsEncryptionConverter converter = new VendorBankDetailsEncryptionConverter();
+        String plaintext = "{\"accountNumber\":\"111222333\"}";
+        String dbCol = converter.convertToDatabaseColumn(plaintext);
+        assertNotNull(dbCol);
+        assertTrue(dbCol.startsWith("enc:v1:"));
+        assertEquals(plaintext, converter.convertToEntityAttribute(dbCol));
+    }
+
+    @Test
+    @DisplayName("CONV-02: Converter fails closed when encryption service is uninitialized")
+    void testConverter_FailsClosed_WhenUninitialized() {
+        // Temporarily reset static holder
+        VendorBankDetailsEncryptionConverter.resetStaticEncryptionService();
+        try {
+            VendorBankDetailsEncryptionConverter uninitializedConverter = new VendorBankDetailsEncryptionConverter();
+            assertThrows(IllegalStateException.class, () ->
+                    uninitializedConverter.convertToDatabaseColumn("{\"secret\":\"data\"}"));
+            assertThrows(IllegalStateException.class, () ->
+                    uninitializedConverter.convertToEntityAttribute("enc:v1:test:test"));
+        } finally {
+            // Restore static holder
+            VendorBankDetailsEncryptionConverter.setStaticEncryptionService(aesGcmEncryptionService);
+        }
+    }
+
+    @Test
+    @DisplayName("CONV-03: Converter concurrent multi-threaded conversions are thread-safe")
+    void testConverter_ConcurrentConversions_Safe() throws Exception {
+        VendorBankDetailsEncryptionConverter converter = new VendorBankDetailsEncryptionConverter();
+        int threads = 16;
+        java.util.concurrent.ExecutorService executor = java.util.concurrent.Executors.newFixedThreadPool(threads);
+        java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(threads);
+        java.util.concurrent.atomic.AtomicInteger errors = new java.util.concurrent.atomic.AtomicInteger(0);
+
+        for (int i = 0; i < threads; i++) {
+            final int index = i;
+            executor.submit(() -> {
+                try {
+                    String plain = "{\"accountNumber\":\"ACC-" + index + "\"}";
+                    String encrypted = converter.convertToDatabaseColumn(plain);
+                    String decrypted = converter.convertToEntityAttribute(encrypted);
+                    if (!plain.equals(decrypted)) {
+                        errors.incrementAndGet();
+                    }
+                } catch (Exception e) {
+                    errors.incrementAndGet();
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+
+        latch.await(5, java.util.concurrent.TimeUnit.SECONDS);
+        executor.shutdown();
+        assertEquals(0, errors.get(), "Concurrent converter operations must produce zero errors");
+    }
+
+    // =========================================================================
+    // SECTION 6: HISTORICAL PLAINTEXT DATA MAINTENANCE MIGRATION TESTS
+    // =========================================================================
+
+    @Test
+    @DisplayName("MIGRATE-01: Migration utility detects, dry-runs, and safely migrates legacy plaintext records")
+    void testMigrationUtility_FullLifecycle() {
+        // 1. Insert 3 legacy plaintext vendors directly via JDBC (bypassing JPA converter)
+        UUID v1 = UUID.randomUUID();
+        UUID v2 = UUID.randomUUID();
+        UUID v3 = UUID.randomUUID();
+
+        String plain1 = "{\"accountNumber\":\"1001\",\"bank\":\"SBI\"}";
+        String plain2 = "{\"accountNumber\":\"1002\",\"bank\":\"HDFC\"}";
+        String plain3 = "{\"accountNumber\":\"1003\",\"bank\":\"ICICI\"}";
+
+        jdbcTemplate.update("INSERT INTO vendors (id, vendor_reference, business_name, contact_person, email, phone, category, status, portal_access, bank_details_json, created_at, version) " +
+                "VALUES (?, 'VND-LEG-1', 'Legacy 1', 'C1', 'leg1@test.com', '111', 'CARPENTRY', 'ACTIVE', 'NOT_INVITED', ?, CURRENT_TIMESTAMP, 0)", v1, plain1);
+        jdbcTemplate.update("INSERT INTO vendors (id, vendor_reference, business_name, contact_person, email, phone, category, status, portal_access, bank_details_json, created_at, version) " +
+                "VALUES (?, 'VND-LEG-2', 'Legacy 2', 'C2', 'leg2@test.com', '222', 'ELECTRICAL', 'ACTIVE', 'NOT_INVITED', ?, CURRENT_TIMESTAMP, 0)", v2, plain2);
+        jdbcTemplate.update("INSERT INTO vendors (id, vendor_reference, business_name, contact_person, email, phone, category, status, portal_access, bank_details_json, created_at, version) " +
+                "VALUES (?, 'VND-LEG-3', 'Legacy 3', 'C3', 'leg3@test.com', '333', 'HVAC', 'ACTIVE', 'NOT_INVITED', ?, CURRENT_TIMESTAMP, 0)", v3, plain3);
+
+        // 2. Test Dry Run mode
+        VendorBankingDataMigrationService.MigrationReport dryRunReport = migrationService.executeMigration(10, true);
+        assertTrue(dryRunReport.isDryRun());
+        assertEquals(0, dryRunReport.getMigratedCount(), "Dry run must NOT mutate database");
+        assertFalse(dryRunReport.isAllPlaintextEliminated(), "Plaintext candidates must still exist");
+
+        // Verify rows in DB are still plaintext
+        String dbRow = jdbcTemplate.queryForObject("SELECT bank_details_json FROM vendors WHERE id = ?", String.class, v1);
+        assertEquals(plain1, dbRow);
+
+        // 3. Test Live Migration execution
+        VendorBankingDataMigrationService.MigrationReport liveReport = migrationService.executeMigration(10, false);
+        assertFalse(liveReport.isDryRun());
+        assertTrue(liveReport.getMigratedCount() >= 3);
+        assertEquals(0, liveReport.getFailedCount());
+        assertTrue(liveReport.isAllPlaintextEliminated());
+
+        // 4. Verify rows in DB now start with enc:v1:
+        String encryptedDbRow1 = jdbcTemplate.queryForObject("SELECT bank_details_json FROM vendors WHERE id = ?", String.class, v1);
+        assertNotNull(encryptedDbRow1);
+        assertTrue(encryptedDbRow1.startsWith("enc:v1:"));
+        assertFalse(encryptedDbRow1.contains("1001"));
+
+        // 5. Verify transparent JPA read through repository
+        VendorEntity loadedV1 = vendorRepository.findById(v1).orElseThrow();
+        assertEquals(plain1, loadedV1.getBankDetailsJson());
+
+        // 6. Test Idempotency (re-running on migrated DB produces 0 mutations)
+        VendorBankingDataMigrationService.MigrationReport rerunReport = migrationService.executeMigration(10, false);
+        assertEquals(0, rerunReport.getMigratedCount());
+        assertEquals(0, rerunReport.getFailedCount());
+        assertTrue(rerunReport.isAllPlaintextEliminated());
     }
 }

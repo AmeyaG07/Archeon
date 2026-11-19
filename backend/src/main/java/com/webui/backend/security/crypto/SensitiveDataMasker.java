@@ -91,10 +91,17 @@ public class SensitiveDataMasker {
         }
         String trimmed = gstin.trim();
         if (trimmed.length() == 15) {
-            return trimmed.substring(0, 7) + "****" + trimmed.substring(12);
+            // Preserve state (2) + PAN prefix (5) = 7 chars
+            // Mask PAN digits (4) = ****
+            // Preserve PAN final check char (1) + entity/Z/checksum (3) = 4 chars (F1Z5)
+            // Total length: 7 + 4 + 4 = 15 chars (e.g. 27ABCDE1234F1Z5 -> 27ABCDE****F1Z5)
+            return trimmed.substring(0, 7) + "****" + trimmed.substring(11);
         }
-        if (trimmed.length() > 6) {
+        if (trimmed.length() > 8) {
             return trimmed.substring(0, 4) + "*".repeat(trimmed.length() - 8) + trimmed.substring(trimmed.length() - 4);
+        }
+        if (trimmed.length() > 4) {
+            return trimmed.substring(0, 2) + "*".repeat(trimmed.length() - 4) + trimmed.substring(trimmed.length() - 2);
         }
         return "****";
     }

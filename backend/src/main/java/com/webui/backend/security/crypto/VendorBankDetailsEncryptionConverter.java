@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 @Converter
 public class VendorBankDetailsEncryptionConverter implements AttributeConverter<String, String> {
 
-    private static AesGcmEncryptionService staticEncryptionService;
+    private static volatile AesGcmEncryptionService staticEncryptionService;
     private final AesGcmEncryptionService encryptionService;
 
     @Autowired
@@ -33,14 +33,19 @@ public class VendorBankDetailsEncryptionConverter implements AttributeConverter<
         staticEncryptionService = service;
     }
 
+    public static void resetStaticEncryptionService() {
+        staticEncryptionService = null;
+    }
+
     private AesGcmEncryptionService getService() {
         if (this.encryptionService != null) {
             return this.encryptionService;
         }
-        if (staticEncryptionService != null) {
-            return staticEncryptionService;
+        AesGcmEncryptionService staticService = staticEncryptionService;
+        if (staticService != null) {
+            return staticService;
         }
-        throw new IllegalStateException("AesGcmEncryptionService is not initialized for JPA AttributeConverter");
+        throw new IllegalStateException("AesGcmEncryptionService is not initialized for JPA AttributeConverter. Failing closed.");
     }
 
     @Override
