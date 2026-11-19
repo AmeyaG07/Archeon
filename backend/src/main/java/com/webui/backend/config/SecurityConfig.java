@@ -140,6 +140,23 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/documents/*/audit").hasAnyRole("ADMIN", "STAFF", "PROJECT_MANAGER", "PRINCIPAL_ARCHITECT")
                         .requestMatchers(HttpMethod.GET, "/api/documents/**").hasAnyRole("ADMIN", "STAFF", "PROJECT_MANAGER", "PRINCIPAL_ARCHITECT", "FINANCE_MANAGER", "FINANCE_MAKER", "FINANCE_CHECKER", "FINANCE_AUDIT", "CLIENT", "VENDOR")
 
+                        // G. Client GST Invoicing & Line Items (Phase 5.1)
+                        .requestMatchers(HttpMethod.POST, "/api/invoices", "/api/invoices/").hasAnyRole("ADMIN", "FINANCE_MANAGER")
+                        .requestMatchers(HttpMethod.POST, "/api/invoices/*/payments").hasAnyRole("ADMIN", "FINANCE_MANAGER")
+                        .requestMatchers(HttpMethod.GET, "/api/invoices/**").hasAnyRole("ADMIN", "FINANCE_MANAGER", "STAFF", "CLIENT")
+
+                        // H. In-App Notifications (Phase 5.1)
+                        .requestMatchers("/api/notifications/**").authenticated()
+
+                        // I. Dashboards (Phase 5.1)
+                        .requestMatchers("/api/dashboards/admin").hasAnyRole("ADMIN", "FINANCE_MANAGER", "STAFF")
+                        .requestMatchers("/api/dashboards/client").hasRole("CLIENT")
+                        .requestMatchers("/api/dashboards/vendor").hasRole("VENDOR")
+                        .requestMatchers("/api/dashboards/**").authenticated()
+
+                        // J. Global Administrative Audit Center (Phase 5.1)
+                        .requestMatchers("/api/admin/audit/**").hasAnyRole("ADMIN", "FINANCE_MANAGER")
+
                         // 3. Protected Leads (Studio Staff / Admin only)
                         .requestMatchers(HttpMethod.GET, "/api/leads").hasAnyRole("ADMIN", "STAFF")
                         .requestMatchers(HttpMethod.PATCH, "/api/leads/**").hasAnyRole("ADMIN", "STAFF")
