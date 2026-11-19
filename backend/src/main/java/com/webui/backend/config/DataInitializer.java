@@ -10,13 +10,21 @@ import com.webui.backend.repository.UserRepository;
 import com.webui.backend.service.MakerCheckerApprovalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.env.Environment;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
 
 @Component
+@Profile({"dev", "development", "test", "local", "default"})
 public class DataInitializer implements CommandLineRunner {
+
+    @Autowired
+    private Environment environment;
 
     @Autowired
     private UserRepository userRepository;
@@ -44,14 +52,44 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // 1. Seed Admin User
-        if (!userRepository.existsByUsername("admin")) {
-            userRepository.save(UserEntity.builder()
-                    .username("admin")
-                    .password(passwordEncoder.encode("admin123"))
-                    .role("ROLE_ADMIN")
-                    .build());
+        if (!isSeedingPermitted()) {
+            return;
         }
+
+        // 1. Seed Studio Personnel & Operational Role Users
+        seedUserIfMissing("admin", "ROLE_ADMIN");
+        seedUserIfMissing("admin_mandar", "ROLE_ADMIN");
+        seedUserIfMissing("admin_user", "ROLE_ADMIN");
+        seedUserIfMissing("finance_lead", "ROLE_ADMIN");
+        seedUserIfMissing("finance_mgr", "ROLE_FINANCE_MANAGER");
+        seedUserIfMissing("finance_manager", "ROLE_FINANCE_MANAGER");
+        seedUserIfMissing("finance_officer_1", "ROLE_FINANCE_MANAGER");
+        seedUserIfMissing("finance_officer_2", "ROLE_FINANCE_MANAGER");
+        seedUserIfMissing("checker_anita", "ROLE_ADMIN");
+        seedUserIfMissing("checker_rahul", "ROLE_ADMIN");
+        seedUserIfMissing("checker_1", "ROLE_FINANCE_CHECKER");
+        seedUserIfMissing("checker_2", "ROLE_FINANCE_CHECKER");
+        seedUserIfMissing("checker_alice", "ROLE_FINANCE_CHECKER");
+        seedUserIfMissing("checker_bob", "ROLE_FINANCE_CHECKER");
+        seedUserIfMissing("checker_approver", "ROLE_FINANCE_CHECKER");
+        seedUserIfMissing("secondary_checker_bob", "ROLE_FINANCE_CHECKER_2");
+        seedUserIfMissing("secondary_checker_carol", "ROLE_FINANCE_CHECKER_2");
+        seedUserIfMissing("maker_user", "ROLE_FINANCE_MAKER");
+        seedUserIfMissing("initiator_maker", "ROLE_FINANCE_CHECKER");
+        seedUserIfMissing("supervisor_raj", "ROLE_SITE_SUPERVISOR");
+
+        // Seed Client & Vendor Identified Entities
+        seedUserIfMissing("client_user", "ROLE_CLIENT");
+        seedUserIfMissing("CLIENT-ALPHA", "ROLE_CLIENT");
+        seedUserIfMissing("CLIENT-BETA", "ROLE_CLIENT");
+        seedUserIfMissing("client_random", "ROLE_CLIENT");
+        seedUserIfMissing("client_attacker", "ROLE_CLIENT");
+        seedUserIfMissing("vendor_user", "ROLE_VENDOR");
+        seedUserIfMissing("VENDOR-ALPHA", "ROLE_VENDOR");
+        seedUserIfMissing("VENDOR-BETA", "ROLE_VENDOR");
+        seedUserIfMissing("vendor_subcontractor", "ROLE_VENDOR");
+        seedUserIfMissing("vnd_random", "ROLE_VENDOR");
+        seedUserIfMissing("CP-VENDOR-01", "ROLE_VENDOR");
 
         // 2. Seed ArcheOn Philosophy & Mission (PDF Section 1.1)
         if (manifestoRepository.count() == 0) {
@@ -150,6 +188,43 @@ public class DataInitializer implements CommandLineRunner {
                     "Raw granite unloading and manual site transit (Khandala Project)",
                     "RCPT-GRANITE-881"
             );
+        }
+    }
+
+    private boolean isSeedingPermitted() {
+        if (environment == null) {
+            return false;
+        }
+
+        String[] activeProfiles = environment.getActiveProfiles();
+        List<String> activeList = Arrays.asList(activeProfiles);
+
+        // Strictly reject if any production, staging, or live profile is active
+        if (activeList.contains("prod") ||
+                activeList.contains("production") ||
+                activeList.contains("staging") ||
+                activeList.contains("live")) {
+            return false;
+        }
+
+        // Allowlist verification: seeding is only permitted in dev, test, local, or default profiles
+        return activeList.isEmpty() ||
+                activeList.contains("default") ||
+                activeList.contains("dev") ||
+                activeList.contains("development") ||
+                activeList.contains("test") ||
+                activeList.contains("local");
+    }
+
+    private void seedUserIfMissing(String username, String role) {
+        if (!userRepository.existsByUsername(username)) {
+            userRepository.save(UserEntity.builder()
+                    .username(username)
+                    .password(passwordEncoder.encode("Password123!"))
+                    .role(role)
+                    .enabled(true)
+                    .tokenVersion(0L)
+                    .build());
         }
     }
 }

@@ -48,6 +48,9 @@ public class BillApprovalEntity {
     @Column(nullable = false)
     private String vendorId;
 
+    @Column(name = "client_id")
+    private String clientId;
+
     @Column(nullable = false)
     private String projectId;
 
@@ -73,4 +76,7 @@ public class BillApprovalEntity {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     private LocalDateTime updatedAt;
+
+    @Version
+    private Long version;
 }

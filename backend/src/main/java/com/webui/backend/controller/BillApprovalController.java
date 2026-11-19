@@ -49,6 +49,7 @@ public class BillApprovalController {
         private String billId;
         private BigDecimal amount;
         private String vendorId;
+        private String clientId;
         private String projectId;
     }
 
@@ -71,19 +72,30 @@ public class BillApprovalController {
     }
 
     @PostMapping("/initiate")
-    public ResponseEntity<BillApprovalEntity> initiate(@RequestBody InitiateRequest request, Authentication auth) {
-        String actor = auth != null ? auth.getName() : "finance_maker";
+    public ResponseEntity<?> initiate(@RequestBody InitiateRequest request, Authentication auth) {
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getName())) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).body(Map.of("error", "Authentication required"));
+        }
+        String actor = auth.getName();
         BillApprovalEntity approval = approvalService.initiateBillApproval(
-                request.getBillId(), request.getAmount(), request.getVendorId(), request.getProjectId(), actor);
+                request.getBillId(), request.getAmount(), request.getVendorId(), request.getClientId(), request.getProjectId(), actor);
         return ResponseEntity.ok(approval);
     }
 
     @PostMapping("/{billId}/approve-primary")
     public ResponseEntity<?> approvePrimary(@PathVariable String billId, Authentication auth) {
-        String approver = auth != null ? auth.getName() : "finance_checker_1";
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getName())) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).body(Map.of("error", "Authentication required"));
+        }
+        String approver = auth.getName();
         try {
             BillApprovalEntity approval = approvalService.approvePrimary(billId, approver);
             return ResponseEntity.ok(approval);
+        } catch (org.springframework.orm.ObjectOptimisticLockingFailureException | jakarta.persistence.OptimisticLockException e) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.CONFLICT).body(Map.of(
+                    "error", "The bill was modified concurrently by another transaction. Please reload and try again.",
+                    "status", 409
+            ));
         } catch (IllegalStateException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
@@ -91,10 +103,18 @@ public class BillApprovalController {
 
     @PostMapping("/{billId}/approve-secondary")
     public ResponseEntity<?> approveSecondary(@PathVariable String billId, Authentication auth) {
-        String approver = auth != null ? auth.getName() : "finance_checker_2";
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getName())) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).body(Map.of("error", "Authentication required"));
+        }
+        String approver = auth.getName();
         try {
             BillApprovalEntity approval = approvalService.approveSecondary(billId, approver);
             return ResponseEntity.ok(approval);
+        } catch (org.springframework.orm.ObjectOptimisticLockingFailureException | jakarta.persistence.OptimisticLockException e) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.CONFLICT).body(Map.of(
+                    "error", "The bill was modified concurrently by another transaction. Please reload and try again.",
+                    "status", 409
+            ));
         } catch (IllegalStateException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
@@ -102,9 +122,19 @@ public class BillApprovalController {
 
     @PostMapping("/{billId}/reject")
     public ResponseEntity<?> reject(@PathVariable String billId, @RequestBody RejectRequest request, Authentication auth) {
-        String rejecter = auth != null ? auth.getName() : "finance_reviewer";
-        BillApprovalEntity approval = approvalService.rejectBill(billId, rejecter, request.getReason());
-        return ResponseEntity.ok(approval);
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getName())) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).body(Map.of("error", "Authentication required"));
+        }
+        String rejecter = auth.getName();
+        try {
+            BillApprovalEntity approval = approvalService.rejectBill(billId, rejecter, request.getReason());
+            return ResponseEntity.ok(approval);
+        } catch (org.springframework.orm.ObjectOptimisticLockingFailureException | jakarta.persistence.OptimisticLockException e) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.CONFLICT).body(Map.of(
+                    "error", "The bill was modified concurrently by another transaction. Please reload and try again.",
+                    "status", 409
+            ));
+        }
     }
 
     @GetMapping("/all")

@@ -63,4 +63,7 @@ public class CashSettlementEntity {
 
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Version
+    private Long version;
 }

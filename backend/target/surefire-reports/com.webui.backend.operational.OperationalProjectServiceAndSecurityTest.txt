@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.webui.backend.operational.OperationalProjectServiceAndSecurityTest
+-------------------------------------------------------------------------------
+Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.719 s -- in com.webui.backend.operational.OperationalProjectServiceAndSecurityTest

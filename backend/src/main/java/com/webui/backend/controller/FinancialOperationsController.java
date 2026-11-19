@@ -78,13 +78,26 @@ public class FinancialOperationsController {
 
     @PostMapping("/payment-proof")
     public ResponseEntity<?> submitProof(@RequestBody ProofSubmissionRequest req, Authentication auth) {
-        String actor = auth != null ? auth.getName() : (req.getPayerId() != null ? req.getPayerId() : "client_user");
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getName())) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).body(Map.of("error", "Authentication required"));
+        }
+        String actor = auth.getName();
         try {
             PaymentTransactionEntity tx = financialOperationsService.submitPaymentProof(
                     req.getBillId(), actor, req.getPayeeId(), req.getAmount(),
-                    req.getPaymentMode(), req.getUtrNumber(), req.getProofUrl()
+                    req.getPaymentMode(), req.getUtrNumber(), req.getProofUrl(),
+                    auth.getAuthorities()
             );
             return ResponseEntity.ok(tx);
+        } catch (org.springframework.security.access.AccessDeniedException e) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+        } catch (org.springframework.orm.ObjectOptimisticLockingFailureException | jakarta.persistence.OptimisticLockException e) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.CONFLICT).body(Map.of(
+                    "error", "The record was modified concurrently by another transaction. Please reload and try again.",
+                    "status", 409
+            ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
@@ -95,11 +108,19 @@ public class FinancialOperationsController {
             @PathVariable UUID transactionId,
             @RequestBody(required = false) VerificationRequest req,
             Authentication auth) {
-        String verifier = auth != null ? auth.getName() : "finance_lead";
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getName())) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).body(Map.of("error", "Authentication required"));
+        }
+        String verifier = auth.getName();
         String notes = req != null && req.getNotes() != null ? req.getNotes() : "Reconciled with HDFC bank statement";
         try {
             PaymentTransactionEntity tx = financialOperationsService.verifyPayment(transactionId, verifier, notes);
             return ResponseEntity.ok(tx);
+        } catch (org.springframework.orm.ObjectOptimisticLockingFailureException | jakarta.persistence.OptimisticLockException e) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.CONFLICT).body(Map.of(
+                    "error", "The record was modified concurrently by another transaction. Please reload and try again.",
+                    "status", 409
+            ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
@@ -107,10 +128,22 @@ public class FinancialOperationsController {
 
     @PostMapping("/dispute")
     public ResponseEntity<?> disputeBill(@RequestBody DisputeRequest req, Authentication auth) {
-        String actor = auth != null ? auth.getName() : "client_disputer";
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getName())) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).body(Map.of("error", "Authentication required"));
+        }
+        String actor = auth.getName();
         try {
-            BillApprovalEntity bill = financialOperationsService.openDispute(req.getBillId(), actor, req.getReason());
+            BillApprovalEntity bill = financialOperationsService.openDispute(req.getBillId(), actor, req.getReason(), auth.getAuthorities());
             return ResponseEntity.ok(bill);
+        } catch (org.springframework.security.access.AccessDeniedException e) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+        } catch (org.springframework.orm.ObjectOptimisticLockingFailureException | jakarta.persistence.OptimisticLockException e) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.CONFLICT).body(Map.of(
+                    "error", "The record was modified concurrently by another transaction. Please reload and try again.",
+                    "status", 409
+            ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
@@ -118,7 +151,10 @@ public class FinancialOperationsController {
 
     @PostMapping("/cash/initiate")
     public ResponseEntity<?> initiateCash(@RequestBody CashInitiateRequest req, Authentication auth) {
-        String initiator = auth != null ? auth.getName() : "site_supervisor_arun";
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getName())) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).body(Map.of("error", "Authentication required"));
+        }
+        String initiator = auth.getName();
         try {
             CashSettlementEntity csh = financialOperationsService.initiateCashSettlement(
                     req.getSettlementRef(), req.getBillId(), req.getProjectId(),
@@ -126,6 +162,11 @@ public class FinancialOperationsController {
                     req.getSitePurpose(), req.getReceiptRef()
             );
             return ResponseEntity.ok(csh);
+        } catch (org.springframework.orm.ObjectOptimisticLockingFailureException | jakarta.persistence.OptimisticLockException e) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.CONFLICT).body(Map.of(
+                    "error", "The record was modified concurrently by another transaction. Please reload and try again.",
+                    "status", 409
+            ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
@@ -136,12 +177,20 @@ public class FinancialOperationsController {
             @PathVariable String ref,
             @RequestBody CashResponseRequest req,
             Authentication auth) {
-        String counterparty = auth != null ? auth.getName() : "VND-082";
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getName())) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).body(Map.of("error", "Authentication required"));
+        }
+        String counterparty = auth.getName();
         try {
             CashSettlementEntity csh = financialOperationsService.respondToCashSettlement(
                     ref, counterparty, req.isAcknowledge(), req.getNotes()
             );
             return ResponseEntity.ok(csh);
+        } catch (org.springframework.orm.ObjectOptimisticLockingFailureException | jakarta.persistence.OptimisticLockException e) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.CONFLICT).body(Map.of(
+                    "error", "The record was modified concurrently by another transaction. Please reload and try again.",
+                    "status", 409
+            ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
@@ -149,10 +198,18 @@ public class FinancialOperationsController {
 
     @PostMapping("/cash/{ref}/approve")
     public ResponseEntity<?> approveCash(@PathVariable String ref, Authentication auth) {
-        String approver = auth != null ? auth.getName() : "finance_manager";
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getName())) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).body(Map.of("error", "Authentication required"));
+        }
+        String approver = auth.getName();
         try {
             CashSettlementEntity csh = financialOperationsService.financeApproveCashSettlement(ref, approver);
             return ResponseEntity.ok(csh);
+        } catch (org.springframework.orm.ObjectOptimisticLockingFailureException | jakarta.persistence.OptimisticLockException e) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.CONFLICT).body(Map.of(
+                    "error", "The record was modified concurrently by another transaction. Please reload and try again.",
+                    "status", 409
+            ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
@@ -163,9 +220,20 @@ public class FinancialOperationsController {
         return ResponseEntity.ok(cashSettlementRepository.findAllByOrderByCreatedAtDesc());
     }
 
-    @GetMapping("/transactions/{billId}")
-    public ResponseEntity<List<PaymentTransactionEntity>> getTransactionsForBill(@PathVariable String billId) {
-        return ResponseEntity.ok(paymentTransactionRepository.findByBillIdOrderByCreatedAtDesc(billId));
+    @GetMapping({"/transactions/{billId}", "/bills/{billId}/transactions"})
+    public ResponseEntity<?> getTransactionsForBill(@PathVariable String billId, Authentication auth) {
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getName())) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).body(Map.of("error", "Authentication required"));
+        }
+        try {
+            List<PaymentTransactionEntity> txs = financialOperationsService.getTransactionsForBill(
+                    billId, auth.getName(), auth.getAuthorities());
+            return ResponseEntity.ok(txs);
+        } catch (org.springframework.security.access.AccessDeniedException e) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+        }
     }
 
     /**
@@ -213,7 +281,10 @@ public class FinancialOperationsController {
      */
     @GetMapping("/reports/export-bills-csv")
     public ResponseEntity<byte[]> exportBillsCsv(Authentication auth) {
-        String actor = auth != null ? auth.getName() : "audit_user";
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getName())) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+        }
+        String actor = auth.getName();
         List<BillApprovalEntity> bills = billApprovalRepository.findAll();
 
         StringBuilder csv = new StringBuilder();

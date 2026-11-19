@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -32,6 +33,101 @@ public class FinancialOperationsService {
     @Autowired
     private AuditEventRepository auditEventRepository;
 
+    @Autowired(required = false)
+    private com.webui.backend.repository.UserRepository userRepository;
+
+    @Autowired(required = false)
+    private com.webui.backend.repository.ClientRepository clientRepository;
+
+    @Autowired(required = false)
+    private com.webui.backend.repository.VendorRepository vendorRepository;
+
+    /**
+     * BOLA / Object-Level Authorization Protection (FINDING-03)
+     * Verifies that the authenticated principal is an authorized party for the bill.
+     */
+    public void validateBillAccess(
+            BillApprovalEntity bill,
+            String actorId,
+            java.util.Collection<? extends org.springframework.security.core.GrantedAuthority> authorities) {
+
+        if (actorId == null || actorId.trim().isEmpty()) {
+            throw new org.springframework.security.access.AccessDeniedException("Access denied: Unauthenticated user.");
+        }
+
+        // 1. Studio internal staff (ADMIN, FINANCE_*, STAFF) have studio-wide authorization
+        if (authorities != null) {
+            boolean isInternalStaff = authorities.stream().anyMatch(a ->
+                    a.getAuthority().equals("ROLE_ADMIN") ||
+                    a.getAuthority().equals("ROLE_FINANCE_MANAGER") ||
+                    a.getAuthority().equals("ROLE_FINANCE_LEAD") ||
+                    a.getAuthority().equals("ROLE_FINANCE_CHECKER") ||
+                    a.getAuthority().equals("ROLE_FINANCE_CHECKER_1") ||
+                    a.getAuthority().equals("ROLE_FINANCE_CHECKER_2") ||
+                    a.getAuthority().equals("ROLE_FINANCE_MAKER") ||
+                    a.getAuthority().equals("ROLE_STAFF"));
+            if (isInternalStaff) {
+                return;
+            }
+        }
+
+        // 2. Bill initiator (maker)
+        if (bill.getInitiatorId() != null && bill.getInitiatorId().equalsIgnoreCase(actorId)) {
+            return;
+        }
+
+        // 3. Designated Vendor
+        if (bill.getVendorId() != null && bill.getVendorId().equalsIgnoreCase(actorId)) {
+            return;
+        }
+
+        // 4. Designated Client (Explicit verified ownership only; NO first-access binding)
+        if (bill.getClientId() != null && bill.getClientId().equalsIgnoreCase(actorId)) {
+            return;
+        }
+
+        // 5. Check if authenticated user is mapped to a Client or Vendor entity linked to this bill
+        if (userRepository != null) {
+            java.util.Optional<com.webui.backend.model.UserEntity> userOpt = userRepository.findByUsername(actorId);
+            if (userOpt.isPresent()) {
+                com.webui.backend.model.UserEntity user = userOpt.get();
+                if (user.getClientId() != null && bill.getClientId() != null) {
+                    if (bill.getClientId().equalsIgnoreCase(user.getClientId().toString())) {
+                        return;
+                    }
+                    if (clientRepository != null) {
+                        java.util.Optional<com.webui.backend.model.ClientEntity> clientOpt = clientRepository.findById(user.getClientId());
+                        if (clientOpt.isPresent() && clientOpt.get().getClientReference().equalsIgnoreCase(bill.getClientId())) {
+                            return;
+                        }
+                    }
+                }
+                if (user.getVendorId() != null && bill.getVendorId() != null) {
+                    if (bill.getVendorId().equalsIgnoreCase(user.getVendorId().toString())) {
+                        return;
+                    }
+                    if (vendorRepository != null) {
+                        java.util.Optional<com.webui.backend.model.VendorEntity> vendorOpt = vendorRepository.findById(user.getVendorId());
+                        if (vendorOpt.isPresent() && vendorOpt.get().getVendorReference().equalsIgnoreCase(bill.getVendorId())) {
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+
+        // 6. Client who has an existing payment transaction recorded on this bill
+        boolean hasExistingTransaction = paymentTransactionRepository.findByBillIdOrderByCreatedAtDesc(bill.getBillId())
+                .stream().anyMatch(tx -> tx.getPayerId() != null && tx.getPayerId().equalsIgnoreCase(actorId));
+        if (hasExistingTransaction) {
+            return;
+        }
+
+        // Unassigned legacy bills (clientId == null) and unauthorized third parties are strictly denied access
+        throw new org.springframework.security.access.AccessDeniedException(
+                "Access denied: Principal '" + actorId + "' is not authorized to access or mutate bill " + bill.getBillId());
+    }
+
     /**
      * Client or vendor uploads payment proof (UTR / receipt).
      * INVARIANT (Section 9.3): Never marks PAID from screenshot; creates PENDING verification record.
@@ -40,9 +136,19 @@ public class FinancialOperationsService {
     public PaymentTransactionEntity submitPaymentProof(
             String billId, String payerId, String payeeId, BigDecimal amount,
             String paymentMode, String utrNumber, String proofUrl) {
+        return submitPaymentProof(billId, payerId, payeeId, amount, paymentMode, utrNumber, proofUrl, null);
+    }
+
+    @Transactional
+    public PaymentTransactionEntity submitPaymentProof(
+            String billId, String payerId, String payeeId, BigDecimal amount,
+            String paymentMode, String utrNumber, String proofUrl,
+            java.util.Collection<? extends org.springframework.security.core.GrantedAuthority> authorities) {
 
         BillApprovalEntity bill = billApprovalRepository.findByBillId(billId)
                 .orElseThrow(() -> new IllegalArgumentException("Bill not found: " + billId));
+
+        validateBillAccess(bill, payerId, authorities);
 
         BigDecimal safeAmount = amount.setScale(2, RoundingMode.HALF_UP);
 
@@ -131,8 +237,18 @@ public class FinancialOperationsService {
      */
     @Transactional
     public BillApprovalEntity openDispute(String billId, String disputedBy, String reason) {
+        return openDispute(billId, disputedBy, reason, null);
+    }
+
+    @Transactional
+    public BillApprovalEntity openDispute(
+            String billId, String disputedBy, String reason,
+            java.util.Collection<? extends org.springframework.security.core.GrantedAuthority> authorities) {
+
         BillApprovalEntity bill = billApprovalRepository.findByBillId(billId)
                 .orElseThrow(() -> new IllegalArgumentException("Bill not found: " + billId));
+
+        validateBillAccess(bill, disputedBy, authorities);
 
         bill.setDisputed(true);
         bill.setDisputeReason(reason);
@@ -150,6 +266,22 @@ public class FinancialOperationsService {
                 .build());
 
         return saved;
+    }
+
+    /**
+     * Authorized payment transaction lookup for a bill (FINDING-03).
+     */
+    @Transactional(readOnly = true)
+    public List<PaymentTransactionEntity> getTransactionsForBill(
+            String billId, String actorId,
+            java.util.Collection<? extends org.springframework.security.core.GrantedAuthority> authorities) {
+
+        BillApprovalEntity bill = billApprovalRepository.findByBillId(billId)
+                .orElseThrow(() -> new IllegalArgumentException("Bill not found: " + billId));
+
+        validateBillAccess(bill, actorId, authorities);
+
+        return paymentTransactionRepository.findByBillIdOrderByCreatedAtDesc(billId);
     }
 
     /**
@@ -200,11 +332,21 @@ public class FinancialOperationsService {
             throw new IllegalStateException("Only assigned counterparty can respond to cash settlement");
         }
 
-        if (acknowledge) {
-            csh.setCounterpartyStatus("ACKNOWLEDGED");
-        } else {
-            csh.setCounterpartyStatus("REJECTED_CONTESTED");
+        // FINDING-04: Prevent modifying already settled or rejected vouchers
+        if ("SETTLED_VERIFIED".equalsIgnoreCase(csh.getFinanceApprovalStatus())) {
+            throw new IllegalStateException("Cash settlement is already finalized and settled; counterparty response cannot be altered.");
         }
+        if ("REJECTED".equalsIgnoreCase(csh.getFinanceApprovalStatus())) {
+            throw new IllegalStateException("Cash settlement has been rejected by finance; counterparty response cannot be altered.");
+        }
+
+        // Prevent duplicate state transitions
+        String targetStatus = acknowledge ? "ACKNOWLEDGED" : "REJECTED_CONTESTED";
+        if (targetStatus.equalsIgnoreCase(csh.getCounterpartyStatus())) {
+            throw new IllegalStateException("Cash settlement is already in status: " + targetStatus);
+        }
+
+        csh.setCounterpartyStatus(targetStatus);
         csh.setCounterpartyRespondedAt(LocalDateTime.now());
         csh.setCounterpartyNotes(notes);
 
