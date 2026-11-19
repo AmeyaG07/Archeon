@@ -19,9 +19,12 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -44,6 +47,7 @@ public class DocumentService {
     private final OperationalProjectRepository projectRepository;
     private final ProjectVendorAssignmentRepository vendorAssignmentRepository;
     private final AuditEventRepository auditEventRepository;
+    private final DocumentAuditService documentAuditService;
 
     private static final Set<String> VALID_CATEGORIES = Set.of(
             "CONTRACT", "BLUEPRINT_DRAWING", "SPECIFICATION",
@@ -614,28 +618,104 @@ public class DocumentService {
 
     @Transactional
     public DocumentResponse releaseQuarantine(UUID documentId, Authentication auth) {
+        return releaseQuarantine(documentId, new QuarantineReleaseRequest("Authorized administrative quarantine release override"), auth);
+    }
+
+    @Transactional
+    public DocumentResponse releaseQuarantine(UUID documentId, QuarantineReleaseRequest req, Authentication auth) {
         validateAuthenticated(auth);
         if (!isAdmin(auth.getAuthorities())) {
             throw new AccessDeniedException("Only system administrators can release quarantined documents");
         }
+
+        // Validate administrative release justification
+        if (req == null || req.getReason() == null || req.getReason().trim().isEmpty()) {
+            throw new IllegalArgumentException("Administrative release justification reason is required");
+        }
+        String validatedReason = req.getReason().trim();
+        if (validatedReason.length() < 5 || validatedReason.length() > 500) {
+            throw new IllegalArgumentException("Release justification reason must be between 5 and 500 characters");
+        }
+
         DocumentEntity doc = getDocumentEntity(documentId);
         checkNotArchived(doc, "release quarantine");
 
-        // Rescan latest stored version file before administrative release
         List<DocumentVersionEntity> versions = documentVersionRepository.findByDocumentIdOrderByVersionNumberDesc(documentId);
-        if (!versions.isEmpty()) {
-            DocumentVersionEntity latest = versions.get(0);
-            try (InputStream is = storageService.retrieveFile(latest.getStorageKey())) {
-                ScanResult rescan = malwareScanner.scan(is, latest.getOriginalFilename(), latest.getFileSizeBytes());
-                if (!rescan.passed()) {
-                    log.warn("Administrative quarantine release rejected for doc {}: rescan failed with reason: {}",
-                            documentId, rescan.quarantineReason());
-                    throw new IllegalStateException("Cannot release document from quarantine: Antivirus rescan failed: " + rescan.message());
-                }
-            } catch (IOException e) {
-                log.error("Failed to retrieve file for rescan during quarantine release: doc={}", documentId, e);
-                throw new IllegalStateException("Cannot release document from quarantine: Stored file could not be read for inspection: " + e.getMessage(), e);
+        if (versions.isEmpty()) {
+            throw new IllegalStateException("Cannot release document from quarantine: No document versions found");
+        }
+
+        DocumentVersionEntity latest = versions.get(0);
+
+        // 1. Check recorded checksum validity
+        String recordedChecksum = latest.getSha256Checksum();
+        if (recordedChecksum == null || recordedChecksum.isBlank()) {
+            log.error("Quarantine release rejected for doc {}: recorded SHA-256 checksum is missing", documentId);
+            logAuditEvent(auth, "DOCUMENT_INTEGRITY_VIOLATION", doc.getId().toString(),
+                    String.format("{\"action\":\"INTEGRITY_CHECK_FAILED\",\"error\":\"Missing recorded checksum\",\"version\":%d}",
+                            latest.getVersionNumber()));
+            throw new IllegalStateException("Cannot release document from quarantine: Recorded SHA-256 checksum is missing");
+        }
+        recordedChecksum = recordedChecksum.trim().toLowerCase();
+        if (!recordedChecksum.matches("^[a-f0-9]{64}$")) {
+            log.error("Quarantine release rejected for doc {}: recorded SHA-256 checksum is malformed: {}", documentId, recordedChecksum);
+            logAuditEvent(auth, "DOCUMENT_INTEGRITY_VIOLATION", doc.getId().toString(),
+                    String.format("{\"action\":\"INTEGRITY_CHECK_FAILED\",\"error\":\"Malformed recorded checksum\",\"version\":%d}",
+                            latest.getVersionNumber()));
+            throw new IllegalStateException("Cannot release document from quarantine: Recorded SHA-256 checksum is malformed");
+        }
+
+        // 2. Retrieve stored file and calculate SHA-256 checksum from actual stored bytes
+        byte[] storedBytes;
+        String calculatedChecksum;
+        try (InputStream is = storageService.retrieveFile(latest.getStorageKey())) {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            byte[] buf = new byte[8192];
+            int read;
+            while ((read = is.read(buf)) != -1) {
+                digest.update(buf, 0, read);
+                baos.write(buf, 0, read);
             }
+            storedBytes = baos.toByteArray();
+            byte[] hashBytes = digest.digest();
+            StringBuilder sb = new StringBuilder(64);
+            for (byte b : hashBytes) {
+                sb.append(String.format("%02x", b));
+            }
+            calculatedChecksum = sb.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("SHA-256 algorithm not available", e);
+        } catch (IOException e) {
+            log.error("Failed to retrieve file for quarantine release: doc={}", documentId, e);
+            throw new IllegalStateException("Cannot release document from quarantine: Stored file could not be read for inspection: " + e.getMessage(), e);
+        }
+
+        // 3. Compare calculated checksum against recorded checksum
+        if (!calculatedChecksum.equalsIgnoreCase(recordedChecksum)) {
+            log.error("Quarantine release rejected for doc {}: stored file integrity mismatch! Expected {}, calculated {}",
+                    documentId, recordedChecksum, calculatedChecksum);
+            logAuditEvent(auth, "DOCUMENT_INTEGRITY_VIOLATION", doc.getId().toString(),
+                    String.format("{\"action\":\"INTEGRITY_CHECK_FAILED\",\"error\":\"SHA-256 mismatch\",\"expectedChecksum\":\"%s\",\"calculatedChecksum\":\"%s\",\"version\":%d}",
+                            recordedChecksum, calculatedChecksum, latest.getVersionNumber()));
+            throw new IllegalStateException("Cannot release document from quarantine: Stored file integrity check failed (SHA-256 mismatch)");
+        }
+
+        // 4. Perform malware scan ONLY AFTER successful checksum verification
+        try (InputStream scanStream = new ByteArrayInputStream(storedBytes)) {
+            ScanResult rescan = malwareScanner.scan(scanStream, latest.getOriginalFilename(), latest.getFileSizeBytes());
+            if (!rescan.passed()) {
+                log.warn("Administrative quarantine release rejected for doc {}: rescan failed with reason: {}",
+                        documentId, rescan.quarantineReason());
+                logAuditEvent(auth, "DOCUMENT_QUARANTINE_RELEASE_REJECTED", doc.getId().toString(),
+                        String.format("{\"action\":\"RESCAN_FAILED\",\"reason\":\"%s\",\"scanStatus\":\"%s\",\"version\":%d}",
+                                escapeJson(rescan.quarantineReason() != null ? rescan.quarantineReason() : "UNSPECIFIED"),
+                                rescan.status() != null ? rescan.status().name() : "SCANNER_ERROR",
+                                latest.getVersionNumber()));
+                throw new IllegalStateException("Cannot release document from quarantine: Antivirus rescan failed: " + rescan.message());
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException("Cannot release document from quarantine: Failed to stream payload to malware scanner: " + e.getMessage(), e);
         }
 
         doc.setStatus("AVAILABLE");
@@ -650,7 +730,9 @@ public class DocumentService {
             }
         }
 
-        logAuditEvent(auth, "DOCUMENT_QUARANTINE_RELEASED", doc.getId().toString(), "{\"action\":\"RELEASED_FROM_QUARANTINE\"}");
+        logAuditEvent(auth, "DOCUMENT_QUARANTINE_RELEASED", doc.getId().toString(),
+                String.format("{\"action\":\"RELEASED_FROM_QUARANTINE\",\"reason\":\"%s\",\"checksum\":\"%s\"}",
+                        escapeJson(validatedReason), calculatedChecksum));
         return toDocumentResponse(saved, true);
     }
 
@@ -856,18 +938,18 @@ public class DocumentService {
     }
 
     private void logAuditEvent(Authentication auth, String action, String entityId, String detailsJson) {
-        try {
-            auditEventRepository.save(AuditEventEntity.builder()
-                    .actorId(auth.getName())
-                    .actorRole(auth.getAuthorities().isEmpty() ? "UNKNOWN" : auth.getAuthorities().iterator().next().getAuthority())
-                    .action(action)
-                    .entityName("DOCUMENT")
-                    .entityId(entityId)
-                    .detailsJson(detailsJson)
-                    .build());
-        } catch (Exception ex) {
-            log.error("Failed to record document audit event for action: {}", action, ex);
+        documentAuditService.logAuditEvent(auth, action, entityId, detailsJson);
+    }
+
+    private String escapeJson(String input) {
+        if (input == null) {
+            return "";
         }
+        return input.replace("\\", "\\\\")
+                    .replace("\"", "\\\"")
+                    .replace("\r", "\\r")
+                    .replace("\n", "\\n")
+                    .replace("\t", "\\t");
     }
 
     private DocumentResponse toDocumentResponse(DocumentEntity doc, boolean includePermissions) {

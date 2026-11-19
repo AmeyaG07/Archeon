@@ -19,12 +19,14 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -786,5 +788,349 @@ public class DocumentServiceAndSecurityTest {
         // Client B listing DOES NOT see Client A's document
         List<DocumentResponse> clientBList = documentService.listDocuments(null, null, null, null, clientBAuth);
         assertFalse(clientBList.stream().anyMatch(d -> d.getId().equals(docA.getId())));
+    }
+
+    // ==========================================
+    // Phase 4.3.1.1 Quarantine Checksum & Reason Remediation Tests
+    // ==========================================
+
+    @Test
+    public void testQuarantineRelease_MatchingChecksumAndValidReason_SucceedsAndAudited() throws IOException {
+        MockMultipartFile file = new MockMultipartFile("file", "quarantine_target.pdf", "application/pdf", VALID_PDF_BYTES);
+        CreateDocumentRequest req = CreateDocumentRequest.builder()
+                .title("Quarantine Release Target")
+                .category("BLUEPRINT_DRAWING")
+                .securityClassification("INTERNAL_STAFF")
+                .build();
+
+        DocumentResponse doc = documentService.uploadDocument(req, file, staffAuth);
+
+        // Manually place in quarantine
+        DocumentEntity entity = documentRepository.findById(doc.getId()).orElseThrow();
+        entity.setStatus("QUARANTINED");
+        documentRepository.save(entity);
+
+        QuarantineReleaseRequest releaseReq = QuarantineReleaseRequest.builder()
+                .reason("Admin verified secondary antivirus signature analysis and visual hash match")
+                .build();
+
+        DocumentResponse released = documentService.releaseQuarantine(doc.getId(), releaseReq, adminAuth);
+        assertEquals("AVAILABLE", released.getStatus());
+
+        // Verify version status is CLEARED
+        List<DocumentVersionEntity> versions = documentVersionRepository.findByDocumentIdOrderByVersionNumberDesc(doc.getId());
+        assertEquals("CLEARED", versions.get(0).getQuarantineStatus());
+
+        // Verify audit trail contains release record with reason and checksum
+        List<AuditEventEntity> audits = auditEventRepository.findByEntityNameAndEntityIdOrderByTimestampDesc("DOCUMENT", doc.getId().toString());
+        assertTrue(audits.stream().anyMatch(a ->
+                "DOCUMENT_QUARANTINE_RELEASED".equals(a.getAction()) &&
+                a.getDetailsJson().contains("Admin verified secondary antivirus signature analysis") &&
+                a.getDetailsJson().contains("checksum")));
+    }
+
+    @Test
+    public void testQuarantineRelease_MismatchedChecksum_RejectedAndQuarantinePreserved() throws IOException {
+        MockMultipartFile file = new MockMultipartFile("file", "tampered_hash.pdf", "application/pdf", VALID_PDF_BYTES);
+        CreateDocumentRequest req = CreateDocumentRequest.builder()
+                .title("Tampered Checksum Document")
+                .category("BLUEPRINT_DRAWING")
+                .securityClassification("INTERNAL_STAFF")
+                .build();
+
+        DocumentResponse doc = documentService.uploadDocument(req, file, staffAuth);
+
+        // Place in quarantine
+        DocumentEntity entity = documentRepository.findById(doc.getId()).orElseThrow();
+        entity.setStatus("QUARANTINED");
+        documentRepository.save(entity);
+
+        // Mutate recorded checksum in database to a different 64-char hex hash
+        DocumentVersionEntity latest = documentVersionRepository.findByDocumentIdOrderByVersionNumberDesc(doc.getId()).get(0);
+        latest.setSha256Checksum("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"); // Empty string SHA-256
+        documentVersionRepository.save(latest);
+
+        QuarantineReleaseRequest releaseReq = QuarantineReleaseRequest.builder()
+                .reason("Attempt release with mismatched database checksum")
+                .build();
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class, () ->
+                documentService.releaseQuarantine(doc.getId(), releaseReq, adminAuth));
+        assertTrue(ex.getMessage().contains("Stored file integrity check failed (SHA-256 mismatch)"));
+
+        // Verify status remains QUARANTINED
+        DocumentEntity refreshed = documentRepository.findById(doc.getId()).orElseThrow();
+        assertEquals("QUARANTINED", refreshed.getStatus());
+
+        // Verify security audit trail records integrity violation
+        List<AuditEventEntity> audits = auditEventRepository.findByEntityNameAndEntityIdOrderByTimestampDesc("DOCUMENT", doc.getId().toString());
+        assertTrue(audits.stream().anyMatch(a ->
+                "DOCUMENT_INTEGRITY_VIOLATION".equals(a.getAction()) &&
+                a.getDetailsJson().contains("SHA-256 mismatch")));
+    }
+
+    @Test
+    public void testQuarantineRelease_MissingChecksum_Rejected() throws IOException {
+        MockMultipartFile file = new MockMultipartFile("file", "missing_hash.pdf", "application/pdf", VALID_PDF_BYTES);
+        CreateDocumentRequest req = CreateDocumentRequest.builder()
+                .title("Missing Checksum Document")
+                .category("BLUEPRINT_DRAWING")
+                .securityClassification("INTERNAL_STAFF")
+                .build();
+
+        DocumentResponse doc = documentService.uploadDocument(req, file, staffAuth);
+
+        DocumentEntity entity = documentRepository.findById(doc.getId()).orElseThrow();
+        entity.setStatus("QUARANTINED");
+        documentRepository.save(entity);
+
+        DocumentVersionEntity latest = documentVersionRepository.findByDocumentIdOrderByVersionNumberDesc(doc.getId()).get(0);
+        latest.setSha256Checksum("   ");
+        documentVersionRepository.save(latest);
+
+        QuarantineReleaseRequest releaseReq = QuarantineReleaseRequest.builder()
+                .reason("Attempt release with blank checksum")
+                .build();
+
+        IllegalStateException exNull = assertThrows(IllegalStateException.class, () ->
+                documentService.releaseQuarantine(doc.getId(), releaseReq, adminAuth));
+        assertTrue(exNull.getMessage().contains("Recorded SHA-256 checksum is missing"));
+
+        // Verify document remains quarantined
+        DocumentEntity refreshed = documentRepository.findById(doc.getId()).orElseThrow();
+        assertEquals("QUARANTINED", refreshed.getStatus());
+    }
+
+    @Test
+    public void testQuarantineRelease_MalformedChecksum_Rejected() throws IOException {
+        MockMultipartFile file = new MockMultipartFile("file", "malformed_hash.pdf", "application/pdf", VALID_PDF_BYTES);
+        CreateDocumentRequest req = CreateDocumentRequest.builder()
+                .title("Malformed Checksum Document")
+                .category("BLUEPRINT_DRAWING")
+                .securityClassification("INTERNAL_STAFF")
+                .build();
+
+        DocumentResponse doc = documentService.uploadDocument(req, file, staffAuth);
+
+        DocumentEntity entity = documentRepository.findById(doc.getId()).orElseThrow();
+        entity.setStatus("QUARANTINED");
+        documentRepository.save(entity);
+
+        DocumentVersionEntity latest = documentVersionRepository.findByDocumentIdOrderByVersionNumberDesc(doc.getId()).get(0);
+        latest.setSha256Checksum("invalid-short-hash");
+        documentVersionRepository.save(latest);
+
+        QuarantineReleaseRequest releaseReq = QuarantineReleaseRequest.builder()
+                .reason("Attempt release with malformed checksum")
+                .build();
+
+        IllegalStateException exMalformed = assertThrows(IllegalStateException.class, () ->
+                documentService.releaseQuarantine(doc.getId(), releaseReq, adminAuth));
+        assertTrue(exMalformed.getMessage().contains("Recorded SHA-256 checksum is malformed"));
+
+        // Verify document remains quarantined
+        DocumentEntity refreshed = documentRepository.findById(doc.getId()).orElseThrow();
+        assertEquals("QUARANTINED", refreshed.getStatus());
+    }
+
+    @Test
+    public void testQuarantineRelease_CorruptedStoredContent_Rejected() throws IOException {
+        MockMultipartFile file = new MockMultipartFile("file", "corrupted_content.pdf", "application/pdf", VALID_PDF_BYTES);
+        CreateDocumentRequest req = CreateDocumentRequest.builder()
+                .title("Corrupted Storage Content Document")
+                .category("BLUEPRINT_DRAWING")
+                .securityClassification("INTERNAL_STAFF")
+                .build();
+
+        DocumentResponse doc = documentService.uploadDocument(req, file, staffAuth);
+
+        DocumentEntity entity = documentRepository.findById(doc.getId()).orElseThrow();
+        entity.setStatus("QUARANTINED");
+        documentRepository.save(entity);
+
+        DocumentVersionEntity latest = documentVersionRepository.findByDocumentIdOrderByVersionNumberDesc(doc.getId()).get(0);
+
+        // Corrupt physical storage payload by overwriting with altered bytes
+        byte[] alteredBytes = "%PDF-1.4\nAltered unauthorized byte payload\n%%EOF".getBytes(StandardCharsets.ISO_8859_1);
+        storageService.storeFile(new ByteArrayInputStream(alteredBytes), alteredBytes.length, "application/pdf", latest.getStorageKey());
+
+        QuarantineReleaseRequest releaseReq = QuarantineReleaseRequest.builder()
+                .reason("Attempt release with physically corrupted payload")
+                .build();
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class, () ->
+                documentService.releaseQuarantine(doc.getId(), releaseReq, adminAuth));
+        assertTrue(ex.getMessage().contains("Stored file integrity check failed (SHA-256 mismatch)"));
+
+        DocumentEntity refreshed = documentRepository.findById(doc.getId()).orElseThrow();
+        assertEquals("QUARANTINED", refreshed.getStatus());
+    }
+
+    @Test
+    public void testQuarantineRelease_ScannerFailureAfterChecksumVerification_QuarantinePreserved() throws IOException {
+        // Embed EICAR test signature inside a valid PDF
+        byte[] infectedPdfBytes = ("%PDF-1.4\n1 0 obj\n<< /Type /Catalog >>\nendobj\n" +
+                "X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*\n" +
+                "trailer\n<< >>\n%%EOF").getBytes(StandardCharsets.ISO_8859_1);
+
+        MockMultipartFile file = new MockMultipartFile("file", "eicar_checksum_test.pdf", "application/pdf", infectedPdfBytes);
+        CreateDocumentRequest req = CreateDocumentRequest.builder()
+                .title("EICAR Checksum Verified Document")
+                .category("BLUEPRINT_DRAWING")
+                .securityClassification("INTERNAL_STAFF")
+                .build();
+
+        DocumentResponse doc = documentService.uploadDocument(req, file, staffAuth);
+        assertEquals("QUARANTINED", doc.getStatus());
+
+        // Checksum is valid and intact on disk, but malware scanner will detect EICAR upon rescan
+        QuarantineReleaseRequest releaseReq = QuarantineReleaseRequest.builder()
+                .reason("Admin override attempt for flagged file with matching checksum")
+                .build();
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class, () ->
+                documentService.releaseQuarantine(doc.getId(), releaseReq, adminAuth));
+        assertTrue(ex.getMessage().contains("Antivirus rescan failed"));
+
+        // Verify status remains QUARANTINED
+        DocumentEntity refreshed = documentRepository.findById(doc.getId()).orElseThrow();
+        assertEquals("QUARANTINED", refreshed.getStatus());
+
+        // Verify audit event records RESCAN_FAILED
+        List<AuditEventEntity> audits = auditEventRepository.findByEntityNameAndEntityIdOrderByTimestampDesc("DOCUMENT", doc.getId().toString());
+        assertTrue(audits.stream().anyMatch(a ->
+                "DOCUMENT_QUARANTINE_RELEASE_REJECTED".equals(a.getAction()) &&
+                a.getDetailsJson().contains("RESCAN_FAILED")));
+    }
+
+    @Test
+    public void testQuarantineRelease_AdministrativeReasonValidation() throws IOException {
+        MockMultipartFile file = new MockMultipartFile("file", "reason_test.pdf", "application/pdf", VALID_PDF_BYTES);
+        CreateDocumentRequest req = CreateDocumentRequest.builder()
+                .title("Reason Validation Test Document")
+                .category("BLUEPRINT_DRAWING")
+                .securityClassification("INTERNAL_STAFF")
+                .build();
+
+        DocumentResponse doc = documentService.uploadDocument(req, file, staffAuth);
+
+        DocumentEntity entity = documentRepository.findById(doc.getId()).orElseThrow();
+        entity.setStatus("QUARANTINED");
+        documentRepository.save(entity);
+
+        // 1. Null request
+        assertThrows(IllegalArgumentException.class, () ->
+                documentService.releaseQuarantine(doc.getId(), (QuarantineReleaseRequest) null, adminAuth));
+
+        // 2. Blank reason
+        assertThrows(IllegalArgumentException.class, () ->
+                documentService.releaseQuarantine(doc.getId(), new QuarantineReleaseRequest("   "), adminAuth));
+
+        // 3. Short reason (< 5 characters)
+        assertThrows(IllegalArgumentException.class, () ->
+                documentService.releaseQuarantine(doc.getId(), new QuarantineReleaseRequest("pass"), adminAuth));
+
+        // 4. Excessively long reason (> 500 characters)
+        assertThrows(IllegalArgumentException.class, () ->
+                documentService.releaseQuarantine(doc.getId(), new QuarantineReleaseRequest("a".repeat(501)), adminAuth));
+
+        // Document remains quarantined throughout invalid attempts
+        DocumentEntity refreshed = documentRepository.findById(doc.getId()).orElseThrow();
+        assertEquals("QUARANTINED", refreshed.getStatus());
+    }
+
+    @Test
+    public void testQuarantineRelease_UnauthorizedUsers_Forbidden() throws IOException {
+        MockMultipartFile file = new MockMultipartFile("file", "auth_target.pdf", "application/pdf", VALID_PDF_BYTES);
+        CreateDocumentRequest req = CreateDocumentRequest.builder()
+                .title("Authorization Target Document")
+                .category("BLUEPRINT_DRAWING")
+                .securityClassification("PUBLIC_CLIENT")
+                .clientId(clientA.getId())
+                .build();
+
+        DocumentResponse doc = documentService.uploadDocument(req, file, staffAuth);
+
+        DocumentEntity entity = documentRepository.findById(doc.getId()).orElseThrow();
+        entity.setStatus("QUARANTINED");
+        documentRepository.save(entity);
+
+        QuarantineReleaseRequest releaseReq = QuarantineReleaseRequest.builder()
+                .reason("Unauthorized release attempt")
+                .build();
+
+        // Client cannot release
+        assertThrows(AccessDeniedException.class, () ->
+                documentService.releaseQuarantine(doc.getId(), releaseReq, clientAAuth));
+
+        // Vendor cannot release
+        assertThrows(AccessDeniedException.class, () ->
+                documentService.releaseQuarantine(doc.getId(), releaseReq, vendorAAuth));
+
+        // Non-admin staff cannot release
+        assertThrows(AccessDeniedException.class, () ->
+                documentService.releaseQuarantine(doc.getId(), releaseReq, staffAuth));
+
+        // Document remains quarantined
+        DocumentEntity refreshed = documentRepository.findById(doc.getId()).orElseThrow();
+        assertEquals("QUARANTINED", refreshed.getStatus());
+    }
+
+    @Test
+    public void testQuarantineRelease_ControllerEndpointsIntegration() throws IOException {
+        MockMultipartFile file = new MockMultipartFile("file", "controller_target.pdf", "application/pdf", VALID_PDF_BYTES);
+        CreateDocumentRequest req = CreateDocumentRequest.builder()
+                .title("Controller Integration Document")
+                .category("BLUEPRINT_DRAWING")
+                .securityClassification("PUBLIC_CLIENT")
+                .clientId(clientA.getId())
+                .build();
+
+        DocumentResponse doc = documentService.uploadDocument(req, file, staffAuth);
+
+        DocumentEntity entity = documentRepository.findById(doc.getId()).orElseThrow();
+        entity.setStatus("QUARANTINED");
+        documentRepository.save(entity);
+
+        QuarantineReleaseRequest validReq = QuarantineReleaseRequest.builder()
+                .reason("Controller endpoint test valid release justification")
+                .build();
+
+        // 1. Client caller receives 403 Forbidden
+        ResponseEntity<?> forbiddenResp = documentController.releaseQuarantine(doc.getId(), validReq, clientAAuth);
+        assertEquals(403, forbiddenResp.getStatusCode().value());
+
+        // 2. Admin caller with invalid reason receives 400 Bad Request
+        ResponseEntity<?> badResp = documentController.releaseQuarantine(doc.getId(), new QuarantineReleaseRequest(""), adminAuth);
+        assertEquals(400, badResp.getStatusCode().value());
+
+        // 3. Admin caller with valid request receives 200 OK
+        ResponseEntity<?> okResp = documentController.releaseQuarantine(doc.getId(), validReq, adminAuth);
+        assertEquals(200, okResp.getStatusCode().value());
+
+        DocumentEntity refreshed = documentRepository.findById(doc.getId()).orElseThrow();
+        assertEquals("AVAILABLE", refreshed.getStatus());
+    }
+
+    @Test
+    public void testQuarantineRelease_ArchivedDocument_Rejected() throws IOException {
+        MockMultipartFile file = new MockMultipartFile("file", "archived_target.pdf", "application/pdf", VALID_PDF_BYTES);
+        CreateDocumentRequest req = CreateDocumentRequest.builder()
+                .title("Archived Target Document")
+                .category("BLUEPRINT_DRAWING")
+                .securityClassification("INTERNAL_STAFF")
+                .build();
+
+        DocumentResponse doc = documentService.uploadDocument(req, file, staffAuth);
+        documentService.archiveDocument(doc.getId(), staffAuth);
+
+        QuarantineReleaseRequest releaseReq = QuarantineReleaseRequest.builder()
+                .reason("Attempt release on archived document")
+                .build();
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class, () ->
+                documentService.releaseQuarantine(doc.getId(), releaseReq, adminAuth));
+        assertTrue(ex.getMessage().contains("Cannot release quarantine"));
+        assertTrue(ex.getMessage().contains("ARCHIVED"));
     }
 }
