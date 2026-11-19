@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useCallback } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -8,10 +9,7 @@ import {
   MapPin,
   Calendar,
   Ruler,
-  Layers,
   Sliders,
-  Sparkles,
-  Maximize2
 } from "lucide-react";
 import { PortfolioProject } from "@/config/siteConfig";
 import { useAudio } from "@/providers/AudioProvider";
@@ -137,18 +135,35 @@ export function ProjectDetailModal({ project, onClose, onEnquire }: ProjectDetai
                 className="relative h-64 sm:h-80 w-full overflow-hidden rounded-xl border border-stone-800 select-none cursor-ew-resize bg-stone-950"
               >
                 {/* Layer 1 (Underneath): Rendered Spatial Execution */}
-                <div className="absolute inset-0 bg-gradient-to-tr from-stone-900 via-amber-950/40 to-stone-900 flex items-center justify-center p-6 text-center">
-                  <div className="space-y-3 max-w-md">
-                    <div className="inline-block px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-mono">
-                      ✦ PHOTOREALISTIC SPATIAL EXECUTION
+                <div className="absolute inset-0 bg-gradient-to-tr from-stone-900 via-amber-950/40 to-stone-900 flex items-center justify-center p-6 text-center overflow-hidden">
+                  {project.image ? (
+                    <>
+                      <Image
+                        src={project.image}
+                        alt={project.title}
+                        fill
+                        className="object-cover object-center"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none" />
+                      <div className="absolute bottom-4 left-4 z-10 text-left">
+                        <span className="inline-block px-2.5 py-1 rounded bg-black/60 backdrop-blur-md text-[#D8B982] text-[10px] font-mono border border-white/10">
+                          ✦ BUILT SPATIAL REALITY
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="space-y-3 max-w-md">
+                      <div className="inline-block px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-mono">
+                        ✦ PHOTOREALISTIC SPATIAL EXECUTION
+                      </div>
+                      <div className="text-stone-300 font-sans text-xs leading-relaxed">
+                        Brutalist cast basalt walls, travertine stone floor plates, and warm circadian recessed illumination.
+                      </div>
+                      <div className="text-[10px] text-stone-500 font-mono">
+                        SURFACE: HONED NATURAL STONE & RECESSED COVE LIGHTING
+                      </div>
                     </div>
-                    <div className="text-stone-300 font-sans text-xs leading-relaxed">
-                      Brutalist cast basalt walls, travertine stone floor plates, and warm circadian recessed illumination.
-                    </div>
-                    <div className="text-[10px] text-stone-500 font-mono">
-                      SURFACE: HONED NATURAL STONE & RECESSED COVE LIGHTING
-                    </div>
-                  </div>
+                  )}
                 </div>
 
                 {/* Layer 2 (Clipped Top): Architectural CAD Blueprint */}
@@ -213,14 +228,14 @@ export function ProjectDetailModal({ project, onClose, onEnquire }: ProjectDetai
             <div className="space-y-5 mb-8 font-sans text-sm text-stone-300 leading-relaxed font-light">
               <div>
                 <div className="text-xs uppercase font-mono text-stone-400 mb-1.5 font-bold tracking-wider">
-                  {"/// Client Need & Site Brief"}
+                  {"/// "}Client Need & Site Brief
                 </div>
                 <p>{project.brief}</p>
               </div>
 
               <div>
                 <div className="text-xs uppercase font-mono text-stone-400 mb-1.5 font-bold tracking-wider">
-                  {"/// Architectural Response & Materiality"}
+                  {"/// "}Architectural Response & Materiality
                 </div>
                 <p>{project.designResponse}</p>
               </div>
@@ -228,7 +243,7 @@ export function ProjectDetailModal({ project, onClose, onEnquire }: ProjectDetai
 
             <div className="mb-8 pt-4 border-t border-stone-800">
               <div className="text-xs uppercase text-stone-400 mb-2.5 font-bold tracking-wider">
-                {"/// Scope Delivered"}
+                {"/// "}Scope Delivered
               </div>
               <div className="flex flex-wrap gap-2 mb-4">
                 {project.deliverables.map((d, i) => (

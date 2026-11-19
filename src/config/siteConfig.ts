@@ -13,6 +13,7 @@ export interface PortfolioProject {
   id: string;
   code: string;
   title: string;
+  image?: string;
   category: "Residential" | "Commercial" | "Interior" | "Landscape" | "Turnkey";
   location: string;
   year: string;
@@ -183,6 +184,7 @@ export const siteConfig: SiteConfig = {
       id: "the-monolith-sanctuary",
       code: "PRJ_ARCH_2026_01",
       title: "The Monolith Sanctuary",
+      image: "/projects/monolith-sanctuary.png",
       category: "Residential",
       location: "Khandala, Maharashtra",
       year: "2026",
@@ -207,6 +209,7 @@ export const siteConfig: SiteConfig = {
       id: "carrara-stone-penthouse",
       code: "PRJ_INT_2025_04",
       title: "The Travertine Penthouse",
+      image: "/projects/travertine-penthouse.png",
       category: "Interior",
       location: "Worli, Mumbai",
       year: "2025",
@@ -231,6 +234,7 @@ export const siteConfig: SiteConfig = {
       id: "terracotta-courtyard-estate",
       code: "PRJ_LAND_2026_02",
       title: "Terracotta Courtyard Estate",
+      image: "/projects/terracotta-courtyard-estate.png",
       category: "Landscape",
       location: "Alibaug, Maharashtra",
       year: "2026",

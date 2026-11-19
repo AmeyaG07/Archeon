@@ -1,8 +1,11 @@
-
 "use client";
 
 import React from "react";
 import { ArrowUpRight, MapPin, MoveUpRight } from "lucide-react";
+import {
+  RevealText,
+  HairlineRule,
+} from "@/components/motion/EditorialMotion";
 
 interface ContactSectionProps {
   onOpenConsultation: () => void;
@@ -14,9 +17,59 @@ export function ContactSection({
   return (
     <section
       id="contact"
-      className="bg-[#111111] py-24 text-[#F2F0EB] sm:py-32"
+      className="relative overflow-hidden bg-[#111111] py-24 text-[#F2F0EB] sm:py-32"
     >
-      <div className="editorial-container">
+      {/* Thematic Background: Nagpur Studio Radar Geographic Scan & Breathing Horizon Glow */}
+      <div className="pointer-events-none absolute inset-0 -z-0 overflow-hidden select-none">
+        {/* Breathing Amber / Terracotta Horizon Glow */}
+        <div className="absolute -bottom-40 left-1/2 h-[420px] w-[900px] -translate-x-1/2 rounded-full bg-gradient-to-t from-[#C8621E]/25 via-[#D97724]/12 to-transparent blur-[100px] animate-[pulse_6s_ease-in-out_infinite]" />
+
+        {/* Top-Right Ambient Beacon */}
+        <div
+          className="absolute -top-32 right-10 h-[500px] w-[500px] rounded-full blur-[100px]"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(200, 98, 30, 0.12) 0%, rgba(184, 137, 74, 0.05) 50%, transparent 75%)",
+          }}
+        />
+
+        {/* Nagpur Geographic Coordinates Radar Scan SVG */}
+        <svg
+          className="absolute inset-0 h-full w-full opacity-[0.09]"
+          viewBox="0 0 1440 900"
+          preserveAspectRatio="xMidYMid slice"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          {/* Concentric Radar Rings from Nagpur Studio Hub */}
+          <g transform="translate(1080, 420)">
+            <circle cx="0" cy="0" r="380" stroke="#B8894A" strokeWidth="0.8" strokeDasharray="4 8" />
+            <circle cx="0" cy="0" r="280" stroke="#C8621E" strokeWidth="0.8" strokeDasharray="3 6" />
+            <circle cx="0" cy="0" r="180" stroke="#B8894A" strokeWidth="1" strokeDasharray="2 4" />
+            <circle cx="0" cy="0" r="90" stroke="#C8621E" strokeWidth="1" />
+            <circle cx="0" cy="0" r="6" fill="#C8621E" className="animate-ping" style={{ animationDuration: "3s" }} />
+            <circle cx="0" cy="0" r="4" fill="#F59E0B" />
+
+            {/* Rotating Radar Sweep Line */}
+            <g className="animate-[spin_18s_linear_infinite]">
+              <line x1="0" y1="0" x2="380" y2="0" stroke="#D97724" strokeWidth="1.2" strokeOpacity="0.8" />
+            </g>
+          </g>
+
+          {/* Coordinate Crosshairs & Latitude / Longitude Grids */}
+          <line x1="0" y1="420" x2="1440" y2="420" stroke="#FFFFFF" strokeWidth="0.5" strokeDasharray="6 6" strokeOpacity="0.3" />
+          <line x1="1080" y1="0" x2="1080" y2="900" stroke="#FFFFFF" strokeWidth="0.5" strokeDasharray="6 6" strokeOpacity="0.3" />
+
+          {/* Telemetry Coordinate Stamps */}
+          <g fill="#D97724" fontFamily="monospace" fontSize="9" letterSpacing="2.5">
+            <text x="1095" y="405">RADAR CENTER // 21.1458° N, 79.0882° E</text>
+            <text x="1095" y="440">SANCTUARY BEACON // NAGPUR HUB</text>
+            <text x="60" y="412">LATITUDE PARALLEL // 21.1458° N</text>
+          </g>
+        </svg>
+      </div>
+
+      <div className="editorial-container relative z-10">
         <div className="grid gap-16 lg:grid-cols-12">
           {/* Main CTA */}
           <div className="lg:col-span-7">
@@ -24,28 +77,39 @@ export function ContactSection({
               05 / Start a Conversation
             </p>
 
-            <h2 className="mt-8 max-w-3xl font-serif text-6xl font-light leading-[0.92] tracking-tight sm:text-8xl">
-              Have a space
-              <br />
-              in <span className="italic text-[#C6A779]">mind?</span>
-            </h2>
+            <div className="mt-8 max-w-3xl">
+              <RevealText>
+                <h2 className="font-serif text-6xl font-light leading-[0.92] tracking-tight sm:text-8xl">
+                  Have a space
+                </h2>
+              </RevealText>
+              <RevealText delay={0.12}>
+                <h2 className="font-serif text-6xl font-light leading-[0.92] tracking-tight sm:text-8xl">
+                  in <span className="italic text-[#D97724]">mind?</span>
+                </h2>
+              </RevealText>
+            </div>
 
-            <p className="mt-8 max-w-lg text-sm leading-8 text-white/60">
-              Tell us about your ideas, aspirations and project.
-              Let&apos;s begin with a conversation.
-            </p>
+            <RevealText delay={0.22}>
+              <p className="mt-8 max-w-lg text-sm leading-8 text-white/60">
+                Tell us about your ideas, aspirations and project.
+                Let&apos;s begin with a conversation.
+              </p>
+            </RevealText>
 
-            <button
-              type="button"
-              onClick={onOpenConsultation}
-              className="group mt-10 inline-flex min-h-14 items-center gap-8 bg-[#F2F0EB] px-7 text-[10px] font-medium uppercase tracking-[0.15em] text-[#111111] transition-colors duration-300 hover:bg-[#B68A4A]"
-            >
-              Request a Consultation
-              <ArrowUpRight
-                size={17}
-                className="transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
-              />
-            </button>
+            <div className="mt-10">
+              <button
+                type="button"
+                onClick={onOpenConsultation}
+                className="group relative inline-flex min-h-14 items-center gap-8 overflow-hidden bg-[#F2F0EB] px-8 text-[10px] font-medium uppercase tracking-[0.16em] text-[#111111] shadow-[0_0_30px_rgba(217,119,36,0.25)] transition-all duration-300 hover:bg-[#D97724] hover:text-white hover:shadow-[0_0_45px_rgba(217,119,36,0.6)]"
+              >
+                Request a Consultation
+                <ArrowUpRight
+                  size={17}
+                  className="transition-transform duration-300 group-hover:-translate-y-1 group-hover:translate-x-1"
+                />
+              </button>
+            </div>
           </div>
 
           {/* Contact Details */}
@@ -90,17 +154,14 @@ export function ContactSection({
               </a>
             </div>
 
-            <div className="mt-14 border-t border-white/20 pt-8">
+            <div className="mt-14">
+              <HairlineRule color="bg-white/20" className="mb-8" />
               <p className="editorial-eyebrow text-[#B68A4A]">
                 Principal Architect
               </p>
 
               <p className="mt-4 font-serif text-3xl text-white">
                 Ar. Mandar Bhalekar
-              </p>
-
-              <p className="mt-2 text-xs text-white/45">
-                ArcheOn Design Studio
               </p>
             </div>
           </div>
