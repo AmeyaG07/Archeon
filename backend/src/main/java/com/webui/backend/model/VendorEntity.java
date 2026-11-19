@@ -1,5 +1,6 @@
 package com.webui.backend.model;
 
+import com.webui.backend.security.crypto.VendorBankDetailsEncryptionConverter;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -43,6 +44,7 @@ public class VendorEntity {
 
     private String pan;
 
+    @Convert(converter = VendorBankDetailsEncryptionConverter.class)
     @Column(name = "bank_details_json", columnDefinition = "TEXT")
     private String bankDetailsJson;
 

@@ -68,6 +68,8 @@ app:
 
   security:
     revocation-strategy: ${APP_SECURITY_REVOCATION_STRATEGY:in-memory}
+    encryption:
+      secret-key: ${APP_ENCRYPTION_SECRET:MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDE=}
 
   cors:
     allowed-origins: "http://localhost:3000,http://127.0.0.1:3000"

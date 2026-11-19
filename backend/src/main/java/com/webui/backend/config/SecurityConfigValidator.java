@@ -15,9 +15,11 @@ import java.util.Set;
 public class SecurityConfigValidator {
 
     public static final String DEFAULT_DEV_SECRET = "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970";
+    public static final String DEFAULT_DEV_ENCRYPTION_SECRET = "MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDE=";
 
     private static final Set<String> KNOWN_INSECURE_SECRETS = Set.of(
             DEFAULT_DEV_SECRET.toLowerCase(),
+            DEFAULT_DEV_ENCRYPTION_SECRET.toLowerCase(),
             "secret",
             "secretkey",
             "changeme",
@@ -26,7 +28,9 @@ public class SecurityConfigValidator {
             "admin123",
             "archeon",
             "archeon-secret",
-            "archeon-jwt-secret"
+            "archeon-jwt-secret",
+            "aes-key",
+            "encryption-secret"
     );
 
     @Autowired
@@ -113,6 +117,43 @@ public class SecurityConfigValidator {
             throw new IllegalStateException(
                     "FATAL SECURITY MISCONFIGURATION: app.dms.clamav.host is missing or blank in production. " +
                     "Set APP_DMS_CLAMAV_HOST environment variable."
+            );
+        }
+
+        // 4. Enforce Mandatory, Non-Default, High-Entropy AES-256 Encryption Secret in Production
+        String encSecret = env.getProperty("app.security.encryption.secret-key");
+        if (!StringUtils.hasText(encSecret)) {
+            throw new IllegalStateException(
+                    "FATAL SECURITY MISCONFIGURATION: app.security.encryption.secret-key is missing or blank in production. " +
+                    "Set APP_ENCRYPTION_SECRET environment variable."
+            );
+        }
+
+        String trimmedEncSecret = encSecret.trim();
+
+        // 4a. Reject known default dev encryption key
+        if (DEFAULT_DEV_ENCRYPTION_SECRET.equalsIgnoreCase(trimmedEncSecret) ||
+                KNOWN_INSECURE_SECRETS.contains(trimmedEncSecret.toLowerCase())) {
+            throw new IllegalStateException(
+                    "FATAL SECURITY MISCONFIGURATION: app.security.encryption.secret-key must not use known default or development secrets in production. " +
+                    "Generate a cryptographically secure, random 256-bit Base64 secret."
+            );
+        }
+
+        // 4b. Enforce valid Base64 decoding and exact 32 bytes (256 bits)
+        byte[] encKeyBytes;
+        try {
+            encKeyBytes = Decoders.BASE64.decode(trimmedEncSecret);
+        } catch (Exception ex) {
+            throw new IllegalStateException(
+                    "FATAL SECURITY MISCONFIGURATION: app.security.encryption.secret-key must be a valid Base64-encoded string in production."
+            );
+        }
+
+        if (encKeyBytes == null || encKeyBytes.length != 32) {
+            throw new IllegalStateException(
+                    "FATAL SECURITY MISCONFIGURATION: app.security.encryption.secret-key does not meet the key length requirement " +
+                    "(exactly 256 bits / 32 bytes required for AES-256)."
             );
         }
     }
