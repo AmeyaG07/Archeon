@@ -5,7 +5,8 @@
 **Branch:** `backend/phase4.3.1-dms-security-remediation`  
 **Base Branch:** `backend/phase4.3-document-management`  
 **Base Commit:** `57bcf4d313618a4dff18f0dba65176050c818e91`  
-**Final Commit Hash:** `0d9c660f7868fc3e1208990cf1db9729ffea126c`  
+**Code Remediation Commit:** `0d9c660f7868fc3e1208990cf1db9729ffea126c`  
+**HEAD Commit:** `4027e7fa694c9f13dd48464a9846b9bb7d22dc65`  
 **Independent Audit Reference:** [PHASE4_3_INDEPENDENT_ACCEPTANCE.md](file:///D:/WEBUI/audit/backend/PHASE4_3_INDEPENDENT_ACCEPTANCE.md)  
 **Implementation Date:** 2026-11-19  
 
