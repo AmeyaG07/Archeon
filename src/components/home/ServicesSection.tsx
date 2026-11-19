@@ -75,8 +75,11 @@ export function ServicesSection({
               <button
                 type="button"
                 onClick={() => onSelectService(service)}
-                className="group relative flex min-h-[300px] w-full flex-col justify-between p-7 text-left transition-all duration-500 hover:bg-white sm:p-9"
+                className="group relative flex min-h-[300px] w-full flex-col justify-between p-7 text-left transition-all duration-500 hover:bg-white hover:-translate-y-1 hover:shadow-xl hover:shadow-black/[0.04] sm:p-9 overflow-hidden"
               >
+                {/* Bronze Accent Line Sweep on Hover */}
+                <span className="absolute bottom-0 left-0 h-[2px] w-0 bg-gradient-to-r from-[#D97724] to-[#B68A4A] transition-all duration-500 ease-out group-hover:w-full" />
+
                 <div>
                   <div className="flex items-center justify-between">
                     <span className="editorial-eyebrow text-[#B68A4A]">
@@ -103,7 +106,10 @@ export function ServicesSection({
                   </span>
 
                   <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[#D8D6D0] text-[#111111] transition-all duration-300 group-hover:border-[#B68A4A] group-hover:bg-[#B68A4A] group-hover:text-white">
-                    <ArrowUpRight size={16} />
+                    <ArrowUpRight
+                      size={16}
+                      className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                    />
                   </span>
                 </div>
               </button>

@@ -51,34 +51,40 @@ export function Header({
     <>
       <header className="fixed inset-x-0 top-0 z-50 border-b border-[#D8D6D0]/80 bg-[#F2F0EB]/95 backdrop-blur-md">
         <div className="editorial-container flex h-[76px] items-center justify-between">
-          {/* Brand */}
-          <Link href="/" aria-label="ArcheOn Design Studio homepage" className="relative z-10 flex shrink-0 items-center">
-            <Image
-              src="/brand-assets/logo.png"
-              alt="ArcheOn Design Studio"
-              width={160}
-              height={90}
-              priority
-              className="h-[48px] w-auto object-contain"
-            />
-          </Link>
+          {/* Brand & Desktop Navigation */}
+          <div className="flex items-center">
+            <Link
+              href="/"
+              aria-label="ArcheOn Design Studio homepage"
+              className="group relative z-10 mr-8 flex shrink-0 items-center rounded-sm bg-[#111111] px-2.5 py-1 shadow-sm transition-transform duration-300 hover:scale-[1.02] lg:mr-12"
+            >
+              <Image
+                src="/brand-assets/logo.png"
+                alt="ArcheOn Design Studio"
+                width={160}
+                height={90}
+                priority
+                className="h-10 w-auto object-contain sm:h-11"
+              />
+            </Link>
 
-          {/* Desktop Navigation */}
-          <nav
-            aria-label="Main navigation"
-            className="hidden items-center gap-7 lg:flex"
-          >
-            {navigation.map((item) => (
-              <button
-                key={item.label}
-                type="button"
-                onClick={() => handleNavigation(item.href)}
-                className="editorial-link text-[11px] font-medium uppercase tracking-[0.13em] text-[#55534F]"
-              >
-                {item.label}
-              </button>
-            ))}
-          </nav>
+            {/* Desktop Navigation */}
+            <nav
+              aria-label="Main navigation"
+              className="hidden items-center gap-7 lg:flex"
+            >
+              {navigation.map((item) => (
+                <button
+                  key={item.label}
+                  type="button"
+                  onClick={() => handleNavigation(item.href)}
+                  className="editorial-link text-[11px] font-medium uppercase tracking-[0.13em] text-[#55534F] hover:text-[#111111]"
+                >
+                  {item.label}
+                </button>
+              ))}
+            </nav>
+          </div>
 
           {/* Desktop Actions */}
           <div className="hidden items-center gap-5 lg:flex">

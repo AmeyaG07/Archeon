@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useRef, useState, useCallback, useSyncExternalStore } from "react";
-import Image from "next/image";
 
 function subscribeReducedMotion(callback: () => void) {
   if (typeof window === "undefined") return () => {};
@@ -20,14 +19,18 @@ function getReducedMotionServerSnapshot() {
 }
 
 interface FooterClockEmblemProps {
+  variant?: "default" | "background" | "compact";
   compact?: boolean;
   className?: string;
 }
 
 export function FooterClockEmblem({
+  variant = "default",
   compact = false,
   className = "",
 }: FooterClockEmblemProps) {
+  const isCompact = compact || variant === "compact";
+  const isBackground = variant === "background";
   const containerRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
@@ -138,7 +141,9 @@ export function FooterClockEmblem({
   return (
     <div
       className={`relative select-none ${
-        compact
+        isBackground
+          ? `w-full h-full flex flex-col items-center justify-center overflow-visible pointer-events-none ${className}`
+          : isCompact
           ? `flex flex-col items-start justify-start py-1 overflow-visible ${className}`
           : `w-full flex flex-col items-center justify-center py-12 overflow-hidden ${className}`
       }`}
@@ -150,15 +155,17 @@ export function FooterClockEmblem({
         {/* Upper-Left Beam: Warm Amber/Bronze */}
         <div
           className={`absolute -translate-x-[45%] -translate-y-[45%] rotate-[-42deg] rounded-full ${
-            compact
+            isBackground
+              ? "w-[min(125vw,1000px)] h-[min(22vw,180px)] blur-[60px]"
+              : isCompact
               ? "w-[240px] sm:w-[280px] h-[50px] blur-[30px]"
               : "w-[360px] sm:w-[460px] h-[75px] blur-[42px]"
           }`}
           style={{
             background:
               "linear-gradient(90deg, rgba(217, 119, 36, 0.38) 0%, rgba(182, 138, 74, 0.16) 55%, transparent 100%)",
-            filter: compact ? "blur(30px)" : "blur(42px)",
-            opacity: isHovered ? 0.95 : 0.75,
+            filter: isBackground ? "blur(60px)" : isCompact ? "blur(30px)" : "blur(42px)",
+            opacity: isBackground ? 0.7 : isHovered ? 0.95 : 0.75,
             transition: "opacity 0.6s ease",
           }}
         />
@@ -166,15 +173,17 @@ export function FooterClockEmblem({
         {/* Lower-Right Beam: Cool Electric/Sapphire Blue */}
         <div
           className={`absolute translate-x-[45%] translate-y-[45%] rotate-[138deg] rounded-full ${
-            compact
+            isBackground
+              ? "w-[min(125vw,1000px)] h-[min(22vw,180px)] blur-[60px]"
+              : isCompact
               ? "w-[240px] sm:w-[280px] h-[50px] blur-[30px]"
               : "w-[360px] sm:w-[460px] h-[75px] blur-[42px]"
           }`}
           style={{
             background:
               "linear-gradient(90deg, rgba(59, 130, 246, 0.36) 0%, rgba(96, 165, 250, 0.14) 55%, transparent 100%)",
-            filter: compact ? "blur(30px)" : "blur(42px)",
-            opacity: isHovered ? 0.95 : 0.75,
+            filter: isBackground ? "blur(60px)" : isCompact ? "blur(30px)" : "blur(42px)",
+            opacity: isBackground ? 0.65 : isHovered ? 0.95 : 0.75,
             transition: "opacity 0.6s ease",
           }}
         />
@@ -182,12 +191,16 @@ export function FooterClockEmblem({
         {/* Center Ambient Core Glow */}
         <div
           className={`absolute rounded-full ${
-            compact ? "w-[180px] h-[180px] blur-[22px]" : "w-[280px] h-[280px] blur-[28px]"
+            isBackground
+              ? "w-[min(90vw,720px)] h-[min(90vw,720px)] blur-[50px]"
+              : isCompact
+              ? "w-[180px] h-[180px] blur-[22px]"
+              : "w-[280px] h-[280px] blur-[28px]"
           }`}
           style={{
             background:
               "radial-gradient(circle at center, rgba(217,119,36,0.18) 0%, rgba(59,130,246,0.12) 45%, transparent 72%)",
-            filter: compact ? "blur(22px)" : "blur(28px)",
+            filter: isBackground ? "blur(50px)" : isCompact ? "blur(22px)" : "blur(28px)",
           }}
         />
       </div>
@@ -200,8 +213,10 @@ export function FooterClockEmblem({
         onMouseMove={handleMouseMove}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        className={`relative transition-transform duration-200 ease-out ${
-          compact
+        className={`relative transition-transform duration-200 ease-out will-change-transform ${
+          isBackground
+            ? "w-[min(82vw,680px)] h-[min(82vw,680px)] opacity-55"
+            : isCompact
             ? "w-[180px] h-[180px] sm:w-[200px] sm:h-[200px]"
             : "w-[240px] h-[240px] sm:w-[300px] sm:h-[300px]"
         }`}
@@ -221,6 +236,11 @@ export function FooterClockEmblem({
           role="img"
         >
           <defs>
+            {/* Center Logo Circular Clip */}
+            <clipPath id="center-pod-clip">
+              <circle cx="160" cy="160" r="46" />
+            </clipPath>
+
             {/* Outer Bezel Specular Metallic Gradient */}
             <linearGradient
               id="outer-bezel-rim"
@@ -580,14 +600,27 @@ export function FooterClockEmblem({
               cy="160"
               r="48"
               fill="url(#center-glass-pod)"
-              stroke="rgba(255, 255, 255, 0.16)"
+              stroke="rgba(255, 255, 255, 0.2)"
               strokeWidth="1.5"
             />
+
+            {/* Official ArcheOn Logo Image Blended Seamlessly into Recessed Pod */}
+            <g clipPath="url(#center-pod-clip)">
+              <image
+                href="/brand-assets/logo.png"
+                x="116"
+                y="126"
+                width="88"
+                height="68"
+                preserveAspectRatio="xMidYMid meet"
+                style={{ mixBlendMode: "screen", opacity: 0.95 }}
+              />
+            </g>
 
             {/* Specular Diagonal Sheen on Glass */}
             <path
               d="M 126 136 Q 160 124 194 136 A 48 48 0 0 1 126 136 Z"
-              fill="rgba(255, 255, 255, 0.06)"
+              fill="rgba(255, 255, 255, 0.08)"
             />
 
             {/* Inner Precision Bevel */}
@@ -596,56 +629,10 @@ export function FooterClockEmblem({
               cy="160"
               r="44"
               fill="none"
-              stroke="rgba(217, 119, 36, 0.28)"
+              stroke="rgba(217, 119, 36, 0.35)"
               strokeWidth="1"
               strokeDasharray="2 4"
             />
-
-            {/* ArcheOn Architectural Monogram "A" */}
-            <path
-              d="M 148 172 L 160 144 L 172 172"
-              fill="none"
-              stroke="#D97724"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <line
-              x1="152"
-              y1="164"
-              x2="168"
-              y2="164"
-              stroke="#D97724"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-            />
-            <circle
-              cx="160"
-              cy="164"
-              r="3.5"
-              fill="#F59E0B"
-              fillOpacity="0.4"
-              stroke="#F59E0B"
-              strokeWidth="1"
-            />
-
-            {/* Studio Wordmark */}
-            <text
-              x="160"
-              y="184"
-              textAnchor="middle"
-              className="font-mono text-[7px] uppercase tracking-[0.3em] font-semibold select-none fill-[#F2F0EB]"
-            >
-              ARCHEON
-            </text>
-            <text
-              x="160"
-              y="192"
-              textAnchor="middle"
-              className="font-mono text-[5.5px] uppercase tracking-[0.22em] select-none fill-[#B68A4A]"
-            >
-              NAGPUR
-            </text>
 
             {/* Center Pivot Jewel Cap */}
             <circle
@@ -659,39 +646,30 @@ export function FooterClockEmblem({
             <circle cx="160" cy="160" r="2.5" fill="#F59E0B" />
           </g>
         </svg>
-
-        {/* Crisp Watermark Logo Overlay for Brand Precision */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-10 mix-blend-screen">
-          <Image
-            src="/brand-assets/logo.png"
-            alt=""
-            width={100}
-            height={60}
-            className="w-16 h-auto object-contain"
-          />
-        </div>
       </div>
 
       {/* ================================================================= */}
-      {/* 5. STUDIO CHRONOMETER TELEMETRY & COORDINATES                      */}
+      {/* 5. STUDIO CHRONOMETER TELEMETRY (HIDDEN IN BACKGROUND MODE)        */}
       {/* ================================================================= */}
-      <div
-        className={`flex flex-col gap-1.5 ${
-          compact ? "items-start text-left mt-3.5" : "items-center text-center mt-6"
-        }`}
-      >
-        <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full border border-white/10 bg-white/[0.02] backdrop-blur-md">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#D97724] animate-pulse" />
-          <span className="font-mono text-[8.5px] uppercase tracking-[0.2em] text-[#D8D6D0]">
-            NAGPUR STUDIO // {formattedTime}
-          </span>
-        </div>
+      {!isBackground && (
+        <div
+          className={`flex flex-col gap-1.5 ${
+            isCompact ? "items-start text-left mt-3.5" : "items-center text-center mt-6"
+          }`}
+        >
+          <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full border border-white/10 bg-white/[0.02] backdrop-blur-md">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#D97724] animate-pulse" />
+            <span className="font-mono text-[8.5px] uppercase tracking-[0.2em] text-[#D8D6D0]">
+              NAGPUR STUDIO // {formattedTime}
+            </span>
+          </div>
 
-        <p className="font-mono text-[7.5px] uppercase tracking-[0.22em] text-white/40">
-          21.1458° N, 79.0882° E
-          {!compact && " • DUAL LUMINOUS CHRONOMETER"}
-        </p>
-      </div>
+          <p className="font-mono text-[7.5px] uppercase tracking-[0.22em] text-white/40">
+            21.1458° N, 79.0882° E
+            {!isCompact && " • DUAL LUMINOUS CHRONOMETER"}
+          </p>
+        </div>
+      )}
     </div>
   );
 }
