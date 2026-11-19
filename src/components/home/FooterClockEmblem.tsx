@@ -218,8 +218,8 @@ export function FooterClockEmblem({
         onMouseLeave={handleMouseLeave}
         className={`relative transition-transform duration-200 ease-out cursor-pointer ${
           compact
-            ? "w-[220px] h-[220px] sm:w-[250px] sm:h-[250px]"
-            : "w-[290px] h-[290px] sm:w-[350px] sm:h-[350px]"
+            ? "w-[240px] h-[240px] sm:w-[270px] sm:h-[270px]"
+            : "w-[300px] h-[300px] sm:w-[360px] sm:h-[360px]"
         }`}
         style={{
           transform: reducedMotion
@@ -269,9 +269,17 @@ export function FooterClockEmblem({
               <stop offset="100%" stopColor="#1F1C18" />
             </radialGradient>
 
-            {/* Circular Clip Path for Centering Original Logo (Enlarged) */}
+            {/* Radiant Ambient Gold Backlight for Centered Logo */}
+            <radialGradient id="center-pod-gold-ambient" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="rgba(245, 158, 11, 0.28)" />
+              <stop offset="45%" stopColor="rgba(217, 119, 36, 0.14)" />
+              <stop offset="80%" stopColor="#141312" />
+              <stop offset="100%" stopColor="#0B0B0A" />
+            </radialGradient>
+
+            {/* Circular Clip Path for Centering Original Logo (Expanded) */}
             <clipPath id="center-circle-logo-clip">
-              <circle cx="180" cy="180" r="64" />
+              <circle cx="180" cy="180" r="74" />
             </clipPath>
 
             {/* Colorful Glow Filters */}
@@ -469,74 +477,72 @@ export function FooterClockEmblem({
           {/* ============================================================= */}
           {/* CENTER CIRCULAR POD HOUSING THE ORIGINAL ARCHEON LOGO (EXPANDED) */}
           {/* ============================================================= */}
-          <g className="filter drop-shadow-[0_8px_26px_rgba(0,0,0,0.9)]">
+          <g className="filter drop-shadow-[0_8px_30px_rgba(0,0,0,0.95)]">
             {/* Concentric Pulsing Chromatic Ring */}
             <circle
               cx="180"
               cy="180"
-              r="72"
+              r="82"
               fill="none"
               stroke="#F59E0B"
               strokeWidth="1.2"
               strokeDasharray="3 4"
               className="animate-spin"
-              style={{ animationDuration: "14s" }}
-              opacity="0.65"
+              style={{ animationDuration: "16s" }}
+              opacity="0.75"
             />
 
-            {/* Heavy Beveled Metallic Outer Rim */}
+            {/* Heavy Beveled Metallic Outer Rim (Expanded to r = 76) */}
             <circle
               cx="180"
               cy="180"
-              r="66"
+              r="76"
               fill="url(#center-glass-pod)"
               stroke="#D97724"
-              strokeWidth="2.4"
+              strokeWidth="2.5"
             />
 
-            {/* Soft Ambient Gold Backlight for Logo Vibrancy */}
+            {/* Radiant Ambient Gold Backlight for Maximum Luminance & Contrast */}
             <circle
               cx="180"
               cy="180"
-              r="60"
-              fill="rgba(217, 119, 36, 0.15)"
+              r="73"
+              fill="url(#center-pod-gold-ambient)"
             />
 
-            {/* Specular Diagonal Sheen on Glass */}
-            <path
-              d="M 134 148 Q 180 132 226 148 A 66 66 0 0 1 134 148 Z"
-              fill="rgba(255, 255, 255, 0.08)"
-            />
-
-            {/* Inner Precision Bevel */}
+            {/* Precision Gold Perimeter Bevel */}
             <circle
               cx="180"
               cy="180"
-              r="62"
+              r="74"
               fill="none"
-              stroke="rgba(255, 255, 255, 0.18)"
+              stroke="rgba(245, 158, 11, 0.45)"
               strokeWidth="1"
             />
+            <circle
+              cx="180"
+              cy="180"
+              r="71"
+              fill="none"
+              stroke="rgba(255, 255, 255, 0.12)"
+              strokeWidth="0.8"
+            />
 
             {/* =========================================================== */}
-            {/* THE ORIGINAL ARCHEON BRAND LOGO (ENLARGED & PROMINENT)      */}
+            {/* THE ORIGINAL ARCHEON BRAND LOGO (EXPANDED & RADIANT GOLD)   */}
             {/* =========================================================== */}
             <image
-              href="/brand-assets/logo-transparent.png"
-              x="116"
-              y="116"
-              width="128"
-              height="128"
+              href="/brand-assets/logo-clock-center.png"
+              x="106"
+              y="106"
+              width="148"
+              height="148"
               preserveAspectRatio="xMidYMid meet"
               clipPath="url(#center-circle-logo-clip)"
               style={{
-                filter: "drop-shadow(0 2px 10px rgba(0,0,0,0.95))",
+                filter: "drop-shadow(0 0 10px rgba(245, 158, 11, 0.5)) drop-shadow(0 2px 8px rgba(0,0,0,0.95))",
               }}
             />
-
-            {/* Minimalist Micro Center Pivot Jewel (Unobtrusive) */}
-            <circle cx="180" cy="180" r="3" fill="#181716" stroke="#D97724" strokeWidth="1" />
-            <circle cx="180" cy="180" r="1.4" fill="#F59E0B" className="animate-pulse" />
           </g>
         </svg>
       </div>
