@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowUpRight } from "lucide-react";
 import { siteConfig } from "@/config/siteConfig";
+import { FooterClockEmblem } from "@/components/home/FooterClockEmblem";
 
 interface SiteFooterProps {
   onOpenClientPortal: () => void;
@@ -33,6 +34,11 @@ export function SiteFooter({
   return (
     <footer className="bg-[#111111] text-[#F2F0EB]">
       <div className="editorial-container">
+        {/* Signature Luxury Chronometer Emblem */}
+        <div className="border-t border-white/10 pt-16 pb-12 flex flex-col items-center justify-center">
+          <FooterClockEmblem />
+        </div>
+
         <div className="grid gap-12 border-t border-white/15 py-14 md:grid-cols-2 lg:grid-cols-4">
           {/* Brand */}
           <div>

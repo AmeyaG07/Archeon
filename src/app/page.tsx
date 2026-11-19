@@ -4,13 +4,13 @@
 import React, { useState } from "react";
 
 import { Header } from "@/components/ui/Header";
+import { OpeningPreloader } from "@/components/ui/OpeningPreloader";
 import { FloatingWorldSection } from "@/components/canvas/floating-world/FloatingWorldSection";
 import { ServicesSection } from "@/components/home/ServicesSection";
 import { ProjectsSection } from "@/components/home/ProjectsSection";
 import { ProcessSection } from "@/components/home/ProcessSection";
 import { ContactSection } from "@/components/home/ContactSection";
 import { SiteFooter } from "@/components/home/SiteFooter";
-import { StudioSection } from "@/components/home/StudioSection";
 
 
 import { ServiceModal } from "@/components/ui/ServiceModal";
@@ -54,6 +54,7 @@ export default function Home() {
 
   return (
     <AudioProvider>
+      <OpeningPreloader />
       <SmoothScroll>
         <main className="min-h-screen overflow-x-hidden bg-[#F2F0EB] text-[#111111]">
           <Header
