@@ -63,16 +63,29 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exceptions -> exceptions
-                        .authenticationEntryPoint((request, response, authException) ->
-                                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized: " + authException.getMessage()))
-                        .accessDeniedHandler((request, response, accessDeniedException) ->
-                                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Forbidden: " + accessDeniedException.getMessage()))
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.setContentType("application/json");
+                            response.setCharacterEncoding("UTF-8");
+                            response.getWriter().write("{\"error\":\"Unauthorized\",\"message\":\"" +
+                                    (authException.getMessage() != null ? authException.getMessage().replace("\"", "\\\"") : "Authentication required") +
+                                    "\",\"status\":401}");
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            response.setContentType("application/json");
+                            response.setCharacterEncoding("UTF-8");
+                            response.getWriter().write("{\"error\":\"Forbidden\",\"message\":\"" +
+                                    (accessDeniedException.getMessage() != null ? accessDeniedException.getMessage().replace("\"", "\\\"") : "Access denied") +
+                                    "\",\"status\":403}");
+                        })
                 )
                 .authorizeHttpRequests(auth -> auth
                         // 1. Explicitly Public Read & Auth Endpoints
-                        .requestMatchers("/api/auth/login", "/api/auth/refresh").permitAll()
+                        .requestMatchers("/api/auth/login", "/api/auth/refresh", "/error").permitAll()
                         .requestMatchers("/api/auth/logout", "/api/auth/logout-all", "/api/auth/sessions/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/invitations/accept").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/invitations/validate").permitAll()
                         .requestMatchers("/api/users/me", "/api/users/change-password").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/projects/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/manifesto/**").permitAll()
@@ -161,15 +174,16 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/leads").hasAnyRole("ADMIN", "STAFF")
                         .requestMatchers(HttpMethod.PATCH, "/api/leads/**").hasAnyRole("ADMIN", "STAFF")
 
-                        // 3. Protected Bill Approvals (Maker-Checker / Finance / Admin)
-                        .requestMatchers(HttpMethod.POST, "/api/approvals/initiate").hasAnyRole("ADMIN", "FINANCE_MAKER", "STAFF")
+                        // 3. Protected Bill Approvals (Maker-Checker / Finance / Admin / Vendor)
+                        .requestMatchers(HttpMethod.POST, "/api/approvals/initiate").hasAnyRole("ADMIN", "FINANCE_MAKER", "STAFF", "VENDOR")
                         .requestMatchers(HttpMethod.POST, "/api/approvals/*/approve-primary").hasAnyRole("ADMIN", "FINANCE_CHECKER", "FINANCE_CHECKER_1")
                         .requestMatchers(HttpMethod.POST, "/api/approvals/*/approve-secondary").hasAnyRole("ADMIN", "FINANCE_CHECKER_2", "FINANCE_MANAGER")
                         .requestMatchers(HttpMethod.POST, "/api/approvals/*/reject").hasAnyRole("ADMIN", "FINANCE_CHECKER", "FINANCE_MANAGER")
-                        .requestMatchers(HttpMethod.GET, "/api/approvals/**").hasAnyRole("ADMIN", "FINANCE_MAKER", "FINANCE_CHECKER", "FINANCE_MANAGER", "STAFF")
+                        .requestMatchers(HttpMethod.GET, "/api/approvals/**").hasAnyRole("ADMIN", "FINANCE_MAKER", "FINANCE_CHECKER", "FINANCE_MANAGER", "STAFF", "VENDOR")
 
                         // 4. Protected Financial Operations (Role-Separated)
-                        // A. Specific Cash Register Rules (Internal Only for GET /cash/**)
+                        // A. Specific Cash Register Rules (Internal Only for GET /cash/**, Scoped for my-settlements)
+                        .requestMatchers(HttpMethod.GET, "/api/finance/cash/my-settlements").hasAnyRole("ADMIN", "VENDOR", "CLIENT", "STAFF")
                         .requestMatchers(HttpMethod.GET, "/api/finance/cash/**").hasAnyRole("ADMIN", "FINANCE_MANAGER", "STAFF", "SITE_SUPERVISOR")
                         .requestMatchers(HttpMethod.POST, "/api/finance/cash/initiate").hasAnyRole("ADMIN", "SITE_SUPERVISOR", "STAFF")
                         .requestMatchers(HttpMethod.POST, "/api/finance/cash/*/respond").hasAnyRole("ADMIN", "VENDOR", "CLIENT")

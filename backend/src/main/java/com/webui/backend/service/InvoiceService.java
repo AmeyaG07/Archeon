@@ -4,9 +4,11 @@ import com.webui.backend.dto.invoice.InvoiceDto;
 import com.webui.backend.model.ClientEntity;
 import com.webui.backend.model.InvoiceEntity;
 import com.webui.backend.model.InvoiceItemEntity;
+import com.webui.backend.model.UserEntity;
 import com.webui.backend.repository.ClientRepository;
 import com.webui.backend.repository.InvoiceItemRepository;
 import com.webui.backend.repository.InvoiceRepository;
+import com.webui.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -22,6 +24,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -37,6 +40,7 @@ public class InvoiceService {
     private final InvoiceRepository invoiceRepository;
     private final InvoiceItemRepository invoiceItemRepository;
     private final ClientRepository clientRepository;
+    private final UserRepository userRepository;
     private final InvoicePdfGeneratorService invoicePdfGeneratorService;
     private final NotificationService notificationService;
 
@@ -274,7 +278,23 @@ public class InvoiceService {
 
     private UUID resolveClientIdForAuth(Authentication auth) {
         String username = auth.getName();
-        return clientRepository.findByEmail(username)
+        UserEntity user = userRepository.findByUsername(username).orElse(null);
+
+        if (user != null && user.getClientId() != null) {
+            ClientEntity client = clientRepository.findById(user.getClientId())
+                    .orElseThrow(() -> new AccessDeniedException("Active client organization not found for account: " + username));
+            return client.getId();
+        }
+
+        if (user != null && user.getEmail() != null) {
+            Optional<ClientEntity> clientByEmail = clientRepository.findByEmail(user.getEmail());
+            if (clientByEmail.isPresent()) {
+                return clientByEmail.get().getId();
+            }
+        }
+
+        return clientRepository.findByClientReference(username)
+                .or(() -> clientRepository.findByEmail(username))
                 .map(ClientEntity::getId)
                 .orElseThrow(() -> new AccessDeniedException("Client profile not found for principal: " + username));
     }

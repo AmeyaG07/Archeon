@@ -387,16 +387,25 @@ public class VendorService {
 
         InviteUserRequest inviteReq = InviteUserRequest.builder()
                 .email(vendor.getEmail())
+                .recipientName(vendor.getBusinessName())
                 .targetRole("ROLE_VENDOR")
                 .vendorId(vendorId)
+                .deliveryMethod("BOTH")
                 .build();
 
         InvitationResponse response = userInvitationService.createInvitation(inviteReq, auth);
 
-        vendor.setPortalAccess("INVITATION_PENDING");
-        vendor.setUpdatedAt(LocalDateTime.now());
-        vendorRepository.save(vendor);
+        updateVendorPortalStatus(vendorId, "INVITATION_PENDING");
 
         return response;
+    }
+
+    @Transactional
+    public void updateVendorPortalStatus(UUID vendorId, String portalAccess) {
+        vendorRepository.findById(vendorId).ifPresent(v -> {
+            v.setPortalAccess(portalAccess);
+            v.setUpdatedAt(LocalDateTime.now());
+            vendorRepository.save(v);
+        });
     }
 }

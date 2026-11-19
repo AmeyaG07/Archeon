@@ -30,6 +30,7 @@ public class DashboardService {
     private final OperationalProjectRepository projectRepository;
     private final ClientRepository clientRepository;
     private final VendorRepository vendorRepository;
+    private final UserRepository userRepository;
     private final BillApprovalRepository billApprovalRepository;
     private final CashSettlementRepository cashSettlementRepository;
     private final LeadRepository leadRepository;
@@ -131,13 +132,26 @@ public class DashboardService {
     @Transactional(readOnly = true)
     public DashboardDto.ClientDashboardResponse getClientDashboard(Authentication auth) {
         String username = auth != null ? auth.getName() : "anonymous";
-        ClientEntity client = clientRepository.findByEmail(username).orElse(null);
+        ClientEntity client = null;
+        com.webui.backend.model.UserEntity user = userRepository.findByUsername(username).orElse(null);
+        if (user != null && user.getClientId() != null) {
+            client = clientRepository.findById(user.getClientId()).orElse(null);
+        }
+        if (client == null && user != null && user.getEmail() != null) {
+            client = clientRepository.findByEmail(user.getEmail()).orElse(null);
+        }
+        if (client == null) {
+            client = clientRepository.findByClientReference(username)
+                    .or(() -> clientRepository.findByEmail(username)).orElse(null);
+        }
 
-        String clientName = client != null ? client.getFullName() : username;
-        String clientRef = client != null ? client.getClientReference() : "CLI-N/A";
+        final ClientEntity resolvedClient = client;
 
-        List<OperationalProjectEntity> projects = client != null
-                ? projectRepository.findAll().stream().filter(p -> p.getClientId() != null && p.getClientId().equals(client.getId())).collect(Collectors.toList())
+        String clientName = resolvedClient != null ? resolvedClient.getFullName() : username;
+        String clientRef = resolvedClient != null ? resolvedClient.getClientReference() : "CLI-N/A";
+
+        List<OperationalProjectEntity> projects = resolvedClient != null
+                ? projectRepository.findAll().stream().filter(p -> p.getClientId() != null && p.getClientId().equals(resolvedClient.getId())).collect(Collectors.toList())
                 : new ArrayList<>();
 
         List<DashboardDto.ClientProjectSummary> projectSummaries = projects.stream()
@@ -151,8 +165,8 @@ public class DashboardService {
                         .build())
                 .collect(Collectors.toList());
 
-        List<InvoiceEntity> outstandingInvoices = client != null
-                ? invoiceRepository.findOutstandingByClientId(client.getId())
+        List<InvoiceEntity> outstandingInvoices = resolvedClient != null
+                ? invoiceRepository.findOutstandingByClientId(resolvedClient.getId())
                 : new ArrayList<>();
 
         BigDecimal totalOutstanding = outstandingInvoices.stream()
@@ -181,7 +195,18 @@ public class DashboardService {
     @Transactional(readOnly = true)
     public DashboardDto.VendorDashboardResponse getVendorDashboard(Authentication auth) {
         String username = auth != null ? auth.getName() : "anonymous";
-        VendorEntity vendor = vendorRepository.findByEmail(username).orElse(null);
+        VendorEntity vendor = null;
+        com.webui.backend.model.UserEntity user = userRepository.findByUsername(username).orElse(null);
+        if (user != null && user.getVendorId() != null) {
+            vendor = vendorRepository.findById(user.getVendorId()).orElse(null);
+        }
+        if (vendor == null && user != null && user.getEmail() != null) {
+            vendor = vendorRepository.findByEmail(user.getEmail()).orElse(null);
+        }
+        if (vendor == null) {
+            vendor = vendorRepository.findByVendorReference(username)
+                    .or(() -> vendorRepository.findByEmail(username)).orElse(null);
+        }
 
         String vendorName = vendor != null ? vendor.getBusinessName() : username;
         String vendorRef = vendor != null ? vendor.getVendorReference() : "VEN-N/A";

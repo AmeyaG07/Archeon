@@ -74,6 +74,24 @@ app:
   cors:
     allowed-origins: "http://localhost:3000,http://127.0.0.1:3000"
 
+  portal:
+    base-url: ${APP_PORTAL_BASE_URL:http://localhost:3000}
+
+  mail:
+    enabled: ${APP_MAIL_ENABLED:true}
+    provider: ${APP_MAIL_PROVIDER:mock} # 'smtp' for live authenticated SMTP, 'mock' for in-memory deterministic test capture
+    from-address: ${APP_MAIL_FROM_ADDRESS:invitations@archeon.design}
+    from-name: ${APP_MAIL_FROM_NAME:ArcheOn Design Studio}
+    reply-to: ${APP_MAIL_REPLY_TO:support@archeon.design}
+    host: ${SPRING_MAIL_HOST:localhost}
+    port: ${SPRING_MAIL_PORT:587}
+    username: ${SPRING_MAIL_USERNAME:}
+    password: ${SPRING_MAIL_PASSWORD:}
+    auth: ${SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH:true}
+    starttls: ${SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE:true}
+    connection-timeout-ms: ${APP_MAIL_CONNECTION_TIMEOUT_MS:5000}
+    read-timeout-ms: ${APP_MAIL_READ_TIMEOUT_MS:10000}
+
   storage:
     provider: ${APP_STORAGE_PROVIDER:LOCAL_PRIVATE}
     local:

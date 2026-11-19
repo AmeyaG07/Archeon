@@ -74,6 +74,12 @@
 			<artifactId>spring-boot-starter-data-redis</artifactId>
 		</dependency>
 
+		<!-- Spring Boot Starter Mail (Transactional Email Delivery) -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
+
 		<!-- JJWT for JWT Token Generation & Verification -->
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>

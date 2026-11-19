@@ -4,6 +4,7 @@ import com.webui.backend.dto.identity.InvitationDto.*;
 import com.webui.backend.dto.identity.UserDto.UserSummaryResponse;
 import com.webui.backend.service.UserInvitationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -20,6 +21,16 @@ public class InvitationController {
 
     @Autowired
     private UserInvitationService invitationService;
+
+    @GetMapping("/validate")
+    public ResponseEntity<InvitationValidationResponse> validateInvitation(
+            @RequestParam(name = "token", required = false) String token) {
+        InvitationValidationResponse response = invitationService.validateInvitation(token);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CACHE_CONTROL, "no-store, no-cache, must-revalidate, max-age=0")
+                .header(HttpHeaders.PRAGMA, "no-cache")
+                .body(response);
+    }
 
     @PostMapping("/accept")
     public ResponseEntity<?> acceptInvitation(@RequestBody AcceptInvitationRequest req) {
@@ -68,6 +79,24 @@ public class InvitationController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/{id}/resend")
+    public ResponseEntity<?> resendInvitation(
+            @PathVariable UUID id,
+            @RequestBody(required = false) ResendInvitationRequest req,
+            Authentication auth
+    ) {
+        try {
+            InvitationResponse response = invitationService.resendInvitation(id, req, auth);
+            return ResponseEntity.ok(response);
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.GONE).body(Map.of("error", e.getMessage()));
         }
     }
 }

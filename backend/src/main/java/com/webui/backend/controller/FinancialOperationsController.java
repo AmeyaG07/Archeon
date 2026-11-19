@@ -37,6 +37,15 @@ public class FinancialOperationsController {
     @Autowired
     private CashSettlementRepository cashSettlementRepository;
 
+    @Autowired
+    private com.webui.backend.repository.UserRepository userRepository;
+
+    @Autowired
+    private com.webui.backend.repository.VendorRepository vendorRepository;
+
+    @Autowired
+    private com.webui.backend.repository.ClientRepository clientRepository;
+
     @Data
     public static class ProofSubmissionRequest {
         private String billId;
@@ -181,6 +190,13 @@ public class FinancialOperationsController {
             return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).body(Map.of("error", "Authentication required"));
         }
         String counterparty = auth.getName();
+        CashSettlementEntity target = cashSettlementRepository.findBySettlementRef(ref).orElse(null);
+        if (target != null) {
+            Set<String> ids = resolveCounterpartyIdentifiers(auth);
+            if (ids.contains(target.getCounterpartyId())) {
+                counterparty = target.getCounterpartyId();
+            }
+        }
         try {
             CashSettlementEntity csh = financialOperationsService.respondToCashSettlement(
                     ref, counterparty, req.isAcknowledge(), req.getNotes()
@@ -218,6 +234,45 @@ public class FinancialOperationsController {
     @GetMapping("/cash/all")
     public ResponseEntity<List<CashSettlementEntity>> getAllCashSettlements() {
         return ResponseEntity.ok(cashSettlementRepository.findAllByOrderByCreatedAtDesc());
+    }
+
+    @GetMapping("/cash/my-settlements")
+    public ResponseEntity<List<CashSettlementEntity>> getMyCashSettlements(Authentication auth) {
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getName())) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).body(Collections.emptyList());
+        }
+        Set<String> ids = resolveCounterpartyIdentifiers(auth);
+        List<CashSettlementEntity> list = cashSettlementRepository.findAllByOrderByCreatedAtDesc().stream()
+                .filter(c -> c.getCounterpartyId() != null && ids.contains(c.getCounterpartyId()))
+                .collect(java.util.stream.Collectors.toList());
+        return ResponseEntity.ok(list);
+    }
+
+    private Set<String> resolveCounterpartyIdentifiers(Authentication auth) {
+        Set<String> ids = new HashSet<>();
+        if (auth == null) return ids;
+        String username = auth.getName();
+        ids.add(username);
+        userRepository.findByUsername(username).ifPresent(u -> {
+            if (u.getVendorId() != null) {
+                vendorRepository.findById(u.getVendorId()).ifPresent(v -> {
+                    if (v.getVendorReference() != null) ids.add(v.getVendorReference());
+                    ids.add(v.getId().toString());
+                    if (v.getEmail() != null) ids.add(v.getEmail());
+                    if (v.getBusinessName() != null) ids.add(v.getBusinessName());
+                });
+            }
+            if (u.getClientId() != null) {
+                clientRepository.findById(u.getClientId()).ifPresent(c -> {
+                    if (c.getClientReference() != null) ids.add(c.getClientReference());
+                    ids.add(c.getId().toString());
+                    if (c.getEmail() != null) ids.add(c.getEmail());
+                    if (c.getFullName() != null) ids.add(c.getFullName());
+                });
+            }
+            if (u.getEmail() != null) ids.add(u.getEmail());
+        });
+        return ids;
     }
 
     @GetMapping({"/transactions/{billId}", "/bills/{billId}/transactions"})
