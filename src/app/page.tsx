@@ -4,7 +4,7 @@
 import React, { useState } from "react";
 
 import { Header } from "@/components/ui/Header";
-import { HeroSection } from "@/components/home/HeroSection";
+import { FloatingWorldSection } from "@/components/canvas/floating-world/FloatingWorldSection";
 import { ServicesSection } from "@/components/home/ServicesSection";
 import { ProjectsSection } from "@/components/home/ProjectsSection";
 import { ProcessSection } from "@/components/home/ProcessSection";
@@ -66,7 +66,7 @@ export default function Home() {
             onOpenVendorPortal={() => setVendorPortalOpen(true)}
           />
 
-          <HeroSection
+          <FloatingWorldSection
             onOpenConsultation={() => openConsultationWithService()}
           />
 
