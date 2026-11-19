@@ -271,13 +271,16 @@ public class DocumentController {
     }
 
     @PostMapping("/{id}/release-quarantine")
-    public ResponseEntity<?> releaseQuarantine(@PathVariable UUID id, Authentication auth) {
+    public ResponseEntity<?> releaseQuarantine(
+            @PathVariable UUID id,
+            @Valid @RequestBody QuarantineReleaseRequest req,
+            Authentication auth) {
         try {
-            DocumentResponse response = documentService.releaseQuarantine(id, auth);
+            DocumentResponse response = documentService.releaseQuarantine(id, req, auth);
             return ResponseEntity.ok(response);
         } catch (AccessDeniedException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }

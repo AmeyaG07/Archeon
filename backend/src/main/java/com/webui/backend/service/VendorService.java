@@ -10,6 +10,7 @@ import com.webui.backend.repository.AuditEventRepository;
 import com.webui.backend.repository.RefreshTokenRepository;
 import com.webui.backend.repository.UserRepository;
 import com.webui.backend.repository.VendorRepository;
+import com.webui.backend.security.crypto.SensitiveDataMasker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
@@ -51,12 +52,35 @@ public class VendorService {
     @Autowired
     private UserInvitationService userInvitationService;
 
+    @Autowired
+    private SensitiveDataMasker sensitiveDataMasker;
+
     private boolean isInternalStaff(Collection<? extends GrantedAuthority> authorities) {
         if (authorities == null) return false;
         return authorities.stream().anyMatch(a ->
                 a.getAuthority().equals("ROLE_ADMIN") ||
                 a.getAuthority().equals("ROLE_STAFF") ||
                 a.getAuthority().startsWith("ROLE_FINANCE_"));
+    }
+
+    private boolean isPrivilegedOrOwner(VendorEntity vendor, Authentication auth) {
+        if (auth == null || !auth.isAuthenticated()) {
+            return false;
+        }
+        if (sensitiveDataMasker.isPrivilegedFinancialUser(auth.getAuthorities())) {
+            return true;
+        }
+        if (vendor == null || vendor.getId() == null) {
+            return false;
+        }
+        String username = auth.getName();
+        Optional<UserEntity> userOpt = userRepository.findByUsername(username);
+        boolean isAssignedVendorUser = userOpt.isPresent() &&
+                vendor.getId().equals(userOpt.get().getVendorId());
+        boolean isMatchingReferenceOrEmail = username.equalsIgnoreCase(vendor.getVendorReference()) ||
+                username.equalsIgnoreCase(vendor.getEmail());
+
+        return isAssignedVendorUser || isMatchingReferenceOrEmail;
     }
 
     private void validateVendorAccess(VendorEntity vendor, Authentication auth) {
@@ -93,6 +117,26 @@ public class VendorService {
     }
 
     private VendorResponse toResponse(VendorEntity entity) {
+        return toResponse(entity, null);
+    }
+
+    private VendorResponse toResponse(VendorEntity entity, Authentication auth) {
+        if (entity == null) {
+            return null;
+        }
+
+        boolean canSeeUnmasked = isPrivilegedOrOwner(entity, auth);
+
+        String pan = entity.getPan();
+        String gstin = entity.getGstin();
+        String bankDetailsJson = entity.getBankDetailsJson();
+
+        if (!canSeeUnmasked) {
+            pan = sensitiveDataMasker.maskPan(pan);
+            gstin = sensitiveDataMasker.maskGstin(gstin);
+            bankDetailsJson = sensitiveDataMasker.maskBankDetailsJson(bankDetailsJson);
+        }
+
         return VendorResponse.builder()
                 .id(entity.getId())
                 .vendorReference(entity.getVendorReference())
@@ -102,9 +146,9 @@ public class VendorService {
                 .phone(entity.getPhone())
                 .category(entity.getCategory())
                 .location(entity.getLocation())
-                .gstin(entity.getGstin())
-                .pan(entity.getPan())
-                .bankDetailsJson(entity.getBankDetailsJson())
+                .gstin(gstin)
+                .pan(pan)
+                .bankDetailsJson(bankDetailsJson)
                 .status(entity.getStatus())
                 .portalAccess(entity.getPortalAccess())
                 .notes(entity.getNotes())
@@ -182,7 +226,7 @@ public class VendorService {
                 .detailsJson(String.format("{\"reference\": \"%s\", \"business\": \"%s\"}", ref, saved.getBusinessName()))
                 .build());
 
-        return toResponse(saved);
+        return toResponse(saved, auth);
     }
 
     @Transactional(readOnly = true)
@@ -191,7 +235,7 @@ public class VendorService {
                 .orElseThrow(() -> new IllegalArgumentException("Vendor not found: " + vendorId));
 
         validateVendorAccess(vendor, auth);
-        return toResponse(vendor);
+        return toResponse(vendor, auth);
     }
 
     @Transactional(readOnly = true)
@@ -200,7 +244,7 @@ public class VendorService {
                 .orElseThrow(() -> new IllegalArgumentException("Vendor not found: " + reference));
 
         validateVendorAccess(vendor, auth);
-        return toResponse(vendor);
+        return toResponse(vendor, auth);
     }
 
     @Transactional(readOnly = true)
@@ -215,14 +259,14 @@ public class VendorService {
         if (user.getVendorId() == null) {
             return vendorRepository.findByVendorReference(username)
                     .or(() -> vendorRepository.findByEmail(username))
-                    .map(this::toResponse)
+                    .map(v -> toResponse(v, auth))
                     .orElseThrow(() -> new AccessDeniedException("Principal is not mapped to an active vendor organization"));
         }
 
         VendorEntity vendor = vendorRepository.findById(user.getVendorId())
                 .orElseThrow(() -> new IllegalArgumentException("Linked vendor organization not found: " + user.getVendorId()));
 
-        return toResponse(vendor);
+        return toResponse(vendor, auth);
     }
 
     @Transactional(readOnly = true)
@@ -231,7 +275,7 @@ public class VendorService {
             throw new AccessDeniedException("Only studio administrators and staff can view full vendor roster");
         }
         return vendorRepository.findAllByOrderByCreatedAtDesc().stream()
-                .map(this::toResponse)
+                .map(v -> toResponse(v, auth))
                 .collect(Collectors.toList());
     }
 
@@ -285,7 +329,7 @@ public class VendorService {
                 .detailsJson(String.format("{\"reference\": \"%s\"}", saved.getVendorReference()))
                 .build());
 
-        return toResponse(saved);
+        return toResponse(saved, auth);
     }
 
     @Transactional
@@ -329,7 +373,7 @@ public class VendorService {
                 .detailsJson(String.format("{\"newStatus\": \"%s\"}", newStatus))
                 .build());
 
-        return toResponse(saved);
+        return toResponse(saved, auth);
     }
 
     @Transactional
@@ -343,16 +387,25 @@ public class VendorService {
 
         InviteUserRequest inviteReq = InviteUserRequest.builder()
                 .email(vendor.getEmail())
+                .recipientName(vendor.getBusinessName())
                 .targetRole("ROLE_VENDOR")
                 .vendorId(vendorId)
+                .deliveryMethod("BOTH")
                 .build();
 
         InvitationResponse response = userInvitationService.createInvitation(inviteReq, auth);
 
-        vendor.setPortalAccess("INVITATION_PENDING");
-        vendor.setUpdatedAt(LocalDateTime.now());
-        vendorRepository.save(vendor);
+        updateVendorPortalStatus(vendorId, "INVITATION_PENDING");
 
         return response;
+    }
+
+    @Transactional
+    public void updateVendorPortalStatus(UUID vendorId, String portalAccess) {
+        vendorRepository.findById(vendorId).ifPresent(v -> {
+            v.setPortalAccess(portalAccess);
+            v.setUpdatedAt(LocalDateTime.now());
+            vendorRepository.save(v);
+        });
     }
 }

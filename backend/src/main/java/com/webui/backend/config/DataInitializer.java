@@ -1,8 +1,10 @@
 package com.webui.backend.config;
 
+import com.webui.backend.model.ClientEntity;
 import com.webui.backend.model.ManifestoEntity;
 import com.webui.backend.model.ProjectEntity;
 import com.webui.backend.model.UserEntity;
+import com.webui.backend.model.VendorEntity;
 import com.webui.backend.repository.BillApprovalRepository;
 import com.webui.backend.repository.ManifestoRepository;
 import com.webui.backend.repository.ProjectRepository;
@@ -48,6 +50,12 @@ public class DataInitializer implements CommandLineRunner {
     private com.webui.backend.repository.CashSettlementRepository cashSettlementRepository;
 
     @Autowired
+    private com.webui.backend.repository.ClientRepository clientRepository;
+
+    @Autowired
+    private com.webui.backend.repository.VendorRepository vendorRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Override
@@ -90,6 +98,49 @@ public class DataInitializer implements CommandLineRunner {
         seedUserIfMissing("vendor_subcontractor", "ROLE_VENDOR");
         seedUserIfMissing("vnd_random", "ROLE_VENDOR");
         seedUserIfMissing("CP-VENDOR-01", "ROLE_VENDOR");
+
+        // Seed Demo Client & Vendor Organizations
+        if (clientRepository != null && clientRepository.count() == 0) {
+            ClientEntity demoClient = clientRepository.save(ClientEntity.builder()
+                    .clientReference("CLI-DEMO-01")
+                    .fullName("Studio Client")
+                    .email("client_user@studioarcheon.com")
+                    .phone("+919876543210")
+                    .organization("ArcheOn Private Client")
+                    .location("Mumbai, Maharashtra")
+                    .status("ACTIVE")
+                    .portalAccess("ACTIVE")
+                    .createdAt(java.time.LocalDateTime.now())
+                    .build());
+            userRepository.findByUsername("client_user").ifPresent(u -> {
+                u.setClientId(demoClient.getId());
+                u.setEmail(demoClient.getEmail());
+                u.setFullName(demoClient.getFullName());
+                userRepository.save(u);
+            });
+        }
+
+        if (vendorRepository != null && vendorRepository.count() == 0) {
+            VendorEntity demoVendor = vendorRepository.save(VendorEntity.builder()
+                    .vendorReference("VEN-DEMO-01")
+                    .businessName("Stellar Joinery & Architectural Millwork")
+                    .contactPerson("Trade Contractor")
+                    .email("vendor_user@studioarcheon.com")
+                    .phone("+919123456789")
+                    .category("CARPENTRY")
+                    .location("Pune, Maharashtra")
+                    .gstin("27AABCU9603R1ZM")
+                    .pan("ABCDE1234F")
+                    .status("ACTIVE")
+                    .portalAccess("ACTIVE")
+                    .createdAt(java.time.LocalDateTime.now())
+                    .build());
+            userRepository.findByUsername("vendor_user").ifPresent(u -> {
+                u.setVendorId(demoVendor.getId());
+                u.setEmail(demoVendor.getEmail());
+                userRepository.save(u);
+            });
+        }
 
         // 2. Seed ArcheOn Philosophy & Mission (PDF Section 1.1)
         if (manifestoRepository.count() == 0) {

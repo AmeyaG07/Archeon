@@ -1,6 +1,7 @@
 package com.webui.backend.dto.document;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -41,6 +42,16 @@ public class DocumentDto {
     public static class UpdateClassificationRequest {
         @NotBlank(message = "Security classification is required")
         private String securityClassification; // PUBLIC_CLIENT, INTERNAL_STAFF, CONFIDENTIAL_FINANCE, RESTRICTED_LEGAL
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class QuarantineReleaseRequest {
+        @NotBlank(message = "Administrative release justification reason is required")
+        @Size(min = 5, max = 500, message = "Release justification reason must be between 5 and 500 characters")
+        private String reason;
     }
 
     @Data

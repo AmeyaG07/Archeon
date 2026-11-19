@@ -138,7 +138,7 @@ public class ProductionBootstrapHardeningTest {
     }
 
     @Test
-    @DisplayName("P3.2-08: Production succeeds when strong secret, Redis revocation, and ClamAV are configured")
+    @DisplayName("P3.2-08: Production succeeds when strong secret, Redis revocation, ClamAV, and AES-256 encryption key are configured")
     void test_productionSucceedsWithValidSecretAndRedis() {
         MockEnvironment env = new MockEnvironment();
         env.setActiveProfiles("prod");
@@ -146,8 +146,78 @@ public class ProductionBootstrapHardeningTest {
         env.setProperty("app.jwt.secret", VALID_PROD_SECRET_384);
         env.setProperty("app.dms.malware-scan-mode", "CLAMAV");
         env.setProperty("app.dms.clamav.host", "clamav.internal.archeon.io");
+        env.setProperty("app.security.encryption.secret-key", VALID_PROD_SECRET_256);
 
         assertDoesNotThrow(() -> SecurityConfigValidator.validateEnvironment(env));
+    }
+
+    @Test
+    @DisplayName("P4.4.1-01: Production fails startup when AES encryption key is missing")
+    void test_productionFailsWhenEncryptionSecretMissing() {
+        MockEnvironment env = new MockEnvironment();
+        env.setActiveProfiles("prod");
+        env.setProperty("app.security.revocation-strategy", "redis");
+        env.setProperty("app.jwt.secret", VALID_PROD_SECRET_384);
+        env.setProperty("app.dms.malware-scan-mode", "CLAMAV");
+        env.setProperty("app.dms.clamav.host", "clamav.internal.archeon.io");
+        // app.security.encryption.secret-key not set
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class, () ->
+                SecurityConfigValidator.validateEnvironment(env)
+        );
+        assertTrue(ex.getMessage().contains("app.security.encryption.secret-key is missing or blank in production"));
+    }
+
+    @Test
+    @DisplayName("P4.4.1-02: Production fails startup when default development AES encryption key is used")
+    void test_productionFailsWhenDefaultDevEncryptionSecretUsed() {
+        MockEnvironment env = new MockEnvironment();
+        env.setActiveProfiles("production");
+        env.setProperty("app.security.revocation-strategy", "redis");
+        env.setProperty("app.jwt.secret", VALID_PROD_SECRET_384);
+        env.setProperty("app.dms.malware-scan-mode", "CLAMAV");
+        env.setProperty("app.dms.clamav.host", "clamav.internal.archeon.io");
+        env.setProperty("app.security.encryption.secret-key", SecurityConfigValidator.DEFAULT_DEV_ENCRYPTION_SECRET);
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class, () ->
+                SecurityConfigValidator.validateEnvironment(env)
+        );
+        assertTrue(ex.getMessage().contains("must not use known default or development secrets in production"));
+    }
+
+    @Test
+    @DisplayName("P4.4.1-03: Production fails startup when AES encryption key is not valid Base64")
+    void test_productionFailsWhenEncryptionSecretNotBase64() {
+        MockEnvironment env = new MockEnvironment();
+        env.setActiveProfiles("prod");
+        env.setProperty("app.security.revocation-strategy", "redis");
+        env.setProperty("app.jwt.secret", VALID_PROD_SECRET_384);
+        env.setProperty("app.dms.malware-scan-mode", "CLAMAV");
+        env.setProperty("app.dms.clamav.host", "clamav.internal.archeon.io");
+        env.setProperty("app.security.encryption.secret-key", "!!!not-valid-base64!!!");
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class, () ->
+                SecurityConfigValidator.validateEnvironment(env)
+        );
+        assertTrue(ex.getMessage().contains("must be a valid Base64-encoded string in production"));
+    }
+
+    @Test
+    @DisplayName("P4.4.1-04: Production fails startup when AES encryption key length is not exactly 256 bits (32 bytes)")
+    void test_productionFailsWhenEncryptionSecretInvalidLength() {
+        MockEnvironment env = new MockEnvironment();
+        env.setActiveProfiles("prod");
+        env.setProperty("app.security.revocation-strategy", "redis");
+        env.setProperty("app.jwt.secret", VALID_PROD_SECRET_384);
+        env.setProperty("app.dms.malware-scan-mode", "CLAMAV");
+        env.setProperty("app.dms.clamav.host", "clamav.internal.archeon.io");
+        // 16 bytes (128 bits) instead of 32 bytes (256 bits)
+        env.setProperty("app.security.encryption.secret-key", Base64.getEncoder().encodeToString("1234567890123456".getBytes()));
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class, () ->
+                SecurityConfigValidator.validateEnvironment(env)
+        );
+        assertTrue(ex.getMessage().contains("exactly 256 bits / 32 bytes required for AES-256"));
     }
 
     @Test

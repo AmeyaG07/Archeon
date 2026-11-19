@@ -298,7 +298,6 @@ public class ClientService {
         return toResponse(saved);
     }
 
-    @Transactional
     public InvitationResponse inviteClient(UUID clientId, Authentication auth) {
         if (!isInternalStaff(auth.getAuthorities())) {
             throw new AccessDeniedException("Only studio administrators and staff can invite client users");
@@ -309,16 +308,25 @@ public class ClientService {
 
         InviteUserRequest inviteReq = InviteUserRequest.builder()
                 .email(client.getEmail())
+                .recipientName(client.getFullName())
                 .targetRole("ROLE_CLIENT")
                 .clientId(clientId)
+                .deliveryMethod("BOTH")
                 .build();
 
         InvitationResponse response = userInvitationService.createInvitation(inviteReq, auth);
 
-        client.setPortalAccess("INVITATION_PENDING");
-        client.setUpdatedAt(LocalDateTime.now());
-        clientRepository.save(client);
+        updateClientPortalStatus(clientId, "INVITATION_PENDING");
 
         return response;
+    }
+
+    @Transactional
+    public void updateClientPortalStatus(UUID clientId, String portalAccess) {
+        clientRepository.findById(clientId).ifPresent(c -> {
+            c.setPortalAccess(portalAccess);
+            c.setUpdatedAt(LocalDateTime.now());
+            clientRepository.save(c);
+        });
     }
 }

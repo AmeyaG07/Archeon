@@ -22,4 +22,13 @@ public interface BillApprovalRepository extends JpaRepository<BillApprovalEntity
             @Param("vendorId") String vendorId,
             @Param("projectId") String projectId,
             @Param("since") LocalDateTime since);
+
+    long countByStatusIn(java.util.Collection<String> statuses);
+
+    long countByVendorIdAndStatus(String vendorId, String status);
+
+    long countByVendorId(String vendorId);
+
+    @Query("SELECT COALESCE(SUM(b.amount), 0) FROM BillApprovalEntity b WHERE b.vendorId = :vendorId AND b.status IN ('PENDING_PRIMARY', 'PENDING_SECONDARY', 'APPROVED')")
+    BigDecimal sumPendingAmountForVendor(@Param("vendorId") String vendorId);
 }

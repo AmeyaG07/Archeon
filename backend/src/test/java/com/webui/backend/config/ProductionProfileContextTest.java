@@ -13,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
         // Valid 384-bit random Base64 key for production validation
         "app.jwt.secret=MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDEyMzQ1Njc4",
         "app.security.revocation-strategy=redis",
+        "app.security.encryption.secret-key=QWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXoxMjM0NTY=",
         "app.dms.malware-scan-mode=CLAMAV",
         "app.dms.clamav.host=localhost"
 })

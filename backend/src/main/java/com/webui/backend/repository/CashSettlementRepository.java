@@ -4,6 +4,7 @@ import com.webui.backend.model.CashSettlementEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -13,4 +14,12 @@ public interface CashSettlementRepository extends JpaRepository<CashSettlementEn
     Optional<CashSettlementEntity> findBySettlementRef(String settlementRef);
     List<CashSettlementEntity> findByCounterpartyIdOrderByCreatedAtDesc(String counterpartyId);
     List<CashSettlementEntity> findAllByOrderByCreatedAtDesc();
+
+    long countByCounterpartyStatus(String counterpartyStatus);
+
+    long countByCounterpartyStatusIn(Collection<String> counterpartyStatuses);
+
+    long countByFinanceApprovalStatus(String financeApprovalStatus);
+
+    long countByCounterpartyIdAndCounterpartyStatus(String counterpartyId, String counterpartyStatus);
 }
