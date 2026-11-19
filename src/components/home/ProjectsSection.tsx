@@ -17,15 +17,6 @@ interface ProjectsSectionProps {
   onSelectProject: (project: PortfolioProject) => void;
 }
 
-const projectVisuals: Record<string, string> = {
-  "the-monolith-sanctuary":
-    "from-[#777064] via-[#4B4941] to-[#24231F]",
-  "carrara-stone-penthouse":
-    "from-[#B8AD9C] via-[#827A6D] to-[#49443D]",
-  "terracotta-courtyard-estate":
-    "from-[#927765] via-[#625647] to-[#302C25]",
-};
-
 export function ProjectsSection({
   projects,
   onSelectProject,
@@ -152,55 +143,67 @@ export function ProjectsSection({
                 className="block w-full text-left"
                 aria-label={`View ${project.title} project`}
               >
-                {/* Architectural Clip-Path Image Reveal */}
+                {/* Architectural Clip-Path Image Reveal with Exact Native Aspect Ratios */}
                 <ClipReveal
                   duration={1.2}
-                  className={`relative overflow-hidden bg-gradient-to-br ${
-                    projectVisuals[project.id] ??
-                    "from-[#777064] to-[#302C25]"
-                  } ${
-                    index === 0 ? "aspect-[16/9] sm:aspect-[16/8]" : "aspect-[4/3]"
+                  className={`relative overflow-hidden rounded-sm bg-[#111111] shadow-md transition-shadow duration-500 group-hover:shadow-xl ${
+                    index === 0
+                      ? "aspect-[3/2] w-full"
+                      : "aspect-[16/9] w-full"
                   }`}
                 >
                   {project.image ? (
-                    <Image
-                      src={project.image}
-                      alt={project.title}
-                      fill
-                      priority={index === 0}
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 1200px"
-                      className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
-                    />
+                    <>
+                      <Image
+                        src={project.image}
+                        alt={project.title}
+                        fill
+                        priority={index === 0}
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 1200px"
+                        className="object-contain sm:object-cover object-center transition-transform duration-700 ease-out group-hover:scale-[1.02]"
+                      />
+                      {/* Subtle hover vignette without obscuring image graphics */}
+                      <div className="absolute inset-0 bg-black/0 transition-colors duration-300 group-hover:bg-black/10" />
+
+                      {/* Interactive Floating Arrow Badge (Bottom-Right) */}
+                      <div className="absolute bottom-5 right-5 z-10">
+                        <span className="flex h-11 w-11 items-center justify-center rounded-full border border-white/70 bg-black/50 backdrop-blur-md text-white shadow-lg transition-all duration-300 group-hover:border-[#B68A4A] group-hover:bg-[#B68A4A] group-hover:text-[#111111] group-hover:scale-105">
+                          <ArrowUpRight size={19} />
+                        </span>
+                      </div>
+                    </>
                   ) : (
-                    <div className="absolute inset-0 opacity-40 transition-transform duration-700 ease-out group-hover:scale-105">
-                      <div className="absolute right-[12%] top-[12%] h-[85%] w-[35%] -skew-x-12 border-l border-white/40 bg-white/10" />
-                      <div className="absolute bottom-0 left-[10%] h-[45%] w-[65%] border-t border-white/30 bg-black/10" />
-                      <div className="absolute right-[20%] top-[20%] h-[55%] w-[18%] border-l border-white/30 bg-white/10" />
-                    </div>
+                    <>
+                      <div className="absolute inset-0 opacity-40 transition-transform duration-700 ease-out group-hover:scale-105">
+                        <div className="absolute right-[12%] top-[12%] h-[85%] w-[35%] -skew-x-12 border-l border-white/40 bg-white/10" />
+                        <div className="absolute bottom-0 left-[10%] h-[45%] w-[65%] border-t border-white/30 bg-black/10" />
+                        <div className="absolute right-[20%] top-[20%] h-[55%] w-[18%] border-l border-white/30 bg-white/10" />
+                      </div>
+
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-black/10 transition-opacity duration-500 group-hover:opacity-85" />
+
+                      <div className="absolute left-5 top-5">
+                        <span className="border border-white/40 bg-black/40 px-3 py-2 font-mono text-[9px] uppercase tracking-widest text-white backdrop-blur-md">
+                          {project.category}
+                        </span>
+                      </div>
+
+                      <div className="absolute bottom-5 left-5 right-5 flex items-end justify-between">
+                        <div>
+                          <p className="editorial-eyebrow text-white/80">
+                            {project.code}
+                          </p>
+                          <p className="mt-2 text-xs text-white/90 font-light">
+                            Architectural project visual pending
+                          </p>
+                        </div>
+
+                        <span className="flex h-11 w-11 items-center justify-center rounded-full border border-white/60 bg-black/30 backdrop-blur-sm text-white transition-all duration-300 group-hover:border-[#B68A4A] group-hover:bg-[#B68A4A] group-hover:text-[#111111]">
+                          <ArrowUpRight size={19} />
+                        </span>
+                      </div>
+                    </>
                   )}
-
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-black/10 transition-opacity duration-500 group-hover:opacity-85" />
-
-                  <div className="absolute left-5 top-5">
-                    <span className="border border-white/40 bg-black/40 px-3 py-2 font-mono text-[9px] uppercase tracking-widest text-white backdrop-blur-md">
-                      {project.category}
-                    </span>
-                  </div>
-
-                  <div className="absolute bottom-5 left-5 right-5 flex items-end justify-between">
-                    <div>
-                      <p className="editorial-eyebrow text-white/80">
-                        {project.code}
-                      </p>
-                      <p className="mt-2 text-xs text-white/90 font-light">
-                        {project.image ? `${project.title} · ${project.location}` : "Architectural project visual pending"}
-                      </p>
-                    </div>
-
-                    <span className="flex h-11 w-11 items-center justify-center rounded-full border border-white/60 bg-black/30 backdrop-blur-sm text-white transition-all duration-300 group-hover:border-[#B68A4A] group-hover:bg-[#B68A4A] group-hover:text-[#111111]">
-                      <ArrowUpRight size={19} />
-                    </span>
-                  </div>
                 </ClipReveal>
 
                 {/* Project Information */}
