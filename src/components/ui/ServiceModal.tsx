@@ -67,7 +67,7 @@ export function ServiceModal({ service, onClose, onEnquire }: ServiceModalProps)
 
             <div className="mb-8">
               <div className="text-xs uppercase tracking-wider text-stone-400 mb-3 border-b border-stone-800/80 pb-1">
-                /// Scope of Professional Services
+                {"/// Scope of Professional Services"}
               </div>
               <div className="space-y-2.5 font-sans text-sm text-stone-300">
                 {service.scope.map((item, idx) => (
@@ -81,7 +81,7 @@ export function ServiceModal({ service, onClose, onEnquire }: ServiceModalProps)
 
             <div className="mb-8">
               <div className="text-xs uppercase tracking-wider text-stone-400 mb-3 border-b border-stone-800/80 pb-1">
-                /// Typical Outputs & Deliverables
+                {"/// Typical Outputs & Deliverables"}
               </div>
               <div className="flex flex-wrap gap-2">
                 {service.deliverables.map((del, idx) => (

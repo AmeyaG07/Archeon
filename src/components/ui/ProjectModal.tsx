@@ -94,14 +94,14 @@ export function ProjectModal({ project, onClose, onEnquire }: ProjectModalProps)
             <div className="space-y-4 mb-6 pt-4 border-t border-[#D8D6D0] text-sm font-sans leading-relaxed">
               <div>
                 <div className="font-mono text-xs uppercase tracking-wider text-[#777777] mb-1">
-                  /// Site Brief
+                  {"/// Site Brief"}
                 </div>
                 <p className="font-light text-[#111111]">{project.brief}</p>
               </div>
 
               <div>
                 <div className="font-mono text-xs uppercase tracking-wider text-[#777777] mb-1">
-                  /// Architectural Response
+                  {"/// Architectural Response"}
                 </div>
                 <p className="font-light text-[#111111]">{project.designResponse}</p>
               </div>
@@ -109,7 +109,7 @@ export function ProjectModal({ project, onClose, onEnquire }: ProjectModalProps)
 
             <div className="mb-6 pt-4 border-t border-[#D8D6D0]">
               <div className="font-mono text-xs uppercase tracking-wider text-[#777777] mb-2.5">
-                /// Scope Delivered
+                {"/// Scope Delivered"}
               </div>
               <div className="flex flex-wrap gap-2">
                 {project.deliverables.map((item: string, i: number) => (

@@ -72,7 +72,7 @@ export function ManifestoModal({ isOpen, onClose }: ManifestoModalProps) {
 
             <div className="space-y-4 pt-6 border-t border-[#D8D6D0] text-sm text-[#111111] font-sans">
               <div className="font-mono text-xs uppercase tracking-wider text-[#777777] mb-3">
-                /// Core Architectural Tenets
+                {"/// Core Architectural Tenets"}
               </div>
               {siteConfig.about.approach.map((tenet: string, idx: number) => (
                 <div key={idx} className="flex items-start space-x-3.5">

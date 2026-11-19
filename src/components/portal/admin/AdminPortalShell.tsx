@@ -5,19 +5,20 @@ import {
   AdminPortalLayout,
   type AdminPortalSection,
 } from "@/components/portal/admin/AdminPortalLayout";
+import { useAuth } from "@/providers/AuthProvider";
 
 const routes: Record<AdminPortalSection, string> = {
   dashboard: "/admin",
-  projects: "/admin/unavailable",
-  leads: "/admin/unavailable",
-  clients: "/admin/unavailable",
-  vendors: "/admin/unavailable",
-  invoices: "/admin/unavailable",
-  approvals: "/admin/unavailable",
-  "cash-settlements": "/admin/unavailable",
-  "finance-reports": "/admin/unavailable",
-  "audit-logs": "/admin/unavailable",
-  settings: "/admin/unavailable",
+  projects: "/admin/projects",
+  leads: "/admin/leads",
+  clients: "/admin/clients",
+  vendors: "/admin/vendors",
+  invoices: "/admin/invoices",
+  approvals: "/admin/approvals",
+  "cash-settlements": "/admin/cash-settlements",
+  "finance-reports": "/admin/finance-reports",
+  "audit-logs": "/admin/audit-logs",
+  settings: "/admin/settings",
 };
 
 function getActiveSection(pathname: string): AdminPortalSection {
@@ -37,15 +38,19 @@ function getActiveSection(pathname: string): AdminPortalSection {
 export function AdminPortalShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { user, logout } = useAuth();
 
   return (
     <AdminPortalLayout
       activeSection={getActiveSection(pathname)}
-      adminName="Administration"
-      adminRole="Restricted workspace"
-      adminReference="Access-managed"
+      adminName={user?.username || "Studio Principal"}
+      adminRole={user?.role ? user.role.replace("ROLE_", "") : "Administration"}
+      adminReference="ARCHEON-STUDIO"
       onNavigate={(section) => router.push(routes[section])}
-      onLogout={() => router.push("/")}
+      onLogout={async () => {
+        await logout();
+        router.push("/login");
+      }}
     >
       {children}
     </AdminPortalLayout>

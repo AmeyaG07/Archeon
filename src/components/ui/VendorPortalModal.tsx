@@ -40,7 +40,15 @@ export function VendorPortalModal({ isOpen, onClose }: VendorPortalModalProps) {
               <p className="text-[11px] text-stone-500 mb-4">A studio representative will review your request and enable portal access through the verified account provisioning flow.</p>
               <button type="button" onClick={handleRequestAccess} disabled={requested} className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-orange-500 hover:bg-orange-400 text-stone-950 text-xs font-bold transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed">{requested ? (<><Mail className="w-4 h-4" /> Request Sent</>) : (<><Mail className="w-4 h-4" /> Request Invitation</>)}</button>
               {requested && (<div className="p-3 rounded-lg border border-orange-500/30 bg-orange-950/10"><div className="flex items-center gap-2 text-xs text-orange-300"><ShieldCheck className="w-3.5 h-3.5" /><span>Invitation request recorded. Awaiting studio approval.</span></div></div>)}
-              <p className="text-[10px] text-stone-600 mt-6">Already invited? Access your portal through the verified studio session portal link shared in your invitation email.</p>
+              <div className="pt-2 border-t border-stone-800">
+                <a
+                  href="/login"
+                  className="w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full border border-stone-700 hover:border-orange-500 text-stone-300 hover:text-white text-xs font-semibold transition-all"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 text-orange-400" /> Sign In to Vendor Workspace
+                </a>
+              </div>
+              <p className="text-[10px] text-stone-600 mt-4">Already invited? Access your portal through your credentials or the link shared in your invitation email.</p>
             </div>
           </motion.div>
         </div>

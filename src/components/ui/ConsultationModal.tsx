@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Send, CheckCircle2, MessageSquare, MapPin, Navigation } from "lucide-react";
 import { siteConfig } from "@/config/siteConfig";
 import { useAudio } from "@/providers/AudioProvider";
+import { apiFetch } from "@/lib/api";
 
 interface ConsultationModalProps {
   isOpen: boolean;
@@ -43,10 +44,9 @@ export function ConsultationModal({
     setIsSubmitting(true);
 
     try {
-      const res = await fetch("http://localhost:8080/api/leads", {
+      const res = await apiFetch("/api/leads", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+        body: {
           clientName: formData.name,
           phone: formData.mobile,
           email: formData.email,
@@ -56,7 +56,7 @@ export function ConsultationModal({
           estimatedTimeline: formData.targetDate,
           projectBrief: formData.brief,
           whatsappOptIn: formData.whatsappConsent
-        })
+        }
       });
 
       if (res.ok) {
@@ -104,7 +104,7 @@ export function ConsultationModal({
           >
             <div className="flex items-center justify-between border-b border-stone-800 pb-4 mb-6">
               <span className="text-xs tracking-widest text-amber-500 font-bold">
-                /// DISCUSS YOUR PROJECT
+                {"/// DISCUSS YOUR PROJECT"}
               </span>
               <button
                 onClick={() => {
@@ -121,7 +121,7 @@ export function ConsultationModal({
               <div className="space-y-0.5">
                 <div className="text-[10px] text-amber-500 font-bold uppercase tracking-wider flex items-center space-x-1">
                   <MapPin className="w-3 h-3 text-amber-500" />
-                  <span>{siteConfig.businessDisplayName} // NAGPUR STUDIO</span>
+                  <span>{siteConfig.businessDisplayName} {"// NAGPUR STUDIO"}</span>
                 </div>
                 <div className="text-stone-300 font-sans text-[11px] font-light">
                   {siteConfig.contact.office}

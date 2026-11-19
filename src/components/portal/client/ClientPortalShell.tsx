@@ -5,6 +5,7 @@ import {
   ClientPortalLayout,
   type ClientPortalSection,
 } from "@/components/portal/client/ClientPortalLayout";
+import { useAuth } from "@/providers/AuthProvider";
 
 const routes: Record<ClientPortalSection, string> = {
   dashboard: "/client",
@@ -12,10 +13,10 @@ const routes: Record<ClientPortalSection, string> = {
   drawings: "/client/documents",
   documents: "/client/documents",
   invoices: "/client/invoices",
-  payments: "/client/unavailable",
-  disputes: "/client/unavailable",
+  payments: "/client/invoices",
+  disputes: "/client/invoices",
   notifications: "/client/notifications",
-  support: "/client/unavailable",
+  support: "/client/notifications",
   settings: "/client/profile",
 };
 
@@ -28,24 +29,23 @@ function getActiveSection(pathname: string): ClientPortalSection {
   return "dashboard";
 }
 
-/**
- * Presentational route shell only. Authentication and role enforcement require
- * a verified server-side session/cookie contract and are intentionally not
- * implemented here.
- */
 export function ClientPortalShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { user, logout } = useAuth();
 
   return (
     <ClientPortalLayout
       activeSection={getActiveSection(pathname)}
-      clientName="Client workspace"
-      clientReference="Access-managed"
+      clientName={user?.username || "Studio Client"}
+      clientReference="CLIENT-PORTAL"
       pageTitle="Client Portal"
       pageDescription="Your ArcheOn Design Studio workspace"
       onNavigate={(section) => router.push(routes[section])}
-      onLogout={() => router.push("/")}
+      onLogout={async () => {
+        await logout();
+        router.push("/login");
+      }}
     >
       {children}
     </ClientPortalLayout>
