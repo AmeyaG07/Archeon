@@ -72,6 +72,7 @@ D:\WEBUI\backend\src\main\java\com\webui\backend\security\JwtTokenProvider.java
 D:\WEBUI\backend\src\main\java\com\webui\backend\security\TokenHashUtil.java
 D:\WEBUI\backend\src\main\java\com\webui\backend\security\TokenRevocationUnavailableException.java
 D:\WEBUI\backend\src\main\java\com\webui\backend\service\ClientService.java
+D:\WEBUI\backend\src\main\java\com\webui\backend\service\DocumentAuditService.java
 D:\WEBUI\backend\src\main\java\com\webui\backend\service\DocumentService.java
 D:\WEBUI\backend\src\main\java\com\webui\backend\service\FinancialOperationsService.java
 D:\WEBUI\backend\src\main\java\com\webui\backend\service\InMemoryTokenRevocationService.java
