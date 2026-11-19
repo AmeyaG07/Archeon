@@ -1,17 +1,16 @@
-
 "use client";
 
 import React, { useState } from "react";
 
 import { Header } from "@/components/ui/Header";
 import { OpeningPreloader } from "@/components/ui/OpeningPreloader";
-import { FloatingWorldSection } from "@/components/canvas/floating-world/FloatingWorldSection";
+import { ArchitecturalRevealHero } from "@/components/home/ArchitecturalRevealHero";
 import { ServicesSection } from "@/components/home/ServicesSection";
 import { ProjectsSection } from "@/components/home/ProjectsSection";
 import { ProcessSection } from "@/components/home/ProcessSection";
+import { StudioSection } from "@/components/home/StudioSection";
 import { ContactSection } from "@/components/home/ContactSection";
 import { SiteFooter } from "@/components/home/SiteFooter";
-
 
 import { ServiceModal } from "@/components/ui/ServiceModal";
 import { ProjectDetailModal } from "@/components/ui/ProjectDetailModal";
@@ -57,6 +56,7 @@ export default function Home() {
       <OpeningPreloader />
       <SmoothScroll>
         <main className="min-h-screen overflow-x-hidden bg-[#F2F0EB] text-[#111111]">
+          {/* Global Header */}
           <Header
             lightingMode="noon"
             onSelectLighting={() => {}}
@@ -67,70 +67,43 @@ export default function Home() {
             onOpenVendorPortal={() => setVendorPortalOpen(true)}
           />
 
-          <FloatingWorldSection
+          {/* 1. Scroll-Scrubbed Architectural Reveal Hero */}
+          <ArchitecturalRevealHero
             onOpenConsultation={() => openConsultationWithService()}
           />
 
-{/* Expertise and Services */}
-<ServicesSection
-  services={siteConfig.services}
-  onSelectService={setSelectedService}
-/>
+          {/* 2. Expertise & Services */}
+          <ServicesSection
+            services={siteConfig.services}
+            onSelectService={setSelectedService}
+          />
 
-{/* Selected Projects */}
-<ProjectsSection
-  projects={siteConfig.projects}
-  onSelectProject={setSelectedProject}
-/>
+          {/* 3. Selected Projects */}
+          <ProjectsSection
+            projects={siteConfig.projects}
+            onSelectProject={setSelectedProject}
+          />
 
-{/* Design Process */}
-<ProcessSection
-  onOpenConsultation={() => openConsultationWithService()}
-/>
+          {/* 4. Design Process */}
+          <ProcessSection
+            onOpenConsultation={() => openConsultationWithService()}
+          />
 
-{/* Contact */}
-<ContactSection
-  onOpenConsultation={() => openConsultationWithService()}
-/>
+          {/* 5. Studio Philosophy & Approach */}
+          <StudioSection />
 
-{/* Website Footer */}
-<SiteFooter
-  onOpenClientPortal={() => setClientPortalOpen(true)}
-  onOpenVendorPortal={() => setVendorPortalOpen(true)}
-/>
-          <section
-            id="studio"
-            className="editorial-container py-24 sm:py-32"
-          >
-            <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
-              <div className="lg:col-span-4">
-                <p className="editorial-eyebrow text-[#B68A4A]">
-                  01 / The Studio
-                </p>
-                <h2 className="mt-5 font-serif text-5xl font-light leading-[0.95] tracking-tight sm:text-6xl">
-                  Design with
-                  <br />
-                  <span className="italic">purpose.</span>
-                </h2>
-              </div>
+          {/* 6. Contact & Consultation */}
+          <ContactSection
+            onOpenConsultation={() => openConsultationWithService()}
+          />
 
-              <div className="lg:col-span-7 lg:col-start-6">
-                <p className="text-xl font-light leading-relaxed text-[#33312D] sm:text-2xl">
-                  {siteConfig.missionStatement}
-                </p>
+          {/* 7. Website Footer */}
+          <SiteFooter
+            onOpenClientPortal={() => setClientPortalOpen(true)}
+            onOpenVendorPortal={() => setVendorPortalOpen(true)}
+          />
 
-                <p className="mt-8 max-w-2xl text-sm leading-8 text-[#777777]">
-                  {siteConfig.about.story}
-                </p>
-
-                <p className="mt-6 font-mono text-[10px] uppercase tracking-widest text-[#B68A4A]">
-                  {siteConfig.principal}
-                </p>
-              </div>
-            </div>
-          </section>
-
-          {/* Existing Service Modal */}
+          {/* Interactive Modals */}
           <ServiceModal
             service={selectedService}
             onClose={() => setSelectedService(null)}
@@ -139,27 +112,23 @@ export default function Home() {
             }
           />
 
-          {/* Existing Project Modal */}
           <ProjectDetailModal
             project={selectedProject}
             onClose={() => setSelectedProject(null)}
             onEnquire={() => openConsultationWithService()}
           />
 
-          {/* Existing Consultation Modal */}
           <ConsultationModal
             isOpen={consultationOpen}
             onClose={() => setConsultationOpen(false)}
             defaultServiceId={consultationServiceId}
           />
 
-          {/* Existing Client Portal Modal */}
           <ClientPortalModal
             isOpen={clientPortalOpen}
             onClose={() => setClientPortalOpen(false)}
           />
 
-          {/* Existing Vendor Portal Modal */}
           <VendorPortalModal
             isOpen={vendorPortalOpen}
             onClose={() => setVendorPortalOpen(false)}
@@ -167,7 +136,5 @@ export default function Home() {
         </main>
       </SmoothScroll>
     </AudioProvider>
-
-    
   );
 }

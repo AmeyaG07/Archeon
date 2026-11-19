@@ -1,8 +1,11 @@
-
 "use client";
 
 import React from "react";
 import { ArrowUpRight, MapPin, MoveUpRight } from "lucide-react";
+import {
+  RevealText,
+  HairlineRule,
+} from "@/components/motion/EditorialMotion";
 
 interface ContactSectionProps {
   onOpenConsultation: () => void;
@@ -24,28 +27,39 @@ export function ContactSection({
               05 / Start a Conversation
             </p>
 
-            <h2 className="mt-8 max-w-3xl font-serif text-6xl font-light leading-[0.92] tracking-tight sm:text-8xl">
-              Have a space
-              <br />
-              in <span className="italic text-[#C6A779]">mind?</span>
-            </h2>
+            <div className="mt-8 max-w-3xl">
+              <RevealText>
+                <h2 className="font-serif text-6xl font-light leading-[0.92] tracking-tight sm:text-8xl">
+                  Have a space
+                </h2>
+              </RevealText>
+              <RevealText delay={0.12}>
+                <h2 className="font-serif text-6xl font-light leading-[0.92] tracking-tight sm:text-8xl">
+                  in <span className="italic text-[#D97724]">mind?</span>
+                </h2>
+              </RevealText>
+            </div>
 
-            <p className="mt-8 max-w-lg text-sm leading-8 text-white/60">
-              Tell us about your ideas, aspirations and project.
-              Let&apos;s begin with a conversation.
-            </p>
+            <RevealText delay={0.22}>
+              <p className="mt-8 max-w-lg text-sm leading-8 text-white/60">
+                Tell us about your ideas, aspirations and project.
+                Let&apos;s begin with a conversation.
+              </p>
+            </RevealText>
 
-            <button
-              type="button"
-              onClick={onOpenConsultation}
-              className="group mt-10 inline-flex min-h-14 items-center gap-8 bg-[#F2F0EB] px-7 text-[10px] font-medium uppercase tracking-[0.15em] text-[#111111] transition-colors duration-300 hover:bg-[#B68A4A]"
-            >
-              Request a Consultation
-              <ArrowUpRight
-                size={17}
-                className="transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
-              />
-            </button>
+            <div className="mt-10">
+              <button
+                type="button"
+                onClick={onOpenConsultation}
+                className="group inline-flex min-h-14 items-center gap-8 bg-[#F2F0EB] px-7 text-[10px] font-medium uppercase tracking-[0.15em] text-[#111111] transition-colors duration-300 hover:bg-[#D97724] hover:text-white"
+              >
+                Request a Consultation
+                <ArrowUpRight
+                  size={17}
+                  className="transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
+                />
+              </button>
+            </div>
           </div>
 
           {/* Contact Details */}
@@ -90,17 +104,14 @@ export function ContactSection({
               </a>
             </div>
 
-            <div className="mt-14 border-t border-white/20 pt-8">
+            <div className="mt-14">
+              <HairlineRule color="bg-white/20" className="mb-8" />
               <p className="editorial-eyebrow text-[#B68A4A]">
                 Principal Architect
               </p>
 
               <p className="mt-4 font-serif text-3xl text-white">
                 Ar. Mandar Bhalekar
-              </p>
-
-              <p className="mt-2 text-xs text-white/45">
-                ArcheOn Design Studio
               </p>
             </div>
           </div>

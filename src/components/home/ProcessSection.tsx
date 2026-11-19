@@ -1,8 +1,17 @@
-
 "use client";
 
-import React from "react";
+import React, { useRef } from "react";
 import { ArrowUpRight } from "lucide-react";
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useReducedMotion,
+} from "framer-motion";
+import {
+  RevealText,
+  HairlineRule,
+} from "@/components/motion/EditorialMotion";
 
 const processStages = [
   {
@@ -46,6 +55,16 @@ interface ProcessSectionProps {
 export function ProcessSection({
   onOpenConsultation,
 }: ProcessSectionProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const shouldReduceMotion = useReducedMotion();
+
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start 75%", "end 60%"],
+  });
+
+  const railScaleY = useTransform(scrollYProgress, [0, 1], [0.05, 1]);
+
   return (
     <section
       id="process"
@@ -59,33 +78,59 @@ export function ProcessSection({
               04 / How We Work
             </p>
 
-            <h2 className="mt-6 font-serif text-5xl font-light leading-[0.95] tracking-tight sm:text-7xl">
-              From first thought
-              <br />
-              to <span className="italic">finished space.</span>
-            </h2>
+            <div className="mt-6">
+              <RevealText>
+                <h2 className="font-serif text-5xl font-light leading-[0.95] tracking-tight sm:text-7xl">
+                  From first thought
+                </h2>
+              </RevealText>
+              <RevealText delay={0.12}>
+                <h2 className="font-serif text-5xl font-light leading-[0.95] tracking-tight sm:text-7xl">
+                  to <span className="italic">finished space.</span>
+                </h2>
+              </RevealText>
+            </div>
           </div>
 
           <div className="lg:col-span-4 lg:col-start-9">
-            <p className="text-sm leading-8 text-[#777777]">
-              A considered sequence of understanding, exploration,
-              refinement and realisation. Every stage builds upon
-              the decisions made before it.
-            </p>
+            <RevealText delay={0.2}>
+              <p className="text-sm leading-8 text-[#777777]">
+                A considered sequence of understanding, exploration,
+                refinement and realisation. Every stage builds upon
+                the decisions made before it.
+              </p>
+            </RevealText>
           </div>
         </div>
 
-        {/* Process Timeline */}
-        <div className="mt-20 border-t border-[#D8D6D0]">
-          {processStages.map((stage) => (
-            <article
+        <HairlineRule color="bg-[#D8D6D0]" className="mt-16 mb-0" />
+
+        {/* Process Timeline with Scroll-Driven Bronze Rail */}
+        <div ref={containerRef} className="relative mt-8">
+          {/* Vertical Bronze Track & Rail (Desktop) */}
+          <div className="absolute left-[2.2rem] top-0 bottom-0 hidden w-0.5 bg-[#D8D6D0] md:block">
+            {!shouldReduceMotion && (
+              <motion.div
+                style={{ scaleY: railScaleY }}
+                className="w-full h-full bg-gradient-to-b from-[#D97724] via-[#B68A4A] to-[#F59E0B] origin-top"
+              />
+            )}
+          </div>
+
+          {processStages.map((stage, idx) => (
+            <motion.article
               key={stage.number}
-              className="group grid gap-6 border-b border-[#D8D6D0] py-10 transition-colors duration-300 hover:bg-white/50 sm:py-12 lg:grid-cols-12 lg:gap-8"
+              initial={shouldReduceMotion ? undefined : { opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 0.7, delay: idx * 0.08 }}
+              className="group relative grid gap-6 border-b border-[#D8D6D0] py-10 transition-colors duration-300 hover:bg-white/60 sm:py-12 lg:grid-cols-12 lg:gap-8"
             >
-              <div className="lg:col-span-1">
-                <span className="font-mono text-xs tracking-widest text-[#B68A4A]">
+              <div className="flex items-center gap-4 lg:col-span-1">
+                <span className="font-mono text-xs font-semibold tracking-widest text-[#B68A4A] group-hover:text-[#D97724] transition-colors">
                   {stage.number}
                 </span>
+                <span className="h-1.5 w-1.5 rounded-full bg-[#B68A4A] md:hidden" />
               </div>
 
               <div className="lg:col-span-4">
@@ -108,13 +153,13 @@ export function ProcessSection({
                 {stage.details.map((detail) => (
                   <span
                     key={detail}
-                    className="h-fit border border-[#D8D6D0] px-3 py-2 text-[9px] uppercase tracking-wider text-[#777777]"
+                    className="h-fit border border-[#D8D6D0] bg-white/40 px-3 py-2 text-[9px] uppercase tracking-wider text-[#777777] transition-colors group-hover:border-[#B68A4A]/50 group-hover:text-[#111111]"
                   >
                     {detail}
                   </span>
                 ))}
               </div>
-            </article>
+            </motion.article>
           ))}
         </div>
 
@@ -127,7 +172,7 @@ export function ProcessSection({
           <button
             type="button"
             onClick={onOpenConsultation}
-            className="group inline-flex min-h-14 shrink-0 items-center justify-center gap-5 bg-[#111111] px-7 text-[10px] font-medium uppercase tracking-[0.15em] text-white transition-colors duration-300 hover:bg-[#B68A4A] hover:text-[#111111]"
+            className="group inline-flex min-h-14 shrink-0 items-center justify-center gap-5 bg-[#111111] px-7 text-[10px] font-medium uppercase tracking-[0.15em] text-white transition-colors duration-300 hover:bg-[#D97724]"
           >
             Begin Your Project
             <ArrowUpRight

@@ -1,9 +1,14 @@
-
 "use client";
 
 import React from "react";
 import { ArrowUpRight } from "lucide-react";
 import type { ServiceItem } from "@/config/siteConfig";
+import {
+  RevealText,
+  HairlineRule,
+  StaggerGrid,
+  StaggerItem,
+} from "@/components/motion/EditorialMotion";
 
 interface ServicesSectionProps {
   services: ServiceItem[];
@@ -28,70 +33,87 @@ export function ServicesSection({
               02 / Our Expertise
             </p>
 
-            <h2 className="mt-6 max-w-3xl font-serif text-5xl font-light leading-[0.95] tracking-tight text-[#111111] sm:text-7xl">
-              A considered approach
-              <br />
-              to <span className="italic">every space.</span>
-            </h2>
+            <div className="mt-6">
+              <RevealText>
+                <h2 className="max-w-3xl font-serif text-5xl font-light leading-[0.95] tracking-tight text-[#111111] sm:text-7xl">
+                  A considered approach
+                </h2>
+              </RevealText>
+              <RevealText delay={0.12}>
+                <h2 className="max-w-3xl font-serif text-5xl font-light leading-[0.95] tracking-tight text-[#111111] sm:text-7xl">
+                  to <span className="italic">every space.</span>
+                </h2>
+              </RevealText>
+            </div>
           </div>
 
           <div className="lg:col-span-4 lg:col-start-9">
-            <p className="max-w-md text-sm leading-8 text-[#777777]">
-              From the first architectural idea to the final
-              material detail, our disciplines work together
-              to create cohesive spatial environments.
-            </p>
+            <RevealText delay={0.2}>
+              <p className="max-w-md text-sm leading-8 text-[#777777]">
+                From the first architectural idea to the final
+                material detail, our disciplines work together
+                to create cohesive spatial environments.
+              </p>
+            </RevealText>
           </div>
         </div>
 
-        {/* Services Grid */}
-        <div className="grid border-l border-t border-[#D8D6D0] sm:grid-cols-2 lg:grid-cols-3">
+        <HairlineRule color="bg-[#D8D6D0]" className="mb-0" />
+
+        {/* Services Staggered Grid */}
+        <StaggerGrid
+          staggerDelay={0.08}
+          className="grid border-l border-[#D8D6D0] sm:grid-cols-2 lg:grid-cols-3"
+        >
           {services.map((service, index) => (
-            <button
+            <StaggerItem
               key={service.id}
-              type="button"
-              onClick={() => onSelectService(service)}
-              className={`group relative flex min-h-[300px] flex-col justify-between border-b border-r border-[#D8D6D0] p-7 text-left transition-colors duration-500 hover:bg-white sm:p-9 ${
-                index === 0 || index === 4
-                  ? "lg:col-span-1"
-                  : ""
+              className={`border-b border-r border-[#D8D6D0] ${
+                index === 0 || index === 4 ? "lg:col-span-1" : ""
               }`}
             >
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="editorial-eyebrow text-[#B68A4A]">
-                    {service.code}
-                  </span>
+              <button
+                type="button"
+                onClick={() => onSelectService(service)}
+                className="group relative flex min-h-[300px] w-full flex-col justify-between p-7 text-left transition-all duration-500 hover:bg-white sm:p-9"
+              >
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="editorial-eyebrow text-[#B68A4A]">
+                      {service.code}
+                    </span>
 
-                  <span className="font-mono text-xs text-[#AAA69D]">
-                    0{index + 1}
-                  </span>
+                    <span className="font-mono text-xs text-[#AAA69D]">
+                      0{index + 1}
+                    </span>
+                  </div>
+
+                  <h3 className="mt-12 max-w-xs font-serif text-4xl font-normal leading-[1.05] text-[#111111] transition-transform duration-500 group-hover:translate-x-1 sm:text-[2.7rem]">
+                    {service.title}
+                  </h3>
+
+                  <p className="mt-5 max-w-sm text-sm leading-7 text-[#777777]">
+                    {service.tagline}
+                  </p>
                 </div>
 
-                <h3 className="mt-12 max-w-xs font-serif text-4xl font-normal leading-[1.05] text-[#111111] transition-transform duration-500 group-hover:translate-x-1 sm:text-[2.7rem]">
-                  {service.title}
-                </h3>
+                <div className="mt-12 flex items-center justify-between border-t border-[#D8D6D0] pt-5">
+                  <span className="text-[10px] font-medium uppercase tracking-[0.15em] text-[#55534F] transition-colors group-hover:text-[#B68A4A]">
+                    Explore Discipline
+                  </span>
 
-                <p className="mt-5 max-w-sm text-sm leading-7 text-[#777777]">
-                  {service.tagline}
-                </p>
-              </div>
-
-              <div className="mt-12 flex items-center justify-between border-t border-[#D8D6D0] pt-5">
-                <span className="text-[10px] font-medium uppercase tracking-[0.15em] text-[#55534F] transition-colors group-hover:text-[#B68A4A]">
-                  Explore Discipline
-                </span>
-
-                <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[#D8D6D0] text-[#111111] transition-all duration-300 group-hover:border-[#B68A4A] group-hover:bg-[#B68A4A]">
-                  <ArrowUpRight size={16} />
-                </span>
-              </div>
-            </button>
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[#D8D6D0] text-[#111111] transition-all duration-300 group-hover:border-[#B68A4A] group-hover:bg-[#B68A4A] group-hover:text-white">
+                    <ArrowUpRight size={16} />
+                  </span>
+                </div>
+              </button>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerGrid>
 
         {/* Closing Statement */}
-        <div className="mt-12 flex flex-col gap-4 border-b border-[#D8D6D0] pb-8 sm:flex-row sm:items-center sm:justify-between">
+        <HairlineRule color="bg-[#D8D6D0]" className="mt-12" />
+        <div className="flex flex-col gap-4 py-8 sm:flex-row sm:items-center sm:justify-between">
           <p className="font-serif text-2xl italic text-[#777777]">
             One vision. Multiple disciplines. A cohesive result.
           </p>

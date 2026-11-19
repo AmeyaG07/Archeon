@@ -1,9 +1,15 @@
-
 "use client";
 
 import React from "react";
 import { ArrowUpRight, MapPin } from "lucide-react";
 import type { PortfolioProject } from "@/config/siteConfig";
+import {
+  RevealText,
+  ClipReveal,
+  HairlineRule,
+  StaggerGrid,
+  StaggerItem,
+} from "@/components/motion/EditorialMotion";
 
 interface ProjectsSectionProps {
   projects: PortfolioProject[];
@@ -37,28 +43,40 @@ export function ProjectsSection({
               03 / Selected Work
             </p>
 
-            <h2 className="mt-6 font-serif text-5xl font-light leading-[0.95] tracking-tight text-[#111111] sm:text-7xl">
-              Spaces that tell
-              <br />
-              <span className="italic">their own story.</span>
-            </h2>
+            <div className="mt-6">
+              <RevealText>
+                <h2 className="font-serif text-5xl font-light leading-[0.95] tracking-tight text-[#111111] sm:text-7xl">
+                  Spaces that tell
+                </h2>
+              </RevealText>
+              <RevealText delay={0.12}>
+                <h2 className="font-serif text-5xl font-light leading-[0.95] tracking-tight text-[#111111] sm:text-7xl">
+                  <span className="italic">their own story.</span>
+                </h2>
+              </RevealText>
+            </div>
           </div>
 
-          <p className="max-w-sm text-sm leading-8 text-[#777777]">
-            A selection of architectural, interior and landscape
-            projects shaped by context, material and the experience
-            of inhabiting space.
-          </p>
+          <RevealText delay={0.2}>
+            <p className="max-w-sm text-sm leading-8 text-[#777777]">
+              A selection of architectural, interior and landscape
+              projects shaped by context, material and the experience
+              of inhabiting space.
+            </p>
+          </RevealText>
         </div>
 
-        {/* Project Cards */}
-        <div className="grid gap-x-8 gap-y-16 md:grid-cols-2">
+        <HairlineRule color="bg-[#D8D6D0]" className="mb-14" />
+
+        {/* Project Cards with Stagger & Clip-Path Curtain Reveal */}
+        <StaggerGrid
+          staggerDelay={0.12}
+          className="grid gap-x-8 gap-y-16 md:grid-cols-2"
+        >
           {projects.map((project, index) => (
-            <article
+            <StaggerItem
               key={project.id}
-              className={`group ${
-                index === 0 ? "md:col-span-2" : ""
-              }`}
+              className={`group ${index === 0 ? "md:col-span-2" : ""}`}
             >
               <button
                 type="button"
@@ -66,24 +84,23 @@ export function ProjectsSection({
                 className="block w-full text-left"
                 aria-label={`View ${project.title} project`}
               >
-                {/* Honest Image Placeholder */}
-                <div
+                {/* Architectural Clip-Path Image Reveal */}
+                <ClipReveal
+                  duration={1.2}
                   className={`relative overflow-hidden bg-gradient-to-br ${
                     projectVisuals[project.id] ??
                     "from-[#777064] to-[#302C25]"
                   } ${
-                    index === 0
-                      ? "aspect-[16/8]"
-                      : "aspect-[4/3]"
+                    index === 0 ? "aspect-[16/8]" : "aspect-[4/3]"
                   }`}
                 >
-                  <div className="absolute inset-0 opacity-40">
+                  <div className="absolute inset-0 opacity-40 transition-transform duration-700 ease-out group-hover:scale-105">
                     <div className="absolute right-[12%] top-[12%] h-[85%] w-[35%] -skew-x-12 border-l border-white/40 bg-white/10" />
                     <div className="absolute bottom-0 left-[10%] h-[45%] w-[65%] border-t border-white/30 bg-black/10" />
                     <div className="absolute right-[20%] top-[20%] h-[55%] w-[18%] border-l border-white/30 bg-white/10" />
                   </div>
 
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/10" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/10 transition-opacity duration-500 group-hover:opacity-80" />
 
                   <div className="absolute left-5 top-5">
                     <span className="border border-white/40 bg-black/15 px-3 py-2 font-mono text-[9px] uppercase tracking-widest text-white backdrop-blur-sm">
@@ -105,7 +122,7 @@ export function ProjectsSection({
                       <ArrowUpRight size={19} />
                     </span>
                   </div>
-                </div>
+                </ClipReveal>
 
                 {/* Project Information */}
                 <div className="mt-6 flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
@@ -146,12 +163,13 @@ export function ProjectsSection({
                   ))}
                 </div>
               </button>
-            </article>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerGrid>
 
         {/* Closing Line */}
-        <div className="mt-20 border-t border-[#D8D6D0] pt-8">
+        <HairlineRule color="bg-[#D8D6D0]" className="mt-20 mb-8" />
+        <div>
           <p className="font-serif text-2xl italic text-[#777777]">
             Every project begins with understanding its context.
           </p>
