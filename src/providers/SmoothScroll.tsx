@@ -28,10 +28,12 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
 
     gsap.ticker.add(tickerUpdate);
     gsap.ticker.lagSmoothing(0);
+    ScrollTrigger.refresh();
 
     return () => {
       gsap.ticker.remove(tickerUpdate);
       lenis.destroy();
+      ScrollTrigger.refresh();
     };
   }, []);
 

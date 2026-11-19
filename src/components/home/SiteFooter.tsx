@@ -4,9 +4,21 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { ArrowUpRight } from "lucide-react";
 import { siteConfig } from "@/config/siteConfig";
-import { FooterClockEmblem } from "@/components/home/FooterClockEmblem";
+
+const FooterClockEmblem = dynamic(
+  () => import("@/components/home/FooterClockEmblem").then((m) => m.FooterClockEmblem),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[380px] w-full flex items-center justify-center">
+        <div className="w-16 h-16 rounded-full border border-white/10 animate-pulse" />
+      </div>
+    ),
+  }
+);
 
 interface SiteFooterProps {
   onOpenClientPortal: () => void;

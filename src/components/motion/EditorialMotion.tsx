@@ -18,13 +18,13 @@ interface RevealTextProps {
 
 /**
  * RevealText
- * Masked line/block rise with an editorial luxury cubic-bezier.
+ * Smooth masked editorial upward rise that triggers reliably in all viewports.
  */
 export function RevealText({
   children,
   className = "",
   delay = 0,
-  duration = 0.95,
+  duration = 0.85,
 }: RevealTextProps) {
   const shouldReduceMotion = useReducedMotion();
 
@@ -33,21 +33,19 @@ export function RevealText({
   }
 
   return (
-    <div className="overflow-hidden">
-      <motion.div
-        initial={{ y: "105%", opacity: 0.05 }}
-        whileInView={{ y: "0%", opacity: 1 }}
-        viewport={{ once: true, amount: 0.2 }}
-        transition={{
-          duration,
-          delay,
-          ease: LUXURY_EASE,
-        }}
-        className={className}
-      >
-        {children}
-      </motion.div>
-    </div>
+    <motion.div
+      initial={{ opacity: 0, y: 18 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.15 }}
+      transition={{
+        duration,
+        delay,
+        ease: LUXURY_EASE,
+      }}
+      className={className}
+    >
+      {children}
+    </motion.div>
   );
 }
 
@@ -60,13 +58,13 @@ interface ClipRevealProps {
 
 /**
  * ClipReveal
- * Architectural curtain reveal with subtle scale easing for imagery and visual cards.
+ * Architectural curtain reveal with subtle scale easing for imagery and cards.
  */
 export function ClipReveal({
   children,
   className = "",
   delay = 0,
-  duration = 1.1,
+  duration = 1.0,
 }: ClipRevealProps) {
   const shouldReduceMotion = useReducedMotion();
 
@@ -77,16 +75,16 @@ export function ClipReveal({
   return (
     <motion.div
       initial={{
-        clipPath: "inset(12% 0% 12% 0%)",
-        scale: 1.06,
-        opacity: 0.4,
+        clipPath: "inset(10% 0% 10% 0%)",
+        scale: 1.05,
+        opacity: 0.5,
       }}
       whileInView={{
         clipPath: "inset(0% 0% 0% 0%)",
         scale: 1,
         opacity: 1,
       }}
-      viewport={{ once: true, amount: 0.2 }}
+      viewport={{ once: true, amount: 0.15 }}
       transition={{
         duration,
         delay,
@@ -115,7 +113,7 @@ export function HairlineRule({
   className = "",
   color = "bg-[#D8D6D0]",
   delay = 0,
-  duration = 0.9,
+  duration = 0.85,
   origin = "left",
 }: HairlineRuleProps) {
   const shouldReduceMotion = useReducedMotion();
@@ -135,7 +133,7 @@ export function HairlineRule({
     <motion.div
       initial={{ scaleX: 0 }}
       whileInView={{ scaleX: 1 }}
-      viewport={{ once: true, amount: 0.3 }}
+      viewport={{ once: true, amount: 0.15 }}
       transition={{
         duration,
         delay,
@@ -154,11 +152,11 @@ interface StaggerGridProps {
 
 const gridContainerVariants: Variants = {
   hidden: { opacity: 0 },
-  visible: (staggerDelay: number = 0.1) => ({
+  visible: (staggerDelay: number = 0.08) => ({
     opacity: 1,
     transition: {
       staggerChildren: staggerDelay,
-      delayChildren: 0.05,
+      delayChildren: 0.04,
     },
   }),
 };
@@ -170,7 +168,7 @@ const gridContainerVariants: Variants = {
 export function StaggerGrid({
   children,
   className = "",
-  staggerDelay = 0.1,
+  staggerDelay = 0.08,
 }: StaggerGridProps) {
   const shouldReduceMotion = useReducedMotion();
 
@@ -195,13 +193,13 @@ export function StaggerGrid({
 const itemVariants: Variants = {
   hidden: {
     opacity: 0,
-    y: 28,
+    y: 20,
   },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
-      duration: 0.85,
+      duration: 0.75,
       ease: LUXURY_EASE,
     },
   },

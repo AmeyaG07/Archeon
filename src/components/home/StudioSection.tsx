@@ -21,7 +21,7 @@ export function StudioSection() {
           {/* Section Label */}
           <div className="lg:col-span-3">
             <p className="editorial-eyebrow text-[#777777]">
-              01 / The Studio
+              05 / The Studio
             </p>
 
             <HairlineRule
@@ -38,7 +38,7 @@ export function StudioSection() {
                   Design is not just about spaces.
                 </h2>
               </RevealText>
-              <RevealText delay={0.12}>
+              <RevealText delay={0.1}>
                 <h2 className="font-serif text-4xl leading-[1.15] tracking-tight text-[#A58A64] md:text-6xl lg:text-7xl">
                   It is about how we experience them.
                 </h2>
@@ -47,24 +47,24 @@ export function StudioSection() {
 
             <div className="mt-12 grid grid-cols-1 gap-10 md:grid-cols-2 md:gap-16">
               <div>
-                <p className="editorial-eyebrow text-[#A58A64]">
+                <p className="editorial-eyebrow text-[#A58A64] mb-4">
                   Our Philosophy
                 </p>
 
-                <RevealText delay={0.15}>
-                  <p className="mt-5 text-base leading-8 text-[#55534F] md:text-lg">
+                <RevealText delay={0.12}>
+                  <p className="text-base leading-8 text-[#44423E] md:text-lg">
                     {siteConfig.philosophy}
                   </p>
                 </RevealText>
               </div>
 
               <div>
-                <p className="editorial-eyebrow text-[#A58A64]">
+                <p className="editorial-eyebrow text-[#A58A64] mb-4">
                   Our Approach
                 </p>
 
-                <RevealText delay={0.22}>
-                  <p className="mt-5 text-base leading-8 text-[#55534F] md:text-lg">
+                <RevealText delay={0.16}>
+                  <p className="text-base leading-8 text-[#44423E] md:text-lg">
                     {siteConfig.about.story}
                   </p>
                 </RevealText>
@@ -85,7 +85,7 @@ export function StudioSection() {
               </div>
 
               <StaggerGrid
-                staggerDelay={0.1}
+                staggerDelay={0.08}
                 className="grid grid-cols-1 gap-0 sm:grid-cols-2 lg:grid-cols-3"
               >
                 {siteConfig.about.approach.map((principle, index) => (
@@ -93,7 +93,7 @@ export function StudioSection() {
                     key={`${index}-${principle}`}
                     className="border-t border-[#D8D6D0] py-6 pr-6"
                   >
-                    <span className="font-mono text-xs text-[#A58A64]">
+                    <span className="font-mono text-xs font-semibold text-[#A58A64]">
                       0{index + 1}
                     </span>
 
