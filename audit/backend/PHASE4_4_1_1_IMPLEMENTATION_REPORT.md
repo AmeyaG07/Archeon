@@ -8,6 +8,7 @@
 **Baseline Branch:** `backend/phase4.4.1-sensitive-data-protection`  
 **Baseline HEAD Commit:** `332617864dab22cc78951aed3bc8b45b2d063fe2`  
 **Remediation Code Commit:** `8448141ff841fbc8e0018ceef5220c8bf3e78297` (`8448141`)  
+**Documentation Commit:** `1bf7a1c221e7845f2ca181cb2864380b0bb1f4b5` (`1bf7a1c`)  
 **Date:** 2026-11-19  
 
 ---
