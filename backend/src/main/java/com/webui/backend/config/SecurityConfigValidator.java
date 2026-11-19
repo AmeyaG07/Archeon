@@ -98,5 +98,22 @@ public class SecurityConfigValidator {
                     "(minimum 256 bits / 32 bytes required for HMAC signing)."
             );
         }
+
+        // 3. Enforce Active Antivirus Scanner (CLAMAV) in Production
+        String scanMode = env.getProperty("app.dms.malware-scan-mode", "DETERMINISTIC_MOCK");
+        if (!"CLAMAV".equalsIgnoreCase(scanMode)) {
+            throw new IllegalStateException(
+                    "FATAL SECURITY MISCONFIGURATION: app.dms.malware-scan-mode must be set to 'CLAMAV' in production. " +
+                    "Mock or pass-through malware scanning is strictly forbidden in production. Set APP_DMS_MALWARE_SCAN_MODE=CLAMAV"
+            );
+        }
+
+        String clamHost = env.getProperty("app.dms.clamav.host");
+        if (!StringUtils.hasText(clamHost)) {
+            throw new IllegalStateException(
+                    "FATAL SECURITY MISCONFIGURATION: app.dms.clamav.host is missing or blank in production. " +
+                    "Set APP_DMS_CLAMAV_HOST environment variable."
+            );
+        }
     }
 }

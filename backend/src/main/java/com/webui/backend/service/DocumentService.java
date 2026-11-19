@@ -192,6 +192,21 @@ public class DocumentService {
                             docReference, savedDoc.getTitle(), validatedFile.sanitizedFilename(), validatedFile.sizeBytes(), validatedFile.sha256Checksum(), docStatus))
                     .build());
 
+            if (!scanResult.passed()) {
+                auditEventRepository.save(AuditEventEntity.builder()
+                        .actorId(auth.getName())
+                        .actorRole(user.getRole())
+                        .action("DOCUMENT_QUARANTINED")
+                        .entityName("DOCUMENT")
+                        .entityId(savedDoc.getId().toString())
+                        .detailsJson(String.format("{\"reference\":\"%s\",\"reason\":\"%s\",\"scanStatus\":\"%s\",\"message\":\"%s\"}",
+                                docReference,
+                                scanResult.quarantineReason() != null ? scanResult.quarantineReason() : "UNSPECIFIED",
+                                scanResult.status() != null ? scanResult.status().name() : "SCANNER_ERROR",
+                                scanResult.message() != null ? scanResult.message() : "Scan inspection failed"))
+                        .build());
+            }
+
             return toDocumentResponse(savedDoc, true);
         } catch (Exception ex) {
             log.error("Failed to persist document metadata for key {}. Cleaning up stored file...", storageKey, ex);
@@ -284,6 +299,21 @@ public class DocumentService {
                             nextVersionNumber, validatedFile.sanitizedFilename(), validatedFile.sizeBytes(), validatedFile.sha256Checksum(), verStatus))
                     .build());
 
+            if (!scanResult.passed()) {
+                auditEventRepository.save(AuditEventEntity.builder()
+                        .actorId(auth.getName())
+                        .actorRole(user.getRole())
+                        .action("DOCUMENT_VERSION_QUARANTINED")
+                        .entityName("DOCUMENT")
+                        .entityId(documentId.toString())
+                        .detailsJson(String.format("{\"version\":%d,\"reason\":\"%s\",\"scanStatus\":\"%s\",\"message\":\"%s\"}",
+                                nextVersionNumber,
+                                scanResult.quarantineReason() != null ? scanResult.quarantineReason() : "UNSPECIFIED",
+                                scanResult.status() != null ? scanResult.status().name() : "SCANNER_ERROR",
+                                scanResult.message() != null ? scanResult.message() : "Scan inspection failed"))
+                        .build());
+            }
+
             return toDocumentResponse(updated, true);
         } catch (Exception ex) {
             log.error("Failed to record new document version. Cleaning up storage key: {}", storageKey, ex);
@@ -305,8 +335,8 @@ public class DocumentService {
         DocumentEntity doc = getDocumentEntity(documentId);
         validateDocumentReadAccess(doc, auth);
 
-        if ("QUARANTINED".equals(doc.getStatus()) && !isInternalStaff(auth.getAuthorities())) {
-            throw new AccessDeniedException("This document is quarantined for administrative security inspection");
+        if (("QUARANTINED".equals(doc.getStatus()) || "REJECTED".equals(doc.getStatus())) && !isInternalStaff(auth.getAuthorities())) {
+            throw new AccessDeniedException("This document is quarantined or rejected for administrative security inspection");
         }
 
         if (doc.getCurrentVersionId() == null) {
@@ -342,8 +372,8 @@ public class DocumentService {
         DocumentVersionEntity version = documentVersionRepository.findByDocumentIdAndVersionNumber(documentId, versionNumber)
                 .orElseThrow(() -> new FileNotFoundException("Version " + versionNumber + " not found for document " + doc.getDocumentReference()));
 
-        if ("QUARANTINED".equals(version.getQuarantineStatus()) && !isInternalStaff(auth.getAuthorities())) {
-            throw new AccessDeniedException("Requested version is quarantined for administrative security inspection");
+        if (("QUARANTINED".equals(version.getQuarantineStatus()) || "REJECTED".equals(version.getQuarantineStatus())) && !isInternalStaff(auth.getAuthorities())) {
+            throw new AccessDeniedException("Requested version is quarantined or rejected for administrative security inspection");
         }
 
         InputStream inputStream = storageService.retrieveFile(version.getStorageKey());
@@ -589,13 +619,30 @@ public class DocumentService {
             throw new AccessDeniedException("Only system administrators can release quarantined documents");
         }
         DocumentEntity doc = getDocumentEntity(documentId);
+        checkNotArchived(doc, "release quarantine");
+
+        // Rescan latest stored version file before administrative release
+        List<DocumentVersionEntity> versions = documentVersionRepository.findByDocumentIdOrderByVersionNumberDesc(documentId);
+        if (!versions.isEmpty()) {
+            DocumentVersionEntity latest = versions.get(0);
+            try (InputStream is = storageService.retrieveFile(latest.getStorageKey())) {
+                ScanResult rescan = malwareScanner.scan(is, latest.getOriginalFilename(), latest.getFileSizeBytes());
+                if (!rescan.passed()) {
+                    log.warn("Administrative quarantine release rejected for doc {}: rescan failed with reason: {}",
+                            documentId, rescan.quarantineReason());
+                    throw new IllegalStateException("Cannot release document from quarantine: Antivirus rescan failed: " + rescan.message());
+                }
+            } catch (IOException e) {
+                log.error("Failed to retrieve file for rescan during quarantine release: doc={}", documentId, e);
+                throw new IllegalStateException("Cannot release document from quarantine: Stored file could not be read for inspection: " + e.getMessage(), e);
+            }
+        }
 
         doc.setStatus("AVAILABLE");
         doc.setUpdatedAt(LocalDateTime.now());
         DocumentEntity saved = documentRepository.save(doc);
 
         // Update all quarantined versions for this doc
-        List<DocumentVersionEntity> versions = documentVersionRepository.findByDocumentIdOrderByVersionNumberDesc(documentId);
         for (DocumentVersionEntity v : versions) {
             if ("QUARANTINED".equals(v.getQuarantineStatus())) {
                 v.setQuarantineStatus("CLEARED");

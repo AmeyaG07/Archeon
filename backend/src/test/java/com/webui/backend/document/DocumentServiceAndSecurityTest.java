@@ -1,5 +1,6 @@
 package com.webui.backend.document;
 
+import com.webui.backend.controller.DocumentController;
 import com.webui.backend.dto.document.DocumentDto.*;
 import com.webui.backend.model.*;
 import com.webui.backend.repository.*;
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -34,6 +36,9 @@ public class DocumentServiceAndSecurityTest {
 
     @Autowired
     private DocumentService documentService;
+
+    @Autowired
+    private DocumentController documentController;
 
     @Autowired
     private DocumentRepository documentRepository;
@@ -612,6 +617,82 @@ public class DocumentServiceAndSecurityTest {
         // Client can now download
         DownloadFileResult clientDownload = documentService.downloadDocument(doc.getId(), clientAAuth);
         assertNotNull(clientDownload);
+    }
+
+    @Test
+    public void testInfectedFile_AutomaticallyQuarantined_AdminReleaseFailsIfStillInfected() throws IOException {
+        // Construct valid PDF that also embeds the standard EICAR test signature
+        byte[] infectedPdfBytes = ("%PDF-1.4\n1 0 obj\n<< /Type /Catalog >>\nendobj\n" +
+                "X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*\n" +
+                "trailer\n<< >>\n%%EOF").getBytes(StandardCharsets.ISO_8859_1);
+
+        MockMultipartFile file = new MockMultipartFile("file", "eicar_test.pdf", "application/pdf", infectedPdfBytes);
+        CreateDocumentRequest req = CreateDocumentRequest.builder()
+                .title("Infected Blueprint Submission")
+                .category("BLUEPRINT_DRAWING")
+                .securityClassification("PUBLIC_CLIENT")
+                .clientId(clientA.getId())
+                .build();
+
+        // 1. Uploading infected file succeeds in ingestion but is automatically QUARANTINED
+        DocumentResponse doc = documentService.uploadDocument(req, file, staffAuth);
+        assertEquals("QUARANTINED", doc.getStatus());
+
+        // 2. Client is blocked from downloading quarantined file
+        assertThrows(AccessDeniedException.class, () ->
+                documentService.downloadDocument(doc.getId(), clientAAuth));
+
+        // 3. Admin attempts to release quarantine: rescan detects persistent EICAR malware and throws IllegalStateException
+        IllegalStateException ex = assertThrows(IllegalStateException.class, () ->
+                documentService.releaseQuarantine(doc.getId(), adminAuth));
+        assertTrue(ex.getMessage().contains("Cannot release document from quarantine: Antivirus rescan failed"));
+
+        // 4. Verify document remains in QUARANTINED status
+        DocumentEntity entity = documentRepository.findById(doc.getId()).orElseThrow();
+        assertEquals("QUARANTINED", entity.getStatus());
+    }
+
+    @Test
+    public void testDownloadHeaders_CacheControlAndNoSniffPresent() throws IOException {
+        MockMultipartFile file = new MockMultipartFile("file", "secure_plan.pdf", "application/pdf", VALID_PDF_BYTES);
+        CreateDocumentRequest req = CreateDocumentRequest.builder()
+                .title("Secure Floor Plan")
+                .category("BLUEPRINT_DRAWING")
+                .securityClassification("INTERNAL_STAFF")
+                .build();
+
+        DocumentResponse doc = documentService.uploadDocument(req, file, staffAuth);
+
+        // 1. Verify Active Download Endpoint Headers
+        ResponseEntity<?> resp = documentController.downloadDocument(doc.getId(), staffAuth);
+        assertTrue(resp.getStatusCode().is2xxSuccessful());
+
+        String cacheControl = resp.getHeaders().getCacheControl();
+        assertNotNull(cacheControl, "Cache-Control must not be null");
+        assertTrue(cacheControl.contains("no-store"), "Cache-Control must contain no-store");
+        assertTrue(cacheControl.contains("no-cache"), "Cache-Control must contain no-cache");
+        assertTrue(cacheControl.contains("must-revalidate"), "Cache-Control must contain must-revalidate");
+
+        assertEquals("no-cache", resp.getHeaders().getPragma(), "Pragma must be no-cache");
+        assertEquals(0, resp.getHeaders().getExpires(), "Expires header must be 0");
+        assertEquals("nosniff", resp.getHeaders().getFirst("X-Content-Type-Options"), "X-Content-Type-Options must be nosniff");
+        assertNotNull(resp.getHeaders().getFirst("X-Checksum-SHA256"), "X-Checksum-SHA256 must be present");
+        assertTrue(resp.getHeaders().getFirst("Content-Disposition").contains("secure_plan.pdf"));
+
+        // 2. Verify Version Download Endpoint Headers
+        ResponseEntity<?> verResp = documentController.downloadDocumentVersion(doc.getId(), 1, staffAuth);
+        assertTrue(verResp.getStatusCode().is2xxSuccessful());
+
+        String verCacheControl = verResp.getHeaders().getCacheControl();
+        assertNotNull(verCacheControl);
+        assertTrue(verCacheControl.contains("no-store"));
+        assertTrue(verCacheControl.contains("no-cache"));
+        assertTrue(verCacheControl.contains("must-revalidate"));
+
+        assertEquals("no-cache", verResp.getHeaders().getPragma());
+        assertEquals(0, verResp.getHeaders().getExpires());
+        assertEquals("nosniff", verResp.getHeaders().getFirst("X-Content-Type-Options"));
+        assertNotNull(verResp.getHeaders().getFirst("X-Checksum-SHA256"));
     }
 
     // ==========================================

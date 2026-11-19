@@ -138,14 +138,47 @@ public class ProductionBootstrapHardeningTest {
     }
 
     @Test
-    @DisplayName("P3.2-08: Production succeeds when strong secret and Redis revocation are configured")
+    @DisplayName("P3.2-08: Production succeeds when strong secret, Redis revocation, and ClamAV are configured")
     void test_productionSucceedsWithValidSecretAndRedis() {
         MockEnvironment env = new MockEnvironment();
         env.setActiveProfiles("prod");
         env.setProperty("app.security.revocation-strategy", "redis");
         env.setProperty("app.jwt.secret", VALID_PROD_SECRET_384);
+        env.setProperty("app.dms.malware-scan-mode", "CLAMAV");
+        env.setProperty("app.dms.clamav.host", "clamav.internal.archeon.io");
 
         assertDoesNotThrow(() -> SecurityConfigValidator.validateEnvironment(env));
+    }
+
+    @Test
+    @DisplayName("P4.3.1-07: Production fails startup when malware scan mode is mock or pass-through")
+    void test_productionFailsWhenMalwareScannerIsMock() {
+        MockEnvironment env = new MockEnvironment();
+        env.setActiveProfiles("prod");
+        env.setProperty("app.security.revocation-strategy", "redis");
+        env.setProperty("app.jwt.secret", VALID_PROD_SECRET_384);
+        env.setProperty("app.dms.malware-scan-mode", "DETERMINISTIC_MOCK");
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class, () ->
+                SecurityConfigValidator.validateEnvironment(env)
+        );
+        assertTrue(ex.getMessage().contains("app.dms.malware-scan-mode must be set to 'CLAMAV' in production"));
+    }
+
+    @Test
+    @DisplayName("P4.3.1-08: Production fails startup when ClamAV host is missing")
+    void test_productionFailsWhenClamAvHostMissing() {
+        MockEnvironment env = new MockEnvironment();
+        env.setActiveProfiles("production");
+        env.setProperty("app.security.revocation-strategy", "redis");
+        env.setProperty("app.jwt.secret", VALID_PROD_SECRET_384);
+        env.setProperty("app.dms.malware-scan-mode", "CLAMAV");
+        // app.dms.clamav.host not set
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class, () ->
+                SecurityConfigValidator.validateEnvironment(env)
+        );
+        assertTrue(ex.getMessage().contains("app.dms.clamav.host is missing or blank in production"));
     }
 
     @Test

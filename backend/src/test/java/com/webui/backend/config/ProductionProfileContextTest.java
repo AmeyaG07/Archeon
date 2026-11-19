@@ -12,7 +12,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 @SpringBootTest(properties = {
         // Valid 384-bit random Base64 key for production validation
         "app.jwt.secret=MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDEyMzQ1Njc4",
-        "app.security.revocation-strategy=redis"
+        "app.security.revocation-strategy=redis",
+        "app.dms.malware-scan-mode=CLAMAV",
+        "app.dms.clamav.host=localhost"
 })
 @ActiveProfiles("prod")
 public class ProductionProfileContextTest {

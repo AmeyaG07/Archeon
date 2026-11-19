@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -67,18 +68,34 @@ public class DocumentSecurityValidator {
             throw new IllegalArgumentException("Unsupported file type: '" + extension + "'. Allowed types: " + ALLOWED_EXTENSIONS);
         }
 
-        // 2. Read bytes into memory for signature inspection and SHA-256 (up to maxFileSizeBytes)
-        byte[] bytes = inputStream.readAllBytes();
-        long actualSize = bytes.length;
+        // 2. Read bytes with streaming bound enforcement and on-the-fly SHA-256 hashing
+        MessageDigest digest;
+        try {
+            digest = MessageDigest.getInstance("SHA-256");
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-256 algorithm not available", e);
+        }
 
-        if (actualSize == 0) {
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        byte[] chunk = new byte[8192];
+        int bytesRead;
+        long totalBytes = 0;
+
+        while ((bytesRead = inputStream.read(chunk, 0, chunk.length)) != -1) {
+            totalBytes += bytesRead;
+            if (totalBytes > maxFileSizeBytes) {
+                log.warn("Upload rejected: file size exceeds maximum allowed limit ({} bytes)", maxFileSizeBytes);
+                throw new IllegalArgumentException("File size exceeds maximum allowed limit (" + (maxFileSizeBytes / (1024 * 1024)) + "MB)");
+            }
+            buffer.write(chunk, 0, bytesRead);
+            digest.update(chunk, 0, bytesRead);
+        }
+
+        if (totalBytes == 0) {
             throw new IllegalArgumentException("Uploaded file cannot be empty");
         }
 
-        if (actualSize > maxFileSizeBytes) {
-            log.warn("Upload rejected: size {} exceeds maximum allowed {}", actualSize, maxFileSizeBytes);
-            throw new IllegalArgumentException("File size exceeds maximum allowed limit (" + (maxFileSizeBytes / (1024 * 1024)) + "MB)");
-        }
+        byte[] bytes = buffer.toByteArray();
 
         // 3. Dangerous executable signatures check
         checkDangerousSignatures(bytes, extension);
@@ -86,14 +103,14 @@ public class DocumentSecurityValidator {
         // 4. Magic-byte verification
         String verifiedMime = verifyMagicBytes(extension, suppliedMimeType, bytes);
 
-        // 5. SHA-256 Digest
-        String sha256 = calculateSha256(bytes);
+        // 5. SHA-256 Digest from on-the-fly computation
+        String sha256 = bytesToHex(digest.digest());
 
         return new ValidatedFile(
                 sanitizedName,
                 extension,
                 verifiedMime,
-                actualSize,
+                totalBytes,
                 sha256,
                 bytes
         );
@@ -222,16 +239,19 @@ public class DocumentSecurityValidator {
     public static String calculateSha256(byte[] data) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(data);
-            StringBuilder hexString = new StringBuilder();
-            for (byte b : hash) {
-                String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) hexString.append('0');
-                hexString.append(hex);
-            }
-            return hexString.toString();
+            return bytesToHex(digest.digest(data));
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("SHA-256 algorithm not available", e);
         }
+    }
+
+    private static String bytesToHex(byte[] hash) {
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : hash) {
+            String hex = Integer.toHexString(0xff & b);
+            if (hex.length() == 1) hexString.append('0');
+            hexString.append(hex);
+        }
+        return hexString.toString();
     }
 }

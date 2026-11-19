@@ -79,5 +79,10 @@ app:
     max-file-size-mb: ${APP_STORAGE_MAX_FILE_SIZE_MB:25}
 
   dms:
-    malware-scan-mode: ${APP_DMS_MALWARE_SCAN_MODE:PASS_THROUGH}
+    malware-scan-mode: ${APP_DMS_MALWARE_SCAN_MODE:DETERMINISTIC_MOCK}
+    clamav:
+      host: ${APP_DMS_CLAMAV_HOST:localhost}
+      port: ${APP_DMS_CLAMAV_PORT:3310}
+      connection-timeout-ms: ${APP_DMS_CLAMAV_CONNECTION_TIMEOUT_MS:3000}
+      read-timeout-ms: ${APP_DMS_CLAMAV_READ_TIMEOUT_MS:10000}
 

@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -109,6 +110,12 @@ public class DocumentController {
             headers.setContentDispositionFormData("attachment", result.originalFilename());
             headers.set("X-Checksum-SHA256", result.sha256Checksum());
 
+            // Downstream Cache Protection & Content Sniffing Prevention Headers
+            headers.setCacheControl("no-store, no-cache, must-revalidate");
+            headers.setPragma("no-cache");
+            headers.setExpires(0);
+            headers.set("X-Content-Type-Options", "nosniff");
+
             return ResponseEntity.ok()
                     .headers(headers)
                     .body(new InputStreamResource(result.inputStream()));
@@ -135,6 +142,12 @@ public class DocumentController {
             headers.setContentLength(result.fileSizeBytes());
             headers.setContentDispositionFormData("attachment", result.originalFilename());
             headers.set("X-Checksum-SHA256", result.sha256Checksum());
+
+            // Downstream Cache Protection & Content Sniffing Prevention Headers
+            headers.setCacheControl("no-store, no-cache, must-revalidate");
+            headers.setPragma("no-cache");
+            headers.setExpires(0);
+            headers.set("X-Content-Type-Options", "nosniff");
 
             return ResponseEntity.ok()
                     .headers(headers)
