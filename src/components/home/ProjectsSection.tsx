@@ -193,7 +193,7 @@ export function ProjectsSection({
                         {project.code}
                       </p>
                       <p className="mt-2 text-xs text-white/90 font-light">
-                        {project.image ? `${project.title} · Nagpur, Maharashtra` : "Architectural project visual pending"}
+                        {project.image ? `${project.title} · ${project.location}` : "Architectural project visual pending"}
                       </p>
                     </div>
 
