@@ -164,11 +164,10 @@ export function FooterClockEmblem({
 
   return (
     <div
-      className={`relative select-none ${
-        compact
-          ? `flex flex-col items-start justify-start py-1 overflow-visible ${className}`
-          : `w-full flex flex-col items-center justify-center py-10 overflow-hidden ${className}`
-      }`}
+      className={`relative select-none ${compact
+        ? `flex flex-col items-start justify-start py-1 overflow-visible ${className}`
+        : `w-full flex flex-col items-center justify-center py-10 overflow-hidden ${className}`
+        }`}
     >
       {/* ================================================================= */}
       {/* 1. FAST VIBRANT CHROMATIC AURORA BEAMS & CONIC HALOS               */}
@@ -176,9 +175,8 @@ export function FooterClockEmblem({
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none -z-10 overflow-visible">
         {/* Fast Spinning Multi-Color Conic Aura (Clockwise) */}
         <div
-          className={`absolute rounded-full transition-opacity duration-700 ${
-            compact ? "w-[240px] h-[240px] blur-[36px]" : "w-[380px] h-[380px] blur-[50px]"
-          }`}
+          className={`absolute rounded-full transition-opacity duration-700 ${compact ? "w-[240px] h-[240px] blur-[36px]" : "w-[380px] h-[380px] blur-[50px]"
+            }`}
           style={{
             background:
               "conic-gradient(from 0deg, #F59E0B 0%, #EC4899 22%, #8B5CF6 44%, #06B6D4 66%, #10B981 85%, #F59E0B 100%)",
@@ -189,9 +187,8 @@ export function FooterClockEmblem({
 
         {/* Counter-Spinning Chromatic Secondary Halo */}
         <div
-          className={`absolute rounded-full transition-opacity duration-700 ${
-            compact ? "w-[260px] h-[260px] blur-[42px]" : "w-[420px] h-[420px] blur-[60px]"
-          }`}
+          className={`absolute rounded-full transition-opacity duration-700 ${compact ? "w-[260px] h-[260px] blur-[42px]" : "w-[420px] h-[420px] blur-[60px]"
+            }`}
           style={{
             background:
               "conic-gradient(from 180deg, #06B6D4 0%, #8B5CF6 25%, #EC4899 50%, #F59E0B 75%, #10B981 100%)",
@@ -202,9 +199,8 @@ export function FooterClockEmblem({
 
         {/* Ambient Radial Core Light */}
         <div
-          className={`absolute rounded-full ${
-            compact ? "w-[190px] h-[190px] blur-[24px]" : "w-[300px] h-[300px] blur-[32px]"
-          }`}
+          className={`absolute rounded-full ${compact ? "w-[190px] h-[190px] blur-[24px]" : "w-[300px] h-[300px] blur-[32px]"
+            }`}
           style={{
             background:
               "radial-gradient(circle at center, rgba(245, 158, 11, 0.28) 0%, rgba(6, 182, 212, 0.2) 40%, rgba(236, 72, 153, 0.15) 70%, transparent 85%)",
@@ -222,15 +218,14 @@ export function FooterClockEmblem({
         onMouseLeave={handleMouseLeave}
         className={`relative transition-transform duration-200 ease-out cursor-pointer ${
           compact
-            ? "w-[210px] h-[210px] sm:w-[240px] sm:h-[240px]"
-            : "w-[280px] h-[280px] sm:w-[340px] sm:h-[340px]"
+            ? "w-[220px] h-[220px] sm:w-[250px] sm:h-[250px]"
+            : "w-[290px] h-[290px] sm:w-[350px] sm:h-[350px]"
         }`}
         style={{
           transform: reducedMotion
             ? "none"
-            : `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) scale3d(${
-                isHovered ? 1.04 : 1
-              }, ${isHovered ? 1.04 : 1}, 1)`,
+            : `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) scale3d(${isHovered ? 1.04 : 1
+            }, ${isHovered ? 1.04 : 1}, 1)`,
           transformStyle: "preserve-3d",
         }}
       >
@@ -274,9 +269,9 @@ export function FooterClockEmblem({
               <stop offset="100%" stopColor="#1F1C18" />
             </radialGradient>
 
-            {/* Circular Clip Path for Centering Original Logo */}
+            {/* Circular Clip Path for Centering Original Logo (Enlarged) */}
             <clipPath id="center-circle-logo-clip">
-              <circle cx="180" cy="180" r="48" />
+              <circle cx="180" cy="180" r="64" />
             </clipPath>
 
             {/* Colorful Glow Filters */}
@@ -472,36 +467,44 @@ export function FooterClockEmblem({
           <circle cx={orbEmerald.x} cy={orbEmerald.y} r="3" fill="#10B981" filter="url(#emerald-glow)" />
 
           {/* ============================================================= */}
-          {/* CENTER CIRCULAR POD HOUSING THE ORIGINAL ARCHEON LOGO         */}
+          {/* CENTER CIRCULAR POD HOUSING THE ORIGINAL ARCHEON LOGO (EXPANDED) */}
           {/* ============================================================= */}
-          <g className="filter drop-shadow-[0_6px_22px_rgba(0,0,0,0.85)]">
+          <g className="filter drop-shadow-[0_8px_26px_rgba(0,0,0,0.9)]">
             {/* Concentric Pulsing Chromatic Ring */}
             <circle
               cx="180"
               cy="180"
-              r="54"
+              r="72"
               fill="none"
               stroke="#F59E0B"
               strokeWidth="1.2"
-              strokeDasharray="2 3"
+              strokeDasharray="3 4"
               className="animate-spin"
-              style={{ animationDuration: "12s" }}
-              opacity="0.6"
+              style={{ animationDuration: "14s" }}
+              opacity="0.65"
             />
 
             {/* Heavy Beveled Metallic Outer Rim */}
             <circle
               cx="180"
               cy="180"
-              r="50"
+              r="66"
               fill="url(#center-glass-pod)"
               stroke="#D97724"
-              strokeWidth="2.2"
+              strokeWidth="2.4"
+            />
+
+            {/* Soft Ambient Gold Backlight for Logo Vibrancy */}
+            <circle
+              cx="180"
+              cy="180"
+              r="60"
+              fill="rgba(217, 119, 36, 0.15)"
             />
 
             {/* Specular Diagonal Sheen on Glass */}
             <path
-              d="M 144 154 Q 180 142 216 154 A 50 50 0 0 1 144 154 Z"
+              d="M 134 148 Q 180 132 226 148 A 66 66 0 0 1 134 148 Z"
               fill="rgba(255, 255, 255, 0.08)"
             />
 
@@ -509,31 +512,31 @@ export function FooterClockEmblem({
             <circle
               cx="180"
               cy="180"
-              r="46"
+              r="62"
               fill="none"
-              stroke="rgba(255, 255, 255, 0.16)"
+              stroke="rgba(255, 255, 255, 0.18)"
               strokeWidth="1"
             />
 
             {/* =========================================================== */}
-            {/* THE ORIGINAL ARCHEON BRAND LOGO CENTERED IN THE CIRCLE      */}
+            {/* THE ORIGINAL ARCHEON BRAND LOGO (ENLARGED & PROMINENT)      */}
             {/* =========================================================== */}
             <image
               href="/brand-assets/logo-transparent.png"
-              x="134"
-              y="134"
-              width="92"
-              height="92"
+              x="116"
+              y="116"
+              width="128"
+              height="128"
               preserveAspectRatio="xMidYMid meet"
               clipPath="url(#center-circle-logo-clip)"
               style={{
-                filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.9))",
+                filter: "drop-shadow(0 2px 10px rgba(0,0,0,0.95))",
               }}
             />
 
-            {/* Center Pivot Jewel Cap */}
-            <circle cx="180" cy="180" r="5.5" fill="#181716" stroke="#D97724" strokeWidth="1.5" />
-            <circle cx="180" cy="180" r="2.5" fill="#F59E0B" className="animate-pulse" />
+            {/* Minimalist Micro Center Pivot Jewel (Unobtrusive) */}
+            <circle cx="180" cy="180" r="3" fill="#181716" stroke="#D97724" strokeWidth="1" />
+            <circle cx="180" cy="180" r="1.4" fill="#F59E0B" className="animate-pulse" />
           </g>
         </svg>
       </div>
@@ -542,9 +545,8 @@ export function FooterClockEmblem({
       {/* 3. TECHNICAL METADATA READOUT BADGE                               */}
       {/* ================================================================= */}
       <div
-        className={`mt-4 flex flex-col items-center gap-1.5 transition-opacity duration-300 ${
-          compact ? "items-start mt-3" : "items-center"
-        }`}
+        className={`mt-4 flex flex-col items-center gap-1.5 transition-opacity duration-300 ${compact ? "items-start mt-3" : "items-center"
+          }`}
       >
         <div className="flex items-center gap-2">
           <span className="relative flex h-2 w-2">
