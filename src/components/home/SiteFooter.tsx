@@ -3,9 +3,19 @@
 
 import React from "react";
 import Link from "next/link";
-import Image from "next/image";
+import dynamic from "next/dynamic";
 import { ArrowUpRight } from "lucide-react";
 import { siteConfig } from "@/config/siteConfig";
+
+const FooterClockEmblem = dynamic(
+  () => import("@/components/home/FooterClockEmblem").then((m) => m.FooterClockEmblem),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[200px] w-[200px] rounded-full border border-white/10 bg-white/[0.02] animate-pulse" />
+    ),
+  }
+);
 
 interface SiteFooterProps {
   onOpenClientPortal: () => void;
@@ -34,19 +44,17 @@ export function SiteFooter({
     <footer className="bg-[#111111] text-[#F2F0EB]">
       <div className="editorial-container">
         <div className="grid gap-12 border-t border-white/15 py-14 md:grid-cols-2 lg:grid-cols-4">
-          {/* Brand */}
-          <div>
-            <Link href="/" aria-label="ArcheOn Design Studio home" className="inline-flex items-center">
-              <Image
-                src={siteConfig.logo}
-                alt={siteConfig.name}
-                width={160}
-                height={90}
-                className="h-14 w-auto object-contain"
-              />
+          {/* Brand & Signature Chronometer Emblem */}
+          <div className="flex flex-col items-start">
+            <Link
+              href="/"
+              aria-label="ArcheOn Design Studio home"
+              className="inline-block transition-transform duration-300 hover:scale-[1.02]"
+            >
+              <FooterClockEmblem compact />
             </Link>
 
-            <p className="mt-6 max-w-xs text-xs leading-7 text-white/50">
+            <p className="mt-5 max-w-xs text-xs leading-7 text-white/50">
               {siteConfig.tagline}
             </p>
           </div>
