@@ -68,17 +68,16 @@ export function ServicesSection({
           {services.map((service, index) => (
             <StaggerItem
               key={service.id}
-              className={`border-b border-r border-[#D8D6D0] ${
-                index === 0 || index === 4 ? "lg:col-span-1" : ""
-              }`}
+              className={`border-b border-r border-[#D8D6D0] ${index === 0 || index === 4 ? "lg:col-span-1" : ""
+                }`}
             >
               <button
                 type="button"
                 onClick={() => onSelectService(service)}
-                className="group relative flex min-h-[300px] w-full flex-col justify-between p-7 text-left transition-all duration-500 hover:bg-white hover:-translate-y-1 hover:shadow-xl hover:shadow-black/[0.04] sm:p-9 overflow-hidden"
+                className="group relative flex min-h-[300px] w-full flex-col justify-between overflow-hidden p-7 text-left transition-all duration-500 hover:-translate-y-1.5 hover:bg-white hover:shadow-xl hover:shadow-black/[0.04] sm:p-9"
               >
-                {/* Bronze Accent Line Sweep on Hover */}
-                <span className="absolute bottom-0 left-0 h-[2px] w-0 bg-gradient-to-r from-[#D97724] to-[#B68A4A] transition-all duration-500 ease-out group-hover:w-full" />
+                {/* Chromatic Edge Sweep Line on Hover */}
+                <div className="absolute left-0 top-0 h-[2px] w-0 bg-gradient-to-r from-[#D97724] via-[#C6A779] to-[#F59E0B] transition-all duration-500 ease-out group-hover:w-full" />
 
                 <div>
                   <div className="flex items-center justify-between">
@@ -106,10 +105,7 @@ export function ServicesSection({
                   </span>
 
                   <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[#D8D6D0] text-[#111111] transition-all duration-300 group-hover:border-[#B68A4A] group-hover:bg-[#B68A4A] group-hover:text-white">
-                    <ArrowUpRight
-                      size={16}
-                      className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                    />
+                    <ArrowUpRight size={16} className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                   </span>
                 </div>
               </button>

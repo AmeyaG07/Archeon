@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { Compass } from "lucide-react";
 import { siteConfig } from "@/config/siteConfig";
 import {
   RevealText,
@@ -18,15 +19,20 @@ export function StudioSection() {
       <div className="editorial-container">
         <div className="grid grid-cols-1 gap-14 lg:grid-cols-12 lg:gap-10">
 
-          {/* Section Label */}
+          {/* Section Label with Signature Drafting Compass Animation */}
           <div className="lg:col-span-3">
-            <p className="editorial-eyebrow text-[#777777]">
-              01 / The Studio
-            </p>
+            <div className="flex items-center gap-2.5">
+              <span className="relative flex h-6 w-6 items-center justify-center rounded-full border border-[#B68A4A]/40 text-[#B68A4A]">
+                <Compass size={13} className="animate-[spin_20s_linear_infinite]" />
+              </span>
+              <p className="editorial-eyebrow text-[#777777]">
+                01 / The Studio
+              </p>
+            </div>
 
             <HairlineRule
               color="bg-[#B68A4A]"
-              className="mt-8 hidden w-16 lg:block"
+              className="mt-8 hidden w-20 lg:block"
             />
           </div>
 
@@ -91,13 +97,13 @@ export function StudioSection() {
                 {siteConfig.about.approach.map((principle, index) => (
                   <StaggerItem
                     key={`${index}-${principle}`}
-                    className="border-t border-[#D8D6D0] py-6 pr-6"
+                    className="group border-t border-[#D8D6D0] py-6 pr-6 transition-all duration-300 hover:border-l-2 hover:border-l-[#B68A4A] hover:pl-4"
                   >
-                    <span className="font-mono text-xs font-semibold text-[#A58A64]">
+                    <span className="font-mono text-xs font-semibold text-[#A58A64] transition-colors duration-300 group-hover:text-[#D97724]">
                       0{index + 1}
                     </span>
 
-                    <p className="mt-4 text-base leading-7 text-[#222222]">
+                    <p className="mt-4 text-base leading-7 text-[#222222] transition-transform duration-300 group-hover:translate-x-1">
                       {principle}
                     </p>
                   </StaggerItem>

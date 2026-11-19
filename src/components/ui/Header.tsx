@@ -21,7 +21,6 @@ const navigation = [
   { label: "Expertise", href: "#expertise" },
   { label: "Projects", href: "#projects" },
   { label: "Process", href: "#process" },
-  { label: "Journal", href: "#journal" },
   { label: "Contact", href: "#contact" },
 ];
 
@@ -49,20 +48,20 @@ export function Header({
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-[#D8D6D0]/80 bg-[#F2F0EB]/95 backdrop-blur-md">
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-[#111111]/92 backdrop-blur-md text-[#F2F0EB]">
         <div className="editorial-container flex h-[76px] items-center justify-between">
           {/* Brand & Desktop Navigation */}
           <div className="flex items-center">
             <Link
               href="/"
               aria-label="ArcheOn Design Studio homepage"
-              className="group relative z-10 mr-8 flex shrink-0 items-center rounded-sm bg-[#111111] px-2.5 py-1 shadow-sm transition-transform duration-300 hover:scale-[1.02] lg:mr-12"
+              className="relative z-10 mr-8 flex shrink-0 items-center transition-transform duration-300 hover:scale-[1.02] lg:mr-14"
             >
               <Image
-                src="/brand-assets/logo.png"
+                src="/brand-assets/logo-transparent.png"
                 alt="ArcheOn Design Studio"
-                width={160}
-                height={90}
+                width={180}
+                height={52}
                 priority
                 className="h-10 w-auto object-contain sm:h-11"
               />
@@ -71,27 +70,28 @@ export function Header({
             {/* Desktop Navigation */}
             <nav
               aria-label="Main navigation"
-              className="hidden items-center gap-7 lg:flex"
+              className="hidden items-center gap-8 lg:flex"
             >
               {navigation.map((item) => (
                 <button
                   key={item.label}
                   type="button"
                   onClick={() => handleNavigation(item.href)}
-                  className="editorial-link text-[11px] font-medium uppercase tracking-[0.13em] text-[#55534F] hover:text-[#111111]"
+                  className="group relative py-1 text-[11px] font-medium uppercase tracking-[0.16em] text-white/70 transition-colors duration-300 hover:text-[#C6A779]"
                 >
                   {item.label}
+                  <span className="absolute bottom-0 left-0 h-[1.5px] w-0 bg-[#C6A779] transition-all duration-300 group-hover:w-full" />
                 </button>
               ))}
             </nav>
           </div>
 
           {/* Desktop Actions */}
-          <div className="hidden items-center gap-5 lg:flex">
+          <div className="hidden items-center gap-6 lg:flex">
             <button
               type="button"
               onClick={onOpenClientPortal}
-              className="editorial-link text-[10px] font-medium uppercase tracking-[0.12em] text-[#55534F]"
+              className="text-[10px] font-medium uppercase tracking-[0.14em] text-white/60 transition-colors duration-300 hover:text-white"
             >
               Client Access
             </button>
@@ -99,7 +99,7 @@ export function Header({
             <button
               type="button"
               onClick={onOpenVendorPortal}
-              className="editorial-link text-[10px] font-medium uppercase tracking-[0.12em] text-[#55534F]"
+              className="text-[10px] font-medium uppercase tracking-[0.14em] text-white/60 transition-colors duration-300 hover:text-white"
             >
               Vendor Access
             </button>
@@ -107,7 +107,7 @@ export function Header({
             <button
               type="button"
               onClick={onOpenConsultation}
-              className="group inline-flex items-center gap-2 border border-[#111111] bg-[#111111] px-5 py-3 text-[10px] font-medium uppercase tracking-[0.14em] text-white transition-colors duration-300 hover:bg-[#B68A4A] hover:border-[#B68A4A] hover:text-[#111111]"
+              className="group inline-flex items-center gap-2 border border-[#C6A779]/70 bg-[#C6A779]/15 px-5 py-2.5 text-[10px] font-medium uppercase tracking-[0.15em] text-[#F2F0EB] transition-all duration-300 hover:border-[#C6A779] hover:bg-[#C6A779] hover:text-[#111111]"
             >
               Start a Conversation
               <ArrowUpRight
@@ -124,9 +124,9 @@ export function Header({
             aria-expanded={mobileMenuOpen}
             aria-controls="mobile-navigation"
             onClick={() => setMobileMenuOpen((open) => !open)}
-            className="relative z-10 flex h-11 w-11 items-center justify-center border border-[#D8D6D0] text-[#111111] lg:hidden"
+            className="relative z-10 flex h-10 w-10 items-center justify-center border border-white/20 text-white lg:hidden"
           >
-            {mobileMenuOpen ? <X size={21} /> : <Menu size={21} />}
+            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
       </header>
@@ -135,14 +135,14 @@ export function Header({
       <div
         id="mobile-navigation"
         aria-hidden={!mobileMenuOpen}
-        className={`fixed inset-0 z-40 bg-[#F2F0EB] transition-all duration-500 lg:hidden ${
+        className={`fixed inset-0 z-40 bg-[#111111] text-[#F2F0EB] transition-all duration-500 lg:hidden ${
           mobileMenuOpen
             ? "visible translate-y-0 opacity-100"
             : "invisible -translate-y-3 opacity-0"
         }`}
       >
         <div className="flex h-full flex-col px-6 pb-10 pt-28">
-          <p className="editorial-eyebrow mb-8 text-[#B68A4A]">
+          <p className="editorial-eyebrow mb-8 text-[#C6A779]">
             ArcheOn Design Studio
           </p>
 
@@ -153,10 +153,10 @@ export function Header({
                 type="button"
                 tabIndex={mobileMenuOpen ? 0 : -1}
                 onClick={() => handleNavigation(item.href)}
-                className="flex items-center justify-between border-b border-[#D8D6D0] py-5 text-left font-serif text-3xl text-[#111111]"
+                className="flex items-center justify-between border-b border-white/10 py-5 text-left font-serif text-3xl text-white"
               >
                 <span>{item.label}</span>
-                <span className="font-mono text-xs text-[#B68A4A]">
+                <span className="font-mono text-xs text-[#C6A779]">
                   0{index + 1}
                 </span>
               </button>
@@ -171,7 +171,7 @@ export function Header({
                 closeMenu();
                 onOpenClientPortal();
               }}
-              className="block w-full border border-[#D8D6D0] px-5 py-4 text-left text-xs uppercase tracking-widest text-[#111111]"
+              className="block w-full border border-white/20 px-5 py-4 text-left text-xs uppercase tracking-widest text-white/80"
             >
               Client Access
             </button>
@@ -183,7 +183,7 @@ export function Header({
                 closeMenu();
                 onOpenVendorPortal();
               }}
-              className="block w-full border border-[#D8D6D0] px-5 py-4 text-left text-xs uppercase tracking-widest text-[#111111]"
+              className="block w-full border border-white/20 px-5 py-4 text-left text-xs uppercase tracking-widest text-white/80"
             >
               Vendor Access
             </button>
@@ -195,7 +195,7 @@ export function Header({
                 closeMenu();
                 onOpenConsultation();
               }}
-              className="flex w-full items-center justify-between bg-[#111111] px-5 py-4 text-xs uppercase tracking-widest text-white"
+              className="flex w-full items-center justify-between border border-[#C6A779] bg-[#C6A779] px-5 py-4 text-xs uppercase tracking-widest text-[#111111]"
             >
               Start a Conversation
               <ArrowUpRight size={16} />

@@ -17,9 +17,12 @@ export function ContactSection({
   return (
     <section
       id="contact"
-      className="bg-[#111111] py-24 text-[#F2F0EB] sm:py-32"
+      className="relative overflow-hidden bg-[#111111] py-24 text-[#F2F0EB] sm:py-32"
     >
-      <div className="editorial-container">
+      {/* Ambient Horizon Glow */}
+      <div className="pointer-events-none absolute -bottom-32 left-1/2 h-[320px] w-[640px] -translate-x-1/2 rounded-full bg-gradient-to-t from-[#D97724]/20 via-[#B68A4A]/10 to-transparent blur-[80px]" />
+
+      <div className="editorial-container relative z-10">
         <div className="grid gap-16 lg:grid-cols-12">
           {/* Main CTA */}
           <div className="lg:col-span-7">
@@ -51,12 +54,12 @@ export function ContactSection({
               <button
                 type="button"
                 onClick={onOpenConsultation}
-                className="group inline-flex min-h-14 items-center gap-8 bg-[#F2F0EB] px-7 text-[10px] font-medium uppercase tracking-[0.15em] text-[#111111] transition-colors duration-300 hover:bg-[#D97724] hover:text-white"
+                className="group relative inline-flex min-h-14 items-center gap-8 overflow-hidden bg-[#F2F0EB] px-8 text-[10px] font-medium uppercase tracking-[0.16em] text-[#111111] shadow-[0_0_30px_rgba(217,119,36,0.25)] transition-all duration-300 hover:bg-[#D97724] hover:text-white hover:shadow-[0_0_45px_rgba(217,119,36,0.6)]"
               >
                 Request a Consultation
                 <ArrowUpRight
                   size={17}
-                  className="transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
+                  className="transition-transform duration-300 group-hover:-translate-y-1 group-hover:translate-x-1"
                 />
               </button>
             </div>
