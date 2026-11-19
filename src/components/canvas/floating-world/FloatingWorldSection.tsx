@@ -384,9 +384,10 @@ export function FloatingWorldSection({ onOpenConsultation }: FloatingWorldSectio
             shadow-mapSize-width={1024}
             shadow-mapSize-height={1024}
           />
-          <Environment resolution={256} />
-          <Lightformer position={[7, 13, 5]} intensity={2.2} type="rect" color="#ffffff" />
-          <Lightformer position={[-7, 7, -7]} intensity={1.3} type="rect" color="#f2f0eb" />
+          <Environment resolution={256}>
+            <Lightformer position={[7, 13, 5]} intensity={2.2} type="rect" color="#ffffff" />
+            <Lightformer position={[-7, 7, -7]} intensity={1.3} type="rect" color="#f2f0eb" />
+          </Environment>
           <ContactShadows
             position={[0, -2.2, 0]}
             opacity={0.55}
