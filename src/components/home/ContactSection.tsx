@@ -24,7 +24,7 @@ export function ContactSection({
           {/* Main CTA */}
           <div className="lg:col-span-7">
             <p className="editorial-eyebrow text-[#B68A4A]">
-              06 / Start a Conversation
+              05 / Start a Conversation
             </p>
 
             <div className="mt-8 max-w-3xl">

@@ -19,7 +19,15 @@ function getReducedMotionServerSnapshot() {
   return false;
 }
 
-export function FooterClockEmblem() {
+interface FooterClockEmblemProps {
+  compact?: boolean;
+  className?: string;
+}
+
+export function FooterClockEmblem({
+  compact = false,
+  className = "",
+}: FooterClockEmblemProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
@@ -128,30 +136,44 @@ export function FooterClockEmblem() {
   ];
 
   return (
-    <div className="relative w-full flex flex-col items-center justify-center py-12 select-none overflow-hidden">
+    <div
+      className={`relative select-none ${
+        compact
+          ? `flex flex-col items-start justify-start py-1 overflow-visible ${className}`
+          : `w-full flex flex-col items-center justify-center py-12 overflow-hidden ${className}`
+      }`}
+    >
       {/* ================================================================= */}
       {/* 1. DIAGONAL AMBIENT LIGHT BEAMS (BEHIND THE CIRCULAR DIAL)         */}
       {/* ================================================================= */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none -z-10">
-        {/* Upper-Left Beam: Warm Amber/Bronze (rgba(217, 119, 36, 0.35)) */}
+        {/* Upper-Left Beam: Warm Amber/Bronze */}
         <div
-          className="absolute w-[360px] sm:w-[460px] h-[75px] -translate-x-[45%] -translate-y-[45%] rotate-[-42deg] rounded-full"
+          className={`absolute -translate-x-[45%] -translate-y-[45%] rotate-[-42deg] rounded-full ${
+            compact
+              ? "w-[240px] sm:w-[280px] h-[50px] blur-[30px]"
+              : "w-[360px] sm:w-[460px] h-[75px] blur-[42px]"
+          }`}
           style={{
             background:
               "linear-gradient(90deg, rgba(217, 119, 36, 0.38) 0%, rgba(182, 138, 74, 0.16) 55%, transparent 100%)",
-            filter: "blur(42px)",
+            filter: compact ? "blur(30px)" : "blur(42px)",
             opacity: isHovered ? 0.95 : 0.75,
             transition: "opacity 0.6s ease",
           }}
         />
 
-        {/* Lower-Right Beam: Cool Electric/Sapphire Blue (rgba(59, 130, 246, 0.35)) */}
+        {/* Lower-Right Beam: Cool Electric/Sapphire Blue */}
         <div
-          className="absolute w-[360px] sm:w-[460px] h-[75px] translate-x-[45%] translate-y-[45%] rotate-[138deg] rounded-full"
+          className={`absolute translate-x-[45%] translate-y-[45%] rotate-[138deg] rounded-full ${
+            compact
+              ? "w-[240px] sm:w-[280px] h-[50px] blur-[30px]"
+              : "w-[360px] sm:w-[460px] h-[75px] blur-[42px]"
+          }`}
           style={{
             background:
               "linear-gradient(90deg, rgba(59, 130, 246, 0.36) 0%, rgba(96, 165, 250, 0.14) 55%, transparent 100%)",
-            filter: "blur(42px)",
+            filter: compact ? "blur(30px)" : "blur(42px)",
             opacity: isHovered ? 0.95 : 0.75,
             transition: "opacity 0.6s ease",
           }}
@@ -159,11 +181,13 @@ export function FooterClockEmblem() {
 
         {/* Center Ambient Core Glow */}
         <div
-          className="absolute w-[280px] h-[280px] rounded-full"
+          className={`absolute rounded-full ${
+            compact ? "w-[180px] h-[180px] blur-[22px]" : "w-[280px] h-[280px] blur-[28px]"
+          }`}
           style={{
             background:
               "radial-gradient(circle at center, rgba(217,119,36,0.18) 0%, rgba(59,130,246,0.12) 45%, transparent 72%)",
-            filter: "blur(28px)",
+            filter: compact ? "blur(22px)" : "blur(28px)",
           }}
         />
       </div>
@@ -176,7 +200,11 @@ export function FooterClockEmblem() {
         onMouseMove={handleMouseMove}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        className="relative w-[240px] h-[240px] sm:w-[300px] sm:h-[300px] transition-transform duration-200 ease-out"
+        className={`relative transition-transform duration-200 ease-out ${
+          compact
+            ? "w-[180px] h-[180px] sm:w-[200px] sm:h-[200px]"
+            : "w-[240px] h-[240px] sm:w-[300px] sm:h-[300px]"
+        }`}
         style={{
           transform: reducedMotion
             ? "none"
@@ -647,16 +675,21 @@ export function FooterClockEmblem() {
       {/* ================================================================= */}
       {/* 5. STUDIO CHRONOMETER TELEMETRY & COORDINATES                      */}
       {/* ================================================================= */}
-      <div className="mt-6 flex flex-col items-center gap-1.5 text-center">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-white/10 bg-white/[0.02] backdrop-blur-md">
+      <div
+        className={`flex flex-col gap-1.5 ${
+          compact ? "items-start text-left mt-3.5" : "items-center text-center mt-6"
+        }`}
+      >
+        <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full border border-white/10 bg-white/[0.02] backdrop-blur-md">
           <span className="w-1.5 h-1.5 rounded-full bg-[#D97724] animate-pulse" />
-          <span className="font-mono text-[9px] uppercase tracking-[0.22em] text-[#D8D6D0]">
+          <span className="font-mono text-[8.5px] uppercase tracking-[0.2em] text-[#D8D6D0]">
             NAGPUR STUDIO // {formattedTime}
           </span>
         </div>
 
-        <p className="font-mono text-[8px] uppercase tracking-[0.24em] text-white/40">
-          21.1458° N, 79.0882° E • DUAL LUMINOUS CHRONOMETER
+        <p className="font-mono text-[7.5px] uppercase tracking-[0.22em] text-white/40">
+          21.1458° N, 79.0882° E
+          {!compact && " • DUAL LUMINOUS CHRONOMETER"}
         </p>
       </div>
     </div>

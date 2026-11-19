@@ -21,7 +21,7 @@ export function StudioSection() {
           {/* Section Label */}
           <div className="lg:col-span-3">
             <p className="editorial-eyebrow text-[#777777]">
-              05 / The Studio
+              01 / The Studio
             </p>
 
             <HairlineRule

@@ -67,30 +67,30 @@ export default function Home() {
             onOpenVendorPortal={() => setVendorPortalOpen(true)}
           />
 
-          {/* 1. Scroll-Scrubbed Architectural Reveal Hero */}
+          {/* 1. Architectural Reveal Hero */}
           <ArchitecturalRevealHero
             onOpenConsultation={() => openConsultationWithService()}
           />
 
-          {/* 2. Expertise & Services */}
+          {/* 2. The Studio */}
+          <StudioSection />
+
+          {/* 3. Expertise & Services */}
           <ServicesSection
             services={siteConfig.services}
             onSelectService={setSelectedService}
           />
 
-          {/* 3. Selected Projects */}
+          {/* 4. Selected Projects */}
           <ProjectsSection
             projects={siteConfig.projects}
             onSelectProject={setSelectedProject}
           />
 
-          {/* 4. Design Process */}
+          {/* 5. Design Process */}
           <ProcessSection
             onOpenConsultation={() => openConsultationWithService()}
           />
-
-          {/* 5. Studio Philosophy & Approach */}
-          <StudioSection />
 
           {/* 6. Contact & Consultation */}
           <ContactSection
