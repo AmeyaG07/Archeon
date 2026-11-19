@@ -213,14 +213,14 @@ export function ProjectDetailModal({ project, onClose, onEnquire }: ProjectDetai
             <div className="space-y-5 mb-8 font-sans text-sm text-stone-300 leading-relaxed font-light">
               <div>
                 <div className="text-xs uppercase font-mono text-stone-400 mb-1.5 font-bold tracking-wider">
-                  /// Client Need & Site Brief
+                  {"/// Client Need & Site Brief"}
                 </div>
                 <p>{project.brief}</p>
               </div>
 
               <div>
                 <div className="text-xs uppercase font-mono text-stone-400 mb-1.5 font-bold tracking-wider">
-                  /// Architectural Response & Materiality
+                  {"/// Architectural Response & Materiality"}
                 </div>
                 <p>{project.designResponse}</p>
               </div>
@@ -228,7 +228,7 @@ export function ProjectDetailModal({ project, onClose, onEnquire }: ProjectDetai
 
             <div className="mb-8 pt-4 border-t border-stone-800">
               <div className="text-xs uppercase text-stone-400 mb-2.5 font-bold tracking-wider">
-                /// Scope Delivered
+                {"/// Scope Delivered"}
               </div>
               <div className="flex flex-wrap gap-2 mb-4">
                 {project.deliverables.map((d, i) => (

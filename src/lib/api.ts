@@ -2,10 +2,11 @@
  * ArcheOn Design Studio — API Client
  *
  * Central HTTP client for the backend API. Base URL is read from environment.
+ * Handles JWT token injection, FormData multipart uploads, and error typing.
  *
  * Usage:
- *   import { apiFetch } from "@/lib/api";
- *   const res = await apiFetch("/api/approvals/config");
+ *   import { apiFetch, loginApi, logoutApi, getStoredUser } from "@/lib/api";
+ *   const res = await apiFetch("/api/approvals");
  */
 
 export type ApiErrorKind = "network" | "unauthorized" | "forbidden" | "bad-request" | "server" | "unknown";
@@ -38,29 +39,86 @@ export class ForbiddenError extends ApiError {
   }
 }
 
+const TOKEN_KEY = "archeon_auth_token";
+const REFRESH_TOKEN_KEY = "archeon_refresh_token";
+const USER_KEY = "archeon_user";
+
+export interface StoredUser {
+  username: string;
+  role: string;
+}
+
+export function getAuthToken(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return localStorage.getItem(TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function getRefreshToken(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return localStorage.getItem(REFRESH_TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function getStoredUser(): StoredUser | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(USER_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function setAuthSession(token: string, refreshToken?: string, user?: StoredUser): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(TOKEN_KEY, token);
+    if (refreshToken) {
+      localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+    }
+    if (user) {
+      localStorage.setItem(USER_KEY, JSON.stringify(user));
+    }
+  } catch (err) {
+    console.error("Failed to persist auth session", err);
+  }
+}
+
+export function clearAuthSession(): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
+  } catch (err) {
+    console.error("Failed to clear auth session", err);
+  }
+}
+
 /** Resolve the API base URL. Prefer NEXT_PUBLIC_API_BASE_URL in client bundles. */
 export function resolveApiBaseUrl(): string {
   if (typeof window !== "undefined") {
-    // Client bundle: use the public env var baked at build time.
     if (process.env.NEXT_PUBLIC_API_BASE_URL) {
       return process.env.NEXT_PUBLIC_API_BASE_URL.replace(/\/$/, "");
     }
-    // Fallback for dev: match the previous hardcoded localhost behaviour.
     return "http://localhost:8080";
   }
-  // Server-side: prefer a server-only var if present (not in this codebase).
   if (process.env.API_BASE_URL) {
     return process.env.API_BASE_URL.replace(/\/$/, "");
   }
-  // Fallback: localhost (only if no server env var is set).
   return "http://localhost:8080";
 }
 
-const BASE_URL = resolveApiBaseUrl();
-
 export interface ApiFetchOptions extends Omit<RequestInit, "body"> {
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
-  /** Request body — will be JSON-stringified automatically. */
+  /** Request body — JSON-stringified automatically unless FormData. */
   body?: unknown;
   /** Expect a JSON response. Always true by default. */
   expectingJson?: boolean;
@@ -70,6 +128,8 @@ export interface ApiFetchOptions extends Omit<RequestInit, "body"> {
  * Core JWT-aware fetch wrapper.
  *
  * - Normalises JSON responses
+ * - Automatically attaches Bearer token if user is signed in
+ * - Safely handles FormData without overriding multipart boundaries
  * - Throws typed errors for 401 / 403 / network failures
  */
 export async function apiFetch(
@@ -77,16 +137,29 @@ export async function apiFetch(
   init: ApiFetchOptions = {},
 ): Promise<Response> {
   const headers = new Headers(init.headers);
+  const isFormData = typeof FormData !== "undefined" && init.body instanceof FormData;
 
-  // Always JSON unless explicitly overridden (e.g. file download).
-  if (!headers.has("Content-Type")) {
+  // Set JSON content-type only if not FormData
+  if (!isFormData && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
+  } else if (isFormData) {
+    // Crucial: Delete any Content-Type header so the browser generates the multipart boundary
+    headers.delete("Content-Type");
+  }
+
+  // Automatically attach Bearer token if available and not explicitly provided
+  if (!headers.has("Authorization")) {
+    const token = getAuthToken();
+    if (token) {
+      headers.set("Authorization", `Bearer ${token}`);
+    }
   }
 
   // Compute the full URL.
+  const baseUrl = resolveApiBaseUrl();
   let url: URL;
   if (typeof input === "string") {
-    const trimmed = input.startsWith("http") ? input : `${BASE_URL}${input.startsWith("/") ? "" : "/"}${input}`;
+    const trimmed = input.startsWith("http") ? input : `${baseUrl}${input.startsWith("/") ? "" : "/"}${input}`;
     url = new URL(trimmed);
   } else {
     url = input;
@@ -95,12 +168,19 @@ export async function apiFetch(
   const response = await fetch(url, {
     ...init,
     headers,
-    body: init.body instanceof FormData ? init.body : init.body ? JSON.stringify(init.body) : undefined,
+    body: isFormData
+      ? (init.body as FormData)
+      : init.body
+      ? typeof init.body === "string"
+        ? init.body
+        : JSON.stringify(init.body)
+      : undefined,
   });
 
   // Handle 401: token missing or expired.
   if (response.status === 401) {
-    throw new AuthError("Session expired. Please log in again.", await response.json().catch(() => ({})));
+    clearAuthSession();
+    throw new AuthError("Session expired or unauthorized. Please log in again.", await response.json().catch(() => ({})));
   }
 
   // Handle 403: authenticated but not allowed.
@@ -120,6 +200,7 @@ export async function apiFetch(
       400: "bad-request",
       404: "bad-request",
       405: "bad-request",
+      409: "bad-request",
       422: "bad-request",
       500: "server",
       502: "server",
@@ -136,4 +217,43 @@ export async function apiFetch(
   }
 
   return response;
+}
+
+export async function loginApi(username: string, password: string): Promise<{
+  token: string;
+  refreshToken?: string;
+  username: string;
+  role: string;
+}> {
+  const res = await apiFetch("/api/auth/login", {
+    method: "POST",
+    body: { username, password },
+  });
+
+  const data = await res.json();
+  const token = data.token;
+  const refreshToken = data.refreshToken;
+  const user: StoredUser = {
+    username: data.username || username,
+    role: data.role || "ROLE_CLIENT",
+  };
+
+  setAuthSession(token, refreshToken, user);
+  return { token, refreshToken, username: user.username, role: user.role };
+}
+
+export async function logoutApi(): Promise<void> {
+  const refreshToken = getRefreshToken();
+  try {
+    if (refreshToken) {
+      await apiFetch("/api/auth/logout", {
+        method: "POST",
+        body: { refreshToken },
+      });
+    }
+  } catch {
+    // Best-effort logout on server
+  } finally {
+    clearAuthSession();
+  }
 }

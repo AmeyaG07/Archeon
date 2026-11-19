@@ -492,7 +492,7 @@ export function ScrollOverlay({
       <section className="min-h-screen flex flex-col justify-between px-6 md:px-16 py-24">
         <div className="pointer-events-auto max-w-3xl">
           <div className="text-xs font-mono text-amber-500 tracking-widest mb-3 uppercase">
-            /// Studio Philosophy
+            {"/// Studio Philosophy"}
           </div>
           <blockquote className="text-2xl sm:text-4xl font-medium text-white font-mono leading-relaxed mb-6">
             &ldquo;{siteConfig.missionStatement}&rdquo;
@@ -549,7 +549,7 @@ export function ScrollOverlay({
 
             <div className="p-5 rounded-xl border border-stone-800/80 bg-stone-900/60 font-mono text-xs space-y-3">
               <div className="text-stone-400 uppercase text-[10px] tracking-wider font-bold">
-                /// Principal Architect & Practice Lead
+                {"/// Principal Architect & Practice Lead"}
               </div>
               <div className="text-base font-bold text-white">
                 {siteConfig.principal}

@@ -1,38 +1,190 @@
 "use client";
 
-import React from "react";
-import { ShieldCheck, ArrowLeft } from "lucide-react";
+import React, { useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import {
+  AdminDashboardOverview,
+  type AdminDashboardData,
+  type AdminProjectSummary,
+  type AdminApprovalSummary,
+  type AdminActivity,
+} from "@/components/portal/admin/AdminDashboardOverview";
+import { apiFetch } from "@/lib/api";
+import { useAuth } from "@/providers/AuthProvider";
+import { ShieldAlert, LogIn, ArrowRight } from "lucide-react";
 
 export default function AdminDashboardPage() {
-  return (
-    <div className="min-h-screen bg-[#F2F0EB] text-[#111111]">
-      <main className="max-w-2xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        <div className="rounded-2xl border border-stone-800 bg-[#171717] p-8 sm:p-12 text-center">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-stone-800 mb-4">
-            <ShieldCheck className="w-6 h-6 text-emerald-400" />
+  const router = useRouter();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
+
+  const [data, setData] = useState<AdminDashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadDashboard = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      // 1. Fetch dashboard metrics & recent activities
+      const dashRes = await apiFetch("/api/dashboards/admin");
+      const dashData = await dashRes.json();
+
+      // 2. Fetch active projects overview
+      let projects: AdminProjectSummary[] = [];
+      try {
+        const projRes = await apiFetch("/api/projects/operational");
+        const projList = await projRes.json();
+        if (Array.isArray(projList)) {
+          projects = projList.slice(0, 5).map((p: any) => ({
+            id: p.id || "",
+            reference: p.projectReference || p.id || "PROJ",
+            name: p.title || p.name || "Untitled Project",
+            clientName: p.clientName || "Studio Client",
+            status: (p.status === "COMPLETED"
+              ? "Completed"
+              : p.status === "DESIGN"
+              ? "Under Design"
+              : p.status === "EXECUTION"
+              ? "Under Execution"
+              : p.status === "ON_HOLD"
+              ? "On Hold"
+              : "Planning") as any,
+            progressPercentage: p.progressPercentage || 0,
+            updatedAt: p.updatedAt || new Date().toISOString(),
+          }));
+        }
+      } catch {
+        // Tolerant fallback
+      }
+
+      // 3. Fetch pending approvals summary
+      let approvals: AdminApprovalSummary[] = [];
+      try {
+        const appRes = await apiFetch("/api/approvals");
+        const appList = await appRes.json();
+        if (Array.isArray(appList)) {
+          approvals = appList
+            .filter((a: any) => a.status === "PENDING" || a.status === "PENDING_SECOND_APPROVAL")
+            .slice(0, 5)
+            .map((a: any) => ({
+              id: a.id || "",
+              reference: a.billReference || a.id || "BILL",
+              title: `${a.vendorName || "Vendor"} - Bill Approval`,
+              category: "Contractor Bill",
+              amount: a.amount ? Number(a.amount) : 0,
+              currency: "INR",
+              submittedBy: a.vendorName || a.submittedBy || "Trade Contractor",
+              submittedAt: a.submittedAt || new Date().toISOString(),
+              priority: (a.amount > 500000 ? "Urgent" : a.amount > 100000 ? "High" : "Normal") as any,
+            }));
+        }
+      } catch {
+        // Tolerant fallback
+      }
+
+      // 4. Map recent activities
+      const activities: AdminActivity[] = Array.isArray(dashData.recentActivities)
+        ? dashData.recentActivities.map((act: any) => ({
+            id: act.eventId || String(Math.random()),
+            type: (act.entityName?.toLowerCase().includes("invoice")
+              ? "invoice"
+              : act.entityName?.toLowerCase().includes("project")
+              ? "project"
+              : act.entityName?.toLowerCase().includes("client")
+              ? "client"
+              : act.entityName?.toLowerCase().includes("vendor")
+              ? "vendor"
+              : act.entityName?.toLowerCase().includes("approval")
+              ? "approval"
+              : "system") as any,
+            title: act.action || "System Event",
+            description: act.summary || `${act.action} by ${act.actor || "user"}`,
+            actorName: act.actor || "Studio Staff",
+            occurredAt: act.timestamp || new Date().toISOString(),
+          }))
+        : [];
+
+      setData({
+        metrics: {
+          activeProjects: Number(dashData.activeProjectsCount || 0),
+          completedProjects: Number(dashData.completedProjectsCount || 0),
+          totalClients: Number(dashData.totalClientsCount || 0),
+          activeVendors: Number(dashData.totalVendorsCount || 0),
+          newEnquiries: Number(dashData.newLeadsCount || 0),
+          pendingApprovals: Number(dashData.pendingApprovalsCount || 0),
+          outstandingReceivables: Number(dashData.totalReceivables || 0),
+          overdueReceivables: Number(dashData.overdueReceivables || 0),
+          pendingInvoices: Number(dashData.pendingCashSettlementsCount || 0),
+        },
+        projects,
+        approvals,
+        activities,
+        lastUpdatedAt: new Date().toISOString(),
+      });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to load dashboard data";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!authLoading) {
+      if (isAuthenticated) {
+        loadDashboard();
+      } else {
+        setLoading(false);
+      }
+    }
+  }, [authLoading, isAuthenticated, loadDashboard]);
+
+  if (authLoading) {
+    return (
+      <div className="min-h-[400px] flex items-center justify-center">
+        <p className="font-mono text-xs uppercase tracking-widest text-[#77736C] animate-pulse">
+          Validating Session...
+        </p>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-[500px] flex items-center justify-center p-6">
+        <div className="max-w-md w-full bg-white border border-[#D8D6D0] p-8 text-center shadow-sm">
+          <div className="w-12 h-12 mx-auto mb-4 border border-[#D8D6D0] flex items-center justify-center text-[#A58A64]">
+            <ShieldAlert className="w-6 h-6" />
           </div>
-          <h2 className="mt-4 font-serif text-3xl text-[#171717]">Admin Portal � Access Restricted</h2>
-          <p className="mt-3 max-w-sm mx-auto text-sm leading-relaxed text-[#66625B]">
-            This administrative route requires an authorised studio session.
-            Portal access, financial records, bill approvals, cash settlements,
-            audit logs, and export controls are available only to authenticated
-            admin users through the verified backend session/RBAC contract.
-            No financial data is shown on this public page.
+          <h2 className="font-serif text-2xl text-[#111111]">Studio Session Required</h2>
+          <p className="mt-3 text-xs text-[#77736C] leading-relaxed">
+            The studio administrative portal requires an authenticated session. Financial records, approvals, and operational projects are protected by RBAC.
           </p>
-          <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
-            <button
-              type="button"
-              onClick={() => { window.location.href = "/"; }}
-              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-stone-800 hover:bg-stone-700 text-white text-xs font-bold transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" /> Return to Homepage
-            </button>
-          </div>
-          <p className="mt-6 text-[10px] uppercase tracking-widest text-[#77736C]">
-            Backend session enforcement required � No client-side auth fallback
-          </p>
+          <button
+            type="button"
+            onClick={() => router.push("/login")}
+            className="mt-6 w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#111111] hover:bg-[#25221D] text-white text-xs font-mono uppercase tracking-widest transition-all"
+          >
+            <LogIn className="w-3.5 h-3.5" /> Sign In to Studio <ArrowRight className="w-3.5 h-3.5" />
+          </button>
         </div>
-      </main>
-    </div>
+      </div>
+    );
+  }
+
+  return (
+    <AdminDashboardOverview
+      data={data}
+      loading={loading}
+      error={error ?? undefined}
+      onRefresh={loadDashboard}
+      onOpenProjects={() => router.push("/admin/projects")}
+      onOpenApprovals={() => router.push("/admin/approvals")}
+      onOpenEnquiries={() => router.push("/admin/leads")}
+      onOpenFinance={() => router.push("/admin/finance-reports")}
+      onOpenProject={(id) => router.push(`/admin/projects?id=${id}`)}
+      onOpenApproval={(id) => router.push(`/admin/approvals?id=${id}`)}
+      onOpenActivity={() => router.push("/admin/audit-logs")}
+    />
   );
 }
