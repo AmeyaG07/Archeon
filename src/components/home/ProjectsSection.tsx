@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { ArrowUpRight, MapPin } from "lucide-react";
 import type { PortfolioProject } from "@/config/siteConfig";
 import {
@@ -158,34 +159,45 @@ export function ProjectsSection({
                     projectVisuals[project.id] ??
                     "from-[#777064] to-[#302C25]"
                   } ${
-                    index === 0 ? "aspect-[16/8]" : "aspect-[4/3]"
+                    index === 0 ? "aspect-[16/9] sm:aspect-[16/8]" : "aspect-[4/3]"
                   }`}
                 >
-                  <div className="absolute inset-0 opacity-40 transition-transform duration-700 ease-out group-hover:scale-105">
-                    <div className="absolute right-[12%] top-[12%] h-[85%] w-[35%] -skew-x-12 border-l border-white/40 bg-white/10" />
-                    <div className="absolute bottom-0 left-[10%] h-[45%] w-[65%] border-t border-white/30 bg-black/10" />
-                    <div className="absolute right-[20%] top-[20%] h-[55%] w-[18%] border-l border-white/30 bg-white/10" />
-                  </div>
+                  {project.image ? (
+                    <Image
+                      src={project.image}
+                      alt={project.title}
+                      fill
+                      priority={index === 0}
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 1200px"
+                      className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 opacity-40 transition-transform duration-700 ease-out group-hover:scale-105">
+                      <div className="absolute right-[12%] top-[12%] h-[85%] w-[35%] -skew-x-12 border-l border-white/40 bg-white/10" />
+                      <div className="absolute bottom-0 left-[10%] h-[45%] w-[65%] border-t border-white/30 bg-black/10" />
+                      <div className="absolute right-[20%] top-[20%] h-[55%] w-[18%] border-l border-white/30 bg-white/10" />
+                    </div>
+                  )}
 
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/10 transition-opacity duration-500 group-hover:opacity-80" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-black/10 transition-opacity duration-500 group-hover:opacity-85" />
 
                   <div className="absolute left-5 top-5">
-                    <span className="border border-white/40 bg-black/15 px-3 py-2 font-mono text-[9px] uppercase tracking-widest text-white backdrop-blur-sm">
+                    <span className="border border-white/40 bg-black/40 px-3 py-2 font-mono text-[9px] uppercase tracking-widest text-white backdrop-blur-md">
                       {project.category}
                     </span>
                   </div>
 
                   <div className="absolute bottom-5 left-5 right-5 flex items-end justify-between">
                     <div>
-                      <p className="editorial-eyebrow text-white/65">
+                      <p className="editorial-eyebrow text-white/80">
                         {project.code}
                       </p>
-                      <p className="mt-2 text-xs text-white/85">
-                        Architectural project visual pending
+                      <p className="mt-2 text-xs text-white/90 font-light">
+                        {project.image ? `${project.title} · Nagpur, Maharashtra` : "Architectural project visual pending"}
                       </p>
                     </div>
 
-                    <span className="flex h-11 w-11 items-center justify-center rounded-full border border-white/60 text-white transition-all duration-300 group-hover:border-[#B68A4A] group-hover:bg-[#B68A4A] group-hover:text-[#111111]">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-full border border-white/60 bg-black/30 backdrop-blur-sm text-white transition-all duration-300 group-hover:border-[#B68A4A] group-hover:bg-[#B68A4A] group-hover:text-[#111111]">
                       <ArrowUpRight size={19} />
                     </span>
                   </div>

@@ -13,6 +13,7 @@ export interface PortfolioProject {
   id: string;
   code: string;
   title: string;
+  image?: string;
   category: "Residential" | "Commercial" | "Interior" | "Landscape" | "Turnkey";
   location: string;
   year: string;
@@ -183,6 +184,7 @@ export const siteConfig: SiteConfig = {
       id: "the-monolith-sanctuary",
       code: "PRJ_ARCH_2026_01",
       title: "The Monolith Sanctuary",
+      image: "/projects/monolith-sanctuary.png",
       category: "Residential",
       location: "Khandala, Maharashtra",
       year: "2026",
