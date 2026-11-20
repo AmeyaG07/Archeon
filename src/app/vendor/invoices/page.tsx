@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import React, { useEffect, useState, useCallback, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Banknote,
   Camera,
@@ -46,8 +46,10 @@ interface AssignedProject {
   projectReference?: string;
 }
 
-export default function VendorInvoicesPage() {
+function VendorInvoicesContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const activeTab = searchParams?.get("tab") || "invoices";
   const { isAuthenticated, isLoading: authLoading, user } = useAuth();
 
   const [bills, setBills] = useState<BillItem[]>([]);
@@ -263,6 +265,45 @@ export default function VendorInvoicesPage() {
         </div>
       </div>
 
+      {/* Top Tab Bar connecting Invoices, Payments, Disputes */}
+      <div className="flex border-b border-[#D8D6D0] bg-white px-6 pt-4 gap-6 max-w-7xl mx-auto shadow-sm">
+        <button
+          type="button"
+          onClick={() => router.push("/vendor/invoices?tab=invoices")}
+          className={`pb-3 font-mono text-xs uppercase tracking-wider transition-colors flex items-center gap-2 border-b-2 ${
+            activeTab === "invoices"
+              ? "border-[#B68A4A] text-[#111111] font-semibold"
+              : "border-transparent text-[#77736C] hover:text-[#111111]"
+          }`}
+        >
+          <FileText size={15} /> Trade Bills &amp; Invoices
+        </button>
+
+        <button
+          type="button"
+          onClick={() => router.push("/vendor/invoices?tab=payments")}
+          className={`pb-3 font-mono text-xs uppercase tracking-wider transition-colors flex items-center gap-2 border-b-2 ${
+            activeTab === "payments"
+              ? "border-[#B68A4A] text-[#111111] font-semibold"
+              : "border-transparent text-[#77736C] hover:text-[#111111]"
+          }`}
+        >
+          <Banknote size={15} /> Payment History &amp; Settlements
+        </button>
+
+        <button
+          type="button"
+          onClick={() => router.push("/vendor/invoices?tab=disputes")}
+          className={`pb-3 font-mono text-xs uppercase tracking-wider transition-colors flex items-center gap-2 border-b-2 ${
+            activeTab === "disputes"
+              ? "border-[#B68A4A] text-[#111111] font-semibold"
+              : "border-transparent text-[#77736C] hover:text-[#111111]"
+          }`}
+        >
+          <Clock size={15} /> Dispute Tracking
+        </button>
+      </div>
+
       {feedback && (
         <div className={`p-4 rounded-sm font-mono text-xs flex items-center gap-2 ${
           feedback.type === "success"
@@ -273,151 +314,245 @@ export default function VendorInvoicesPage() {
         </div>
       )}
 
-      {/* Assigned Clients Summary */}
-      <div className="max-w-7xl mx-auto rounded-sm border border-[#D8D6D0] bg-white p-6 shadow-sm">
-        <div className="flex items-center justify-between border-b border-[#E5E2DC] pb-4">
-          <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-[#B68A4A]">
-            <Users size={14} /> Assigned Clients & Site Projects
-          </div>
-          <span className="font-mono text-xs text-[#777777]">
-            {assignedProjects.length} Active Assignments
-          </span>
-        </div>
-
-        {assignedProjects.length === 0 ? (
-          <div className="py-6 text-center font-mono text-xs text-[#777777]">
-            No client projects assigned to your contractor account yet.
-          </div>
-        ) : (
-          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {assignedProjects.map((p) => (
-              <div key={p.id} className="p-4 rounded-sm border border-[#E5E2DC] bg-[#FAF9F5]">
-                <div className="font-mono text-[9px] uppercase tracking-wider text-[#B68A4A]">
-                  Client: {p.clientName}
-                </div>
-                <div className="font-semibold text-sm text-[#111111] mt-1">{p.name}</div>
-                <div className="font-mono text-[10px] text-[#777777] mt-1">Ref: {p.projectReference || p.id.slice(0, 8)}</div>
+      {/* Tab 1: Invoices */}
+      {activeTab === "invoices" && (
+        <>
+          {/* Assigned Clients Summary */}
+          <div className="max-w-7xl mx-auto rounded-sm border border-[#D8D6D0] bg-white p-6 shadow-sm">
+            <div className="flex items-center justify-between border-b border-[#E5E2DC] pb-4">
+              <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-[#B68A4A]">
+                <Users size={14} /> Assigned Clients & Site Projects
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+              <span className="font-mono text-xs text-[#777777]">
+                {assignedProjects.length} Active Assignments
+              </span>
+            </div>
 
-      {/* Submitted Bills Table */}
-      <div className="max-w-7xl mx-auto rounded-sm border border-[#D8D6D0] bg-white p-6 shadow-sm">
-        <div className="flex items-center justify-between border-b border-[#E5E2DC] pb-4">
-          <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-[#B68A4A]">
-            <FileText size={14} /> Submitted Bills & Settlement Statuses
-          </div>
-          <span className="font-mono text-xs text-[#777777]">{bills.length} Bills Total</span>
-        </div>
-
-        {loading ? (
-          <div className="py-12 text-center font-mono text-xs text-[#B68A4A]">
-            <RefreshCw className="h-4 w-4 animate-spin mx-auto mb-2" />
-            Loading submitted bills...
-          </div>
-        ) : bills.length === 0 ? (
-          <div className="py-12 text-center font-mono text-xs text-[#777777]">
-            No bills submitted yet. Click &quot;Submit New Bill&quot; to upload your first trade bill.
-          </div>
-        ) : (
-          <div className="mt-4 overflow-x-auto">
-            <table className="w-full text-left font-mono text-xs">
-              <thead>
-                <tr className="border-b border-[#D8D6D0] text-[#777777] uppercase text-[10px] tracking-wider">
-                  <th className="py-3 px-4">Receipt</th>
-                  <th className="py-3 px-4">Bill # / Client</th>
-                  <th className="py-3 px-4">Trade</th>
-                  <th className="py-3 px-4 text-right">Amount</th>
-                  <th className="py-3 px-4 text-center">Status</th>
-                  <th className="py-3 px-4">Payment Proof</th>
-                  <th className="py-3 px-4 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#E5E2DC]">
-                {bills.map((bill) => (
-                  <tr key={bill.id} className="hover:bg-[#FAF9F5]">
-                    {/* Bill Photo Thumbnail */}
-                    <td className="py-3 px-4">
-                      {bill.billPhotoUrl ? (
-                        <button
-                          onClick={() => setPreviewPhotoUrl(bill.billPhotoUrl || null)}
-                          className="w-12 h-12 rounded-sm overflow-hidden border border-[#D8D6D0] shrink-0 block bg-black/5"
-                        >
-                          <img src={bill.billPhotoUrl} alt="Bill Receipt" className="w-full h-full object-cover" />
-                        </button>
-                      ) : (
-                        <div className="w-12 h-12 rounded-sm bg-[#E5E3DE] flex items-center justify-center text-[#777777]">
-                          <FileText size={16} />
-                        </div>
-                      )}
-                    </td>
-
-                    {/* Bill Info */}
-                    <td className="py-3 px-4">
-                      <div className="font-bold text-[#111111]">{bill.billNumber || String(bill.id).slice(0, 8)}</div>
-                      <div className="text-[10px] text-[#777777]">{bill.clientName || "Client"}</div>
-                    </td>
-
-                    {/* Trade Category */}
-                    <td className="py-3 px-4 text-[#777777]">
-                      {bill.tradeCategory || "General Contractor"}
-                    </td>
-
-                    {/* Amount */}
-                    <td className="py-3 px-4 text-right font-bold text-sm text-[#111111]">
-                      ₹{bill.amount.toLocaleString("en-IN")}
-                    </td>
-
-                    {/* Status */}
-                    <td className="py-3 px-4 text-center">
-                      {getStatusBadge(bill.status)}
-                    </td>
-
-                    {/* Payment Proof */}
-                    <td className="py-3 px-4">
-                      {bill.paymentProofUrl ? (
-                        <button
-                          onClick={() => setPreviewPhotoUrl(bill.paymentProofUrl || null)}
-                          className="inline-flex items-center gap-1 font-mono text-[10px] text-[#06B6D4] hover:underline"
-                        >
-                          <Eye size={12} /> View Screenshot
-                        </button>
-                      ) : (
-                        <span className="text-[#99958D] text-[10px]">—</span>
-                      )}
-                    </td>
-
-                    {/* Actions */}
-                    <td className="py-3 px-4 text-right">
-                      {bill.status === "PENDING" && (
-                        <button
-                          onClick={() => handleRequestCash(bill.id)}
-                          disabled={actionLoading}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#D97724] text-white hover:bg-[#B45309] font-mono text-[10px] uppercase tracking-wider rounded-sm transition-colors disabled:opacity-50"
-                        >
-                          <Banknote size={12} /> Request Cash
-                        </button>
-                      )}
-                      {bill.status === "CASH_REQUESTED" && (
-                        <span className="text-[10px] text-[#6366F1] font-mono">
-                          In Client Queue
-                        </span>
-                      )}
-                      {bill.status.includes("PAID") && (
-                        <span className="text-[10px] text-[#10B981] font-mono font-semibold">
-                          Settled
-                        </span>
-                      )}
-                    </td>
-                  </tr>
+            {assignedProjects.length === 0 ? (
+              <div className="py-6 text-center font-mono text-xs text-[#777777]">
+                No client projects assigned to your contractor account yet.
+              </div>
+            ) : (
+              <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {assignedProjects.map((p) => (
+                  <div key={p.id} className="p-4 rounded-sm border border-[#E5E2DC] bg-[#FAF9F5]">
+                    <div className="font-mono text-[9px] uppercase tracking-wider text-[#B68A4A]">
+                      Client: {p.clientName}
+                    </div>
+                    <div className="font-semibold text-sm text-[#111111] mt-1">{p.name}</div>
+                    <div className="font-mono text-[10px] text-[#777777] mt-1">Ref: {p.projectReference || p.id.slice(0, 8)}</div>
+                  </div>
                 ))}
-              </tbody>
-            </table>
+              </div>
+            )}
           </div>
-        )}
-      </div>
+
+          {/* Submitted Bills Table */}
+          <div className="max-w-7xl mx-auto rounded-sm border border-[#D8D6D0] bg-white p-6 shadow-sm">
+            <div className="flex items-center justify-between border-b border-[#E5E2DC] pb-4">
+              <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-[#B68A4A]">
+                <FileText size={14} /> Submitted Bills & Settlement Statuses
+              </div>
+              <span className="font-mono text-xs text-[#777777]">{bills.length} Bills Total</span>
+            </div>
+
+            {loading ? (
+              <div className="py-12 text-center font-mono text-xs text-[#B68A4A]">
+                <RefreshCw className="h-4 w-4 animate-spin mx-auto mb-2" />
+                Loading submitted bills...
+              </div>
+            ) : bills.length === 0 ? (
+              <div className="py-12 text-center font-mono text-xs text-[#777777]">
+                No bills submitted yet. Click &quot;Submit New Bill&quot; to upload your first trade bill.
+              </div>
+            ) : (
+              <div className="mt-4 overflow-x-auto">
+                <table className="w-full text-left font-mono text-xs">
+                  <thead>
+                    <tr className="border-b border-[#D8D6D0] text-[#777777] uppercase text-[10px] tracking-wider">
+                      <th className="py-3 px-4">Receipt</th>
+                      <th className="py-3 px-4">Bill # / Client</th>
+                      <th className="py-3 px-4">Trade</th>
+                      <th className="py-3 px-4 text-right">Amount</th>
+                      <th className="py-3 px-4 text-center">Status</th>
+                      <th className="py-3 px-4">Payment Proof</th>
+                      <th className="py-3 px-4 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#E5E2DC]">
+                    {bills.map((bill) => (
+                      <tr key={bill.id} className="hover:bg-[#FAF9F5]">
+                        <td className="py-3 px-4">
+                          {bill.billPhotoUrl ? (
+                            <button
+                              onClick={() => setPreviewPhotoUrl(bill.billPhotoUrl || null)}
+                              className="w-12 h-12 rounded-sm overflow-hidden border border-[#D8D6D0] shrink-0 block bg-black/5"
+                            >
+                              <img src={bill.billPhotoUrl} alt="Bill Receipt" className="w-full h-full object-cover" />
+                            </button>
+                          ) : (
+                            <div className="w-12 h-12 rounded-sm bg-[#E5E3DE] flex items-center justify-center text-[#777777]">
+                              <FileText size={16} />
+                            </div>
+                          )}
+                        </td>
+
+                        <td className="py-3 px-4">
+                          <div className="font-bold text-[#111111]">{bill.billNumber || String(bill.id).slice(0, 8)}</div>
+                          <div className="text-[10px] text-[#777777]">{bill.clientName || "Client"}</div>
+                        </td>
+
+                        <td className="py-3 px-4 text-[#777777]">
+                          {bill.tradeCategory || "General Contractor"}
+                        </td>
+
+                        <td className="py-3 px-4 text-right font-bold text-sm text-[#111111]">
+                          ₹{bill.amount.toLocaleString("en-IN")}
+                        </td>
+
+                        <td className="py-3 px-4 text-center">
+                          {getStatusBadge(bill.status)}
+                        </td>
+
+                        <td className="py-3 px-4">
+                          {bill.paymentProofUrl ? (
+                            <button
+                              onClick={() => setPreviewPhotoUrl(bill.paymentProofUrl || null)}
+                              className="inline-flex items-center gap-1 font-mono text-[10px] text-[#06B6D4] hover:underline"
+                            >
+                              <Eye size={12} /> View Screenshot
+                            </button>
+                          ) : (
+                            <span className="text-[#99958D] text-[10px]">—</span>
+                          )}
+                        </td>
+
+                        <td className="py-3 px-4 text-right">
+                          {bill.status === "PENDING" && (
+                            <button
+                              onClick={() => handleRequestCash(bill.id)}
+                              disabled={actionLoading}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#D97724] text-white hover:bg-[#B45309] font-mono text-[10px] uppercase tracking-wider rounded-sm transition-colors disabled:opacity-50"
+                            >
+                              <Banknote size={12} /> Request Cash
+                            </button>
+                          )}
+                          {bill.status === "CASH_REQUESTED" && (
+                            <span className="text-[10px] text-[#6366F1] font-mono">
+                              In Client Queue
+                            </span>
+                          )}
+                          {bill.status.includes("PAID") && (
+                            <span className="text-[10px] text-[#10B981] font-mono font-semibold">
+                              Settled
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* Tab 2: Payment History & Settlements */}
+      {activeTab === "payments" && (
+        <div className="max-w-7xl mx-auto space-y-6">
+          <div className="rounded-sm border border-[#D8D6D0] bg-white p-6 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E5E2DC] pb-4">
+              <div>
+                <h2 className="font-serif text-2xl text-[#111111]">Payment Settlements &amp; Remittances</h2>
+                <p className="text-xs text-[#777777] mt-1">
+                  Track confirmed bank payments and physical cash settlement vouchers.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => router.push("/vendor/cash-settlements")}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#111111] text-white font-mono text-xs uppercase tracking-wider hover:bg-[#B68A4A] rounded-sm transition-colors"
+              >
+                <Banknote size={14} /> Open Cash Settlements Vouchers ↗
+              </button>
+            </div>
+
+            <div className="mt-6 overflow-x-auto">
+              <table className="w-full text-left font-mono text-xs">
+                <thead>
+                  <tr className="border-b border-[#D8D6D0] text-[#777777] uppercase text-[10px] tracking-wider bg-[#FAF9F5]">
+                    <th className="py-3 px-4">Bill Reference</th>
+                    <th className="py-3 px-4">Project / Client</th>
+                    <th className="py-3 px-4 text-right">Settled Amount</th>
+                    <th className="py-3 px-4 text-center">Settlement Mode</th>
+                    <th className="py-3 px-4">Settled At</th>
+                    <th className="py-3 px-4 text-center">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#E5E2DC]">
+                  {bills.filter(b => b.status.includes("PAID")).length > 0 ? (
+                    bills.filter(b => b.status.includes("PAID")).map((bill) => (
+                      <tr key={bill.id} className="hover:bg-[#FAF9F5]">
+                        <td className="py-3 px-4 font-bold">{bill.billNumber || bill.id.slice(0, 8)}</td>
+                        <td className="py-3 px-4">{bill.clientName || "Studio Client"}</td>
+                        <td className="py-3 px-4 text-right font-bold text-emerald-700">₹{bill.amount.toLocaleString("en-IN")}</td>
+                        <td className="py-3 px-4 text-center">{bill.status === "PAID_CASH" ? "Cash Handover" : "Bank Transfer (NEFT/RTGS)"}</td>
+                        <td className="py-3 px-4 text-[#777777]">{new Date(bill.createdAt).toLocaleDateString("en-IN")}</td>
+                        <td className="py-3 px-4 text-center">
+                          <span className="px-2 py-0.5 rounded text-[9px] uppercase bg-emerald-100 text-emerald-800 border border-emerald-200">
+                            Verified Settled
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={6} className="py-8 text-center text-[#777777]">
+                        No verified settlements yet. Bills will appear here once marked paid by Client or Studio.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tab 3: Dispute Tracking */}
+      {activeTab === "disputes" && (
+        <div className="max-w-7xl mx-auto space-y-6">
+          <div className="rounded-sm border border-[#D8D6D0] bg-white p-6 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E5E2DC] pb-4">
+              <div>
+                <h2 className="font-serif text-2xl text-[#111111]">Contractor Dispute Management</h2>
+                <p className="text-xs text-[#777777] mt-1">
+                  Track discrepancies regarding site measurements, material deduction, or withholding claims.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => alert("To lodge a measurement or rate discrepancy, please send an architect update or contact Studio Operations.")}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#D97724] text-white font-mono text-xs uppercase tracking-wider hover:bg-[#B45309] rounded-sm transition-colors"
+              >
+                <Clock size={14} /> Raise Measurement Dispute
+              </button>
+            </div>
+
+            <div className="mt-6 p-4 rounded border border-[#B68A4A]/30 bg-[#FAF9F5] text-xs font-mono space-y-2">
+              <div className="font-semibold text-[#B68A4A] uppercase tracking-wider">Dispute Protocol (Section 4.4):</div>
+              <p className="text-[#555] leading-relaxed">
+                When a dispute is raised by client or trade contractor, the associated invoice enters an immutable freeze status. No cash collection or automated reminders are permitted until resolved by Ar. Mandar Bhalekar or the nominated site supervisor.
+              </p>
+            </div>
+
+            <div className="mt-4 p-8 text-center text-xs font-mono text-[#777777] border border-dashed border-[#D8D6D0]">
+              No active disputes raised against your trade bills. All contractor accounts in good standing.
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal: Submit Bill Per Client */}
       {showBillModal && (
@@ -603,5 +738,13 @@ export default function VendorInvoicesPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function VendorInvoicesPage() {
+  return (
+    <Suspense fallback={<div className="p-12 text-center font-mono text-xs text-[#777]">Loading Vendor Invoices...</div>}>
+      <VendorInvoicesContent />
+    </Suspense>
   );
 }

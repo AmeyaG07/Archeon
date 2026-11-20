@@ -16,7 +16,9 @@ import {
   CheckCircle2,
   History,
   Info,
+  MessageSquare,
 } from "lucide-react";
+import { AdminAutomationSettingsTab } from "./AdminAutomationSettingsTab";
 
 export interface AdminSystemSettingsData {
   version: string;
@@ -64,7 +66,8 @@ export type SystemSettingsSection =
   | "financial"
   | "notifications"
   | "portal"
-  | "security";
+  | "security"
+  | "automation";
 
 export interface SystemSettingsChangeRequest {
   section: SystemSettingsSection;
@@ -140,6 +143,12 @@ const SECTIONS: {
     label: "Security Policies",
     description: "Session, login and audit controls",
     icon: <LockKeyhole size={17} />,
+  },
+  {
+    id: "automation",
+    label: "WhatsApp & Email Automation",
+    description: "Sender numbers, Meta Cloud API, templates and dispatches",
+    icon: <MessageSquare size={17} />,
   },
 ];
 
@@ -263,6 +272,10 @@ export function AdminSystemSettings({
 
       case "security":
         return { ...activeDraft.security };
+
+      case "automation":
+      default:
+        return {};
     }
   }
 
@@ -668,6 +681,10 @@ export function AdminSystemSettings({
                   updateSection("security", field, value)
                 }
               />
+            )}
+
+            {activeSection === "automation" && (
+              <AdminAutomationSettingsTab />
             )}
           </div>
 
