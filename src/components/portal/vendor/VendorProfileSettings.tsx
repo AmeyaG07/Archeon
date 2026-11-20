@@ -19,6 +19,7 @@ import {
   QrCode,
   Building,
 } from "lucide-react";
+import { DualImageUpload } from "@/components/ui/DualImageUpload";
 
 export interface VendorProfileData {
   businessName: string;
@@ -548,15 +549,12 @@ export function VendorProfileSettings({
                       />
                     </Field>
                     <div className="mt-4">
-                      <Field label="Payment QR Code Image URL">
-                        <input
-                          type="text"
-                          placeholder="https://... or /qr-codes/my-upi.png"
-                          value={qrCodeUrl}
-                          onChange={(e) => setQrCodeUrl(e.target.value)}
-                          className="vendor-settings-input"
-                        />
-                      </Field>
+                      <DualImageUpload
+                        label="Payment QR Code (Device or Drive)"
+                        value={qrCodeUrl}
+                        onChange={setQrCodeUrl}
+                        placeholder="Paste Google Drive share link, Dropbox or cloud photo URL..."
+                      />
                     </div>
                   </div>
 

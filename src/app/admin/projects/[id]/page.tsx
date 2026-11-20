@@ -17,8 +17,11 @@ import {
   Send,
   User,
   Users,
+  UserPlus,
 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
+import { DualImageUpload } from "@/components/ui/DualImageUpload";
+import { AdminAssignVendorModal } from "@/components/portal/admin/AdminAssignVendorModal";
 
 interface ProjectDetail {
   id: string;
@@ -84,6 +87,7 @@ export default function AdminProjectDetailPage() {
   const [photoNote, setPhotoNote] = useState("");
   const [photoUrl, setPhotoUrl] = useState("");
   const [showPhotoForm, setShowPhotoForm] = useState(false);
+  const [isAssignVendorModalOpen, setIsAssignVendorModalOpen] = useState(false);
 
   const loadData = useCallback(async () => {
     if (!projectId) return;
@@ -324,18 +328,12 @@ export default function AdminProjectDetailPage() {
 
           {showPhotoForm && (
             <form onSubmit={handleUploadProgressPhoto} className="mt-4 border-t border-[#D8D6D0] pt-4 space-y-4">
-              <div>
-                <label className="block font-mono text-[10px] uppercase tracking-wider text-[#777777]">
-                  Photo URL or Image Asset Link
-                </label>
-                <input
-                  type="text"
-                  placeholder="https://... or /projects/sample.jpg"
-                  value={photoUrl}
-                  onChange={(e) => setPhotoUrl(e.target.value)}
-                  className="mt-1 w-full rounded-sm border border-[#D8D6D0] px-3 py-2 font-mono text-xs text-[#111111] focus:border-[#B68A4A] focus:outline-none"
-                />
-              </div>
+              <DualImageUpload
+                label="Progress Photo (Upload from Device or Paste Google Drive Link)"
+                value={photoUrl}
+                onChange={setPhotoUrl}
+                placeholder="Paste Google Drive share link, Dropbox or cloud photo URL..."
+              />
               <div>
                 <label className="block font-mono text-[10px] uppercase tracking-wider text-[#777777]">
                   Architect Note for Client
@@ -443,13 +441,21 @@ export default function AdminProjectDetailPage() {
 
       {/* Assigned Vendors & Expenses Breakdown */}
       <div className="rounded-sm border border-[#D8D6D0] bg-white p-6 shadow-sm">
-        <div className="flex items-center justify-between border-b border-[#D8D6D0] pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#D8D6D0] pb-4 gap-3">
           <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-[#B68A4A]">
             <Users size={14} /> Assigned Vendors & Expense Breakdown
           </div>
-          <span className="font-mono text-xs text-[#777777]">
-            {expenseSummary?.vendors?.length || 0} Vendors Assigned
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-xs text-[#777777]">
+              {expenseSummary?.vendors?.length || 0} Vendors Assigned
+            </span>
+            <button
+              onClick={() => setIsAssignVendorModalOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#171717] text-white hover:bg-[#A58A64] font-mono text-[10px] uppercase tracking-wider rounded-sm transition-colors shadow-xs"
+            >
+              <UserPlus size={12} /> + Assign Vendor
+            </button>
+          </div>
         </div>
 
         {!expenseSummary?.vendors || expenseSummary.vendors.length === 0 ? (
@@ -497,6 +503,14 @@ export default function AdminProjectDetailPage() {
           </div>
         )}
       </div>
+      {/* Assign Vendor Modal */}
+      <AdminAssignVendorModal
+        projectId={projectId}
+        projectName={project?.name || "Project"}
+        isOpen={isAssignVendorModalOpen}
+        onClose={() => setIsAssignVendorModalOpen(false)}
+        onVendorAssigned={loadData}
+      />
     </div>
   );
 }

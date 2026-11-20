@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/providers/AuthProvider";
+import { DualImageUpload } from "@/components/ui/DualImageUpload";
 
 interface BillItem {
   id: string;
@@ -482,21 +483,12 @@ export default function VendorInvoicesPage() {
                 />
               </div>
 
-              <div>
-                <label className="block font-mono text-[10px] uppercase tracking-wider text-[#777777] mb-1">
-                  Bill Photo URL / Upload Link
-                </label>
-                <input
-                  type="text"
-                  placeholder="https://... or /bills/receipt-01.jpg"
-                  value={billPhotoUrl}
-                  onChange={(e) => setBillPhotoUrl(e.target.value)}
-                  className="w-full rounded-sm border border-[#D8D6D0] px-3 py-2 text-xs font-mono text-[#111111] focus:border-[#B68A4A] focus:outline-none"
-                />
-                <span className="text-[10px] text-[#777777] mt-1 block">
-                  Takes a clear photo of physical invoice or paper voucher.
-                </span>
-              </div>
+              <DualImageUpload
+                label="Physical Bill Receipt Photo (Device or Drive)"
+                value={billPhotoUrl}
+                onChange={setBillPhotoUrl}
+                placeholder="Paste Google Drive share link, Dropbox or cloud photo URL..."
+              />
 
               <div className="mt-6 flex justify-end gap-3 pt-4 border-t border-[#E5E2DC]">
                 <button
@@ -554,18 +546,12 @@ export default function VendorInvoicesPage() {
                 </select>
               </div>
 
-              <div>
-                <label className="block font-mono text-[10px] uppercase tracking-wider text-[#777777] mb-1">
-                  Site Photo URL
-                </label>
-                <input
-                  type="text"
-                  placeholder="https://... or /site-updates/photo.jpg"
-                  value={updatePhotoUrl}
-                  onChange={(e) => setUpdatePhotoUrl(e.target.value)}
-                  className="w-full rounded-sm border border-[#D8D6D0] px-3 py-2 text-xs font-mono text-[#111111] focus:border-[#B68A4A] focus:outline-none"
-                />
-              </div>
+              <DualImageUpload
+                label="Site Photo Attachment (Device or Drive)"
+                value={updatePhotoUrl}
+                onChange={setUpdatePhotoUrl}
+                placeholder="Paste Google Drive share link, Dropbox or cloud photo URL..."
+              />
 
               <div>
                 <label className="block font-mono text-[10px] uppercase tracking-wider text-[#777777] mb-1">

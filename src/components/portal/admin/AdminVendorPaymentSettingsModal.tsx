@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { X, CreditCard, QrCode, RefreshCw, AlertCircle, CheckCircle2, ShieldCheck, Building2 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
+import { DualImageUpload } from "@/components/ui/DualImageUpload";
 import type { AdminVendorRecord } from "@/components/portal/admin/AdminVendorManagement";
 
 interface AdminVendorPaymentSettingsModalProps {
@@ -214,23 +215,12 @@ export function AdminVendorPaymentSettingsModal({
               </div>
             </div>
 
-            <div>
-              <label className="flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
-                <QrCode size={12} /> QR Code Image URL
-              </label>
-              <input
-                type="url"
-                value={qrCodeUrl}
-                onChange={(e) => setQrCodeUrl(e.target.value)}
-                placeholder="https://.../upi-qr.png"
-                className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
-              />
-              {qrCodeUrl && (
-                <div className="mt-2 p-2 bg-white rounded-sm border border-[#D8D6D0] inline-block">
-                  <img src={qrCodeUrl} alt="QR Code Preview" className="h-28 w-28 object-contain" />
-                </div>
-              )}
-            </div>
+            <DualImageUpload
+              label="UPI QR Code (Upload from Device or Paste Link)"
+              value={qrCodeUrl}
+              onChange={setQrCodeUrl}
+              placeholder="Paste Google Drive share link, Dropbox or cloud photo URL..."
+            />
 
             <div className="mt-6 flex items-center justify-end gap-3 border-t border-[#D8D6D0] pt-4">
               <button
