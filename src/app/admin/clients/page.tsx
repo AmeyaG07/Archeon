@@ -7,6 +7,7 @@ import {
   type AdminClientRecord,
   type AdminClientStatus,
 } from "@/components/portal/admin/AdminClientManagement";
+import { AdminCreateClientModal } from "@/components/portal/admin/AdminCreateClientModal";
 import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/providers/AuthProvider";
 
@@ -17,6 +18,7 @@ export default function AdminClientsPage() {
   const [clients, setClients] = useState<AdminClientRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const loadClients = useCallback(async () => {
     setLoading(true);
@@ -149,6 +151,13 @@ export default function AdminClientsPage() {
         onUpdateClientStatus={handleUpdateStatus}
         onUpdatePortalAccess={handleUpdatePortalAccess}
         onOpenProject={(projId) => router.push(`/admin/projects?id=${projId}`)}
+        onAddClient={() => setIsCreateModalOpen(true)}
+      />
+
+      <AdminCreateClientModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onClientCreated={loadClients}
       />
     </div>
   );

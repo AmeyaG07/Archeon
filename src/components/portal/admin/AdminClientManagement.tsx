@@ -84,6 +84,7 @@ interface AdminClientManagementProps {
   ) => Promise<void>;
 
   onOpenProject?: (projectId: string) => void;
+  onAddClient?: () => void;
 }
 
 type ClientStatusFilter = "All" | AdminClientStatus;
@@ -151,6 +152,7 @@ export function AdminClientManagement({
   onUpdateClientStatus,
   onUpdatePortalAccess,
   onOpenProject,
+  onAddClient,
 }: AdminClientManagementProps) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] =
@@ -360,9 +362,21 @@ export function AdminClientManagement({
             </h2>
           </div>
 
-          <p className="font-mono text-[9px] text-[#99958D]">
-            {filteredClients.length} RECORDS
-          </p>
+          <div className="flex items-center gap-4">
+            <p className="font-mono text-[9px] text-[#99958D]">
+              {filteredClients.length} RECORDS
+            </p>
+            {onAddClient && (
+              <button
+                type="button"
+                onClick={onAddClient}
+                className="inline-flex items-center gap-2 rounded-sm bg-[#171717] px-4 py-2 font-mono text-[10px] uppercase tracking-widest text-white hover:bg-[#A58A64] transition-colors shadow-xs"
+              >
+                <UserPlus size={13} />
+                Register Client
+              </button>
+            )}
+          </div>
         </div>
 
         {loading ? (
