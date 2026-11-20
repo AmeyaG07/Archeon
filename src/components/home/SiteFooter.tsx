@@ -41,8 +41,53 @@ export function SiteFooter({
   };
 
   return (
-    <footer className="bg-[#111111] text-[#F2F0EB]">
-      <div className="editorial-container">
+    <footer className="relative overflow-hidden bg-[#0c0c0e] text-[#F2F0EB]">
+      {/* =================================================================== */}
+      {/* FULL-SECTION AMBIENT COLORFUL SHADE & ARCHITECTURAL AURA            */}
+      {/* =================================================================== */}
+      <div className="pointer-events-none absolute inset-0 -z-0 overflow-hidden select-none">
+        {/* Primary Radiant Terracotta & Amber Core (Spreading across the whole footer) */}
+        <div
+          className="absolute -top-24 left-1/4 h-[550px] w-[900px] -translate-x-1/2 rounded-full blur-[140px] opacity-35 animate-[pulse_8s_ease-in-out_infinite]"
+          style={{
+            background:
+              "radial-gradient(ellipse at center, rgba(200, 98, 30, 0.45) 0%, rgba(217, 119, 36, 0.25) 45%, rgba(245, 158, 11, 0.12) 70%, transparent 100%)",
+          }}
+        />
+
+        {/* Ambient Clock Backlight Aura (Underneath ArcheOn Clock Dial) */}
+        <div
+          className="absolute top-10 left-8 sm:left-16 h-[400px] w-[400px] rounded-full blur-[110px] opacity-40"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(245, 158, 11, 0.35) 0%, rgba(200, 98, 30, 0.2) 50%, transparent 75%)",
+          }}
+        />
+
+        {/* Secondary Warm Bronze & Gold Diffusion (Right Columns) */}
+        <div
+          className="absolute -top-10 right-[10%] h-[450px] w-[650px] rounded-full blur-[130px] opacity-30"
+          style={{
+            background:
+              "radial-gradient(ellipse at center, rgba(184, 137, 74, 0.3) 0%, rgba(217, 119, 36, 0.15) 50%, transparent 80%)",
+          }}
+        />
+
+        {/* Deep Horizon Floor Glow (Bottom Wash) */}
+        <div className="absolute -bottom-20 left-0 right-0 h-[280px] bg-gradient-to-t from-[#C8621E]/18 via-[#B8894A]/08 to-transparent blur-[80px]" />
+
+        {/* Full-bleed Architectural Vignette Grid Overlay */}
+        <div
+          className="absolute inset-0 opacity-[0.06]"
+          style={{
+            backgroundSize: "36px 36px",
+            backgroundImage:
+              "linear-gradient(to right, rgba(245, 158, 11, 0.25) 1px, transparent 1px), linear-gradient(to bottom, rgba(245, 158, 11, 0.25) 1px, transparent 1px)",
+          }}
+        />
+      </div>
+
+      <div className="editorial-container relative z-10">
         <div className="grid gap-12 border-t border-white/15 py-14 md:grid-cols-2 lg:grid-cols-4">
           {/* Brand & Signature Chronometer Emblem */}
           <div className="flex flex-col items-start">

@@ -1,7 +1,8 @@
 "use client";
 
-import React from "react";
-import { Compass } from "lucide-react";
+import React, { useState } from "react";
+import dynamic from "next/dynamic";
+import { Compass, Sparkles, Layers, Box, CheckCircle2 } from "lucide-react";
 import { siteConfig } from "@/config/siteConfig";
 import {
   RevealText,
@@ -10,247 +11,226 @@ import {
   StaggerItem,
 } from "@/components/motion/EditorialMotion";
 
+// Dynamically load WebGL 3D Villa Assembly client-side only (prevents SSR worker OOM)
+const VillaLumiereBackground = dynamic(
+  () =>
+    import("./VillaLumiereBackground").then((mod) => mod.VillaLumiereBackground),
+  { ssr: false }
+);
+
 export function StudioSection() {
+  const [activeTab, setActiveTab] = useState<"philosophy" | "approach" | "principles">("philosophy");
+
   return (
     <section
       id="studio"
-      className="relative overflow-hidden bg-[#F2F0EB] py-24 md:py-36"
+      className="relative overflow-hidden bg-[#F2F0EB] py-20 sm:py-28 md:py-36 scroll-mt-24 sm:scroll-mt-32"
     >
-      {/* Thematic Background: Architectural Drafting Grid & Golden Ratio Blueprint Spiral */}
-      <div className="pointer-events-none absolute inset-0 -z-0 overflow-hidden select-none">
-        {/* Shifting Warm Travertine Radial Light */}
-        <div
-          className="absolute -top-32 right-0 h-[600px] w-[600px] rounded-full blur-[100px]"
-          style={{
-            background:
-              "radial-gradient(circle, rgba(182, 138, 74, 0.12) 0%, rgba(217, 119, 36, 0.04) 50%, transparent 75%)",
-          }}
-        />
-        <div
-          className="absolute -bottom-40 left-10 h-[500px] w-[500px] rounded-full blur-[90px]"
-          style={{
-            background:
-              "radial-gradient(circle, rgba(165, 138, 100, 0.09) 0%, transparent 70%)",
-          }}
-        />
-
-        {/* SVG Drafting Grid & Rotating Compass Arcs */}
-        <svg
-          className="absolute inset-0 h-full w-full opacity-[0.08]"
-          viewBox="0 0 1440 900"
-          preserveAspectRatio="xMidYMid slice"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <defs>
-            <pattern
-              id="studio-drafting-grid"
-              width="60"
-              height="60"
-              patternUnits="userSpaceOnUse"
-            >
-              <path
-                d="M 60 0 L 0 0 0 60"
-                fill="none"
-                stroke="#777777"
-                strokeWidth="0.5"
-                strokeOpacity="0.4"
-              />
-              <circle cx="60" cy="60" r="1" fill="#B68A4A" fillOpacity="0.6" />
-            </pattern>
-          </defs>
-          <rect width="1440" height="900" fill="url(#studio-drafting-grid)" />
-
-          {/* Rotating Golden Section / Compass Rings */}
-          <g className="animate-[spin_60s_linear_infinite] origin-[1100px_350px]">
-            <circle
-              cx="1100"
-              cy="350"
-              r="280"
-              stroke="#B68A4A"
-              strokeWidth="1"
-              strokeDasharray="6 8"
-            />
-            <circle
-              cx="1100"
-              cy="350"
-              r="210"
-              stroke="#B68A4A"
-              strokeWidth="0.8"
-              strokeDasharray="3 5"
-            />
-            <circle
-              cx="1100"
-              cy="350"
-              r="140"
-              stroke="#777777"
-              strokeWidth="0.6"
-              strokeDasharray="4 6"
-            />
-            <line
-              x1="820"
-              y1="350"
-              x2="1380"
-              y2="350"
-              stroke="#B68A4A"
-              strokeWidth="0.8"
-              strokeDasharray="4 8"
-            />
-            <line
-              x1="1100"
-              y1="70"
-              x2="1100"
-              y2="630"
-              stroke="#B68A4A"
-              strokeWidth="0.8"
-              strokeDasharray="4 8"
-            />
-          </g>
-
-          {/* Drafting Crosshairs & Datum Lines */}
-          <g
-            stroke="#B68A4A"
-            strokeWidth="0.8"
-            strokeDasharray="4 6"
-            strokeOpacity="0.6"
-          >
-            <line x1="0" y1="280" x2="1440" y2="280" />
-            <line x1="0" y1="640" x2="1440" y2="640" />
-            <line x1="380" y1="0" x2="380" y2="900" />
-            <line x1="1060" y1="0" x2="1060" y2="900" />
-          </g>
-
-          {/* CAD Dimension Markers */}
-          <g
-            fill="#A58A64"
-            fontFamily="monospace"
-            fontSize="9"
-            letterSpacing="2"
-            opacity="0.75"
-          >
-            <text x="390" y="272">DATUM // ATELIER 01</text>
-            <text x="390" y="632">SECTION // PHILOSOPHY A-A</text>
-            <text x="1070" y="272">GOLDEN RATIO φ // 1.618</text>
-            <text x="1070" y="632">ELEVATION // +03.400M</text>
-          </g>
-        </svg>
-      </div>
+      {/* 3D Villa Lumière 4-Part Staggered Assembly Background */}
+      <VillaLumiereBackground />
 
       <div className="editorial-container relative z-10">
-        <div className="grid grid-cols-1 gap-14 lg:grid-cols-12 lg:gap-10">
-
-          {/* Section Label with Signature Drafting Compass Animation */}
-          <div className="lg:col-span-3">
-            <div className="flex items-center gap-2.5">
-              <span className="relative flex h-6 w-6 items-center justify-center rounded-full border border-[#B68A4A]/40 text-[#B68A4A]">
-                <Compass size={13} className="animate-[spin_20s_linear_infinite]" />
-              </span>
-              <p className="editorial-eyebrow text-[#777777]">
-                01 / The Studio
-              </p>
-            </div>
-
-            <HairlineRule
-              color="bg-[#B68A4A]"
-              className="mt-8 hidden w-20 lg:block"
-            />
-          </div>
-
-          {/* Main Introduction */}
-          <div className="lg:col-span-9">
-            <div className="max-w-4xl">
-              <RevealText>
-                <h2 className="font-serif text-4xl leading-[1.15] tracking-tight text-[#111111] md:text-6xl lg:text-7xl">
-                  Design is not just about spaces.
-                </h2>
-              </RevealText>
-              <RevealText delay={0.1}>
-                <h2 className="font-serif text-4xl leading-[1.15] tracking-tight text-[#A58A64] md:text-6xl lg:text-7xl">
-                  It is about how we experience them.
-                </h2>
-              </RevealText>
-            </div>
-
-            <div className="mt-12 grid grid-cols-1 gap-10 md:grid-cols-2 md:gap-16">
-              <div>
-                <p className="editorial-eyebrow text-[#A58A64] mb-4">
-                  Our Philosophy
-                </p>
-
-                <RevealText delay={0.12}>
-                  <p className="text-base leading-8 text-[#44423E] md:text-lg">
-                    {siteConfig.philosophy}
-                  </p>
-                </RevealText>
-              </div>
-
-              <div>
-                <p className="editorial-eyebrow text-[#A58A64] mb-4">
-                  Our Approach
-                </p>
-
-                <RevealText delay={0.16}>
-                  <p className="text-base leading-8 text-[#44423E] md:text-lg">
-                    {siteConfig.about.story}
-                  </p>
-                </RevealText>
-              </div>
-            </div>
-
-            {/* Approach Principles */}
-            <div className="mt-16">
-              <HairlineRule color="bg-[#D8D6D0]" className="mb-8" />
-              <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-                <p className="editorial-eyebrow text-[#777777]">
-                  Design Principles
-                </p>
-
-                <span className="font-mono text-[10px] tracking-widest text-[#99958D]">
-                  ARCHEON / DS
-                </span>
-              </div>
-
-              <StaggerGrid
-                staggerDelay={0.08}
-                className="grid grid-cols-1 gap-0 sm:grid-cols-2 lg:grid-cols-3"
-              >
-                {siteConfig.about.approach.map((principle, index) => (
-                  <StaggerItem
-                    key={`${index}-${principle}`}
-                    className="group border-t border-[#D8D6D0] py-6 pr-6 transition-all duration-300 hover:border-l-2 hover:border-l-[#B68A4A] hover:pl-4"
-                  >
-                    <span className="font-mono text-xs font-semibold text-[#A58A64] transition-colors duration-300 group-hover:text-[#D97724]">
-                      0{index + 1}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+          
+          {/* =========================================================================
+              LEFT COLUMN: 100% VISIBLE FROSTED ARCHITECTURAL EDITORIAL PANEL
+              ========================================================================= */}
+          <div className="lg:col-span-7 xl:col-span-6 relative">
+            <div className="rounded-3xl bg-[#F2F0EB]/92 backdrop-blur-xl p-4 xs:p-6 sm:p-9 md:p-11 border border-[#23211E]/10 shadow-[0_24px_50px_-16px_rgba(35,33,30,0.08)] transition-all duration-300">
+              
+              {/* Top Header Badge & Compass Motion */}
+              <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+                <div className="flex items-center gap-3">
+                  <span className="group relative flex h-7 w-7 items-center justify-center rounded-full border border-[#9F7947]/40 bg-white/60 text-[#9F7947] shadow-sm transition-transform duration-500 hover:rotate-180">
+                    <Compass size={14} className="animate-[spin_24s_linear_infinite]" />
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-[10px] tracking-[0.24em] uppercase text-[#777777] font-semibold">
+                      01 / The Studio
                     </span>
-
-                    <p className="mt-4 text-base leading-7 text-[#222222] transition-transform duration-300 group-hover:translate-x-1">
-                      {principle}
-                    </p>
-                  </StaggerItem>
-                ))}
-              </StaggerGrid>
-            </div>
-
-            {/* Principal */}
-            <div className="mt-16">
-              <HairlineRule color="bg-[#D8D6D0]" className="mb-8" />
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                  <p className="editorial-eyebrow text-[#777777]">
-                    Principal Architect
-                  </p>
-
-                  <p className="mt-3 font-serif text-2xl text-[#111111]">
-                    {siteConfig.principal}
-                  </p>
+                    <span className="h-1 w-1 rounded-full bg-[#9F7947]" />
+                    <span className="font-mono text-[9px] tracking-wider uppercase text-[#9F7947]">
+                      Nagpur Studio
+                    </span>
+                  </div>
                 </div>
 
-                <p className="font-mono text-[10px] uppercase tracking-widest text-[#777777]">
-                  {siteConfig.businessDisplayName}
-                </p>
+                {/* Live Tectonic Coordinates */}
+                <div className="hidden sm:flex items-center gap-2 font-mono text-[9.5px] tracking-wider text-stone-500 bg-white/70 px-2.5 py-1 rounded-full border border-stone-800/10 shadow-xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>21.1458° N, 79.0882° E</span>
+                </div>
+              </div>
+
+              {/* Main Architectural Statement Headline */}
+              <div className="mb-8">
+                <RevealText>
+                  <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-[46px] leading-[1.12] tracking-tight text-[#111111]">
+                    Design is not just about spaces.
+                  </h2>
+                </RevealText>
+                <RevealText delay={0.08}>
+                  <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-[46px] leading-[1.12] tracking-tight text-[#9F7947] italic mt-1.5">
+                    It is about how we experience them.
+                  </h2>
+                </RevealText>
+              </div>
+
+              {/* Interactive Motion Tab Bar */}
+              <div className="mb-7 flex flex-wrap items-center gap-1.5 p-1 rounded-xl bg-stone-200/60 border border-stone-300/60">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("philosophy")}
+                  className={`flex items-center gap-2 px-2.5 sm:px-3.5 py-2 rounded-lg font-mono text-[9.5px] sm:text-[10.5px] tracking-wider uppercase transition-all duration-300 ${
+                    activeTab === "philosophy"
+                      ? "bg-white text-[#111111] font-semibold shadow-sm"
+                      : "text-stone-600 hover:text-[#111111] hover:bg-white/40"
+                  }`}
+                >
+                  <Sparkles size={12} className={activeTab === "philosophy" ? "text-[#9F7947]" : "text-stone-400"} />
+                  <span>01 · Philosophy</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("approach")}
+                  className={`flex items-center gap-2 px-2.5 sm:px-3.5 py-2 rounded-lg font-mono text-[9.5px] sm:text-[10.5px] tracking-wider uppercase transition-all duration-300 ${
+                    activeTab === "approach"
+                      ? "bg-white text-[#111111] font-semibold shadow-sm"
+                      : "text-stone-600 hover:text-[#111111] hover:bg-white/40"
+                  }`}
+                >
+                  <Layers size={12} className={activeTab === "approach" ? "text-[#9F7947]" : "text-stone-400"} />
+                  <span>02 · Approach</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("principles")}
+                  className={`flex items-center gap-2 px-2.5 sm:px-3.5 py-2 rounded-lg font-mono text-[9.5px] sm:text-[10.5px] tracking-wider uppercase transition-all duration-300 ${
+                    activeTab === "principles"
+                      ? "bg-white text-[#111111] font-semibold shadow-sm"
+                      : "text-stone-600 hover:text-[#111111] hover:bg-white/40"
+                  }`}
+                >
+                  <Box size={12} className={activeTab === "principles" ? "text-[#9F7947]" : "text-stone-400"} />
+                  <span>03 · Principles</span>
+                </button>
+              </div>
+
+              {/* Dynamic Content Panel Based on Active Tab */}
+              <div className="min-h-[170px] relative transition-all duration-300">
+                {activeTab === "philosophy" && (
+                  <div className="animate-in fade-in duration-300">
+                    <p className="font-serif text-lg sm:text-xl leading-relaxed text-[#2D2A26] italic font-normal">
+                      &ldquo;{siteConfig.philosophy}&rdquo;
+                    </p>
+                    
+                    {/* Architectural Pillar Badges */}
+                    <div className="mt-6 flex flex-wrap gap-2">
+                      {["Raw Basalt Strata", "Post-Tensioned Concrete", "Sculpted Natural Light"].map((pill) => (
+                        <span
+                          key={pill}
+                          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/70 border border-stone-800/10 font-mono text-[9px] tracking-widest uppercase text-stone-700 shadow-xs"
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#9F7947]" />
+                          {pill}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === "approach" && (
+                  <div className="animate-in fade-in duration-300">
+                    <p className="text-[14.5px] sm:text-[15.5px] leading-relaxed text-[#3C3833] font-light">
+                      {siteConfig.about.story}
+                    </p>
+
+                    {/* Deliverable Metrics */}
+                    <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                      {[
+                        { label: "Execution", val: "Full Turnkey" },
+                        { label: "Scope", val: "4 Disciplines" },
+                        { label: "Standard", val: "1:1 Tectonic" },
+                      ].map((item) => (
+                        <div
+                          key={item.label}
+                          className="rounded-xl bg-white/70 p-2.5 border border-stone-800/10 shadow-xs"
+                        >
+                          <div className="font-mono text-[8.5px] tracking-wider uppercase text-stone-500">
+                            {item.label}
+                          </div>
+                          <div className="mt-0.5 font-mono text-[11px] font-semibold text-[#111111]">
+                            {item.val}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === "principles" && (
+                  <div className="animate-in fade-in duration-300 space-y-3">
+                    {siteConfig.about.approach.map((principle, index) => (
+                      <div
+                        key={principle}
+                        className="group flex items-start gap-3 rounded-xl bg-white/60 hover:bg-white p-3 border border-stone-800/10 transition-all duration-200 hover:shadow-xs"
+                      >
+                        <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#9F7947]/15 text-[#9F7947] font-mono text-[10px] font-bold flex items-center justify-center">
+                          0{index + 1}
+                        </span>
+                        <p className="text-[13.5px] leading-relaxed text-[#222222] group-hover:text-black transition-colors">
+                          {principle}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Bottom Hairline & Principal Architect Seal */}
+              <div className="mt-8 pt-6 border-t border-stone-300/70 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <div className="font-mono text-[9px] tracking-[0.2em] uppercase text-stone-500">
+                    Principal Architect
+                  </div>
+                  <div className="mt-1 font-serif text-xl sm:text-2xl text-[#111111] font-medium">
+                    {siteConfig.principal}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <div className="text-right">
+                    <div className="font-mono text-[9px] tracking-widest uppercase text-stone-500">
+                      Practice Status
+                    </div>
+                    <div className="font-mono text-[10.5px] font-medium text-[#9F7947] tracking-wider uppercase">
+                      Turnkey Architecture
+                    </div>
+                  </div>
+                  <div className="w-8 h-8 rounded-full border border-[#9F7947]/30 bg-white flex items-center justify-center text-[#9F7947] shadow-xs">
+                    <CheckCircle2 size={15} />
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          {/* =========================================================================
+              RIGHT COLUMN: PROUD 3D VILLA LUMIÈRE PERSPECTIVE HUD
+              ========================================================================= */}
+          <div className="lg:col-span-5 xl:col-span-6 relative flex flex-col justify-end self-stretch min-h-[380px] lg:min-h-[580px] pointer-events-none">
+            {/* Bottom-Right 3D Interactive Orbit Hint */}
+            <div className="self-end pb-2 pr-2 pointer-events-auto">
+              <div className="inline-flex items-center gap-2 rounded-full border border-stone-800/10 bg-white/80 px-3.5 py-1.5 font-mono text-[9px] tracking-widest text-stone-600 uppercase shadow-xs backdrop-blur-sm">
+                <Compass size={11} className="text-[#9F7947]" />
+                <span>360° ORBITAL TECTONIC STUDY · SCALE 1:50</span>
               </div>
             </div>
           </div>
+
         </div>
       </div>
     </section>

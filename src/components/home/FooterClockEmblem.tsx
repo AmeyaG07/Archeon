@@ -269,11 +269,10 @@ export function FooterClockEmblem({
               <stop offset="100%" stopColor="#1F1C18" />
             </radialGradient>
 
-            {/* Radiant Ambient Gold Backlight for Centered Logo */}
-            <radialGradient id="center-pod-gold-ambient" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="rgba(245, 158, 11, 0.28)" />
-              <stop offset="45%" stopColor="rgba(217, 119, 36, 0.14)" />
-              <stop offset="80%" stopColor="#141312" />
+            {/* Deep Onyx Neutral Glass Pod Gradient (Zero Golden Shade) */}
+            <radialGradient id="center-pod-neutral-bg" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#161514" />
+              <stop offset="60%" stopColor="#100F0E" />
               <stop offset="100%" stopColor="#0B0B0A" />
             </radialGradient>
 
@@ -475,7 +474,7 @@ export function FooterClockEmblem({
           <circle cx={orbEmerald.x} cy={orbEmerald.y} r="3" fill="#10B981" filter="url(#emerald-glow)" />
 
           {/* ============================================================= */}
-          {/* CENTER CIRCULAR POD HOUSING THE ORIGINAL ARCHEON LOGO (EXPANDED) */}
+          {/* CENTER CIRCULAR POD HOUSING THE ORIGINAL ARCHEON LOGO (CLEAN) */}
           {/* ============================================================= */}
           <g className="filter drop-shadow-[0_8px_30px_rgba(0,0,0,0.95)]">
             {/* Concentric Pulsing Chromatic Ring */}
@@ -484,52 +483,52 @@ export function FooterClockEmblem({
               cy="180"
               r="82"
               fill="none"
-              stroke="#F59E0B"
-              strokeWidth="1.2"
+              stroke="#B68A4A"
+              strokeWidth="1"
               strokeDasharray="3 4"
               className="animate-spin"
               style={{ animationDuration: "16s" }}
-              opacity="0.75"
+              opacity="0.45"
             />
 
-            {/* Heavy Beveled Metallic Outer Rim (Expanded to r = 76) */}
+            {/* Precision Beveled Warm Amber Outer Rim */}
             <circle
               cx="180"
               cy="180"
               r="76"
-              fill="url(#center-glass-pod)"
+              fill="url(#dial-face-bg)"
               stroke="#D97724"
-              strokeWidth="2.5"
+              strokeWidth="2.2"
             />
 
-            {/* Radiant Ambient Gold Backlight for Maximum Luminance & Contrast */}
+            {/* Clean Seamless Dark Obsidian Disc - Exactly Matches Dial Face */}
             <circle
               cx="180"
               cy="180"
-              r="73"
-              fill="url(#center-pod-gold-ambient)"
+              r="74"
+              fill="url(#dial-face-bg)"
             />
 
-            {/* Precision Gold Perimeter Bevel */}
+            {/* Precision Hairline Bevel Rings */}
             <circle
               cx="180"
               cy="180"
               r="74"
               fill="none"
-              stroke="rgba(245, 158, 11, 0.45)"
-              strokeWidth="1"
+              stroke="rgba(245, 158, 11, 0.3)"
+              strokeWidth="0.8"
             />
             <circle
               cx="180"
               cy="180"
               r="71"
               fill="none"
-              stroke="rgba(255, 255, 255, 0.12)"
+              stroke="rgba(0, 0, 0, 0.6)"
               strokeWidth="0.8"
             />
 
             {/* =========================================================== */}
-            {/* THE ORIGINAL ARCHEON BRAND LOGO (EXPANDED & RADIANT GOLD)   */}
+            {/* THE ORIGINAL ARCHEON BRAND LOGO (CLEAN TRUE COLORS)         */}
             {/* =========================================================== */}
             <image
               href="/brand-assets/logo-clock-center.png"
@@ -540,7 +539,7 @@ export function FooterClockEmblem({
               preserveAspectRatio="xMidYMid meet"
               clipPath="url(#center-circle-logo-clip)"
               style={{
-                filter: "drop-shadow(0 0 10px rgba(245, 158, 11, 0.5)) drop-shadow(0 2px 8px rgba(0,0,0,0.95))",
+                filter: "drop-shadow(0 4px 10px rgba(0,0,0,0.85))",
               }}
             />
           </g>

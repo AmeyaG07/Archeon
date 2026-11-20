@@ -46,12 +46,12 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F2F0EB] text-[#111111] flex flex-col justify-between p-6 sm:p-12 font-sans selection:bg-[#A58A64] selection:text-white">
+    <div className="min-h-screen bg-[#F2F0EB] text-[#111111] flex flex-col justify-between p-4 sm:p-12 font-sans selection:bg-[#A58A64] selection:text-white">
       {/* Top Header */}
       <header className="flex items-center justify-between max-w-4xl w-full mx-auto">
         <button
           onClick={() => router.push("/")}
-          className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-[#77736C] hover:text-[#111111] transition-colors"
+          className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-[#77736C] hover:text-[#111111] transition-colors py-2"
         >
           <ArrowLeft className="w-3.5 h-3.5" /> Return to Website
         </button>
@@ -61,7 +61,7 @@ export default function LoginPage() {
       </header>
 
       {/* Main Login Card */}
-      <main className="max-w-md w-full mx-auto my-12 bg-white border border-[#D8D6D0] p-8 sm:p-10 shadow-sm">
+      <main className="max-w-md w-full mx-auto my-8 sm:my-12 bg-white border border-[#D8D6D0] p-5 sm:p-10 shadow-sm">
         {/* Brand */}
         <div className="text-center mb-8">
           <p className="font-serif text-3xl tracking-wide text-[#111111]">ARCHEON</p>
@@ -75,7 +75,7 @@ export default function LoginPage() {
           <button
             type="button"
             onClick={() => setActiveTab("admin")}
-            className={`py-2 text-[11px] font-mono uppercase tracking-wider transition-all ${
+            className={`py-2.5 text-[10px] sm:text-[11px] font-mono uppercase tracking-wider transition-all ${
               activeTab === "admin"
                 ? "bg-white text-[#111111] shadow-sm font-semibold border border-[#D8D6D0]"
                 : "text-[#77736C] hover:text-[#111111]"
@@ -86,7 +86,7 @@ export default function LoginPage() {
           <button
             type="button"
             onClick={() => setActiveTab("client")}
-            className={`py-2 text-[11px] font-mono uppercase tracking-wider transition-all ${
+            className={`py-2.5 text-[10px] sm:text-[11px] font-mono uppercase tracking-wider transition-all ${
               activeTab === "client"
                 ? "bg-white text-[#111111] shadow-sm font-semibold border border-[#D8D6D0]"
                 : "text-[#77736C] hover:text-[#111111]"
@@ -97,7 +97,7 @@ export default function LoginPage() {
           <button
             type="button"
             onClick={() => setActiveTab("vendor")}
-            className={`py-2 text-[11px] font-mono uppercase tracking-wider transition-all ${
+            className={`py-2.5 text-[10px] sm:text-[11px] font-mono uppercase tracking-wider transition-all ${
               activeTab === "vendor"
                 ? "bg-white text-[#111111] shadow-sm font-semibold border border-[#D8D6D0]"
                 : "text-[#77736C] hover:text-[#111111]"

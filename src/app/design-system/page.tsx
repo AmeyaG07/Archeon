@@ -73,10 +73,10 @@ export default function DesignSystemPage() {
             level={2}
           />
 
-          <div className="p-8 rounded-sm bg-[#FFFFFF] border border-[#D8D6D0] space-y-8">
+          <div className="p-4 sm:p-8 rounded-sm bg-[#FFFFFF] border border-[#D8D6D0] space-y-8">
             <div className="space-y-2 border-b border-[#D8D6D0] pb-6">
               <span className="font-mono text-xs uppercase text-[#B68A4A]">Display Hero // Cormorant Garamond Light</span>
-              <div className="font-serif text-4xl sm:text-6xl font-light text-[#111111] leading-tight">
+              <div className="font-serif text-3xl sm:text-6xl font-light text-[#111111] leading-tight">
                 Sculpting spaces from raw earth, monolithic stone, and controlled light.
               </div>
             </div>
@@ -90,7 +90,7 @@ export default function DesignSystemPage() {
 
             <div className="space-y-2">
               <span className="font-mono text-xs uppercase text-[#B68A4A]">Restrained Metadata // IBM Plex Mono Regular</span>
-              <div className="font-mono text-xs text-[#777777] tracking-wider space-x-3">
+              <div className="font-mono text-xs text-[#777777] tracking-wider flex flex-wrap items-center gap-2">
                 <span>PRJ_ARCH_2026_01</span>
                 <span>•</span>
                 <span>KHANDALA, MAHARASHTRA</span>
@@ -110,8 +110,8 @@ export default function DesignSystemPage() {
             level={2}
           />
 
-          <div className="p-8 rounded-sm bg-[#FFFFFF] border border-[#D8D6D0] space-y-6">
-            <div className="flex flex-wrap items-center gap-4">
+          <div className="p-4 sm:p-8 rounded-sm bg-[#FFFFFF] border border-[#D8D6D0] space-y-6">
+            <div className="flex flex-wrap items-center gap-3 sm:gap-4">
               <Button variant="primary" icon={<ArrowRight className="w-4 h-4" />}>
                 Primary Obsidian
               </Button>
@@ -132,7 +132,7 @@ export default function DesignSystemPage() {
               </Button>
             </div>
 
-            <div className="pt-4 border-t border-[#D8D6D0] flex flex-wrap items-center gap-4">
+            <div className="pt-4 border-t border-[#D8D6D0] flex flex-wrap items-center gap-3 sm:gap-4">
               <span className="font-mono text-xs text-[#777777] uppercase mr-2">Sizes:</span>
               <Button size="sm" variant="secondary">Small</Button>
               <Button size="md" variant="secondary">Medium</Button>
@@ -143,7 +143,7 @@ export default function DesignSystemPage() {
 
         {/* 4. Section Heading in Dark Theme Mode */}
         <section className="space-y-8 border-t border-[#D8D6D0] pt-16">
-          <div className="p-8 sm:p-12 rounded-sm bg-[#111111] text-[#F2F0EB]">
+          <div className="p-4 sm:p-12 rounded-sm bg-[#111111] text-[#F2F0EB]">
             <SectionHeading
               theme="dark"
               eyebrow="Dark Theme Variant // Obsidian"
@@ -151,7 +151,7 @@ export default function DesignSystemPage() {
               description="Demonstrating SectionHeading component adaptability when placed against dark basalt surfaces or the upcoming footer."
               level={2}
             />
-            <div className="mt-8 flex items-center space-x-4">
+            <div className="mt-8 flex flex-wrap items-center gap-3 sm:gap-4">
               <Button variant="bronze" icon={<Compass className="w-4 h-4" />}>
                 Explore Discipline
               </Button>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -45,10 +45,33 @@ export function ProjectDetailModal({ project, onClose, onEnquire }: ProjectDetai
     handleMove(e.clientX);
   };
 
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (project) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [project]);
+
+  // Close on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && project) {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [project, onClose]);
+
   return (
     <AnimatePresence>
       {project && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8 pointer-events-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-8 pointer-events-auto">
           {/* Backdrop Blur */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -67,7 +90,7 @@ export function ProjectDetailModal({ project, onClose, onEnquire }: ProjectDetai
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: "spring", stiffness: 300, damping: 28 }}
-            className="relative w-full max-w-4xl max-h-[88vh] overflow-y-auto rounded-2xl border border-stone-800 bg-gradient-to-b from-[#1c1917]/98 to-[#0c0a09]/98 backdrop-blur-2xl p-6 sm:p-10 shadow-[0_20px_70px_rgba(0,0,0,0.95)] text-white font-mono"
+            className="relative w-full max-w-4xl max-h-[92dvh] overflow-y-auto rounded-2xl border border-stone-800 bg-gradient-to-b from-[#1c1917]/98 to-[#0c0a09]/98 backdrop-blur-2xl p-4 sm:p-8 md:p-10 shadow-[0_20px_70px_rgba(0,0,0,0.95)] text-white font-mono"
             onMouseUp={() => setIsDragging(false)}
             onTouchEnd={() => setIsDragging(false)}
           >
@@ -117,9 +140,9 @@ export function ProjectDetailModal({ project, onClose, onEnquire }: ProjectDetai
             {/* INTERACTIVE PLAN-TO-RENDER COMPARISON SLIDER (PDF Section 4.2) */}
             <div className="mb-8">
               <div className="flex items-center justify-between mb-2 text-xs">
-                <span className="text-stone-400 uppercase tracking-wider flex items-center space-x-1.5">
-                  <Sliders className="w-3.5 h-3.5 text-amber-500" />
-                  <span>Interactive Visual Comparison // CAD vs Built Spatial Reality</span>
+                <span className="text-stone-400 uppercase tracking-wider flex items-center gap-1.5 text-[10px] sm:text-xs">
+                  <Sliders className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                  <span>Interactive Visual Comparison // CAD vs Built Reality</span>
                 </span>
                 <span className="text-stone-500 text-[10px] hidden sm:inline">
                   Drag slider horizontally to compare

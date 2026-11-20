@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Mail, ShieldCheck, Info } from "lucide-react";
 import { useAudio } from "@/providers/AudioProvider";
@@ -14,12 +14,36 @@ export function ClientPortalModal({ isOpen, onClose }: ClientPortalModalProps) {
   const { playSfx } = useAudio();
   const [requested, setRequested] = useState(false);
   const handleRequestAccess = () => { playSfx("enter-project"); setRequested(true); };
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  // Close on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8 pointer-events-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-8 pointer-events-auto">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => { playSfx("ui-short"); onClose(); }} className="absolute inset-0 bg-black/85 backdrop-blur-md" />
-          <motion.div initial={{ opacity: 0, scale: 0.95, y: 25 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} transition={{ type: "spring", stiffness: 300, damping: 28 }} className="relative w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl border border-stone-800 bg-gradient-to-b from-[#181615]/98 to-[#0c0a09]/98 backdrop-blur-2xl p-6 sm:p-10 shadow-[0_20px_70px_rgba(0,0,0,0.95)] text-white font-mono">
+          <motion.div initial={{ opacity: 0, scale: 0.95, y: 25 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} transition={{ type: "spring", stiffness: 300, damping: 28 }} className="relative w-full max-w-md max-h-[92dvh] overflow-y-auto rounded-2xl border border-stone-800 bg-gradient-to-b from-[#181615]/98 to-[#0c0a09]/98 backdrop-blur-2xl p-4 sm:p-8 md:p-10 shadow-[0_20px_70px_rgba(0,0,0,0.95)] text-white font-mono">
             <div className="flex items-center justify-between border-b border-stone-800 pb-4 mb-6">
               <div className="flex items-center space-x-3">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />

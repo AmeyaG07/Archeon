@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ArcheOn — Architectural Floating Animations Demo</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600;700&family=JetBrains+Mono:wght@300;400;500;700&display=swap');
+
+    body {
+      font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Custom architectural grid background */
+    .cad-grid {
+      background-size: 32px 32px;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    }
+
+    .stage-perspective {
+      perspective: 1200px;
+      transform-style: preserve-3d;
+    }
+
+    .preserve-3d {
+      transform-style: preserve-3d;
+    }
+
+    /* Travertine texture simulation */
+    .material-travertine {
+      background: radial-gradient(circle at 30% 20%, #d8cfbe 0%, #b8aa93 50%, #8e7f67 100%);
+      box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.7), inset 0 1px 2px rgba(255,255,255,0.4);
+    }
+
+    /* Fluted Basalt Concrete */
+    .material-basalt {
+      background: repeating-linear-gradient(
+        90deg,
+        #1c1c1f 0px,
+        #2a2a2f 6px,
+        #151518 12px
+      );
+      box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255,255,255,0.15);
+    }
+
+    /* Brushed Patinated Brass */
+    .material-brass {
+      background: linear-gradient(135deg, #d4af37 0%, #aa820a 35%, #e6ca65 50%, #8a6508 75%, #caa635 100%);
+      box-shadow: 0 20px 40px -10px rgba(212, 175, 55, 0.25), inset 0 1px 3px rgba(255,255,255,0.6);
+    }
+
+    /* Smoked Fluted Glass */
+    .material-glass {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.03));
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255,255,255,0.3);
+    }
+
+    /* Range slider styling */
+    input[type=range] {
+      accent-color: #f59e0b;
+    }
+  </style>
+</head>
+<body class="bg-[#0c0d0e] text-stone-100 min-h-screen flex flex-col p-4 md:p-6 select-none overflow-x-hidden">
+
+  <!-- Header & Architectural Status Bar -->
+  <div class="max-w-7xl w-full mx-auto flex flex-col md:flex-row items-start md:items-center justify-between pb-4 mb-4 border-b border-stone-800 gap-4">
+    <div>
+      <div class="flex items-center gap-2 mb-1">
+        <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+        <span class="text-xs font-mono uppercase tracking-widest text-amber-400">ARCHEON SPATIAL LABS</span>
+        <span class="text-stone-600 font-mono text-xs">/</span>
+        <span class="text-xs font-mono text-stone-400">INTERACTIVE MOTION ARCHETYPES</span>
+      </div>
+      <h1 class="text-xl md:text-2xl font-bold tracking-tight text-stone-100">
+        Architectural Floating Elements Demonstration
+      </h1>
+      <p class="text-xs md:text-sm text-stone-400 max-w-2xl font-light">
+        Move your cursor across the viewport to test live spatial depth, parallax tilt, and ambient levitation physics.
+      </p>
+    </div>
+
+    <!-- Active Mode Selector Pills -->
+    <div class="flex flex-wrap items-center gap-1.5 p-1 bg-stone-900/90 rounded-lg border border-stone-800">
+      <button onclick="setMode('all')" id="btn-all" class="mode-btn px-3 py-1.5 rounded text-xs font-mono transition-all bg-amber-500 text-stone-950 font-semibold shadow">
+        ✦ ALL LAYERS
+      </button>
+      <button onclick="setMode('materials')" id="btn-materials" class="mode-btn px-3 py-1.5 rounded text-xs font-mono text-stone-400 hover:text-stone-200 transition-all">
+        🪨 MATERIAL SLABS
+      </button>
+      <button onclick="setMode('cad')" id="btn-cad" class="mode-btn px-3 py-1.5 rounded text-xs font-mono text-stone-400 hover:text-stone-200 transition-all">
+        📐 CAD DRAFTING HUD
+      </button>
+      <button onclick="setMode('wireframe')" id="btn-wireframe" class="mode-btn px-3 py-1.5 rounded text-xs font-mono text-stone-400 hover:text-stone-200 transition-all">
+        🏢 3D PAVILION
+      </button>
+      <button onclick="setMode('motes')" id="btn-motes" class="mode-btn px-3 py-1.5 rounded text-xs font-mono text-stone-400 hover:text-stone-200 transition-all">
+        ✨ SUNLIT MOTES
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Viewport Stage -->
+  <div class="max-w-7xl w-full mx-auto flex-1 flex flex-col">
+    
+    <div id="viewport-stage" class="relative flex-1 min-h-[540px] md:min-h-[580px] rounded-2xl border border-stone-800 bg-[#121316] overflow-hidden cad-grid stage-perspective cursor-crosshair">
+      
+      <!-- Coordinate HUD in Stage Corners -->
+      <div class="absolute top-4 left-4 z-30 font-mono text-[10px] text-stone-500 flex flex-col gap-0.5 pointer-events-none">
+        <div>LAT: 45°26'12"N · LON: 9°11'20"E</div>
+        <div id="mouse-coords" class="text-amber-400/90">CURSOR: X 0.00 | Y 0.00 | PARALLAX ±0°</div>
+        <div>SCALE: 1:20 · METRIC SYSTEM (M/MM)</div>
+      </div>
+
+      <div class="absolute top-4 right-4 z-30 font-mono text-[10px] text-stone-500 text-right pointer-events-none">
+        <div class="text-stone-400">STUDIO ATMOSPHERE: <span class="text-amber-300">CIRCADIAN 14:30</span></div>
+        <div id="fps-counter">PHYSICS LOOP: 60 FPS (RAF)</div>
+        <div class="text-stone-600">RENDER: CSS 3D + CANVAS ENGINE</div>
+      </div>
+
+      <!-- Sunbeam & Caustic Shimmer Light Layer -->
+      <div id="sunbeam-layer" class="absolute inset-0 pointer-events-none overflow-hidden transition-opacity duration-700">
+        <div class="absolute -top-40 -left-20 w-[140%] h-[120%] bg-gradient-to-br from-amber-500/10 via-amber-200/5 to-transparent rotate-12 blur-3xl transform pointer-events-none"></div>
+        <div class="absolute top-1/4 right-0 w-[500px] h-[500px] bg-cyan-500/5 rounded-full blur-[120px] pointer-events-none"></div>
+      </div>
+
+      <!-- Canvas for Dust Motes & 3D Wireframe -->
+      <canvas id="stage-canvas" class="absolute inset-0 w-full h-full z-10 pointer-events-none"></canvas>
+
+      <!-- 3D Transform Pivot Container (Responds to Mouse Inertia) -->
+      <div id="tilt-container" class="absolute inset-0 flex items-center justify-center preserve-3d transition-transform duration-100 ease-out">
+        
+        <!-- ================= LAYER 1: TECTONIC MATERIAL SLABS ================= -->
+        <div id="layer-materials" class="absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-500">
+          
+          <!-- Slab 1: Roman Travertine -->
+          <div id="slab-1" class="absolute left-[10%] top-[24%] w-48 h-32 rounded-xl material-travertine p-3.5 flex flex-col justify-between pointer-events-auto cursor-pointer transition-transform duration-300 hover:scale-105 hover:z-40">
+            <div class="flex items-center justify-between text-stone-900 font-mono text-[10px] font-bold">
+              <span>NATURAL STONE</span>
+              <span class="px-1.5 py-0.5 rounded bg-black/20">01</span>
+            </div>
+            <div>
+              <div class="text-stone-950 font-bold text-sm tracking-wide">ROMAN TRAVERTINE</div>
+              <div class="text-stone-800 font-mono text-[9px] mt-0.5">PIETRA DI RAPOLANO · HONED</div>
+            </div>
+            <div class="text-[9px] font-mono text-stone-900/80 border-t border-black/20 pt-1 flex justify-between">
+              <span>THICKNESS: 30MM</span>
+              <span class="text-stone-950 font-bold">MATTE</span>
+            </div>
+          </div>
+
+          <!-- Slab 2: Fluted Basalt Concrete -->
+          <div id="slab-2" class="absolute right-[12%] top-[18%] w-48 h-36 rounded-xl material-basalt p-3.5 flex flex-col justify-between pointer-events-auto cursor-pointer border border-stone-700/50 transition-transform duration-300 hover:scale-105 hover:z-40">
+            <div class="flex items-center justify-between text-stone-400 font-mono text-[10px] font-bold">
+              <span>MONOLITHIC CAST</span>
+              <span class="px-1.5 py-0.5 rounded bg-white/10 text-stone-300">02</span>
+            </div>
+            <div>
+              <div class="text-stone-200 font-bold text-sm tracking-wide">FLUTED BASALT</div>
+              <div class="text-stone-400 font-mono text-[9px] mt-0.5">CAST CONCRETE · 12MM RIBS</div>
+            </div>
+            <div class="text-[9px] font-mono text-stone-400 border-t border-stone-700/60 pt-1 flex justify-between">
+              <span>LOAD-BEARING</span>
+              <span class="text-amber-400">BRUTALIST</span>
+            </div>
+          </div>
+
+          <!-- Slab 3: Patinated Brass -->
+          <div id="slab-3" class="absolute left-[16%] bottom-[16%] w-44 h-28 rounded-xl material-brass p-3 flex flex-col justify-between pointer-events-auto cursor-pointer transition-transform duration-300 hover:scale-105 hover:z-40">
+            <div class="flex items-center justify-between text-stone-950 font-mono text-[10px] font-bold">
+              <span>METALLURGY</span>
+              <span class="px-1.5 py-0.5 rounded bg-black/20">03</span>
+            </div>
+            <div>
+              <div class="text-stone-950 font-bold text-xs tracking-wide">BRUSHED BRASS</div>
+              <div class="text-stone-900 font-mono text-[9px]">NATURAL HAND-PATINA</div>
+            </div>
+            <div class="text-[9px] font-mono text-stone-950 border-t border-black/20 pt-0.5 flex justify-between">
+              <span>JOINERY TRIM</span>
+              <span class="font-bold">SATIN</span>
+            </div>
+          </div>
+
+          <!-- Slab 4: Smoked Fluted Glass -->
+          <div id="slab-4" class="absolute right-[15%] bottom-[14%] w-52 h-32 rounded-xl material-glass p-3.5 flex flex-col justify-between pointer-events-auto cursor-pointer transition-transform duration-300 hover:scale-105 hover:z-40">
+            <div class="flex items-center justify-between text-cyan-300 font-mono text-[10px] font-bold">
+              <span>FENESTRATION</span>
+              <span class="px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-200">04</span>
+            </div>
+            <div>
+              <div class="text-stone-100 font-bold text-sm tracking-wide">SMOKED FLUTED GLASS</div>
+              <div class="text-stone-300 font-mono text-[9px] mt-0.5">ACOUSTIC DOUBLE-GLAZED</div>
+            </div>
+            <div class="text-[9px] font-mono text-stone-400 border-t border-white/10 pt-1 flex justify-between">
+              <span>VLT: 28%</span>
+              <span class="text-cyan-300">CIRCADIAN REFRACTIVE</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ================= LAYER 2: CAD DRAFTING HUD ================= -->
+        <div id="layer-cad" class="absolute inset-0 pointer-events-none transition-opacity duration-500">
+          
+          <!-- Elevation Marker 1 -->
+          <div id="cad-tag-1" class="absolute left-[38%] top-[12%] flex items-center gap-2 font-mono text-xs text-amber-400/90 bg-stone-900/80 px-2.5 py-1 rounded border border-amber-500/30 backdrop-blur-md">
+            <span class="text-[10px]">▲</span>
+            <span>+8.450m CEILING BAFFLE</span>
+          </div>
+
+          <!-- Elevation Marker 2 -->
+          <div id="cad-tag-2" class="absolute right-[32%] bottom-[16%] flex items-center gap-2 font-mono text-xs text-cyan-400/90 bg-stone-900/80 px-2.5 py-1 rounded border border-cyan-500/30 backdrop-blur-md">
+            <span class="text-[10px]">▼</span>
+            <span>±0.000m FINISHED FLOOR</span>
+          </div>
+
+          <!-- Axis Tag -->
+          <div id="cad-tag-3" class="absolute left-[28%] bottom-[28%] font-mono text-[11px] text-stone-400 bg-black/60 px-2 py-0.5 rounded border border-stone-800">
+            [AXIS B-07] · SPAN 14.8M
+          </div>
+
+          <!-- Floating Dimension Line with Arrow Calipers -->
+          <div id="cad-dim-line" class="absolute left-[32%] top-[42%] w-[36%] flex flex-col items-center">
+            <div class="w-full flex items-center justify-between text-[10px] font-mono text-stone-400 mb-1">
+              <span>|◄</span>
+              <span class="text-amber-400 font-bold tracking-widest">DIMENSION: 12.480 METER CLEAR CANTILEVER</span>
+              <span>►|</span>
+            </div>
+            <div class="w-full h-px bg-gradient-to-r from-stone-600 via-amber-400 to-stone-600"></div>
+          </div>
+
+          <!-- Dynamic Magnetic Crosshair Indicator -->
+          <div id="magnetic-crosshair" class="absolute w-8 h-8 pointer-events-none transform -translate-x-1/2 -translate-y-1/2 transition-transform duration-75">
+            <div class="absolute inset-0 border border-amber-400/60 rounded-full animate-ping opacity-40"></div>
+            <div class="absolute inset-0 border border-amber-400 rounded-full"></div>
+            <div class="absolute top-1/2 -left-2 right-1/2 h-px bg-amber-400"></div>
+            <div class="absolute top-1/2 left-1/2 -right-2 h-px bg-amber-400"></div>
+            <div class="absolute -top-2 left-1/2 bottom-1/2 w-px bg-amber-400"></div>
+            <div class="absolute top-1/2 left-1/2 -bottom-2 w-px bg-amber-400"></div>
+            <div class="absolute -bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap font-mono text-[9px] text-amber-300 bg-stone-950/90 px-1 py-0.2 rounded border border-amber-500/40">
+              ALIGN · SNAP
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ================= LAYER 3: CENTRAL ARCHITECTURAL STATEMENT ================= -->
+        <div id="central-monolith" class="relative z-20 text-center max-w-md px-6 py-8 rounded-2xl bg-black/40 backdrop-blur-xl border border-stone-800/80 shadow-2xl pointer-events-auto">
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-mono mb-4">
+            <span>✦</span>
+            <span>SPATIAL TECTONICS & MONOLITHIC MASS</span>
+          </div>
+          <h2 class="text-2xl md:text-3xl font-bold tracking-tight text-stone-100 mb-2">
+            Architecture in Continuous Suspension
+          </h2>
+          <p class="text-xs text-stone-400 leading-relaxed font-light mb-6">
+            Elevating brutalist materials into weightless balance. Experience the interplay of cast concrete, honed stone, precision CAD coordinates, and natural ambient light.
+          </p>
+          <div class="flex items-center justify-center gap-3">
+            <button onclick="pulseAnimation()" class="px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-stone-950 font-semibold text-xs font-mono transition-all shadow-lg shadow-amber-500/20 active:scale-95">
+              TRIGGER SPATIAL PULSE
+            </button>
+            <button onclick="resetPhysics()" class="px-4 py-2 rounded-lg bg-stone-800 hover:bg-stone-700 text-stone-300 font-mono text-xs transition-all border border-stone-700">
+              RESET LEVITATION
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Interactive Physics Control Board -->
+    <div class="mt-4 p-4 rounded-xl border border-stone-800 bg-stone-900/60 backdrop-blur-md grid grid-cols-1 md:grid-cols-4 gap-4 items-center text-xs">
+      
+      <!-- Float Amplitude Slider -->
+      <div>
+        <div class="flex justify-between text-stone-400 font-mono mb-1.5">
+          <span>FLOAT AMPLITUDE</span>
+          <span id="val-amplitude" class="text-amber-400 font-bold">14px</span>
+        </div>
+        <input id="slider-amplitude" type="range" min="4" max="28" value="14" class="w-full" oninput="updateSettings()" />
+      </div>
+
+      <!-- Levitation Speed Slider -->
+      <div>
+        <div class="flex justify-between text-stone-400 font-mono mb-1.5">
+          <span>LEVITATION SPEED</span>
+          <span id="val-speed" class="text-amber-400 font-bold">1.0x</span>
+        </div>
+        <input id="slider-speed" type="range" min="0.2" max="2.5" step="0.1" value="1.0" class="w-full" oninput="updateSettings()" />
+      </div>
+
+      <!-- Mouse Parallax Sensitivity -->
+      <div>
+        <div class="flex justify-between text-stone-400 font-mono mb-1.5">
+          <span>3D PARALLAX TILT</span>
+          <span id="val-parallax" class="text-amber-400 font-bold">18°</span>
+        </div>
+        <input id="slider-parallax" type="range" min="0" max="35" value="18" class="w-full" oninput="updateSettings()" />
+      </div>
+
+      <!-- Wireframe Rotation Toggle -->
+      <div class="flex items-center justify-between border-t md:border-t-0 md:border-l border-stone-800 pt-2 md:pt-0 md:pl-4">
+        <div>
+          <div class="font-mono text-stone-300 font-semibold">3D WIREFRAME</div>
+          <div class="text-[10px] text-stone-500 font-mono">CANVAS ROTATION</div>
+        </div>
+        <button id="toggle-wireframe-rot" onclick="toggleWireframeRotation()" class="px-3 py-1.5 rounded bg-stone-800 border border-stone-700 text-amber-400 font-mono text-[11px]">
+          ACTIVE
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    // Global Physics & Interaction State
+    const state = {
+      amplitude: 14,
+      speed: 1.0,
+      parallaxTilt: 18,
+      activeMode: 'all',
+      wireframeRotating: true,
+      time: 0,
+      mouseX: 0.5,
+      mouseY: 0.5,
+      targetMouseX: 0.5,
+      targetMouseY: 0.5,
+      pulseEffect: 0
+    };
+
+    // DOM Elements
+    const stage = document.getElementById('viewport-stage');
+    const tiltContainer = document.getElementById('tilt-container');
+    const canvas = document.getElementById('stage-canvas');
+    const ctx = canvas.getContext('2d');
+    const mouseCoords = document.getElementById('mouse-coords');
+    const magneticCrosshair = document.getElementById('magnetic-crosshair');
+    const layerMaterials = document.getElementById('layer-materials');
+    const layerCad = document.getElementById('layer-cad');
+    const sunbeamLayer = document.getElementById('sunbeam-layer');
+    const centralMonolith = document.getElementById('central-monolith');
+
+    // Slabs
+    const slab1 = document.getElementById('slab-1');
+    const slab2 = document.getElementById('slab-2');
+    const slab3 = document.getElementById('slab-3');
+    const slab4 = document.getElementById('slab-4');
+
+    // CAD Tags
+    const cad1 = document.getElementById('cad-tag-1');
+    const cad2 = document.getElementById('cad-tag-2');
+    const cad3 = document.getElementById('cad-tag-3');
+    const cadDim = document.getElementById('cad-dim-line');
+
+    // Setup Canvas Resolution
+    function resizeCanvas() {
+      const rect = stage.getBoundingClientRect();
+      canvas.width = rect.width * window.devicePixelRatio;
+      canvas.height = rect.height * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // Dust Motes Particles Simulation
+    const particles = [];
+    const PARTICLE_COUNT = 32;
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      particles.push({
+        x: Math.random(),
+        y: Math.random(),
+        radius: Math.random() * 1.8 + 0.6,
+        alpha: Math.random() * 0.7 + 0.2,
+        speedX: (Math.random() - 0.5) * 0.0004,
+        speedY: (Math.random() - 0.5) * 0.0004,
+        pulseSpeed: Math.random() * 0.02 + 0.01,
+        phase: Math.random() * Math.PI * 2
+      });
+    }
+
+    // 3D Architectural Cantilever Pavilion Wireframe Vertices & Edges
+    const pavilionVertices = [
+      // Ground Slab Plate
+      [-1.4, 0.9, -1.2], [1.4, 0.9, -1.2], [1.4, 0.9, 1.2], [-1.4, 0.9, 1.2],
+      // Upper Cantilever Plate
+      [-1.8, -0.6, -0.9], [2.2, -0.6, -0.9], [2.2, -0.6, 0.9], [-1.8, -0.6, 0.9],
+      // Roof Canopy Plate
+      [-1.8, -1.1, -0.9], [2.4, -1.1, -0.9], [2.4, -1.1, 0.9], [-1.8, -1.1, 0.9],
+      // Structural Columns (Pillars)
+      [-1.0, 0.9, -0.6], [-1.0, -0.6, -0.6],
+      [-1.0, 0.9, 0.6],  [-1.0, -0.6, 0.6],
+      [0.6, 0.9, -0.6],  [0.6, -0.6, -0.6],
+      [0.6, 0.9, 0.6],   [0.6, -0.6, 0.6]
+    ];
+
+    const pavilionEdges = [
+      // Base plate loop
+      [0, 1], [1, 2], [2, 3], [3, 0],
+      // Cantilever loop
+      [4, 5], [5, 6], [6, 7], [7, 4],
+      // Roof loop
+      [8, 9], [9, 10], [10, 11], [11, 8],
+      // Canopy connections
+      [4, 8], [5, 9], [6, 10], [7, 11],
+      // Structural columns
+      [12, 13], [14, 15], [16, 17], [18, 19]
+    ];
+
+    let wireframeAngle = 0;
+
+    // Track Mouse Coordinates within Stage
+    stage.addEventListener('mousemove', (e) => {
+      const rect = stage.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width;
+      const y = (e.clientY - rect.top) / rect.height;
+      state.targetMouseX = Math.max(0, Math.min(1, x));
+      state.targetMouseY = Math.max(0, Math.min(1, y));
+
+      // Magnetic crosshair position
+      magneticCrosshair.style.left = `${(e.clientX - rect.left)}px`;
+      magneticCrosshair.style.top = `${(e.clientY - rect.top)}px`;
+    });
+
+    stage.addEventListener('mouseleave', () => {
+      state.targetMouseX = 0.5;
+      state.targetMouseY = 0.5;
+    });
+
+    // Main 60FPS Physics & Render Loop
+    function animate() {
+      state.time += 0.02 * state.speed;
+
+      // Smooth mouse interpolation (spring inertia)
+      state.mouseX += (state.targetMouseX - state.mouseX) * 0.08;
+      state.mouseY += (state.targetMouseY - state.mouseY) * 0.08;
+
+      // Parallax rotation angles
+      const rotY = (state.mouseX - 0.5) * state.parallaxTilt;
+      const rotX = -(state.mouseY - 0.5) * state.parallaxTilt;
+      tiltContainer.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+
+      // Update HUD coordinates readout
+      mouseCoords.textContent = `CURSOR: X ${(state.mouseX * 100).toFixed(1)}% | Y ${(state.mouseY * 100).toFixed(1)}% | TILT [${rotX.toFixed(1)}°, ${rotY.toFixed(1)}°]`;
+
+      // Decay spatial pulse
+      if (state.pulseEffect > 0) {
+        state.pulseEffect *= 0.94;
+      }
+
+      // Animate Slabs with distinct floating phases & depths
+      const amp = state.amplitude + state.pulseEffect * 30;
+      
+      // Slab 1 (Travertine)
+      const y1 = Math.sin(state.time * 0.9) * amp;
+      const r1 = Math.cos(state.time * 0.7) * 2;
+      slab1.style.transform = `translate3d(0, ${y1}px, 60px) rotateZ(${r1}deg)`;
+
+      // Slab 2 (Basalt)
+      const y2 = Math.cos(state.time * 0.85 + 1.2) * (amp * 1.15);
+      const r2 = Math.sin(state.time * 0.6) * -2.5;
+      slab2.style.transform = `translate3d(0, ${y2}px, 80px) rotateZ(${r2}deg)`;
+
+      // Slab 3 (Brass)
+      const y3 = Math.sin(state.time * 1.1 + 2.5) * (amp * 0.9);
+      const r3 = Math.cos(state.time * 0.8) * 1.8;
+      slab3.style.transform = `translate3d(0, ${y3}px, 100px) rotateZ(${r3}deg)`;
+
+      // Slab 4 (Glass)
+      const y4 = Math.cos(state.time * 0.95 + 3.8) * (amp * 1.25);
+      const r4 = Math.sin(state.time * 0.75) * -2;
+      slab4.style.transform = `translate3d(0, ${y4}px, 70px) rotateZ(${r4}deg)`;
+
+      // Animate CAD HUD Tags
+      const cadY1 = Math.sin(state.time * 1.2) * (amp * 0.5);
+      cad1.style.transform = `translate3d(0, ${cadY1}px, 120px)`;
+
+      const cadY2 = Math.cos(state.time * 1.1) * (amp * 0.5);
+      cad2.style.transform = `translate3d(0, ${cadY2}px, 110px)`;
+
+      const cadY3 = Math.sin(state.time * 0.8 + 1.5) * (amp * 0.6);
+      cad3.style.transform = `translate3d(0, ${cadY3}px, 90px)`;
+
+      const cadDimY = Math.cos(state.time * 0.7) * (amp * 0.4);
+      cadDim.style.transform = `translate3d(0, ${cadDimY}px, 85px)`;
+
+      // Render Canvas (Dust Motes + 3D Wireframe)
+      renderCanvas();
+
+      requestAnimationFrame(animate);
+    }
+
+    function renderCanvas() {
+      const rect = stage.getBoundingClientRect();
+      const w = rect.width;
+      const h = rect.height;
+      ctx.clearRect(0, 0, w, h);
+
+      // 1. Draw Sunlit Dust Motes
+      if (state.activeMode === 'all' || state.activeMode === 'motes') {
+        for (let p of particles) {
+          p.x += p.speedX;
+          p.y += p.speedY;
+          if (p.x < 0) p.x = 1;
+          if (p.x > 1) p.x = 0;
+          if (p.y < 0) p.y = 1;
+          if (p.y > 1) p.y = 0;
+
+          const currentAlpha = p.alpha + Math.sin(state.time * 2 + p.phase) * 0.2;
+          ctx.beginPath();
+          ctx.arc(p.x * w, p.y * h, p.radius, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(245, 158, 11, ${Math.max(0.05, Math.min(0.8, currentAlpha))})`;
+          ctx.fill();
+        }
+      }
+
+      // 2. Draw 3D Architectural Cantilever Pavilion Wireframe
+      if (state.activeMode === 'all' || state.activeMode === 'wireframe') {
+        if (state.wireframeRotating) {
+          wireframeAngle += 0.006 * state.speed;
+        }
+
+        const fov = 400;
+        const centerX = w * 0.5;
+        const centerY = h * 0.48;
+        const scale = Math.min(w, h) * 0.22;
+
+        const cosA = Math.cos(wireframeAngle + (state.mouseX - 0.5) * 0.8);
+        const sinA = Math.sin(wireframeAngle + (state.mouseX - 0.5) * 0.8);
+        const pitchCos = Math.cos(0.4 + (state.mouseY - 0.5) * 0.4);
+        const pitchSin = Math.sin(0.4 + (state.mouseY - 0.5) * 0.4);
+
+        // Project vertices
+        const projected = pavilionVertices.map(([vx, vy, vz]) => {
+          // Y-rotation
+          let x1 = vx * cosA - vz * sinA;
+          let z1 = vx * sinA + vz * cosA;
+          // X-pitch tilt
+          let y2 = vy * pitchCos - z1 * pitchSin;
+          let z2 = vy * pitchSin + z1 * pitchCos;
+
+          // Camera distance offset
+          const zDistance = z2 + 4.8;
+          const projScale = fov / (fov + zDistance * 70);
+
+          return {
+            x: centerX + x1 * scale * projScale,
+            y: centerY + y2 * scale * projScale,
+            depth: zDistance
+          };
+        });
+
+        // Draw edges with subtle architectural cyan/amber glow
+        ctx.lineWidth = 1.2;
+        ctx.strokeStyle = state.activeMode === 'wireframe' ? 'rgba(56, 189, 248, 0.7)' : 'rgba(214, 211, 209, 0.22)';
+
+        for (let [i1, i2] of pavilionEdges) {
+          const p1 = projected[i1];
+          const p2 = projected[i2];
+          ctx.beginPath();
+          ctx.moveTo(p1.x, p1.y);
+          ctx.lineTo(p2.x, p2.y);
+          ctx.stroke();
+        }
+
+        // Draw corner joint vertices
+        for (let p of projected) {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(245, 158, 11, 0.8)';
+          ctx.fill();
+        }
+      }
+    }
+
+    // UI Interactive Controls
+    function setMode(mode) {
+      state.activeMode = mode;
+
+      // Update button styling
+      document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.className = 'mode-btn px-3 py-1.5 rounded text-xs font-mono text-stone-400 hover:text-stone-200 transition-all';
+      });
+      const activeBtn = document.getElementById('btn-' + mode);
+      if (activeBtn) {
+        activeBtn.className = 'mode-btn px-3 py-1.5 rounded text-xs font-mono transition-all bg-amber-500 text-stone-950 font-semibold shadow';
+      }
+
+      // Layer visibilities
+      if (mode === 'all') {
+        layerMaterials.style.opacity = '1';
+        layerCad.style.opacity = '1';
+        sunbeamLayer.style.opacity = '1';
+        centralMonolith.style.opacity = '1';
+      } else if (mode === 'materials') {
+        layerMaterials.style.opacity = '1';
+        layerCad.style.opacity = '0.15';
+        sunbeamLayer.style.opacity = '0.6';
+        centralMonolith.style.opacity = '0.3';
+      } else if (mode === 'cad') {
+        layerMaterials.style.opacity = '0.15';
+        layerCad.style.opacity = '1';
+        sunbeamLayer.style.opacity = '0.2';
+        centralMonolith.style.opacity = '0.3';
+      } else if (mode === 'wireframe') {
+        layerMaterials.style.opacity = '0.05';
+        layerCad.style.opacity = '0.2';
+        sunbeamLayer.style.opacity = '0.2';
+        centralMonolith.style.opacity = '0.2';
+      } else if (mode === 'motes') {
+        layerMaterials.style.opacity = '0.1';
+        layerCad.style.opacity = '0.1';
+        sunbeamLayer.style.opacity = '1';
+        centralMonolith.style.opacity = '0.8';
+      }
+    }
+
+    function updateSettings() {
+      state.amplitude = parseFloat(document.getElementById('slider-amplitude').value);
+      document.getElementById('val-amplitude').textContent = state.amplitude + 'px';
+
+      state.speed = parseFloat(document.getElementById('slider-speed').value);
+      document.getElementById('val-speed').textContent = state.speed.toFixed(1) + 'x';
+
+      state.parallaxTilt = parseFloat(document.getElementById('slider-parallax').value);
+      document.getElementById('val-parallax').textContent = state.parallaxTilt + '°';
+    }
+
+    function toggleWireframeRotation() {
+      state.wireframeRotating = !state.wireframeRotating;
+      const btn = document.getElementById('toggle-wireframe-rot');
+      if (state.wireframeRotating) {
+        btn.textContent = 'ACTIVE';
+        btn.className = 'px-3 py-1.5 rounded bg-stone-800 border border-stone-700 text-amber-400 font-mono text-[11px]';
+      } else {
+        btn.textContent = 'PAUSED';
+        btn.className = 'px-3 py-1.5 rounded bg-stone-900 border border-stone-800 text-stone-500 font-mono text-[11px]';
+      }
+    }
+
+    function pulseAnimation() {
+      state.pulseEffect = 1.0;
+    }
+
+    function resetPhysics() {
+      document.getElementById('slider-amplitude').value = 14;
+      document.getElementById('slider-speed').value = 1.0;
+      document.getElementById('slider-parallax').value = 18;
+      updateSettings();
+      state.pulseEffect = 0;
+      setMode('all');
+    }
+
+    // Start loop
+    animate();
+  </script>
+</body>
+</html>

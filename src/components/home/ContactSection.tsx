@@ -19,17 +19,59 @@ export function ContactSection({
       id="contact"
       className="relative overflow-hidden bg-[#111111] py-24 text-[#F2F0EB] sm:py-32"
     >
-      {/* Thematic Background: Nagpur Studio Radar Geographic Scan & Breathing Horizon Glow */}
+      {/* Thematic Background: Planetary Rotation & Nagpur Studio Radar Geographic Scan */}
       <div className="pointer-events-none absolute inset-0 -z-0 overflow-hidden select-none">
-        {/* Breathing Amber / Terracotta Horizon Glow */}
-        <div className="absolute -bottom-40 left-1/2 h-[420px] w-[900px] -translate-x-1/2 rounded-full bg-gradient-to-t from-[#C8621E]/25 via-[#D97724]/12 to-transparent blur-[100px] animate-[pulse_6s_ease-in-out_infinite]" />
+        {/* Full-Bleed Global Earth Rotating Video Layer */}
+        <div className="absolute right-[-10%] sm:right-[5%] top-1/2 -translate-y-1/2 w-[650px] sm:w-[850px] lg:w-[1050px] h-[650px] sm:h-[850px] lg:h-[1050px] overflow-hidden rounded-full pointer-events-none opacity-30 mix-blend-screen">
+          <video
+            className="w-full h-full object-cover object-center brightness-110 contrast-125"
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="auto"
+          >
+            <source
+              src="https://videos.pexels.com/video-files/3129957/3129957-hd_1920_1080_25fps.mp4"
+              type="video/mp4"
+            />
+            <source
+              src="https://videos.pexels.com/video-files/3129957/3129957-uhd_2560_1440_25fps.mp4"
+              type="video/mp4"
+            />
+          </video>
+          {/* Radial Feather Vignette around the Earth Sphere */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_45%,#111111_78%)]" />
+        </div>
 
-        {/* Top-Right Ambient Beacon */}
+        {/* Full-Bleed Ambient Colorful Shade & Atmospheric Aura */}
+        {/* 1. Primary Full-Section Amber / Terracotta Ambient Wash */}
         <div
-          className="absolute -top-32 right-10 h-[500px] w-[500px] rounded-full blur-[100px]"
+          className="absolute inset-0 opacity-40 pointer-events-none"
           style={{
             background:
-              "radial-gradient(circle, rgba(200, 98, 30, 0.12) 0%, rgba(184, 137, 74, 0.05) 50%, transparent 75%)",
+              "radial-gradient(ellipse at 70% 40%, rgba(200, 98, 30, 0.3) 0%, rgba(217, 119, 36, 0.18) 40%, rgba(184, 137, 74, 0.08) 65%, transparent 85%)",
+          }}
+        />
+
+        {/* 2. Left-Side Editorial Heading Warm Underglow */}
+        <div
+          className="absolute top-1/4 -left-20 h-[550px] w-[650px] rounded-full blur-[140px] opacity-35"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(200, 98, 30, 0.35) 0%, rgba(217, 119, 36, 0.15) 55%, transparent 80%)",
+          }}
+        />
+
+        {/* 3. Breathing Amber / Terracotta Horizon Glow Spreading Downwards */}
+        <div className="absolute -bottom-20 left-0 right-0 h-[480px] bg-gradient-to-t from-[#C8621E]/28 via-[#D97724]/14 to-transparent blur-[90px] animate-[pulse_7s_ease-in-out_infinite]" />
+
+        {/* 4. Top-Right Ambient Beacon */}
+        <div
+          className="absolute -top-32 right-10 h-[600px] w-[600px] rounded-full blur-[120px] opacity-40"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(200, 98, 30, 0.28) 0%, rgba(184, 137, 74, 0.12) 50%, transparent 75%)",
           }}
         />
 

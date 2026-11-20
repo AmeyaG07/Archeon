@@ -116,6 +116,12 @@ button {
   cursor: pointer;
 }
 
+@media (hover: hover) and (pointer: fine) {
+  body, a, button, input, textarea, select, [role="button"] {
+    cursor: none;
+  }
+}
+
 button:disabled {
   cursor: not-allowed;
 }
@@ -195,8 +201,22 @@ pre,
    ========================================= */
 
 .editorial-container {
-  width: min(100% - 40px, var(--container-wide));
+  width: min(100% - 32px, var(--container-wide));
   margin-inline: auto;
+}
+
+@media (min-width: 480px) {
+  .editorial-container {
+    width: min(100% - 40px, var(--container-wide));
+  }
+}
+
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .editorial-eyebrow {

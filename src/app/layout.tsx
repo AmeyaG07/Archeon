@@ -2,6 +2,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/providers/AuthProvider";
+import { ArchitecturalCursor } from "@/components/ui/ArchitecturalCursor";
 
 export const metadata: Metadata = {
   title: {
@@ -43,6 +44,7 @@ export default function RootLayout({
       </head>
 
       <body className="min-h-screen bg-[#F2F0EB] text-[#111111] antialiased">
+        <ArchitecturalCursor />
         <AuthProvider>
           {children}
         </AuthProvider>

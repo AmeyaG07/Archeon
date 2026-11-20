@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ArcheOn — Continuous Rotating Architectural Villa & Floating Elements</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600;700;900&family=JetBrains+Mono:wght@300;400;500;700&display=swap');
+
+    * {
+      user-select: none;
+      -webkit-user-select: none;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #070809;
+    }
+
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Architectural blueprint coordinate background */
+    .blueprint-grid {
+      background-size: 40px 40px;
+      background-image: 
+        linear-gradient(to right, rgba(245, 158, 11, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(245, 158, 11, 0.05) 1px, transparent 1px);
+    }
+
+    .perspective-stage {
+      perspective: 1400px;
+      transform-style: preserve-3d;
+    }
+
+    .preserve-3d {
+      transform-style: preserve-3d;
+    }
+
+    /* Continuous 3D Orbital Tilt Animation */
+    @keyframes continuousOrbit {
+      0% {
+        transform: rotateX(16deg) rotateY(-18deg) rotateZ(0deg) scale(1.02);
+      }
+      25% {
+        transform: rotateX(22deg) rotateY(12deg) rotateZ(2deg) scale(1.05);
+      }
+      50% {
+        transform: rotateX(14deg) rotateY(20deg) rotateZ(0deg) scale(1.02);
+      }
+      75% {
+        transform: rotateX(10deg) rotateY(-8deg) rotateZ(-2deg) scale(1.04);
+      }
+      100% {
+        transform: rotateX(16deg) rotateY(-18deg) rotateZ(0deg) scale(1.02);
+      }
+    }
+
+    .orbital-drift {
+      animation: continuousOrbit 24s ease-in-out infinite;
+    }
+
+    /* Laser scanline pulse */
+    @keyframes laserSweep {
+      0% { top: 0%; opacity: 0; }
+      15% { opacity: 0.8; }
+      85% { opacity: 0.8; }
+      100% { top: 100%; opacity: 0; }
+    }
+
+    .laser-line {
+      animation: laserSweep 6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+
+    /* Material Slabs */
+    .slab-travertine {
+      background: linear-gradient(135deg, #d3c7b3 0%, #aa9980 40%, #7d6e56 100%);
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.85), inset 0 2px 4px rgba(255,255,255,0.4);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .slab-basalt {
+      background: repeating-linear-gradient(90deg, #18191b 0px, #26282b 8px, #121314 16px);
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.9), inset 0 2px 2px rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    .slab-brass {
+      background: linear-gradient(135deg, #f5af19 0%, #e17055 100%);
+      box-shadow: 0 0 35px rgba(245, 175, 25, 0.35), inset 0 2px 4px rgba(255,255,255,0.6);
+      border: 1px solid rgba(255, 240, 180, 0.4);
+    }
+
+    .slab-glass {
+      background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.03));
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 20px 40px -10px rgba(0,0,0,0.6), inset 0 1px 2px rgba(255,255,255,0.4);
+      border: 1px solid rgba(255,255,255,0.25);
+    }
+  </style>
+</head>
+<body class="text-stone-100 min-h-screen flex flex-col p-4 md:p-6 overflow-x-hidden">
+
+  <!-- Header & Telemetry -->
+  <div class="max-w-7xl w-full mx-auto flex flex-col md:flex-row items-start md:items-center justify-between pb-4 mb-4 border-b border-stone-800 gap-4">
+    <div>
+      <div class="flex items-center gap-2 mb-1">
+        <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping"></span>
+        <span class="text-xs font-mono uppercase tracking-widest text-amber-400 font-bold">ARCHEON SPATIAL CINEMATICS</span>
+        <span class="text-stone-600 font-mono text-xs">///</span>
+        <span class="text-xs font-mono text-stone-300">CONTINUOUS 3D ORBITAL ROTATION & FLOATING CAD LAYERS</span>
+      </div>
+      <h1 class="text-2xl md:text-3xl font-black tracking-tight text-white flex items-center gap-3">
+        Architectural CAD Villa in Continuous Suspension
+      </h1>
+      <p class="text-xs md:text-sm text-stone-400 max-w-2xl font-light">
+        Featuring your uploaded architectural model with continuous orbital 3D camera rotation, responsive cursor parallax, glowing amber CAD dimension callouts, and floating tactile material specimens.
+      </p>
+    </div>
+
+    <!-- Rotation Speed & Perspective Controls -->
+    <div class="flex items-center gap-2 p-1.5 bg-stone-900/90 rounded-xl border border-stone-800 font-mono text-xs">
+      <span class="text-stone-400 px-2">ORBIT MODE:</span>
+      <button onclick="setOrbitSpeed(16)" id="btn-slow" class="px-3 py-1 rounded-lg bg-stone-800 text-stone-300 hover:text-white transition-all">
+        SLOW (24s)
+      </button>
+      <button onclick="setOrbitSpeed(10)" id="btn-med" class="px-3 py-1 rounded-lg bg-amber-500 text-stone-950 font-bold transition-all shadow">
+        DYNAMIC (10s)
+      </button>
+      <button onclick="toggleAutoOrbit()" id="btn-pause" class="px-3 py-1 rounded-lg bg-stone-800 text-amber-400 hover:bg-stone-700 transition-all">
+        AUTO-ROTATE: ON
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Viewport Stage -->
+  <div class="max-w-7xl w-full mx-auto flex-1 flex flex-col relative">
+    
+    <div id="orbit-stage" class="relative flex-1 min-h-[620px] md:min-h-[680px] rounded-2xl border border-stone-800 bg-[#090a0d] overflow-hidden blueprint-grid perspective-stage cursor-crosshair shadow-2xl">
+      
+      <!-- Live Blueprint Telemetry Overlay -->
+      <div class="absolute top-4 left-4 z-40 font-mono text-[11px] text-stone-400 flex flex-col gap-1 pointer-events-none bg-black/70 backdrop-blur-md p-3 rounded-lg border border-amber-500/20">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+          <span class="text-amber-400 font-bold">MODEL: RESIDENTIAL CAD VILLA CUTAWAY</span>
+        </div>
+        <div class="text-stone-300 text-[10px]">ROTATION: <span id="rot-readout" class="text-amber-300 font-bold">ORBITAL 3D CONTINUOUS</span></div>
+        <div class="text-stone-500 text-[10px]">ELEVATION SPAN: 3 LEVELS + ROOF SKY-LOUNGE</div>
+        <div class="text-stone-500 text-[10px]" id="cursor-pos">PARALLAX TILT: [X: 0.00°, Y: 0.00°]</div>
+      </div>
+
+      <div class="absolute top-4 right-4 z-40 font-mono text-[11px] text-stone-400 text-right pointer-events-none bg-black/70 backdrop-blur-md p-3 rounded-lg border border-stone-800">
+        <div class="text-cyan-400 font-bold">AZIMUTH: BEARING N 38°24'12" W</div>
+        <div class="text-stone-400 text-[10px]">ENGINE: 60 FPS GPU-ACCELERATED RAF</div>
+        <div class="text-amber-400 text-[10px]">INTERACTION: HOVER & MOVE TO TILT 3D</div>
+      </div>
+
+      <!-- Ambient Dust Particles Canvas -->
+      <canvas id="ambient-canvas" class="absolute inset-0 w-full h-full z-10 pointer-events-none"></canvas>
+
+      <!-- 3D Parallax Tilt Container -->
+      <div id="tilt-wrapper" class="absolute inset-0 flex items-center justify-center preserve-3d transition-transform duration-150 ease-out">
+        
+        <!-- 3D Orbiting Architectural Villa Plate -->
+        <div id="villa-orbit-plate" class="relative w-[85%] max-w-[880px] h-[520px] rounded-2xl overflow-hidden preserve-3d orbital-drift shadow-[0_30px_100px_rgba(0,0,0,0.95)] border border-amber-500/30">
+          
+          <!-- Background Architectural Image / Video Layer -->
+          <div class="absolute inset-0 bg-cover bg-center scale-105 transition-transform duration-700" style="background-image: url('/architectural-cad-villa.jpg');">
+            <!-- Subtle Vignette & Gradient Tone -->
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30"></div>
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,rgba(0,0,0,0.7)_100%)]"></div>
+          </div>
+
+          <!-- Video Overlay (Autoplays seamlessly if generated) -->
+          <video id="villa-video" class="absolute inset-0 w-full h-full object-cover hidden" loop muted playsinline autoplay>
+            <source src="/architectural-rotating-villa.mp4" type="video/mp4">
+          </video>
+
+          <!-- Laser Scanline Sweeper across the building -->
+          <div class="absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-400 to-transparent shadow-[0_0_20px_#f59e0b] pointer-events-none laser-line z-20"></div>
+
+          <!-- Embedded Glowing CAD Hotspot Markers on the Building -->
+          
+          <!-- Hotspot 1: Roof Skylounge -->
+          <div class="absolute top-[20%] left-[54%] z-30 transform -translate-x-1/2 -translate-y-1/2 pointer-events-auto cursor-pointer group">
+            <div class="relative flex items-center justify-center">
+              <span class="w-4 h-4 rounded-full bg-amber-400 animate-ping opacity-75"></span>
+              <span class="absolute w-2.5 h-2.5 rounded-full bg-amber-400 border border-white"></span>
+            </div>
+            <div class="absolute left-6 top-1/2 -translate-y-1/2 whitespace-nowrap bg-black/90 backdrop-blur-md px-3 py-1.5 rounded-lg border border-amber-500/50 shadow-xl opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all">
+              <div class="text-[9px] font-mono text-amber-400 font-bold">LEVEL 03 · SKY-LOUNGE</div>
+              <div class="text-xs font-bold text-white tracking-wide">+14.200m ROOF TERRACE</div>
+              <div class="text-[8px] font-mono text-stone-400">DOUBLE-PANE LOW-E GLAZING</div>
+            </div>
+          </div>
+
+          <!-- Hotspot 2: Mid-level Cantilever -->
+          <div class="absolute top-[48%] left-[26%] z-30 transform -translate-x-1/2 -translate-y-1/2 pointer-events-auto cursor-pointer group">
+            <div class="relative flex items-center justify-center">
+              <span class="w-4 h-4 rounded-full bg-cyan-400 animate-ping opacity-75"></span>
+              <span class="absolute w-2.5 h-2.5 rounded-full bg-cyan-400 border border-white"></span>
+            </div>
+            <div class="absolute right-6 top-1/2 -translate-y-1/2 whitespace-nowrap bg-black/90 backdrop-blur-md px-3 py-1.5 rounded-lg border border-cyan-500/50 shadow-xl opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all text-right">
+              <div class="text-[9px] font-mono text-cyan-400 font-bold">LEVEL 02 · CANTILEVER SUITE</div>
+              <div class="text-xs font-bold text-white tracking-wide">+8.450m OVERHANG PLATE</div>
+              <div class="text-[8px] font-mono text-stone-400">4.8M POST-TENSIONED SPAN</div>
+            </div>
+          </div>
+
+          <!-- Hotspot 3: Ground Floor Entrance & Reflecting Pool -->
+          <div class="absolute bottom-[24%] left-[48%] z-30 transform -translate-x-1/2 -translate-y-1/2 pointer-events-auto cursor-pointer group">
+            <div class="relative flex items-center justify-center">
+              <span class="w-4 h-4 rounded-full bg-emerald-400 animate-ping opacity-75"></span>
+              <span class="absolute w-2.5 h-2.5 rounded-full bg-emerald-400 border border-white"></span>
+            </div>
+            <div class="absolute left-6 top-1/2 -translate-y-1/2 whitespace-nowrap bg-black/90 backdrop-blur-md px-3 py-1.5 rounded-lg border border-emerald-500/50 shadow-xl opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all">
+              <div class="text-[9px] font-mono text-emerald-400 font-bold">LEVEL 01 · GROUND ATRIUM</div>
+              <div class="text-xs font-bold text-white tracking-wide">±0.000m FINISHED FLOOR</div>
+              <div class="text-[8px] font-mono text-stone-400">CAST BASALT & WATER FEATURE</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ================= FLOATING TECTONIC MATERIAL SPECIMENS ================= -->
+        
+        <!-- Floating Swatch 1: Roman Travertine -->
+        <div id="float-travertine" class="absolute left-[6%] top-[22%] w-44 h-28 rounded-xl slab-travertine p-3 flex flex-col justify-between pointer-events-auto cursor-pointer transition-transform duration-300 hover:scale-110 z-30">
+          <div class="flex justify-between items-center text-stone-900 font-mono text-[9px] font-bold">
+            <span class="px-1.5 py-0.5 rounded bg-black/20">MATERIAL 01</span>
+            <span>✦ STONE</span>
+          </div>
+          <div>
+            <div class="text-stone-950 font-black text-xs">ROMAN TRAVERTINE</div>
+            <div class="text-stone-800 text-[9px] font-mono mt-0.5">HONED SLAB · 30MM</div>
+          </div>
+          <div class="text-[8px] font-mono text-stone-900 border-t border-black/20 pt-0.5 flex justify-between">
+            <span>FACADE CLADDING</span>
+            <span class="font-bold">MATTE</span>
+          </div>
+        </div>
+
+        <!-- Floating Swatch 2: Fluted Concrete Basalt -->
+        <div id="float-basalt" class="absolute right-[8%] top-[18%] w-48 h-32 rounded-xl slab-basalt p-3.5 flex flex-col justify-between pointer-events-auto cursor-pointer transition-transform duration-300 hover:scale-110 z-30">
+          <div class="flex justify-between items-center text-stone-400 font-mono text-[9px] font-bold">
+            <span class="px-1.5 py-0.5 rounded bg-white/10">MATERIAL 02</span>
+            <span>✦ CONCRETE</span>
+          </div>
+          <div>
+            <div class="text-stone-100 font-black text-xs">FLUTED BASALT</div>
+            <div class="text-stone-400 text-[9px] font-mono mt-0.5">CAST STRUCTURAL RIBS</div>
+          </div>
+          <div class="text-[8px] font-mono text-stone-400 border-t border-stone-700/60 pt-1 flex justify-between">
+            <span>LOAD-BEARING</span>
+            <span class="text-amber-400 font-bold">BRUTALIST</span>
+          </div>
+        </div>
+
+        <!-- Floating Swatch 3: Patinated Brass -->
+        <div id="float-brass" class="absolute left-[8%] bottom-[16%] w-40 h-26 rounded-xl slab-brass p-3 flex flex-col justify-between pointer-events-auto cursor-pointer transition-transform duration-300 hover:scale-110 z-30">
+          <div class="flex justify-between items-center text-stone-950 font-mono text-[9px] font-bold">
+            <span class="px-1.5 py-0.5 rounded bg-black/20 text-white">MATERIAL 03</span>
+            <span>✦ BRASS</span>
+          </div>
+          <div>
+            <div class="text-stone-950 font-black text-xs">BRUSHED BRASS</div>
+            <div class="text-stone-900 text-[8px] font-mono">NATURAL PATINA</div>
+          </div>
+          <div class="text-[8px] font-mono text-stone-950 border-t border-black/20 pt-0.5 flex justify-between font-bold">
+            <span>HAND-CRAFTED</span>
+            <span>POLISHED</span>
+          </div>
+        </div>
+
+        <!-- Floating Swatch 4: Smoked Fluted Glass -->
+        <div id="float-glass" class="absolute right-[6%] bottom-[14%] w-48 h-30 rounded-xl slab-glass p-3 flex flex-col justify-between pointer-events-auto cursor-pointer transition-transform duration-300 hover:scale-110 z-30">
+          <div class="flex justify-between items-center text-cyan-300 font-mono text-[9px] font-bold">
+            <span class="px-1.5 py-0.5 rounded bg-cyan-500/20">MATERIAL 04</span>
+            <span>✦ GLASS</span>
+          </div>
+          <div>
+            <div class="text-white font-black text-xs">SMOKED RIBBED GLASS</div>
+            <div class="text-stone-300 text-[8px] font-mono mt-0.5">ACOUSTIC CURTAIN WALL</div>
+          </div>
+          <div class="text-[8px] font-mono text-stone-300 border-t border-white/20 pt-0.5 flex justify-between">
+            <span>CIRCADIAN DIFFUSION</span>
+            <span class="text-cyan-300 font-bold">REFRACTIVE</span>
+          </div>
+        </div>
+
+        <!-- ================= FLOATING CAD DIMENSION TAGS ================= -->
+        
+        <!-- Dimension Line Caliper -->
+        <div id="float-dim" class="absolute bottom-[8%] left-1/2 -translate-x-1/2 flex flex-col items-center z-30 pointer-events-none">
+          <div class="flex items-center gap-2 font-mono text-[10px] text-amber-400 bg-black/80 px-3 py-1 rounded-full border border-amber-500/30 backdrop-blur-md mb-1 shadow-lg">
+            <span>|◄</span>
+            <span class="tracking-widest font-bold">OVERALL ENVELOPE SPAN: 32.400 METER AXIAL GRID</span>
+            <span>►|</span>
+          </div>
+          <div class="w-80 h-px bg-gradient-to-r from-transparent via-amber-400 to-transparent"></div>
+        </div>
+
+        <!-- Dynamic Magnetic Crosshair Indicator -->
+        <div id="magnetic-crosshair" class="absolute w-8 h-8 pointer-events-none transform -translate-x-1/2 -translate-y-1/2 transition-transform duration-75 z-40">
+          <div class="absolute inset-0 border border-amber-400/50 rounded-full animate-ping opacity-40"></div>
+          <div class="absolute inset-0 border border-amber-400 rounded-full"></div>
+          <div class="absolute top-1/2 -left-2 right-1/2 h-px bg-amber-400"></div>
+          <div class="absolute top-1/2 left-1/2 -right-2 h-px bg-amber-400"></div>
+          <div class="absolute -top-2 left-1/2 bottom-1/2 w-px bg-amber-400"></div>
+          <div class="absolute top-1/2 left-1/2 -bottom-2 w-px bg-amber-400"></div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Bottom Controls & Integration Bar -->
+    <div class="mt-4 p-4 rounded-xl border border-stone-800 bg-stone-900/60 backdrop-blur-md flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
+      <div class="flex items-center gap-3">
+        <span class="text-amber-400 font-mono font-bold">✦ SPATIAL ARCHITECTURE APPLIED</span>
+        <span class="text-stone-500 font-mono">|</span>
+        <span class="text-stone-300 font-light">Ready to be integrated directly into ArcheOn's Hero or Projects showcase section.</span>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button onclick="applyToHeroAlert()" class="px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold font-mono transition-all shadow-lg shadow-amber-500/20 active:scale-95">
+          APPLY TO ARCHEON WEBSITE
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // State & Animation
+    const state = {
+      isAutoOrbit: true,
+      orbitDuration: 10,
+      mouseX: 0.5,
+      mouseY: 0.5,
+      targetMouseX: 0.5,
+      targetMouseY: 0.5,
+      time: 0
+    };
+
+    const stage = document.getElementById('orbit-stage');
+    const tiltWrapper = document.getElementById('tilt-wrapper');
+    const villaPlate = document.getElementById('villa-orbit-plate');
+    const cursorPos = document.getElementById('cursor-pos');
+    const crosshair = document.getElementById('magnetic-crosshair');
+    const canvas = document.getElementById('ambient-canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Slabs
+    const slabTravertine = document.getElementById('float-travertine');
+    const slabBasalt = document.getElementById('float-basalt');
+    const slabBrass = document.getElementById('float-brass');
+    const slabGlass = document.getElementById('float-glass');
+    const floatDim = document.getElementById('float-dim');
+
+    // Canvas Resize
+    function resizeCanvas() {
+      const rect = stage.getBoundingClientRect();
+      canvas.width = rect.width * window.devicePixelRatio;
+      canvas.height = rect.height * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // Ambient Dust Motes
+    const particles = [];
+    for (let i = 0; i < 40; i++) {
+      particles.push({
+        x: Math.random(),
+        y: Math.random(),
+        radius: Math.random() * 1.8 + 0.6,
+        alpha: Math.random() * 0.7 + 0.2,
+        speedX: (Math.random() - 0.5) * 0.0003,
+        speedY: (Math.random() - 0.5) * 0.0003,
+        pulseSpeed: Math.random() * 0.02 + 0.01,
+        phase: Math.random() * Math.PI * 2
+      });
+    }
+
+    // Mouse Tracking
+    stage.addEventListener('mousemove', (e) => {
+      const rect = stage.getBoundingClientRect();
+      state.targetMouseX = (e.clientX - rect.left) / rect.width;
+      state.targetMouseY = (e.clientY - rect.top) / rect.height;
+
+      // Magnetic crosshair
+      crosshair.style.left = `${e.clientX - rect.left}px`;
+      crosshair.style.top = `${e.clientY - rect.top}px`;
+    });
+
+    stage.addEventListener('mouseleave', () => {
+      state.targetMouseX = 0.5;
+      state.targetMouseY = 0.5;
+    });
+
+    // 60 FPS Render Loop
+    function animate() {
+      state.time += 0.018;
+
+      // Mouse Parallax Damping
+      state.mouseX += (state.targetMouseX - state.mouseX) * 0.08;
+      state.mouseY += (state.targetMouseY - state.mouseY) * 0.08;
+
+      const tiltY = (state.mouseX - 0.5) * 22;
+      const tiltX = -(state.mouseY - 0.5) * 22;
+      tiltWrapper.style.transform = `rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
+
+      cursorPos.textContent = `PARALLAX TILT: [X: ${tiltX.toFixed(1)}°, Y: ${tiltY.toFixed(1)}°]`;
+
+      // Animate Slabs with Natural Levitation
+      const y1 = Math.sin(state.time * 0.9) * 14;
+      slabTravertine.style.transform = `translate3d(0, ${y1}px, 60px)`;
+
+      const y2 = Math.cos(state.time * 0.85 + 1.2) * 16;
+      slabBasalt.style.transform = `translate3d(0, ${y2}px, 80px)`;
+
+      const y3 = Math.sin(state.time * 1.1 + 2.5) * 12;
+      slabBrass.style.transform = `translate3d(0, ${y3}px, 100px)`;
+
+      const y4 = Math.cos(state.time * 0.95 + 3.8) * 18;
+      slabGlass.style.transform = `translate3d(0, ${y4}px, 70px)`;
+
+      const dimY = Math.sin(state.time * 0.7) * 8;
+      floatDim.style.transform = `translate3d(0, ${dimY}px, 90px)`;
+
+      // Render Dust Particles
+      const rect = stage.getBoundingClientRect();
+      ctx.clearRect(0, 0, rect.width, rect.height);
+      for (let p of particles) {
+        p.x += p.speedX;
+        p.y += p.speedY;
+        if (p.x < 0) p.x = 1;
+        if (p.x > 1) p.x = 0;
+        if (p.y < 0) p.y = 1;
+        if (p.y > 1) p.y = 0;
+
+        const currentAlpha = p.alpha + Math.sin(state.time * 2 + p.phase) * 0.2;
+        ctx.beginPath();
+        ctx.arc(p.x * rect.width, p.y * rect.height, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(245, 158, 11, ${Math.max(0.05, Math.min(0.8, currentAlpha))})`;
+        ctx.fill();
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    // Toggle Auto Orbit
+    function toggleAutoOrbit() {
+      state.isAutoOrbit = !state.isAutoOrbit;
+      const btn = document.getElementById('btn-pause');
+      const rotReadout = document.getElementById('rot-readout');
+
+      if (state.isAutoOrbit) {
+        villaPlate.classList.add('orbital-drift');
+        btn.textContent = 'AUTO-ROTATE: ON';
+        btn.className = 'px-3 py-1 rounded-lg bg-stone-800 text-amber-400 hover:bg-stone-700 transition-all';
+        rotReadout.textContent = 'ORBITAL 3D CONTINUOUS';
+      } else {
+        villaPlate.classList.remove('orbital-drift');
+        btn.textContent = 'AUTO-ROTATE: PAUSED';
+        btn.className = 'px-3 py-1 rounded-lg bg-stone-900 text-stone-500 border border-stone-800 transition-all';
+        rotReadout.textContent = 'INTERACTIVE MOUSE-DRIVEN';
+      }
+    }
+
+    function setOrbitSpeed(seconds) {
+      villaPlate.style.animationDuration = `${seconds}s`;
+      document.getElementById('btn-slow').className = seconds === 24 
+        ? 'px-3 py-1 rounded-lg bg-amber-500 text-stone-950 font-bold transition-all shadow'
+        : 'px-3 py-1 rounded-lg bg-stone-800 text-stone-300 hover:text-white transition-all';
+      document.getElementById('btn-med').className = seconds === 10 
+        ? 'px-3 py-1 rounded-lg bg-amber-500 text-stone-950 font-bold transition-all shadow'
+        : 'px-3 py-1 rounded-lg bg-stone-800 text-stone-300 hover:text-white transition-all';
+    }
+
+    function applyToHeroAlert() {
+      alert("Ready to apply! We will embed this continuous rotating 3D architectural villa and its floating CAD & Material elements into ArcheOn's Hero & Projects section.");
+    }
+
+    // Check if video is available
+    const videoEl = document.getElementById('villa-video');
+    videoEl.addEventListener('canplay', () => {
+      videoEl.classList.remove('hidden');
+    });
+
+    animate();
+  </script>
+</body>
+</html>

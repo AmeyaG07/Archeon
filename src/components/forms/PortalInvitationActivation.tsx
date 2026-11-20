@@ -124,7 +124,7 @@ export function PortalInvitationActivation({
 
   if (!invitationValid) {
     return (
-      <section className="w-full max-w-lg border border-[#E3C9C5] bg-[#FAF3F1] p-8 sm:p-10">
+      <section className="w-full max-w-lg border border-[#E3C9C5] bg-[#FAF3F1] p-5 sm:p-10">
         <div className="flex h-12 w-12 items-center justify-center border border-[#E3C9C5] text-[#A44D42]">
           <AlertCircle size={22} strokeWidth={1.4} />
         </div>
@@ -160,7 +160,7 @@ export function PortalInvitationActivation({
   }
 
   return (
-    <section className="w-full max-w-lg bg-[#F2F0EB] p-7 md:p-10 border border-[#D8D6D0] shadow-sm">
+    <section className="w-full max-w-lg bg-[#F2F0EB] p-5 sm:p-7 md:p-10 border border-[#D8D6D0] shadow-sm">
       <div className="flex items-center justify-between">
         <div className="flex h-12 w-12 items-center justify-center border border-[#D8D6D0] text-[#A58A64] bg-white">
           <ShieldCheck size={22} strokeWidth={1.4} />
@@ -185,19 +185,19 @@ export function PortalInvitationActivation({
       {/* Verified Invitation Attributes (Immutable Server-Bound Badges) */}
       {invitationMetadata && (
         <div className="mt-6 border border-[#D8D6D0] bg-white p-4 space-y-2.5">
-          <div className="flex items-center justify-between text-xs">
-            <span className="font-mono text-[10px] uppercase tracking-wider text-[#77736C] flex items-center gap-1.5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs">
+            <span className="font-mono text-[10px] uppercase tracking-wider text-[#77736C] flex items-center gap-1.5 shrink-0">
               <Mail className="w-3.5 h-3.5 text-[#A58A64]" /> Invited Email:
             </span>
-            <span className="font-mono font-medium text-[#111111]">
+            <span className="font-mono font-medium text-[#111111] break-all">
               {invitationMetadata.email || "Verified Recipient"}
             </span>
           </div>
-          <div className="flex items-center justify-between text-xs border-t border-[#F2F0EB] pt-2">
-            <span className="font-mono text-[10px] uppercase tracking-wider text-[#77736C] flex items-center gap-1.5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs border-t border-[#F2F0EB] pt-2">
+            <span className="font-mono text-[10px] uppercase tracking-wider text-[#77736C] flex items-center gap-1.5 shrink-0">
               <Shield className="w-3.5 h-3.5 text-[#A58A64]" /> Assigned Role:
             </span>
-            <span className="inline-block bg-[#F9F8F6] border border-[#D8D6D0] px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider text-[#111111]">
+            <span className="inline-block bg-[#F9F8F6] border border-[#D8D6D0] px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider text-[#111111] self-start sm:self-auto">
               {formatRole(invitationMetadata.targetRole)}
             </span>
           </div>

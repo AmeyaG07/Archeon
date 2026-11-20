@@ -3,6 +3,7 @@
 
 import {
   useState,
+  useEffect,
   type ReactNode,
 } from "react";
 
@@ -137,6 +138,29 @@ export function VendorPortalLayout({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [logoutConfirmation, setLogoutConfirmation] =
     useState(false);
+
+  // Lock body scroll when mobile drawer is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileMenuOpen]);
+
+  // Close drawer on Escape
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && mobileMenuOpen) {
+        setMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [mobileMenuOpen]);
 
   const activeItem = NAVIGATION.find(
     (item) => item.id === activeSection

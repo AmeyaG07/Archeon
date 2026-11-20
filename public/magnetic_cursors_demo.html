@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ArcheOn // Magnetic Orbital Compass Core</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Cinzel:wght@600;700&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+            serif: ['Cinzel', 'serif'],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      cursor: crosshair;
+    }
+    body {
+      background-color: #060607;
+      color: #f2f0eb;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    /* Architectural CAD Grid */
+    .cad-grid {
+      background-size: 40px 40px;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.028) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.028) 1px, transparent 1px);
+    }
+    .cad-grid-major {
+      background-size: 200px 200px;
+      background-image: 
+        linear-gradient(to right, rgba(217, 119, 36, 0.06) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(217, 119, 36, 0.06) 1px, transparent 1px);
+    }
+
+    /* Pure Sleek Magnetic Cursor (No Labels) */
+    .magnetic-cursor {
+      position: absolute;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      will-change: transform;
+      z-index: 50;
+      transform-origin: 0 0;
+      transition: filter 0.2s ease;
+    }
+
+    /* Slow Expanding Magnetic Pulse */
+    .magnetic-shockwave {
+      position: absolute;
+      border-radius: 9999px;
+      border: 1px solid rgba(217, 119, 36, 0.5);
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      animation: slowPulse 1.4s cubic-bezier(0.12, 0.8, 0.2, 1) forwards;
+    }
+    @keyframes slowPulse {
+      0% {
+        width: 10px;
+        height: 10px;
+        opacity: 0.9;
+        border-color: rgba(245, 158, 11, 0.9);
+      }
+      100% {
+        width: 580px;
+        height: 580px;
+        opacity: 0;
+        border-color: rgba(217, 119, 36, 0);
+      }
+    }
+  </style>
+</head>
+<body class="cad-grid w-screen h-screen relative select-none">
+  <div class="cad-grid-major fixed inset-0 pointer-events-none"></div>
+
+  <!-- Minimal Top Header -->
+  <header class="fixed top-0 left-0 right-0 z-40 px-6 py-4 flex items-center justify-between border-b border-white/5 bg-[#060607]/80 backdrop-blur-md">
+    <div class="flex items-center gap-3">
+      <span class="w-2 h-2 rounded-full bg-[#D97724] animate-pulse"></span>
+      <h1 class="font-serif text-xs tracking-[0.25em] font-semibold uppercase text-white">ArcheOn Studio</h1>
+      <span class="text-xs text-white/20 font-mono">//</span>
+      <span class="text-xs font-mono text-stone-400 uppercase tracking-widest">Orbital Compass Magnetic Core</span>
+    </div>
+
+    <!-- Speed / Dynamic Mode Controls -->
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-1.5 bg-[#100F0E] border border-white/10 p-1 rounded-xl">
+        <button id="speed-slow" class="px-3 py-1 rounded-lg font-mono text-[11px] font-semibold bg-[#D97724] text-black transition-all">
+          Calm Motion
+        </button>
+        <button id="speed-ultra" class="px-3 py-1 rounded-lg font-mono text-[11px] font-medium text-stone-400 hover:text-white transition-all">
+          Ultra Slow Drift
+        </button>
+      </div>
+
+      <div class="h-3 w-[1px] bg-white/10"></div>
+      
+      <span class="font-mono text-[11px] text-stone-500">
+        28 ORBITAL CURSORS
+      </span>
+    </div>
+  </header>
+
+  <!-- Central Dynamic Magnetic Compass Core SVG Graphic -->
+  <div id="orbit-center-root" class="fixed inset-0 pointer-events-none flex items-center justify-center z-10 transition-transform duration-700 ease-out">
+    <svg width="480" height="480" viewBox="0 0 480 480" class="overflow-visible opacity-50 transition-opacity duration-500">
+      <!-- Concentric Orbital Tracks -->
+      <circle cx="240" cy="240" r="75" fill="none" stroke="rgba(245, 158, 11, 0.15)" stroke-width="0.8" stroke-dasharray="2 4" />
+      <circle cx="240" cy="240" r="130" fill="none" stroke="rgba(6, 182, 212, 0.12)" stroke-width="0.8" stroke-dasharray="3 5" />
+      <circle cx="240" cy="240" r="190" fill="none" stroke="rgba(255, 255, 255, 0.08)" stroke-width="0.8" />
+      
+      <!-- Crosshair Axes -->
+      <line x1="240" y1="30" x2="240" y2="450" stroke="rgba(255, 255, 255, 0.05)" stroke-width="0.8" />
+      <line x1="30" y1="240" x2="450" y2="240" stroke="rgba(255, 255, 255, 0.05)" stroke-width="0.8" />
+      
+      <!-- Minimalist Center Magnetic Pip -->
+      <circle cx="240" cy="240" r="16" fill="#121110" stroke="rgba(217, 119, 36, 0.5)" stroke-width="1.2" />
+      <circle cx="240" cy="240" r="3" fill="#F59E0B" />
+    </svg>
+  </div>
+
+  <!-- Minimal Instructions Pill -->
+  <footer class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 px-5 py-2 rounded-full bg-[#100F0E]/85 backdrop-blur-xl border border-white/10 flex items-center gap-3 text-xs font-mono text-stone-400 shadow-xl">
+    <span class="w-1.5 h-1.5 rounded-full bg-[#D97724]"></span>
+    <span>Move mouse to guide magnetic compass core • Click for slow shockwave impulse</span>
+  </footer>
+
+  <!-- Container for all 28 Sleek Magnetic Cursors -->
+  <div id="cursors-container" class="fixed inset-0 pointer-events-none z-50"></div>
+
+  <!-- Magnetic Orbital Swarm Engine -->
+  <script>
+    const container = document.getElementById('cursors-container');
+    const centerRoot = document.getElementById('orbit-center-root');
+    const width = () => window.innerWidth;
+    const height = () => window.innerHeight;
+
+    // Architectural Color Spectrum (No Labels, Pure Cursors)
+    const PALETTE = [
+      '#F59E0B', // Solar Amber
+      '#06B6D4', // Electric Cyan
+      '#EC4899', // Neon Magenta
+      '#10B981', // Emerald
+      '#FBBF24', // Warm Gold
+      '#38BDF8', // Sky Blue
+      '#A855F7', // Royal Violet
+      '#E2E8F0', // Platinum White
+      '#D97724', // Terracotta Bronze
+    ];
+
+    // Smooth Guided Magnetic Center (Drifts gently with the user's mouse)
+    const core = {
+      x: width() / 2,
+      y: height() / 2,
+      targetX: width() / 2,
+      targetY: height() / 2,
+      speed: 0.04, // Very calm, heavy magnetic inertia
+    };
+
+    // Track User Mouse
+    window.addEventListener('mousemove', (e) => {
+      core.targetX = e.clientX;
+      core.targetY = e.clientY;
+    });
+
+    // 28 Sleek Magnetic Cursors (3 Concentric Orbit Rings)
+    const CURSOR_COUNT = 28;
+    const cursors = [];
+
+    // Speed multiplier state
+    let speedFactor = 1.0;
+    const btnSlow = document.getElementById('speed-slow');
+    const btnUltra = document.getElementById('speed-ultra');
+
+    btnSlow.addEventListener('click', () => {
+      speedFactor = 1.0;
+      btnSlow.className = 'px-3 py-1 rounded-lg font-mono text-[11px] font-semibold bg-[#D97724] text-black transition-all';
+      btnUltra.className = 'px-3 py-1 rounded-lg font-mono text-[11px] font-medium text-stone-400 hover:text-white transition-all';
+    });
+
+    btnUltra.addEventListener('click', () => {
+      speedFactor = 0.45;
+      btnUltra.className = 'px-3 py-1 rounded-lg font-mono text-[11px] font-semibold bg-[#D97724] text-black transition-all';
+      btnSlow.className = 'px-3 py-1 rounded-lg font-mono text-[11px] font-medium text-stone-400 hover:text-white transition-all';
+    });
+
+    for (let i = 0; i < CURSOR_COUNT; i++) {
+      const color = PALETTE[i % PALETTE.length];
+      
+      // Ring distribution:
+      // Ring 1 (Inner): 6 cursors at radius 75px
+      // Ring 2 (Middle): 10 cursors at radius 130px
+      // Ring 3 (Outer): 12 cursors at radius 190px
+      let ringRadius = 75;
+      let baseSpeed = 0.0045; // Slow, majestic orbit
+      let dir = 1; // 1 = clockwise, -1 = counter-clockwise
+
+      if (i < 6) {
+        ringRadius = 75 + (i % 2) * 8;
+        baseSpeed = 0.0055;
+        dir = 1;
+      } else if (i < 16) {
+        ringRadius = 130 + (i % 3) * 10;
+        baseSpeed = 0.0038;
+        dir = -1; // Counter-rotating middle ring
+      } else {
+        ringRadius = 190 + (i % 4) * 12;
+        baseSpeed = 0.0028;
+        dir = 1;
+      }
+
+      const el = document.createElement('div');
+      el.className = 'magnetic-cursor';
+      // Crisp SVG cursor pointer arrow (NO LABELS)
+      el.innerHTML = `
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="filter: drop-shadow(0 2px 6px rgba(0,0,0,0.85));">
+          <path d="M5.65376 12.3673H5.46026L5.31717 12.4976L0.500002 16.8829L0.500002 1.19841L11.7841 12.3673H5.65376Z" 
+                fill="${color}" 
+                stroke="#000000" 
+                stroke-width="1.2"/>
+        </svg>
+      `;
+      container.appendChild(el);
+
+      const angle = (i / CURSOR_COUNT) * Math.PI * 2;
+
+      cursors.push({
+        id: i,
+        el,
+        x: core.x + Math.cos(angle) * ringRadius,
+        y: core.y + Math.sin(angle) * ringRadius,
+        vx: 0,
+        vy: 0,
+        ringRadius,
+        baseSpeed,
+        direction: dir,
+        angle: angle,
+        mass: 1.0 + (i % 5) * 0.15,
+        color,
+      });
+    }
+
+    // Click Shockwave (Slow Gentle Impulse)
+    window.addEventListener('mousedown', (e) => {
+      const rip = document.createElement('div');
+      rip.className = 'magnetic-shockwave';
+      rip.style.left = `${e.clientX}px`;
+      rip.style.top = `${e.clientY}px`;
+      document.body.appendChild(rip);
+      setTimeout(() => rip.remove(), 1400);
+
+      // Smooth slow-motion push
+      cursors.forEach(c => {
+        const dx = c.x - e.clientX;
+        const dy = c.y - e.clientY;
+        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+        const pushForce = 18 / (dist * 0.06 + 1);
+        c.vx += (dx / dist) * pushForce;
+        c.vy += (dy / dist) * pushForce;
+      });
+    });
+
+    // Physics Update Loop (60 FPS, Slow Cinematic Motion)
+    function update() {
+      // 1. Gently drift Core toward mouse target
+      core.x += (core.targetX - core.x) * core.speed;
+      core.y += (core.targetY - core.y) * core.speed;
+
+      // Position the background crosshair SVG smoothly under the core
+      centerRoot.style.transform = `translate3d(${core.x - width() / 2}px, ${core.y - height() / 2}px, 0)`;
+
+      // 2. Update each orbital cursor
+      cursors.forEach((c, idx) => {
+        // Advance orbit angle slowly
+        c.angle += c.baseSpeed * c.direction * speedFactor;
+
+        // Desired magnetic anchor in the orbit ring
+        const desiredX = core.x + Math.cos(c.angle) * c.ringRadius;
+        const desiredY = core.y + Math.sin(c.angle) * c.ringRadius;
+
+        // Soft magnetic spring force
+        const dx = desiredX - c.x;
+        const dy = desiredY - c.y;
+        const magnetK = 0.035; // Gentle elasticity
+
+        c.vx += dx * (magnetK / c.mass);
+        c.vy += dy * (magnetK / c.mass);
+
+        // Gentle inter-cursor separation
+        for (let j = idx + 1; j < CURSOR_COUNT; j++) {
+          const other = cursors[j];
+          const rx = c.x - other.x;
+          const ry = c.y - other.y;
+          const dSq = rx * rx + ry * ry;
+          if (dSq < 625 && dSq > 0.01) {
+            const d = Math.sqrt(dSq);
+            const rep = (25 - d) * 0.018;
+            c.vx += (rx / d) * rep;
+            c.vy += (ry / d) * rep;
+            other.vx -= (rx / d) * rep;
+            other.vy -= (ry / d) * rep;
+          }
+        }
+
+        // Heavy viscous air damping for slow, graceful drift
+        c.vx *= 0.925;
+        c.vy *= 0.925;
+
+        // Integrate
+        c.x += c.vx;
+        c.y += c.vy;
+
+        // Orient cursor towards magnetic center or trajectory
+        // In the orbital compass, pointing tangentially or slightly inwards:
+        // Angle pointing towards center:
+        const angleToCenter = Math.atan2(core.y - c.y, core.x - c.x) * (180 / Math.PI);
+        // Tangent angle in direction of orbit:
+        const tangentAngle = (c.angle + (c.direction > 0 ? Math.PI / 2 : -Math.PI / 2)) * (180 / Math.PI);
+        
+        // Blend orientation: 65% tangent, 35% inward magnetic pull
+        // Vector pointing up-left (-135°) in SVG needs offset:
+        const targetRot = tangentAngle + 135;
+
+        c.el.style.transform = `translate3d(${c.x}px, ${c.y}px, 0) rotate(${targetRot}deg)`;
+      });
+
+      requestAnimationFrame(update);
+    }
+
+    requestAnimationFrame(update);
+  </script>
+</body>
+</html>

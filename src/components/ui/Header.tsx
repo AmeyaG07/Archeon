@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Menu, X, ArrowUpRight } from "lucide-react";
@@ -32,6 +32,29 @@ export function Header({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const closeMenu = () => setMobileMenuOpen(false);
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileMenuOpen]);
+
+  // Close on Escape key press
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && mobileMenuOpen) {
+        closeMenu();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [mobileMenuOpen]);
 
   const handleNavigation = (href: string) => {
     closeMenu();
@@ -124,7 +147,7 @@ export function Header({
             aria-expanded={mobileMenuOpen}
             aria-controls="mobile-navigation"
             onClick={() => setMobileMenuOpen((open) => !open)}
-            className="relative z-10 flex h-10 w-10 items-center justify-center border border-white/20 text-white lg:hidden"
+            className="relative z-10 flex h-11 w-11 items-center justify-center border border-white/20 text-white lg:hidden touch-target"
           >
             {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
@@ -135,13 +158,13 @@ export function Header({
       <div
         id="mobile-navigation"
         aria-hidden={!mobileMenuOpen}
-        className={`fixed inset-0 z-40 bg-[#111111] text-[#F2F0EB] transition-all duration-500 lg:hidden ${
+        className={`fixed inset-0 z-40 overflow-y-auto bg-[#111111] text-[#F2F0EB] transition-all duration-500 lg:hidden ${
           mobileMenuOpen
             ? "visible translate-y-0 opacity-100"
             : "invisible -translate-y-3 opacity-0"
         }`}
       >
-        <div className="flex h-full flex-col px-6 pb-10 pt-28">
+        <div className="flex min-h-full flex-col px-6 pb-10 pt-20 sm:pt-24">
           <p className="editorial-eyebrow mb-8 text-[#C6A779]">
             ArcheOn Design Studio
           </p>
