@@ -49,6 +49,9 @@ public class ClientService {
     @Autowired
     private UserInvitationService userInvitationService;
 
+    @Autowired
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
     private boolean isInternalStaff(Collection<? extends GrantedAuthority> authorities) {
         if (authorities == null) return false;
         return authorities.stream().anyMatch(a ->
@@ -357,5 +360,57 @@ public class ClientService {
                 .entityId(clientId.toString())
                 .detailsJson(String.format("{\"reference\": \"%s\", \"email\": \"%s\"}", client.getClientReference(), client.getEmail()))
                 .build());
+    }
+
+    @Transactional
+    public java.util.Map<String, Object> createPortalAccount(UUID clientId, CreatePortalAccountRequest req, Authentication auth) {
+        if (!isInternalStaff(auth.getAuthorities())) {
+            throw new AccessDeniedException("Only studio administrators and staff can create portal accounts");
+        }
+        ClientEntity client = clientRepository.findById(clientId)
+                .orElseThrow(() -> new IllegalArgumentException("Client not found: " + clientId));
+
+        String username = org.springframework.util.StringUtils.hasText(req.getUsername())
+                ? req.getUsername().trim()
+                : client.getEmail();
+        String rawPassword = org.springframework.util.StringUtils.hasText(req.getPassword())
+                ? req.getPassword().trim()
+                : "Password123!";
+
+        java.util.Optional<UserEntity> existingOpt = userRepository.findByUsername(username);
+        UserEntity user;
+        if (existingOpt.isPresent()) {
+            user = existingOpt.get();
+            user.setPassword(passwordEncoder.encode(rawPassword));
+            user.setClientId(clientId);
+            user.setRole("ROLE_CLIENT");
+            user.setEnabled(true);
+            user.setStatus("ACTIVE");
+        } else {
+            user = UserEntity.builder()
+                    .username(username)
+                    .password(passwordEncoder.encode(rawPassword))
+                    .role("ROLE_CLIENT")
+                    .email(client.getEmail())
+                    .fullName(client.getFullName())
+                    .phone(client.getPhone())
+                    .clientId(clientId)
+                    .status("ACTIVE")
+                    .enabled(true)
+                    .tokenVersion(0L)
+                    .build();
+        }
+        userRepository.save(user);
+
+        client.setPortalAccess("ACTIVE");
+        client.setUpdatedAt(LocalDateTime.now());
+        clientRepository.save(client);
+
+        return java.util.Map.of(
+                "success", true,
+                "username", username,
+                "role", "ROLE_CLIENT",
+                "message", "Portal account created successfully. The client can now log in at /login."
+        );
     }
 }

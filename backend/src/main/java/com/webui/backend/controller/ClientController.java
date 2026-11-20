@@ -142,4 +142,19 @@ public class ClientController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+
+    @PostMapping("/{id}/portal-account")
+    public ResponseEntity<?> createPortalAccount(
+            @PathVariable UUID id,
+            @RequestBody CreatePortalAccountRequest req,
+            Authentication auth) {
+        try {
+            Map<String, Object> res = clientService.createPortalAccount(id, req, auth);
+            return ResponseEntity.ok(res);
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
 }

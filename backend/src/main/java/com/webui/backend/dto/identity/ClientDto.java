@@ -60,4 +60,13 @@ public class ClientDto {
         private LocalDateTime updatedAt;
         private Long version;
     }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class CreatePortalAccountRequest {
+        private String username;
+        private String password;
+    }
 }

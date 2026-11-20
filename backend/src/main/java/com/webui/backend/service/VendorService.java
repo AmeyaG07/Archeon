@@ -55,6 +55,9 @@ public class VendorService {
     @Autowired
     private SensitiveDataMasker sensitiveDataMasker;
 
+    @Autowired
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
     private boolean isInternalStaff(Collection<? extends GrantedAuthority> authorities) {
         if (authorities == null) return false;
         return authorities.stream().anyMatch(a ->
@@ -436,5 +439,57 @@ public class VendorService {
                 .entityId(vendorId.toString())
                 .detailsJson(String.format("{\"reference\": \"%s\", \"email\": \"%s\"}", vendor.getVendorReference(), vendor.getEmail()))
                 .build());
+    }
+
+    @Transactional
+    public java.util.Map<String, Object> createPortalAccount(UUID vendorId, CreatePortalAccountRequest req, Authentication auth) {
+        if (!isInternalStaff(auth.getAuthorities())) {
+            throw new AccessDeniedException("Only studio administrators and staff can create portal accounts");
+        }
+        VendorEntity vendor = vendorRepository.findById(vendorId)
+                .orElseThrow(() -> new IllegalArgumentException("Vendor not found: " + vendorId));
+
+        String username = org.springframework.util.StringUtils.hasText(req.getUsername())
+                ? req.getUsername().trim()
+                : vendor.getEmail();
+        String rawPassword = org.springframework.util.StringUtils.hasText(req.getPassword())
+                ? req.getPassword().trim()
+                : "Password123!";
+
+        java.util.Optional<UserEntity> existingOpt = userRepository.findByUsername(username);
+        UserEntity user;
+        if (existingOpt.isPresent()) {
+            user = existingOpt.get();
+            user.setPassword(passwordEncoder.encode(rawPassword));
+            user.setVendorId(vendorId);
+            user.setRole("ROLE_VENDOR");
+            user.setEnabled(true);
+            user.setStatus("ACTIVE");
+        } else {
+            user = UserEntity.builder()
+                    .username(username)
+                    .password(passwordEncoder.encode(rawPassword))
+                    .role("ROLE_VENDOR")
+                    .email(vendor.getEmail())
+                    .fullName(vendor.getContactPerson())
+                    .phone(vendor.getPhone())
+                    .vendorId(vendorId)
+                    .status("ACTIVE")
+                    .enabled(true)
+                    .tokenVersion(0L)
+                    .build();
+        }
+        userRepository.save(user);
+
+        vendor.setPortalAccess("ACTIVE");
+        vendor.setUpdatedAt(LocalDateTime.now());
+        vendorRepository.save(vendor);
+
+        return java.util.Map.of(
+                "success", true,
+                "username", username,
+                "role", "ROLE_VENDOR",
+                "message", "Portal account created successfully. The vendor can now log in at /login."
+        );
     }
 }
