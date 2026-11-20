@@ -121,7 +121,14 @@ export default function AdminVendorsPage() {
     }
   }, [authLoading, isAuthenticated, loadVendors, router]);
 
-  const [actionFeedback, setActionFeedback] = useState<{ message: string; link?: string; type: "success" | "error" } | null>(null);
+  const [actionFeedback, setActionFeedback] = useState<{
+    message: string;
+    link?: string;
+    recipientEmail?: string;
+    recipientPhone?: string;
+    recipientName?: string;
+    type: "success" | "error";
+  } | null>(null);
 
   const handleInviteVendor = async (vendorId: string) => {
     setActionFeedback(null);
@@ -131,10 +138,14 @@ export default function AdminVendorsPage() {
       });
       const data = await res.json();
       const inviteUrl = data.invitationUrl || (data.rawToken ? `/auth/accept-invitation?token=${data.rawToken}` : undefined);
+      const targetVendor = vendors.find((v) => v.id === vendorId);
       setActionFeedback({
         type: "success",
-        message: `Dual invitation successfully dispatched for vendor (${data.email || "recipient"}).`,
+        message: `Dual invitation successfully dispatched for vendor (${data.email || targetVendor?.email || "recipient"}).`,
         link: inviteUrl,
+        recipientEmail: data.email || targetVendor?.email,
+        recipientPhone: targetVendor?.phone,
+        recipientName: targetVendor?.businessName,
       });
       await loadVendors();
     } catch (err: unknown) {
@@ -192,12 +203,47 @@ export default function AdminVendorsPage() {
               : "bg-red-950/40 text-red-300 border border-red-800"
           }`}
         >
-          <div>
+          <div className="flex-1 pr-4">
             <p className="font-semibold">{actionFeedback.message}</p>
             {actionFeedback.link && (
-              <p className="mt-1 text-xs text-stone-400 break-all select-all">
-                Activation Link: <span className="text-[#d97706]">{actionFeedback.link}</span>
-              </p>
+              <div className="mt-2 space-y-2">
+                <p className="text-xs text-stone-300 break-all select-all">
+                  Activation Link: <span className="text-[#d97706] font-mono">{actionFeedback.link}</span>
+                </p>
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(actionFeedback.link!);
+                      alert("Activation link copied to clipboard!");
+                    }}
+                    className="px-3 py-1 bg-stone-700 hover:bg-stone-600 text-white text-xs rounded transition-colors inline-flex items-center gap-1.5"
+                  >
+                    📋 Copy Link
+                  </button>
+                  {actionFeedback.recipientPhone && (
+                    <a
+                      href={`https://api.whatsapp.com/send?phone=${encodeURIComponent(actionFeedback.recipientPhone.replace(/[^0-9]/g, ""))}&text=${encodeURIComponent(`Namaste ${actionFeedback.recipientName || "Trade Partner"}, Welcome to MB's ArcheOn Design Studio! Your contractor portal is ready. Please activate your secure account here: ${actionFeedback.link}`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3 py-1 bg-[#25D366] hover:bg-[#20ba5a] text-black font-semibold text-xs rounded transition-colors inline-flex items-center gap-1.5"
+                    >
+                      📱 Send Real WhatsApp (1-Click)
+                    </a>
+                  )}
+                  {actionFeedback.recipientEmail && (
+                    <a
+                      href={`mailto:${encodeURIComponent(actionFeedback.recipientEmail)}?subject=${encodeURIComponent("ArcheOn Design Studio — Contractor Portal Invitation")}&body=${encodeURIComponent(`Namaste ${actionFeedback.recipientName || "Trade Partner"},\n\nWelcome to MB's ArcheOn Design Studio!\nYour trade contractor portal has been provisioned.\n\nPlease activate your account here:\n${actionFeedback.link}\n\n(This secure link is valid for 7 days)\n\nWarm regards,\nAr. Mandar Bhalekar\nMB's ArcheOn Design Studio`)}`}
+                      className="px-3 py-1 bg-amber-700 hover:bg-amber-600 text-white text-xs rounded transition-colors inline-flex items-center gap-1.5"
+                    >
+                      ✉️ Open Email App
+                    </a>
+                  )}
+                </div>
+                <p className="text-[11px] text-stone-400 italic pt-1">
+                  💡 Note: Local environment runs in safe sandbox mode without external SMTP/Meta API credentials. Use the 1-click WhatsApp button or the direct link to activate the account.
+                </p>
+              </div>
             )}
           </div>
           <button
