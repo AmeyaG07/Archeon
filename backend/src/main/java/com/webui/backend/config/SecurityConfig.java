@@ -173,6 +173,7 @@ public class SecurityConfig {
 
                         // J. Global Administrative Audit Center (Phase 5.1)
                         .requestMatchers("/api/admin/audit/**").hasAnyRole("ADMIN", "FINANCE_MANAGER")
+                        .requestMatchers("/api/settings/**").hasAnyRole("ADMIN", "STAFF")
 
                         // 3. Protected Leads (Studio Staff / Admin only)
                         .requestMatchers(HttpMethod.GET, "/api/leads").hasAnyRole("ADMIN", "STAFF")
