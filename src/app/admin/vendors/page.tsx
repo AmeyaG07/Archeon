@@ -7,6 +7,9 @@ import {
   type AdminVendorRecord,
   type AdminVendorStatus,
 } from "@/components/portal/admin/AdminVendorManagement";
+import { AdminCreateVendorModal } from "@/components/portal/admin/AdminCreateVendorModal";
+import { AdminEditVendorModal } from "@/components/portal/admin/AdminEditVendorModal";
+import { AdminVendorPaymentSettingsModal } from "@/components/portal/admin/AdminVendorPaymentSettingsModal";
 import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/providers/AuthProvider";
 
@@ -17,6 +20,31 @@ export default function AdminVendorsPage() {
   const [vendors, setVendors] = useState<AdminVendorRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [editingVendor, setEditingVendor] = useState<AdminVendorRecord | null>(null);
+  const [paymentSettingsVendor, setPaymentSettingsVendor] = useState<AdminVendorRecord | null>(null);
+
+  const handleDeleteVendor = async (vendorId: string) => {
+    try {
+      const res = await apiFetch(`/api/vendors/${vendorId}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `Failed to delete vendor (HTTP ${res.status})`);
+      }
+      setActionFeedback({
+        type: "success",
+        message: "Vendor record successfully deleted from studio registry.",
+      });
+      await loadVendors();
+    } catch (err: unknown) {
+      setActionFeedback({
+        type: "error",
+        message: err instanceof Error ? err.message : "Failed to delete vendor.",
+      });
+    }
+  };
 
   const loadVendors = useCallback(async () => {
     setLoading(true);
@@ -177,6 +205,30 @@ export default function AdminVendorsPage() {
         onUpdatePortalAccess={handleUpdatePortalAccess}
         onOpenProject={(projId) => router.push(`/admin/projects?id=${projId}`)}
         onOpenInvoices={() => router.push("/admin/approvals")}
+        onAddVendor={() => setIsCreateModalOpen(true)}
+        onEditVendor={(vendor) => setEditingVendor(vendor)}
+        onManagePaymentSettings={(vendor) => setPaymentSettingsVendor(vendor)}
+        onDeleteVendor={handleDeleteVendor}
+      />
+
+      <AdminCreateVendorModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onVendorCreated={loadVendors}
+      />
+
+      <AdminEditVendorModal
+        vendor={editingVendor}
+        isOpen={Boolean(editingVendor)}
+        onClose={() => setEditingVendor(null)}
+        onVendorUpdated={loadVendors}
+      />
+
+      <AdminVendorPaymentSettingsModal
+        vendor={paymentSettingsVendor}
+        isOpen={Boolean(paymentSettingsVendor)}
+        onClose={() => setPaymentSettingsVendor(null)}
+        onSettingsSaved={loadVendors}
       />
     </div>
   );

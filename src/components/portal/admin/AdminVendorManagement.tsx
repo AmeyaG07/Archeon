@@ -17,6 +17,9 @@ import {
   X,
   AlertCircle,
   Users,
+  Edit3,
+  Trash2,
+  CreditCard,
 } from "lucide-react";
 
 export type AdminVendorStatus =
@@ -89,8 +92,12 @@ interface AdminVendorManagementProps {
   ) => Promise<void>;
 
   onOpenProject?: (projectId: string) => void;
-
   onOpenInvoices?: (vendorId: string) => void;
+
+  onAddVendor?: () => void;
+  onEditVendor?: (vendor: AdminVendorRecord) => void;
+  onManagePaymentSettings?: (vendor: AdminVendorRecord) => void;
+  onDeleteVendor?: (vendorId: string) => Promise<void>;
 }
 
 type VendorStatusFilter = "All" | AdminVendorStatus;
@@ -159,6 +166,10 @@ export function AdminVendorManagement({
   onUpdatePortalAccess,
   onOpenProject,
   onOpenInvoices,
+  onAddVendor,
+  onEditVendor,
+  onManagePaymentSettings,
+  onDeleteVendor,
 }: AdminVendorManagementProps) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] =
@@ -269,17 +280,30 @@ export function AdminVendorManagement({
           </p>
         </div>
 
-        {onRefresh && (
-          <button
-            type="button"
-            onClick={onRefresh}
-            disabled={loading}
-            className="inline-flex w-fit items-center gap-2 border border-[#D8D6D0] bg-white px-5 py-3 text-[10px] uppercase tracking-widest text-[#55514A] hover:border-[#A58A64] disabled:opacity-50"
-          >
-            <RefreshCw size={14} />
-            Refresh Vendors
-          </button>
-        )}
+        <div className="flex flex-wrap items-center gap-3">
+          {onRefresh && (
+            <button
+              type="button"
+              onClick={onRefresh}
+              disabled={loading}
+              className="inline-flex items-center gap-2 border border-[#D8D6D0] bg-white px-5 py-3 text-[10px] uppercase tracking-widest text-[#55514A] hover:border-[#A58A64] disabled:opacity-50 transition-colors"
+            >
+              <RefreshCw size={14} />
+              Refresh Vendors
+            </button>
+          )}
+
+          {onAddVendor && (
+            <button
+              type="button"
+              onClick={onAddVendor}
+              className="inline-flex items-center gap-2 rounded-sm bg-[#171717] px-6 py-3 font-mono text-[10px] uppercase tracking-widest text-white hover:bg-[#A58A64] transition-colors shadow-sm font-semibold"
+            >
+              <UserPlus size={15} />
+              + Register Vendor
+            </button>
+          )}
+        </div>
       </header>
 
       {error && (
@@ -836,25 +860,60 @@ export function AdminVendorManagement({
 
             {/* Footer */}
             <div className="sticky bottom-0 border-t border-[#D8D6D0] bg-[#F2F0EB] p-5">
-              <div className="flex flex-col-reverse gap-3 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={() => setSelectedVendor(null)}
-                  disabled={actionLoading}
-                  className="flex-1 border border-[#D8D6D0] px-5 py-4 text-[9px] uppercase tracking-widest text-[#77736C] disabled:opacity-40"
-                >
-                  Close
-                </button>
+              <div className="flex flex-col gap-2.5">
+                <div className="grid grid-cols-2 gap-2">
+                  {onEditVendor && (
+                    <button
+                      type="button"
+                      onClick={() => onEditVendor(selectedVendor)}
+                      disabled={actionLoading}
+                      className="inline-flex items-center justify-center gap-1.5 bg-[#171717] px-3 py-3 font-mono text-[9px] uppercase tracking-widest text-white hover:bg-[#A58A64] transition-colors"
+                    >
+                      <Edit3 size={13} />
+                      Edit Details
+                    </button>
+                  )}
+                  {onManagePaymentSettings && (
+                    <button
+                      type="button"
+                      onClick={() => onManagePaymentSettings(selectedVendor)}
+                      disabled={actionLoading}
+                      className="inline-flex items-center justify-center gap-1.5 border border-[#B68A4A] bg-white px-3 py-3 font-mono text-[9px] uppercase tracking-widest text-[#B68A4A] hover:bg-[#B68A4A] hover:text-white transition-colors"
+                    >
+                      <CreditCard size={13} />
+                      Bank & QR
+                    </button>
+                  )}
+                </div>
 
-                {onOpenVendor && (
+                <div className="flex items-center gap-2">
+                  {onDeleteVendor && (
+                    <button
+                      type="button"
+                      disabled={actionLoading}
+                      onClick={() => {
+                        if (confirm(`Are you sure you want to delete vendor "${selectedVendor.businessName}"? This action cannot be undone.`)) {
+                          void runAction(async () => {
+                            await onDeleteVendor(selectedVendor.id);
+                            setSelectedVendor(null);
+                          });
+                        }
+                      }}
+                      className="flex-1 inline-flex items-center justify-center gap-1.5 border border-red-300 bg-red-50 px-4 py-3 font-mono text-[9px] uppercase tracking-widest text-red-700 hover:bg-red-100 disabled:opacity-40 transition-colors"
+                    >
+                      <Trash2 size={13} />
+                      Delete Vendor
+                    </button>
+                  )}
                   <button
                     type="button"
-                    onClick={() => onOpenVendor(selectedVendor.id)}
-                    className="flex-1 bg-[#171717] px-5 py-4 text-[9px] uppercase tracking-widest text-white hover:bg-[#A58A64]"
+                    onClick={() => setSelectedVendor(null)}
+                    disabled={actionLoading}
+                    className="flex-1 border border-[#D8D6D0] bg-white px-4 py-3 font-mono text-[9px] uppercase tracking-widest text-[#77736C] hover:border-[#A58A64] disabled:opacity-40"
                   >
-                    Open Full Vendor Record
+                    Close
                   </button>
-                )}
+                </div>
               </div>
             </div>
           </aside>

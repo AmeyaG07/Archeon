@@ -18,6 +18,8 @@ import {
   AlertCircle,
   Clock3,
   KeyRound,
+  Edit3,
+  Trash2,
 } from "lucide-react";
 
 export type AdminClientStatus =
@@ -85,6 +87,8 @@ interface AdminClientManagementProps {
 
   onOpenProject?: (projectId: string) => void;
   onAddClient?: () => void;
+  onEditClient?: (client: AdminClientRecord) => void;
+  onDeleteClient?: (clientId: string) => Promise<void>;
 }
 
 type ClientStatusFilter = "All" | AdminClientStatus;
@@ -153,6 +157,8 @@ export function AdminClientManagement({
   onUpdatePortalAccess,
   onOpenProject,
   onAddClient,
+  onEditClient,
+  onDeleteClient,
 }: AdminClientManagementProps) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] =
@@ -257,17 +263,30 @@ export function AdminClientManagement({
           </p>
         </div>
 
-        {onRefresh && (
-          <button
-            type="button"
-            onClick={onRefresh}
-            disabled={loading}
-            className="inline-flex w-fit items-center gap-2 border border-[#D8D6D0] bg-white px-5 py-3 text-[10px] uppercase tracking-widest text-[#55514A] hover:border-[#A58A64] disabled:opacity-50"
-          >
-            <RefreshCw size={14} />
-            Refresh Clients
-          </button>
-        )}
+        <div className="flex flex-wrap items-center gap-3">
+          {onRefresh && (
+            <button
+              type="button"
+              onClick={onRefresh}
+              disabled={loading}
+              className="inline-flex items-center gap-2 border border-[#D8D6D0] bg-white px-5 py-3 text-[10px] uppercase tracking-widest text-[#55514A] hover:border-[#A58A64] disabled:opacity-50 transition-colors"
+            >
+              <RefreshCw size={14} />
+              Refresh Clients
+            </button>
+          )}
+
+          {onAddClient && (
+            <button
+              type="button"
+              onClick={onAddClient}
+              className="inline-flex items-center gap-2 rounded-sm bg-[#171717] px-6 py-3 font-mono text-[10px] uppercase tracking-widest text-white hover:bg-[#A58A64] transition-colors shadow-sm font-semibold"
+            >
+              <UserPlus size={15} />
+              + Register Client
+            </button>
+          )}
+        </div>
       </header>
 
       {/* Error */}
@@ -776,25 +795,47 @@ export function AdminClientManagement({
 
             {/* Drawer Footer */}
             <div className="sticky bottom-0 border-t border-[#D8D6D0] bg-[#F2F0EB] p-5">
-              <div className="flex flex-col-reverse gap-3 sm:flex-row">
+              <div className="flex flex-col gap-2.5">
+                <div className="flex items-center gap-2">
+                  {onEditClient && (
+                    <button
+                      type="button"
+                      onClick={() => onEditClient(selectedClient)}
+                      disabled={actionLoading}
+                      className="flex-1 inline-flex items-center justify-center gap-2 bg-[#171717] px-4 py-3.5 font-mono text-[9px] uppercase tracking-widest text-white hover:bg-[#A58A64] transition-colors"
+                    >
+                      <Edit3 size={13} />
+                      Edit Client
+                    </button>
+                  )}
+                  {onDeleteClient && (
+                    <button
+                      type="button"
+                      disabled={actionLoading}
+                      onClick={() => {
+                        if (confirm(`Are you sure you want to delete client "${selectedClient.fullName}"? This action cannot be undone.`)) {
+                          void runAction(async () => {
+                            await onDeleteClient(selectedClient.id);
+                            setSelectedClient(null);
+                          });
+                        }
+                      }}
+                      className="inline-flex items-center justify-center gap-1.5 border border-red-300 bg-red-50 px-4 py-3.5 font-mono text-[9px] uppercase tracking-widest text-red-700 hover:bg-red-100 disabled:opacity-40 transition-colors"
+                    >
+                      <Trash2 size={13} />
+                      Delete
+                    </button>
+                  )}
+                </div>
+
                 <button
                   type="button"
                   onClick={() => setSelectedClient(null)}
                   disabled={actionLoading}
-                  className="flex-1 border border-[#D8D6D0] px-5 py-4 text-[9px] uppercase tracking-widest text-[#77736C] disabled:opacity-40"
+                  className="w-full border border-[#D8D6D0] bg-white px-5 py-3 font-mono text-[9px] uppercase tracking-widest text-[#77736C] hover:border-[#A58A64] disabled:opacity-40"
                 >
-                  Close
+                  Close Drawer
                 </button>
-
-                {onOpenClient && (
-                  <button
-                    type="button"
-                    onClick={() => onOpenClient(selectedClient.id)}
-                    className="flex-1 bg-[#171717] px-5 py-4 text-[9px] uppercase tracking-widest text-white hover:bg-[#A58A64]"
-                  >
-                    Open Full Client Record
-                  </button>
-                )}
               </div>
             </div>
           </aside>

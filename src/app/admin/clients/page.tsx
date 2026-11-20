@@ -8,6 +8,7 @@ import {
   type AdminClientStatus,
 } from "@/components/portal/admin/AdminClientManagement";
 import { AdminCreateClientModal } from "@/components/portal/admin/AdminCreateClientModal";
+import { AdminEditClientModal } from "@/components/portal/admin/AdminEditClientModal";
 import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/providers/AuthProvider";
 
@@ -19,6 +20,29 @@ export default function AdminClientsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [editingClient, setEditingClient] = useState<AdminClientRecord | null>(null);
+
+  const handleDeleteClient = async (clientId: string) => {
+    try {
+      const res = await apiFetch(`/api/clients/${clientId}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `Failed to delete client (HTTP ${res.status})`);
+      }
+      setActionFeedback({
+        type: "success",
+        message: "Client record successfully deleted from studio registry.",
+      });
+      await loadClients();
+    } catch (err: unknown) {
+      setActionFeedback({
+        type: "error",
+        message: err instanceof Error ? err.message : "Failed to delete client.",
+      });
+    }
+  };
 
   const loadClients = useCallback(async () => {
     setLoading(true);
@@ -152,12 +176,21 @@ export default function AdminClientsPage() {
         onUpdatePortalAccess={handleUpdatePortalAccess}
         onOpenProject={(projId) => router.push(`/admin/projects?id=${projId}`)}
         onAddClient={() => setIsCreateModalOpen(true)}
+        onEditClient={(client) => setEditingClient(client)}
+        onDeleteClient={handleDeleteClient}
       />
 
       <AdminCreateClientModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onClientCreated={loadClients}
+      />
+
+      <AdminEditClientModal
+        client={editingClient}
+        isOpen={Boolean(editingClient)}
+        onClose={() => setEditingClient(null)}
+        onClientUpdated={loadClients}
       />
     </div>
   );
