@@ -24,32 +24,56 @@ export default function AdminVendorsPage() {
     try {
       const res = await apiFetch("/api/vendors");
       const list = await res.json();
+
+      // Fetch vendors directory with billing totals & associated clients
+      let billingDirectory: any[] = [];
+      try {
+        const bRes = await apiFetch("/api/billing/vendors-directory");
+        billingDirectory = await bRes.json();
+      } catch (bErr) {
+        console.warn("Could not load billing directory:", bErr);
+      }
+
+      const billingMap = new Map<string, any>();
+      if (Array.isArray(billingDirectory)) {
+        billingDirectory.forEach((b) => {
+          if (b.vendorId) billingMap.set(b.vendorId, b);
+          if (b.vendorReference) billingMap.set(b.vendorReference, b);
+        });
+      }
+
       if (Array.isArray(list)) {
-        const records: AdminVendorRecord[] = list.map((v: any) => ({
-          id: v.id || "",
-          reference: v.vendorReference || v.reference || "VEN",
-          businessName: v.businessName || v.name || "Vendor",
-          contactPerson: v.contactPerson || v.contactName || "Contact Person",
-          email: v.email || "",
-          phone: v.phone || "",
-          vendorCategory: v.category || v.tradeDiscipline || "Civil Contractor",
-          location: v.city ? `${v.city}, ${v.state || ""}` : v.address || "Maharashtra",
-          status: (v.status === "ACTIVE"
-            ? "Active"
-            : v.status === "SUSPENDED"
-            ? "Suspended"
-            : "Inactive") as AdminVendorStatus,
-          portalAccess: (v.invitationStatus === "ACCEPTED" || v.hasPortalAccess
-            ? "Active"
-            : v.invitationStatus === "SENT"
-            ? "Invitation Pending"
-            : "Not Invited") as any,
-          linkedProjects: [],
-          submittedInvoiceCount: 0,
-          outstandingInvoiceCount: 0,
-          createdAt: v.createdAt || new Date().toISOString(),
-          lastUpdated: v.updatedAt || new Date().toISOString(),
-        }));
+        const records: AdminVendorRecord[] = list.map((v: any) => {
+          const bInfo = billingMap.get(v.id) || billingMap.get(v.vendorReference) || {};
+          return {
+            id: v.id || "",
+            reference: v.vendorReference || v.reference || "VEN",
+            businessName: v.businessName || v.name || "Vendor",
+            contactPerson: v.contactPerson || v.contactName || "Contact Person",
+            email: v.email || "",
+            phone: v.phone || "",
+            vendorCategory: v.category || v.tradeDiscipline || bInfo.tradeCategory || "Civil Contractor",
+            location: v.city ? `${v.city}, ${v.state || ""}` : v.address || "Maharashtra",
+            status: (v.status === "ACTIVE"
+              ? "Active"
+              : v.status === "SUSPENDED"
+              ? "Suspended"
+              : "Inactive") as AdminVendorStatus,
+            portalAccess: (v.invitationStatus === "ACCEPTED" || v.hasPortalAccess
+              ? "Active"
+              : v.invitationStatus === "SENT"
+              ? "Invitation Pending"
+              : "Not Invited") as any,
+            linkedProjects: [],
+            submittedInvoiceCount: bInfo.activeBillsCount || 0,
+            outstandingInvoiceCount: 0,
+            totalBilledAmount: bInfo.totalBilledAmount || 0,
+            totalSettledAmount: bInfo.totalSettledAmount || 0,
+            associatedClients: bInfo.associatedClients || [],
+            createdAt: v.createdAt || new Date().toISOString(),
+            lastUpdated: v.updatedAt || new Date().toISOString(),
+          };
+        });
         setVendors(records);
       }
     } catch (err: unknown) {

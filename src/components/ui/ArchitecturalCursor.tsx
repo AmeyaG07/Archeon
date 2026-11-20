@@ -230,13 +230,14 @@ export function ArchitecturalCursor() {
     };
   }, []);
 
-  if (!mounted) {
+  if (!mounted || typeof window === "undefined") {
     return null;
   }
 
   return (
     <div
       aria-hidden="true"
+      suppressHydrationWarning
       className={`pointer-events-none fixed inset-0 z-[999999] overflow-hidden transition-opacity duration-300 select-none ${
         visible ? "opacity-100" : "opacity-0"
       }`}

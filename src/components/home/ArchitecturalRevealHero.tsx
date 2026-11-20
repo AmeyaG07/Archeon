@@ -155,16 +155,16 @@ export function ArchitecturalRevealHero({
       {/* =================================================================== */}
       {/* 2. SUB-HEADER METADATA BAR                                         */}
       {/* =================================================================== */}
-      <div className="relative z-10 w-full px-4 sm:px-10 lg:px-14 pt-6 pb-4">
+      {/* <div className="relative z-10 w-full px-4 sm:px-10 lg:px-14 pt-6 pb-4">
         <div className="flex flex-wrap items-center justify-between gap-y-2 gap-x-6 font-mono text-[10px] tracking-[0.22em] uppercase text-[#9A948A]">
           {/* Left Studio Location */}
-          <div className="flex items-center gap-2.5 text-[#B8894A]">
+          {/* <div className="flex items-center gap-2.5 text-[#B8894A]">
             <span className="w-1.5 h-1.5 rounded-full bg-[#C8621E] inline-block animate-pulse" />
             <span>ARCHEON STUDIO // NAGPUR</span>
-          </div>
+          </div> */}
 
           {/* Center Coordinates & Tectonic Specs */}
-          <div className="hidden lg:flex items-center gap-8 text-[#8D8880]">
+          {/* <div className="hidden lg:flex items-center gap-8 text-[#8D8880]">
             <span className="flex items-center gap-2">
               <svg
                 width="11"
@@ -210,12 +210,12 @@ export function ArchitecturalRevealHero({
               </svg>
               1:1 TECTONIC SCALE
             </span>
-          </div>
+          </div> */}
 
           {/* Right Established Year */}
-          <div className="text-[#B8894A]">EST. 2024</div>
+          {/* <div className="text-[#B8894A]">EST. 2024</div>
         </div>
-      </div>
+      </div> */}
 
       {/* =================================================================== */}
       {/* 3. MAIN LEFT HERO CONTENT                                           */}

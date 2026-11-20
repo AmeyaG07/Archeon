@@ -32,6 +32,14 @@ export default function VendorProfilePage() {
     emailNotifications: true,
     whatsappNotifications: true,
   });
+  const [paymentDetails, setPaymentDetails] = useState<{
+    accountHolderName?: string;
+    bankName?: string;
+    accountNumber?: string;
+    ifscCode?: string;
+    upiId?: string;
+    qrCodeUrl?: string;
+  }>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | undefined>();
@@ -53,6 +61,24 @@ export default function VendorProfilePage() {
         gstin: data.gstinMasked || "27ABCDE****F1Z5",
         businessType: data.category || "Civil & Construction",
       });
+
+      // Load vendor payment methods
+      try {
+        const pmRes = await apiFetch("/api/vendor-payment-methods/me");
+        const pmData = await pmRes.json();
+        if (pmData) {
+          setPaymentDetails({
+            accountHolderName: pmData.accountHolderName || "",
+            bankName: pmData.bankName || "",
+            accountNumber: pmData.accountNumber || "",
+            ifscCode: pmData.ifscCode || "",
+            upiId: pmData.upiId || "",
+            qrCodeUrl: pmData.qrCodeUrl || "",
+          });
+        }
+      } catch (pmErr) {
+        console.warn("Could not load payment methods:", pmErr);
+      }
     } catch {
       // Tolerant fallback
       setProfile((prev) => ({
@@ -93,11 +119,30 @@ export default function VendorProfilePage() {
     }
   };
 
+  const handleSavePaymentDetails = async (details: any) => {
+    setSaving(true);
+    setSuccessMessage(undefined);
+    try {
+      await apiFetch("/api/vendor-payment-methods/me", {
+        method: "PUT",
+        body: details,
+      });
+      setPaymentDetails(details);
+      setSuccessMessage("Bank account and QR payment details updated successfully.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update payment methods");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div className="p-4 sm:p-8">
       <VendorProfileSettings
         profile={profile}
         preferences={preferences}
+        paymentDetails={paymentDetails}
+        onSavePaymentDetails={handleSavePaymentDetails}
         loading={loading}
         saving={saving}
         error={error ?? undefined}

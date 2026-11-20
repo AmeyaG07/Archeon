@@ -111,23 +111,23 @@ export function Header({
 
           {/* Desktop Actions */}
           <div className="hidden items-center gap-6 lg:flex">
-            <button
+            {/* <button
               type="button"
               onClick={onOpenClientPortal}
               className="text-[10px] font-medium uppercase tracking-[0.14em] text-white/60 transition-colors duration-300 hover:text-white"
             >
               Client Access
-            </button>
+            </button> */}
 
-            <button
+            {/* <button
               type="button"
               onClick={onOpenVendorPortal}
               className="text-[10px] font-medium uppercase tracking-[0.14em] text-white/60 transition-colors duration-300 hover:text-white"
             >
               Vendor Access
-            </button>
+            </button> */}
 
-            <button
+            {/* <button
               type="button"
               onClick={onOpenConsultation}
               className="group inline-flex items-center gap-2 border border-[#C6A779]/70 bg-[#C6A779]/15 px-5 py-2.5 text-[10px] font-medium uppercase tracking-[0.15em] text-[#F2F0EB] transition-all duration-300 hover:border-[#C6A779] hover:bg-[#C6A779] hover:text-[#111111]"
@@ -137,7 +137,7 @@ export function Header({
                 size={13}
                 className="transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
               />
-            </button>
+            </button> */}
           </div>
 
           {/* Mobile Menu Toggle */}

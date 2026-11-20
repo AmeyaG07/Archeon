@@ -539,7 +539,7 @@ export function FooterClockEmblem({
               preserveAspectRatio="xMidYMid meet"
               clipPath="url(#center-circle-logo-clip)"
               style={{
-                filter: "drop-shadow(0 4px 10px rgba(0,0,0,0.85))",
+                mixBlendMode: "screen",
               }}
             />
           </g>
@@ -558,7 +558,7 @@ export function FooterClockEmblem({
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#06B6D4] opacity-75" />
             <span className="relative inline-flex rounded-full h-2 w-2 bg-[#F59E0B]" />
           </span>
-          <span className="font-mono text-[10px] tracking-[0.24em] uppercase text-[#F2F0EB]/90 font-medium">
+          <span suppressHydrationWarning className="font-mono text-[10px] tracking-[0.24em] uppercase text-[#F2F0EB]/90 font-medium">
             {formattedTime}
           </span>
         </div>

@@ -57,6 +57,9 @@ export interface AdminVendorRecord {
   linkedProjects: AdminVendorProject[];
   submittedInvoiceCount: number;
   outstandingInvoiceCount: number;
+  totalBilledAmount?: number;
+  totalSettledAmount?: number;
+  associatedClients?: string[];
   createdAt: string;
   lastUpdated: string;
 }
@@ -943,10 +946,15 @@ function VendorCard({
         />
       </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-3 border-t border-[#E5E2DC] pt-5 md:grid-cols-3">
+      <div className="mt-6 grid grid-cols-2 gap-3 border-t border-[#E5E2DC] pt-5 md:grid-cols-4">
         <MiniMetric
           label="Assigned Projects"
           value={vendor.linkedProjects.length}
+        />
+
+        <MiniMetric
+          label="Total Billed (₹)"
+          value={vendor.totalBilledAmount || 0}
         />
 
         <MiniMetric
@@ -958,6 +966,15 @@ function VendorCard({
           label="Outstanding Invoices"
           value={vendor.outstandingInvoiceCount}
         />
+      </div>
+
+      <div className="mt-4 rounded-sm bg-[#FAF9F6] p-3 text-xs">
+        <span className="font-mono text-[9px] uppercase tracking-widest text-[#99958D]">Associated Clients: </span>
+        <span className="font-medium text-[#171717]">
+          {vendor.associatedClients && vendor.associatedClients.length > 0
+            ? vendor.associatedClients.join(", ")
+            : "No active clients linked yet"}
+        </span>
       </div>
 
       <div className="mt-6 flex flex-col justify-between gap-4 border-t border-[#E5E2DC] pt-5 sm:flex-row sm:items-center">

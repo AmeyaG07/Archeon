@@ -43,6 +43,7 @@ export interface AdminProjectRecord {
   status: AdminProjectStatus;
   startDate?: string;
   expectedCompletion?: string;
+  lastVisitDate?: string;
   lastUpdated: string;
   milestoneSummary?: {
     completed: number;
@@ -543,6 +544,12 @@ function ProjectRow({
               icon={<CalendarDays size={14} />}
               label="Start Date"
               value={formatDate(project.startDate)}
+            />
+
+            <DetailItem
+              icon={<CalendarDays size={14} />}
+              label="Last Site Visit"
+              value={project.lastVisitDate ? formatDate(project.lastVisitDate) : "No visit logged yet"}
             />
           </div>
         </div>

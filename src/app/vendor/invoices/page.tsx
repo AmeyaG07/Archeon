@@ -3,155 +3,618 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
-  VendorInvoiceHistory,
-  type VendorInvoiceRecord,
-  type VendorInvoiceStatus,
-} from "@/components/portal/vendor/VendorInvoiceHistory";
-import {
-  VendorInvoiceSubmissionForm,
-  type VendorInvoiceSubmissionData,
-} from "@/components/portal/vendor/VendorInvoiceSubmissionForm";
+  Banknote,
+  Camera,
+  CheckCircle2,
+  Clock,
+  DollarSign,
+  Eye,
+  FileText,
+  ImageIcon,
+  ListFilter,
+  Plus,
+  RefreshCw,
+  Send,
+  Upload,
+  User,
+  Users,
+  X,
+} from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/providers/AuthProvider";
-import { Plus, ListFilter } from "lucide-react";
+
+interface BillItem {
+  id: string;
+  billNumber?: string;
+  projectId?: string;
+  projectName?: string;
+  clientId?: string;
+  clientName?: string;
+  amount: number;
+  tradeCategory?: string;
+  status: "PENDING" | "CASH_REQUESTED" | "PAID_CASH" | "PAID_ONLINE" | "APPROVED" | "REJECTED";
+  billPhotoUrl?: string;
+  paymentProofUrl?: string;
+  createdAt: string;
+}
+
+interface AssignedProject {
+  id: string;
+  name: string;
+  clientName?: string;
+  projectReference?: string;
+}
 
 export default function VendorInvoicesPage() {
   const router = useRouter();
   const { isAuthenticated, isLoading: authLoading, user } = useAuth();
 
-  const [invoices, setInvoices] = useState<VendorInvoiceRecord[]>([]);
+  const [bills, setBills] = useState<BillItem[]>([]);
+  const [assignedProjects, setAssignedProjects] = useState<AssignedProject[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [showForm, setShowForm] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [showBillModal, setShowBillModal] = useState(false);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [previewPhotoUrl, setPreviewPhotoUrl] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
-  const loadInvoices = useCallback(async () => {
+  // New Bill Form State
+  const [selectedProjectId, setSelectedProjectId] = useState("");
+  const [billAmount, setBillAmount] = useState("");
+  const [billTradeCategory, setBillTradeCategory] = useState("Civil Contractor");
+  const [billPhotoUrl, setBillPhotoUrl] = useState("");
+
+  // Architect Update Form State
+  const [updateProjectId, setUpdateProjectId] = useState("");
+  const [updateNote, setUpdateNote] = useState("");
+  const [updatePhotoUrl, setUpdatePhotoUrl] = useState("");
+
+  const loadData = useCallback(async () => {
     setLoading(true);
-    setError(null);
+    setFeedback(null);
     try {
-      const res = await apiFetch("/api/approvals");
-      const list = await res.json();
-      if (Array.isArray(list)) {
-        const records: VendorInvoiceRecord[] = list.map((a: any) => {
-          const amt = Number(a.amount || 0);
-          const isApproved = !!a.secondApprover || !!a.firstApprover;
-          const isRejected = a.status === "REJECTED";
+      // 1. Load bills from billing controller
+      try {
+        const res = await apiFetch("/api/billing/bills/me");
+        const bRes = await res.json();
+        setBills(Array.isArray(bRes) ? bRes : []);
+      } catch {
+        setBills([]);
+      }
 
-          const status: VendorInvoiceStatus = isRejected
-            ? "Rejected"
-            : isApproved
-            ? "Approved"
-            : "Submitted";
-
-          return {
-            id: a.billId || a.id || "",
-            invoiceNumber: a.billId || "BILL",
-            projectName: "Contract Package Execution",
-            projectReference: a.projectId || "PROJ-SITE",
-            invoiceDate: a.createdAt || new Date().toISOString(),
-            submittedAt: a.createdAt || new Date().toISOString(),
-            dueDate: a.dueDate || "Due upon approval",
-            submittedAmount: amt,
-            approvedAmount: isApproved ? amt : undefined,
-            paidAmount: isApproved ? amt : 0,
-            status,
-            financeRemark: a.rejectionReason,
-            lastUpdatedAt: a.updatedAt || new Date().toISOString(),
-          };
-        });
-        setInvoices(records);
+      // 2. Load assigned projects
+      try {
+        const res = await apiFetch("/api/operational-projects");
+        const pRes = await res.json();
+        if (Array.isArray(pRes)) {
+          const pList: AssignedProject[] = pRes.map((p) => ({
+            id: p.id,
+            name: p.name || "Studio Project",
+            clientName: p.clientName || "Studio Client",
+            projectReference: p.projectReference,
+          }));
+          setAssignedProjects(pList);
+          if (pList.length > 0 && !selectedProjectId) {
+            setSelectedProjectId(pList[0].id);
+            setUpdateProjectId(pList[0].id);
+          }
+        }
+      } catch (pErr) {
+        console.warn("Could not load projects list:", pErr);
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to load invoices");
+      console.error("Failed to load vendor billing records:", err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedProjectId]);
 
   useEffect(() => {
     if (!authLoading) {
       if (isAuthenticated) {
-        loadInvoices();
+        loadData();
       } else {
         router.push("/login");
       }
     }
-  }, [authLoading, isAuthenticated, loadInvoices, router]);
+  }, [authLoading, isAuthenticated, loadData, router]);
 
-  const handleInvoiceSubmit = async (data: VendorInvoiceSubmissionData) => {
+  // Submit New Bill
+  const handleBillSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedProjectId || !billAmount) return;
+
     setSubmitting(true);
-    setError(null);
     try {
-      // Calculate total from line items
-      const total = data.lineItems.reduce(
-        (sum, item) => sum + (Number(item.quantity) || 1) * (Number(item.unitPrice) || 0),
-        0
-      );
-
-      await apiFetch("/api/approvals/initiate", {
+      const proj = assignedProjects.find((p) => p.id === selectedProjectId);
+      await apiFetch("/api/billing/bills", {
         method: "POST",
-        body: {
-          billId: data.invoiceNumber || `BILL-${Date.now().toString().slice(-6)}`,
-          amount: total > 0 ? total : 50000.0,
-          vendorId: user?.username || "vendor",
-          clientId: "client-system",
-          projectId: data.projectId || "PROJ-SITE",
-        },
+        body: JSON.stringify({
+          projectId: selectedProjectId,
+          clientId: proj?.clientName || "Direct Client",
+          amount: parseFloat(billAmount),
+          tradeCategory: billTradeCategory,
+          billPhotoUrl: billPhotoUrl || undefined,
+        }),
       });
 
-      setShowForm(false);
-      await loadInvoices();
+      setShowBillModal(false);
+      setBillAmount("");
+      setBillPhotoUrl("");
+      setFeedback({
+        type: "success",
+        message: "Bill submitted successfully. Invoice alert dispatched via WhatsApp.",
+      });
+      await loadData();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to submit invoice");
+      setFeedback({
+        type: "error",
+        message: err instanceof Error ? err.message : "Failed to submit bill.",
+      });
     } finally {
       setSubmitting(false);
+      setTimeout(() => setFeedback(null), 5000);
+    }
+  };
+
+  // Request Cash Payment
+  const handleRequestCash = async (billId: string) => {
+    setActionLoading(true);
+    try {
+      await apiFetch(`/api/billing/bills/${billId}/request-cash`, { method: "POST" });
+      setFeedback({
+        type: "success",
+        message: "Cash payment requested. Bill forwarded to client cash approval queue.",
+      });
+      await loadData();
+    } catch (err: unknown) {
+      setFeedback({
+        type: "error",
+        message: err instanceof Error ? err.message : "Failed to request cash payment.",
+      });
+    } finally {
+      setActionLoading(false);
+      setTimeout(() => setFeedback(null), 5000);
+    }
+  };
+
+  // Send Architect Update (Notes / Photos)
+  const handleSendArchitectUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!updateProjectId || (!updateNote && !updatePhotoUrl)) return;
+
+    setActionLoading(true);
+    try {
+      await apiFetch("/api/site-updates", {
+        method: "POST",
+        body: JSON.stringify({
+          projectId: updateProjectId,
+          authorRole: "VENDOR",
+          authorName: user?.username || "Contractor",
+          photoUrl: updatePhotoUrl || undefined,
+          note: updateNote,
+        }),
+      });
+
+      setShowUpdateModal(false);
+      setUpdateNote("");
+      setUpdatePhotoUrl("");
+      setFeedback({
+        type: "success",
+        message: "Site note & photo update sent directly to the Architect.",
+      });
+    } catch (err: unknown) {
+      setFeedback({
+        type: "error",
+        message: err instanceof Error ? err.message : "Failed to send update.",
+      });
+    } finally {
+      setActionLoading(false);
+      setTimeout(() => setFeedback(null), 5000);
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "PAID_CASH":
+        return <span className="px-2.5 py-1 rounded-sm bg-[#10B981]/15 text-[#10B981] font-mono text-[10px] font-semibold">PAID (CASH)</span>;
+      case "PAID_ONLINE":
+        return <span className="px-2.5 py-1 rounded-sm bg-[#06B6D4]/15 text-[#06B6D4] font-mono text-[10px] font-semibold">PAID (ONLINE)</span>;
+      case "CASH_REQUESTED":
+        return <span className="px-2.5 py-1 rounded-sm bg-[#6366F1]/15 text-[#6366F1] font-mono text-[10px] font-semibold">CASH REQUESTED</span>;
+      case "APPROVED":
+        return <span className="px-2.5 py-1 rounded-sm bg-[#10B981]/15 text-[#10B981] font-mono text-[10px] font-semibold">APPROVED</span>;
+      case "REJECTED":
+        return <span className="px-2.5 py-1 rounded-sm bg-[#EF4444]/15 text-[#EF4444] font-mono text-[10px] font-semibold">REJECTED</span>;
+      default:
+        return <span className="px-2.5 py-1 rounded-sm bg-[#F59E0B]/15 text-[#D97724] font-mono text-[10px] font-semibold">PENDING</span>;
     }
   };
 
   return (
-    <div className="p-4 sm:p-8">
-      <div className="flex items-center justify-between mb-8 max-w-7xl mx-auto">
-        <h1 className="font-serif text-3xl text-[#111111]">
-          {showForm ? "Submit New Trade Invoice" : "Contractor Billing & Invoices"}
-        </h1>
-        <button
-          type="button"
-          onClick={() => setShowForm(!showForm)}
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#111111] hover:bg-[#25221D] text-white text-xs font-mono uppercase tracking-wider transition-all"
-        >
-          {showForm ? (
-            <>
-              <ListFilter className="w-3.5 h-3.5" /> View Invoices Queue
-            </>
-          ) : (
-            <>
-              <Plus className="w-3.5 h-3.5" /> Submit New Invoice
-            </>
-          )}
-        </button>
+    <div className="p-4 sm:p-8 space-y-8">
+      {/* Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 max-w-7xl mx-auto border-b border-[#D8D6D0] pb-6">
+        <div>
+          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#B68A4A]">
+            Contractor Workspace // Billing Management
+          </span>
+          <h1 className="mt-1 font-serif text-3xl md:text-4xl text-[#111111]">
+            Trade Billing & Invoices
+          </h1>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={() => setShowUpdateModal(true)}
+            className="inline-flex items-center gap-2 px-4 py-2.5 border border-[#B68A4A] text-[#B68A4A] hover:bg-[#B68A4A] hover:text-white font-mono text-xs uppercase tracking-wider transition-colors rounded-sm"
+          >
+            <Camera size={14} /> Send Architect Update
+          </button>
+
+          <button
+            onClick={() => setShowBillModal(true)}
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#111111] hover:bg-[#25221D] text-white font-mono text-xs uppercase tracking-wider transition-all rounded-sm"
+          >
+            <Plus size={14} /> Submit New Bill
+          </button>
+        </div>
       </div>
 
-      {showForm ? (
-        <div className="max-w-4xl mx-auto">
-          <VendorInvoiceSubmissionForm
-            projects={[
-              { id: "PROJ-SITE-1", projectName: "Alibaug Luxury Villa - Civil", referenceCode: "PRJ-ALB-001" },
-              { id: "PROJ-SITE-2", projectName: "Bandra Penthouse - Millwork", referenceCode: "PRJ-BND-002" },
-            ]}
-            submitting={submitting}
-            error={error ?? undefined}
-            onSubmit={handleInvoiceSubmit}
-            onCancel={() => setShowForm(false)}
-          />
+      {feedback && (
+        <div className={`p-4 rounded-sm font-mono text-xs flex items-center gap-2 ${
+          feedback.type === "success"
+            ? "bg-[#10B981]/10 border border-[#10B981]/30 text-[#10B981]"
+            : "bg-[#EF4444]/10 border border-[#EF4444]/30 text-[#EF4444]"
+        }`}>
+          <CheckCircle2 size={16} /> {feedback.message}
         </div>
-      ) : (
-        <VendorInvoiceHistory
-          invoices={invoices}
-          loading={loading}
-          error={error ?? undefined}
-          onRefresh={loadInvoices}
-          onOpenInvoice={() => {}}
-        />
+      )}
+
+      {/* Assigned Clients Summary */}
+      <div className="max-w-7xl mx-auto rounded-sm border border-[#D8D6D0] bg-white p-6 shadow-sm">
+        <div className="flex items-center justify-between border-b border-[#E5E2DC] pb-4">
+          <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-[#B68A4A]">
+            <Users size={14} /> Assigned Clients & Site Projects
+          </div>
+          <span className="font-mono text-xs text-[#777777]">
+            {assignedProjects.length} Active Assignments
+          </span>
+        </div>
+
+        {assignedProjects.length === 0 ? (
+          <div className="py-6 text-center font-mono text-xs text-[#777777]">
+            No client projects assigned to your contractor account yet.
+          </div>
+        ) : (
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {assignedProjects.map((p) => (
+              <div key={p.id} className="p-4 rounded-sm border border-[#E5E2DC] bg-[#FAF9F5]">
+                <div className="font-mono text-[9px] uppercase tracking-wider text-[#B68A4A]">
+                  Client: {p.clientName}
+                </div>
+                <div className="font-semibold text-sm text-[#111111] mt-1">{p.name}</div>
+                <div className="font-mono text-[10px] text-[#777777] mt-1">Ref: {p.projectReference || p.id.slice(0, 8)}</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Submitted Bills Table */}
+      <div className="max-w-7xl mx-auto rounded-sm border border-[#D8D6D0] bg-white p-6 shadow-sm">
+        <div className="flex items-center justify-between border-b border-[#E5E2DC] pb-4">
+          <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-[#B68A4A]">
+            <FileText size={14} /> Submitted Bills & Settlement Statuses
+          </div>
+          <span className="font-mono text-xs text-[#777777]">{bills.length} Bills Total</span>
+        </div>
+
+        {loading ? (
+          <div className="py-12 text-center font-mono text-xs text-[#B68A4A]">
+            <RefreshCw className="h-4 w-4 animate-spin mx-auto mb-2" />
+            Loading submitted bills...
+          </div>
+        ) : bills.length === 0 ? (
+          <div className="py-12 text-center font-mono text-xs text-[#777777]">
+            No bills submitted yet. Click &quot;Submit New Bill&quot; to upload your first trade bill.
+          </div>
+        ) : (
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full text-left font-mono text-xs">
+              <thead>
+                <tr className="border-b border-[#D8D6D0] text-[#777777] uppercase text-[10px] tracking-wider">
+                  <th className="py-3 px-4">Receipt</th>
+                  <th className="py-3 px-4">Bill # / Client</th>
+                  <th className="py-3 px-4">Trade</th>
+                  <th className="py-3 px-4 text-right">Amount</th>
+                  <th className="py-3 px-4 text-center">Status</th>
+                  <th className="py-3 px-4">Payment Proof</th>
+                  <th className="py-3 px-4 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#E5E2DC]">
+                {bills.map((bill) => (
+                  <tr key={bill.id} className="hover:bg-[#FAF9F5]">
+                    {/* Bill Photo Thumbnail */}
+                    <td className="py-3 px-4">
+                      {bill.billPhotoUrl ? (
+                        <button
+                          onClick={() => setPreviewPhotoUrl(bill.billPhotoUrl || null)}
+                          className="w-12 h-12 rounded-sm overflow-hidden border border-[#D8D6D0] shrink-0 block bg-black/5"
+                        >
+                          <img src={bill.billPhotoUrl} alt="Bill Receipt" className="w-full h-full object-cover" />
+                        </button>
+                      ) : (
+                        <div className="w-12 h-12 rounded-sm bg-[#E5E3DE] flex items-center justify-center text-[#777777]">
+                          <FileText size={16} />
+                        </div>
+                      )}
+                    </td>
+
+                    {/* Bill Info */}
+                    <td className="py-3 px-4">
+                      <div className="font-bold text-[#111111]">{bill.billNumber || String(bill.id).slice(0, 8)}</div>
+                      <div className="text-[10px] text-[#777777]">{bill.clientName || "Client"}</div>
+                    </td>
+
+                    {/* Trade Category */}
+                    <td className="py-3 px-4 text-[#777777]">
+                      {bill.tradeCategory || "General Contractor"}
+                    </td>
+
+                    {/* Amount */}
+                    <td className="py-3 px-4 text-right font-bold text-sm text-[#111111]">
+                      ₹{bill.amount.toLocaleString("en-IN")}
+                    </td>
+
+                    {/* Status */}
+                    <td className="py-3 px-4 text-center">
+                      {getStatusBadge(bill.status)}
+                    </td>
+
+                    {/* Payment Proof */}
+                    <td className="py-3 px-4">
+                      {bill.paymentProofUrl ? (
+                        <button
+                          onClick={() => setPreviewPhotoUrl(bill.paymentProofUrl || null)}
+                          className="inline-flex items-center gap-1 font-mono text-[10px] text-[#06B6D4] hover:underline"
+                        >
+                          <Eye size={12} /> View Screenshot
+                        </button>
+                      ) : (
+                        <span className="text-[#99958D] text-[10px]">—</span>
+                      )}
+                    </td>
+
+                    {/* Actions */}
+                    <td className="py-3 px-4 text-right">
+                      {bill.status === "PENDING" && (
+                        <button
+                          onClick={() => handleRequestCash(bill.id)}
+                          disabled={actionLoading}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#D97724] text-white hover:bg-[#B45309] font-mono text-[10px] uppercase tracking-wider rounded-sm transition-colors disabled:opacity-50"
+                        >
+                          <Banknote size={12} /> Request Cash
+                        </button>
+                      )}
+                      {bill.status === "CASH_REQUESTED" && (
+                        <span className="text-[10px] text-[#6366F1] font-mono">
+                          In Client Queue
+                        </span>
+                      )}
+                      {bill.status.includes("PAID") && (
+                        <span className="text-[10px] text-[#10B981] font-mono font-semibold">
+                          Settled
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Modal: Submit Bill Per Client */}
+      {showBillModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+          <div className="relative w-full max-w-lg rounded-sm border border-[#D8D6D0] bg-white p-6 shadow-2xl">
+            <button
+              onClick={() => setShowBillModal(false)}
+              className="absolute top-4 right-4 p-1 text-[#777777] hover:text-[#111111]"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-[#B68A4A]">
+              <Upload size={14} /> Submit New Trade Bill
+            </div>
+            <h2 className="font-serif text-2xl text-[#111111] mt-1">Upload Bill for Client</h2>
+
+            <form onSubmit={handleBillSubmit} className="mt-6 space-y-4">
+              <div>
+                <label className="block font-mono text-[10px] uppercase tracking-wider text-[#777777] mb-1">
+                  Assigned Client Project
+                </label>
+                <select
+                  value={selectedProjectId}
+                  onChange={(e) => setSelectedProjectId(e.target.value)}
+                  className="w-full rounded-sm border border-[#D8D6D0] px-3 py-2 text-xs font-mono text-[#111111] focus:border-[#B68A4A] focus:outline-none"
+                  required
+                >
+                  {assignedProjects.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} ({p.clientName})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-mono text-[10px] uppercase tracking-wider text-[#777777] mb-1">
+                  Bill Amount (₹)
+                </label>
+                <input
+                  type="number"
+                  placeholder="e.g. 45000"
+                  step="0.01"
+                  value={billAmount}
+                  onChange={(e) => setBillAmount(e.target.value)}
+                  className="w-full rounded-sm border border-[#D8D6D0] px-3 py-2 text-xs font-mono text-[#111111] focus:border-[#B68A4A] focus:outline-none"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block font-mono text-[10px] uppercase tracking-wider text-[#777777] mb-1">
+                  Trade Category
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Tile Vendor, Electrical Vendor, Carpentry"
+                  value={billTradeCategory}
+                  onChange={(e) => setBillTradeCategory(e.target.value)}
+                  className="w-full rounded-sm border border-[#D8D6D0] px-3 py-2 text-xs font-mono text-[#111111] focus:border-[#B68A4A] focus:outline-none"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block font-mono text-[10px] uppercase tracking-wider text-[#777777] mb-1">
+                  Bill Photo URL / Upload Link
+                </label>
+                <input
+                  type="text"
+                  placeholder="https://... or /bills/receipt-01.jpg"
+                  value={billPhotoUrl}
+                  onChange={(e) => setBillPhotoUrl(e.target.value)}
+                  className="w-full rounded-sm border border-[#D8D6D0] px-3 py-2 text-xs font-mono text-[#111111] focus:border-[#B68A4A] focus:outline-none"
+                />
+                <span className="text-[10px] text-[#777777] mt-1 block">
+                  Takes a clear photo of physical invoice or paper voucher.
+                </span>
+              </div>
+
+              <div className="mt-6 flex justify-end gap-3 pt-4 border-t border-[#E5E2DC]">
+                <button
+                  type="button"
+                  onClick={() => setShowBillModal(false)}
+                  className="px-4 py-2 border border-[#D8D6D0] font-mono text-xs uppercase tracking-wider text-[#777777] hover:bg-[#FAF9F5] rounded-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="px-6 py-2 bg-[#111111] text-white hover:bg-[#B68A4A] font-mono text-xs uppercase tracking-wider rounded-sm transition-colors disabled:opacity-50"
+                >
+                  {submitting ? "Submitting..." : "Submit Bill"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Send Architect Update (Notes / Photos) */}
+      {showUpdateModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+          <div className="relative w-full max-w-lg rounded-sm border border-[#D8D6D0] bg-white p-6 shadow-2xl">
+            <button
+              onClick={() => setShowUpdateModal(false)}
+              className="absolute top-4 right-4 p-1 text-[#777777] hover:text-[#111111]"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-[#B68A4A]">
+              <Send size={14} /> Architect Updates Interface
+            </div>
+            <h2 className="font-serif text-2xl text-[#111111] mt-1">Send Site Note or Photo to Architect</h2>
+
+            <form onSubmit={handleSendArchitectUpdate} className="mt-6 space-y-4">
+              <div>
+                <label className="block font-mono text-[10px] uppercase tracking-wider text-[#777777] mb-1">
+                  Target Project
+                </label>
+                <select
+                  value={updateProjectId}
+                  onChange={(e) => setUpdateProjectId(e.target.value)}
+                  className="w-full rounded-sm border border-[#D8D6D0] px-3 py-2 text-xs font-mono text-[#111111] focus:border-[#B68A4A] focus:outline-none"
+                  required
+                >
+                  {assignedProjects.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} ({p.clientName})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-mono text-[10px] uppercase tracking-wider text-[#777777] mb-1">
+                  Site Photo URL
+                </label>
+                <input
+                  type="text"
+                  placeholder="https://... or /site-updates/photo.jpg"
+                  value={updatePhotoUrl}
+                  onChange={(e) => setUpdatePhotoUrl(e.target.value)}
+                  className="w-full rounded-sm border border-[#D8D6D0] px-3 py-2 text-xs font-mono text-[#111111] focus:border-[#B68A4A] focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block font-mono text-[10px] uppercase tracking-wider text-[#777777] mb-1">
+                  Descriptive Site Note / Query
+                </label>
+                <textarea
+                  placeholder="Report site progress, material delivery status, or technical questions for the architect..."
+                  rows={3}
+                  value={updateNote}
+                  onChange={(e) => setUpdateNote(e.target.value)}
+                  className="w-full rounded-sm border border-[#D8D6D0] px-3 py-2 text-xs text-[#111111] focus:border-[#B68A4A] focus:outline-none"
+                  required
+                />
+              </div>
+
+              <div className="mt-6 flex justify-end gap-3 pt-4 border-t border-[#E5E2DC]">
+                <button
+                  type="button"
+                  onClick={() => setShowUpdateModal(false)}
+                  className="px-4 py-2 border border-[#D8D6D0] font-mono text-xs uppercase tracking-wider text-[#777777] hover:bg-[#FAF9F5] rounded-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={actionLoading}
+                  className="px-6 py-2 bg-[#B68A4A] text-white hover:bg-[#A3783A] font-mono text-xs uppercase tracking-wider rounded-sm transition-colors disabled:opacity-50"
+                >
+                  {actionLoading ? "Sending..." : "Send Update"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Bill / Photo Preview Modal */}
+      {previewPhotoUrl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-xs">
+          <div className="relative max-w-3xl max-h-[90vh] overflow-hidden rounded-sm bg-white p-2">
+            <button
+              onClick={() => setPreviewPhotoUrl(null)}
+              className="absolute top-4 right-4 z-10 p-2 bg-black/60 text-white rounded-full hover:bg-black transition-colors"
+            >
+              <X size={18} />
+            </button>
+            <img src={previewPhotoUrl} alt="Preview" className="max-h-[85vh] w-auto object-contain rounded-sm" />
+          </div>
+        </div>
       )}
     </div>
   );

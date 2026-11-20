@@ -15,6 +15,9 @@ import {
   AlertCircle,
   CheckCircle2,
   KeyRound,
+  CreditCard,
+  QrCode,
+  Building,
 } from "lucide-react";
 
 export interface VendorProfileData {
@@ -59,11 +62,27 @@ interface VendorProfileSettingsProps {
   onSavePreferences: (
     preferences: VendorNotificationPreferences
   ) => void | Promise<void>;
+  paymentDetails?: {
+    accountHolderName?: string;
+    bankName?: string;
+    accountNumber?: string;
+    ifscCode?: string;
+    upiId?: string;
+    qrCodeUrl?: string;
+  };
+  onSavePaymentDetails?: (details: {
+    accountHolderName?: string;
+    bankName?: string;
+    accountNumber?: string;
+    ifscCode?: string;
+    upiId?: string;
+    qrCodeUrl?: string;
+  }) => void | Promise<void>;
   onChangePassword: () => void;
   onRequestEmailChange: (newEmail: string) => void | Promise<void>;
 }
 
-type SettingsTab = "profile" | "notifications" | "security";
+type SettingsTab = "profile" | "payment" | "notifications" | "security";
 
 export function VendorProfileSettings({
   profile,
@@ -74,6 +93,8 @@ export function VendorProfileSettings({
   successMessage,
   onSaveProfile,
   onSavePreferences,
+  paymentDetails,
+  onSavePaymentDetails,
   onChangePassword,
   onRequestEmailChange,
 }: VendorProfileSettingsProps) {
@@ -94,6 +115,15 @@ export function VendorProfileSettings({
 
   const [notificationPreferences, setNotificationPreferences] =
     useState(preferences);
+
+  // Payment Methods state
+  const [accountHolderName, setAccountHolderName] = useState(paymentDetails?.accountHolderName || "");
+  const [bankName, setBankName] = useState(paymentDetails?.bankName || "");
+  const [accountNumber, setAccountNumber] = useState(paymentDetails?.accountNumber || "");
+  const [ifscCode, setIfscCode] = useState(paymentDetails?.ifscCode || "");
+  const [upiId, setUpiId] = useState(paymentDetails?.upiId || "");
+  const [qrCodeUrl, setQrCodeUrl] = useState(paymentDetails?.qrCodeUrl || "");
+  const [paymentSavedMessage, setPaymentSavedMessage] = useState<string | null>(null);
 
   const [validationError, setValidationError] = useState("");
 
@@ -200,6 +230,11 @@ export function VendorProfileSettings({
       id: "profile",
       label: "Business Profile",
       icon: <Building2 size={16} />,
+    },
+    {
+      id: "payment",
+      label: "Payment Details & QR",
+      icon: <CreditCard size={16} />,
     },
     {
       id: "notifications",
@@ -415,7 +450,151 @@ export function VendorProfileSettings({
           </section>
         )}
 
-        {/* Notifications */}
+        {/* Payment Details & QR */}
+        {activeTab === "payment" && (
+          <section className="mt-8 border border-[#D8D6D0] bg-white p-6 md:p-9">
+            <SectionHeading
+              icon={<CreditCard size={19} />}
+              title="Vendor Payment Methods & QR Code"
+            />
+
+            <p className="mt-4 text-xs leading-7 text-[#77736C]">
+              Configure your bank account and upload your UPI QR code. These details are securely displayed to clients on their portal so they can pay your bills directly via NEFT, RTGS, IMPS or instant UPI.
+            </p>
+
+            {paymentSavedMessage && (
+              <div className="mt-4 flex items-center gap-2 border border-[#D7E2D2] bg-[#F0F5EE] p-4 text-xs text-[#547A51]">
+                <CheckCircle2 size={16} /> {paymentSavedMessage}
+              </div>
+            )}
+
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (onSavePaymentDetails) {
+                  await onSavePaymentDetails({
+                    accountHolderName,
+                    bankName,
+                    accountNumber,
+                    ifscCode,
+                    upiId,
+                    qrCodeUrl,
+                  });
+                  setPaymentSavedMessage("Payment details and QR code updated successfully.");
+                  setTimeout(() => setPaymentSavedMessage(null), 4000);
+                }
+              }}
+              className="mt-8 space-y-8"
+            >
+              {/* Bank Account Section */}
+              <div className="border border-[#E5E2DC] bg-[#FAF9F5] p-6">
+                <h3 className="font-serif text-lg text-[#171717] mb-4">
+                  Bank Account Information (NEFT / RTGS / IMPS)
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Field label="Account Holder Name">
+                    <input
+                      type="text"
+                      placeholder="e.g. Mandar Ceramic Works Ltd."
+                      value={accountHolderName}
+                      onChange={(e) => setAccountHolderName(e.target.value)}
+                      className="vendor-settings-input"
+                    />
+                  </Field>
+                  <Field label="Bank Name">
+                    <input
+                      type="text"
+                      placeholder="e.g. HDFC Bank, SBI, ICICI"
+                      value={bankName}
+                      onChange={(e) => setBankName(e.target.value)}
+                      className="vendor-settings-input"
+                    />
+                  </Field>
+                  <Field label="Account Number">
+                    <input
+                      type="text"
+                      placeholder="e.g. 50200088912441"
+                      value={accountNumber}
+                      onChange={(e) => setAccountNumber(e.target.value)}
+                      className="vendor-settings-input"
+                    />
+                  </Field>
+                  <Field label="IFSC Code">
+                    <input
+                      type="text"
+                      placeholder="e.g. HDFC0001234"
+                      value={ifscCode}
+                      onChange={(e) => setIfscCode(e.target.value.toUpperCase())}
+                      className="vendor-settings-input uppercase"
+                    />
+                  </Field>
+                </div>
+              </div>
+
+              {/* QR Code & UPI Section */}
+              <div className="border border-[#E5E2DC] bg-[#FAF9F5] p-6">
+                <h3 className="font-serif text-lg text-[#171717] mb-4">
+                  Instant UPI & QR Code
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-start">
+                  <div>
+                    <Field label="UPI ID (VPA)">
+                      <input
+                        type="text"
+                        placeholder="e.g. vendor@okhdfcbank"
+                        value={upiId}
+                        onChange={(e) => setUpiId(e.target.value)}
+                        className="vendor-settings-input"
+                      />
+                    </Field>
+                    <div className="mt-4">
+                      <Field label="Payment QR Code Image URL">
+                        <input
+                          type="text"
+                          placeholder="https://... or /qr-codes/my-upi.png"
+                          value={qrCodeUrl}
+                          onChange={(e) => setQrCodeUrl(e.target.value)}
+                          className="vendor-settings-input"
+                        />
+                      </Field>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col items-center justify-center p-4 border border-[#D8D6D0] bg-white rounded-sm min-h-[160px]">
+                    {qrCodeUrl ? (
+                      <div className="text-center">
+                        <img
+                          src={qrCodeUrl}
+                          alt="QR Code Preview"
+                          className="w-32 h-32 object-contain mx-auto border border-[#E5E2DC] p-1"
+                        />
+                        <span className="block font-mono text-[9px] uppercase tracking-wider text-[#10B981] mt-2">
+                          Live QR Code Preview
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="text-center text-[#77736C]">
+                        <QrCode size={36} className="mx-auto mb-2 text-[#99958D]" />
+                        <span className="font-mono text-[9px] uppercase tracking-wider text-[#99958D]">
+                          No QR Code Configured
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={saving}
+                className="inline-flex items-center gap-3 bg-[#171717] px-7 py-4 text-[10px] uppercase tracking-widest text-white hover:bg-[#A58A64] disabled:opacity-50"
+              >
+                <Save size={15} />
+                {saving ? "Saving Payment Details..." : "Save Payment Details"}
+              </button>
+            </form>
+          </section>
+        )}
         {activeTab === "notifications" && (
           <section className="mt-8 border border-[#D8D6D0] bg-white p-6 md:p-9">
             <SectionHeading
