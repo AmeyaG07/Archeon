@@ -55,6 +55,20 @@ public class VendorController {
         }
     }
 
+    @PutMapping("/me")
+    public ResponseEntity<?> updateCurrentVendor(
+            @RequestBody UpdateVendorRequest req,
+            Authentication auth) {
+        try {
+            VendorResponse updated = vendorService.updateCurrentVendorProfile(req, auth);
+            return ResponseEntity.ok(updated);
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getVendorById(@PathVariable UUID id, Authentication auth) {
         try {

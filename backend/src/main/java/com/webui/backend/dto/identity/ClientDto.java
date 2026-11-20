@@ -29,6 +29,7 @@ public class ClientDto {
         private String fullName;
         private String phone;
         private String organization;
+        private String companyName;
         private String location;
         private String notes;
     }

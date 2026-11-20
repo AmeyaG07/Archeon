@@ -55,6 +55,20 @@ public class ClientController {
         }
     }
 
+    @PutMapping("/me")
+    public ResponseEntity<?> updateCurrentClient(
+            @RequestBody UpdateClientRequest req,
+            Authentication auth) {
+        try {
+            ClientResponse updated = clientService.updateCurrentClientProfile(req, auth);
+            return ResponseEntity.ok(updated);
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getClientById(@PathVariable UUID id, Authentication auth) {
         try {

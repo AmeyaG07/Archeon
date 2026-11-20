@@ -272,6 +272,48 @@ public class VendorService {
         return toResponse(vendor, auth);
     }
 
+    @Transactional
+    public VendorResponse updateCurrentVendorProfile(UpdateVendorRequest req, Authentication auth) {
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new AccessDeniedException("Unauthenticated");
+        }
+        String username = auth.getName();
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new AccessDeniedException("User account not found"));
+
+        VendorEntity vendor = null;
+        if (user.getVendorId() != null) {
+            vendor = vendorRepository.findById(user.getVendorId()).orElse(null);
+        }
+        if (vendor == null) {
+            vendor = vendorRepository.findByVendorReference(username)
+                    .or(() -> vendorRepository.findByEmail(username))
+                    .orElseThrow(() -> new AccessDeniedException("Principal is not mapped to an active vendor organization"));
+        }
+
+        if (StringUtils.hasText(req.getBusinessName())) {
+            vendor.setBusinessName(req.getBusinessName().trim());
+        }
+        if (StringUtils.hasText(req.getContactPerson())) {
+            vendor.setContactPerson(req.getContactPerson().trim());
+        }
+        if (StringUtils.hasText(req.getPhone())) {
+            vendor.setPhone(req.getPhone().trim());
+        }
+        if (req.getLocation() != null) {
+            vendor.setLocation(req.getLocation().trim());
+        }
+        if (req.getGstin() != null) {
+            vendor.setGstin(req.getGstin().trim().toUpperCase());
+        }
+        if (req.getBankDetailsJson() != null) {
+            vendor.setBankDetailsJson(req.getBankDetailsJson().trim());
+        }
+        vendor.setUpdatedAt(LocalDateTime.now());
+        VendorEntity saved = vendorRepository.save(vendor);
+        return toResponse(saved, auth);
+    }
+
     @Transactional(readOnly = true)
     public List<VendorResponse> listVendors(Authentication auth) {
         if (!isInternalStaff(auth.getAuthorities())) {

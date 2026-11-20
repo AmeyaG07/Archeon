@@ -207,6 +207,43 @@ public class ClientService {
         return toResponse(client);
     }
 
+    @Transactional
+    public ClientResponse updateCurrentClientProfile(UpdateClientRequest req, Authentication auth) {
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new AccessDeniedException("Unauthenticated");
+        }
+        String username = auth.getName();
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new AccessDeniedException("User account not found"));
+
+        ClientEntity client = null;
+        if (user.getClientId() != null) {
+            client = clientRepository.findById(user.getClientId()).orElse(null);
+        }
+        if (client == null) {
+            client = clientRepository.findByClientReference(username)
+                    .or(() -> clientRepository.findByEmail(username))
+                    .orElseThrow(() -> new AccessDeniedException("Principal is not mapped to an active client organization"));
+        }
+
+        if (req.getFullName() != null && !req.getFullName().isBlank()) {
+            client.setFullName(req.getFullName().trim());
+        }
+        if (req.getPhone() != null) {
+            client.setPhone(req.getPhone().trim());
+        }
+        String org = req.getCompanyName() != null ? req.getCompanyName() : req.getOrganization();
+        if (org != null) {
+            client.setOrganization(org.trim());
+        }
+        if (req.getLocation() != null) {
+            client.setLocation(req.getLocation().trim());
+        }
+        client.setUpdatedAt(LocalDateTime.now());
+        ClientEntity saved = clientRepository.save(client);
+        return toResponse(saved);
+    }
+
     @Transactional(readOnly = true)
     public List<ClientResponse> listClients(Authentication auth) {
         if (!isInternalStaff(auth.getAuthorities())) {

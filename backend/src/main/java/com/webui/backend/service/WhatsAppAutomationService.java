@@ -26,10 +26,22 @@ public class WhatsAppAutomationService {
     @Autowired
     private ClientRepository clientRepository;
 
+    @Autowired(required = false)
+    private com.webui.backend.repository.AutomationSettingsRepository automationSettingsRepository;
+
     // Trigger 1 — New Bill Notification
     public void sendNewBillAlert(ClientEntity client, String vendorName, BigDecimal amount, String billPhotoUrl) {
-        log.info("[WhatsApp Notification - Trigger 1] Sending new bill alert to Client {} ({}) for ₹{} from vendor {}. Photo URL: {}",
-                client.getFullName(), client.getPhone(), amount, vendorName, billPhotoUrl);
+        String senderNumber = "+91 9876543210";
+        String senderName = "MB's ArcheOn Design Studio (Ar. Mandar Bhalekar)";
+        if (automationSettingsRepository != null) {
+            var opt = automationSettingsRepository.findFirstByOrderByIdAsc();
+            if (opt.isPresent()) {
+                senderNumber = opt.get().getWhatsappSenderNumber();
+                senderName = opt.get().getWhatsappSenderName();
+            }
+        }
+        log.info("[WhatsApp Notification - Trigger 1] From {} ({}) to Client {} ({}) for ₹{} from vendor {}. Photo URL: {}",
+                senderName, senderNumber, client.getFullName(), client.getPhone(), amount, vendorName, billPhotoUrl);
         // Note: Strict constraint per Section 4.2: NO in-WhatsApp payment prompting or gateway flows.
         // Pure record-keeping notification.
     }
