@@ -168,6 +168,20 @@ export default function AdminVendorsPage() {
     }
   };
 
+  const handleCreatePortalAccount = async (vendorId: string, username: string, password: string) => {
+    try {
+      const res = await apiFetch(`/api/vendors/${vendorId}/portal-account`, {
+        method: "POST",
+        body: { username, password },
+      });
+      const data = await res.json();
+      await loadVendors();
+      return data;
+    } catch (err: unknown) {
+      throw err;
+    }
+  };
+
   return (
     <div className="p-4 sm:p-8">
       {actionFeedback && (
@@ -203,6 +217,7 @@ export default function AdminVendorsPage() {
         onInviteVendor={handleInviteVendor}
         onUpdateVendorStatus={handleUpdateStatus}
         onUpdatePortalAccess={handleUpdatePortalAccess}
+        onCreatePortalAccount={handleCreatePortalAccount}
         onOpenProject={(projId) => router.push(`/admin/projects?id=${projId}`)}
         onOpenInvoices={() => router.push("/admin/approvals")}
         onAddVendor={() => setIsCreateModalOpen(true)}

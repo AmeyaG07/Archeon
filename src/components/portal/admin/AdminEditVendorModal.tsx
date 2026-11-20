@@ -45,7 +45,7 @@ export function AdminEditVendorModal({
       setBusinessName(vendor.businessName || "");
       setContactPerson(vendor.contactPerson || "");
       setPhone(vendor.phone || "");
-      setCategory(vendor.category || "CIVIL_WORK");
+      setCategory(vendor.vendorCategory || vendor.category || "CIVIL_WORK");
       setLocation(vendor.location || "");
       setGstin(vendor.taxId || "");
       setError(null);

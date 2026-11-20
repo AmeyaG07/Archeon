@@ -20,6 +20,12 @@ import {
   Edit3,
   Trash2,
   CreditCard,
+  KeyRound,
+  Eye,
+  EyeOff,
+  Check,
+  Copy,
+  ExternalLink,
 } from "lucide-react";
 
 export type AdminVendorStatus =
@@ -54,6 +60,8 @@ export interface AdminVendorRecord {
   email: string;
   phone: string;
   vendorCategory: string;
+  category?: string;
+  taxId?: string;
   location?: string;
   status: AdminVendorStatus;
   portalAccess: VendorPortalAccessStatus;
@@ -90,6 +98,12 @@ interface AdminVendorManagementProps {
     vendorId: string,
     action: "resend" | "revoke"
   ) => Promise<void>;
+
+  onCreatePortalAccount?: (
+    vendorId: string,
+    username: string,
+    password: string
+  ) => Promise<any>;
 
   onOpenProject?: (projectId: string) => void;
   onOpenInvoices?: (vendorId: string) => void;
@@ -164,6 +178,7 @@ export function AdminVendorManagement({
   onInviteVendor,
   onUpdateVendorStatus,
   onUpdatePortalAccess,
+  onCreatePortalAccount,
   onOpenProject,
   onOpenInvoices,
   onAddVendor,
@@ -182,6 +197,14 @@ export function AdminVendorManagement({
 
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState("");
+
+  const [showDirectCredentials, setShowDirectCredentials] = useState(false);
+  const [portalUsername, setPortalUsername] = useState("");
+  const [portalPassword, setPortalPassword] = useState("Password123!");
+  const [showPassword, setShowPassword] = useState(false);
+  const [credentialSuccess, setCredentialSuccess] = useState<{ username: string; password: string } | null>(null);
+  const [credentialsLoading, setCredentialsLoading] = useState(false);
+  const [credentialError, setCredentialError] = useState<string | null>(null);
 
   const counts = useMemo(() => ({
     total: vendors.length,
@@ -258,6 +281,14 @@ export function AdminVendorManagement({
   function openVendor(vendor: AdminVendorRecord) {
     setSelectedVendor(vendor);
     setActionError("");
+    const defaultUsername = vendor.email
+      ? vendor.email.split("@")[0].toLowerCase().replace(/[^a-z0-9_]/g, "_")
+      : `vendor_${vendor.reference.toLowerCase().replace(/[^a-z0-9_]/g, "_")}`;
+    setPortalUsername(defaultUsername);
+    setPortalPassword("Password123!");
+    setCredentialSuccess(null);
+    setCredentialError(null);
+    setShowDirectCredentials(false);
   }
 
   return (
@@ -705,6 +736,123 @@ export function AdminVendorManagement({
                   >
                     Revoke Portal Access
                   </button>
+                )}
+
+                {/* Direct Set Login Password Card */}
+                {credentialSuccess && (
+                  <div className="mt-5 p-4 border border-[#B68A4A]/50 bg-[#F9F7F3] rounded-sm space-y-2">
+                    <div className="flex items-center gap-2 text-emerald-700 font-mono text-xs font-semibold">
+                      <Check size={16} /> PORTAL LOGIN READY
+                    </div>
+                    <div className="text-xs font-mono text-[#333] space-y-1 bg-white p-3 border border-[#E5E2DC]">
+                      <div><strong>Username:</strong> {credentialSuccess.username}</div>
+                      <div><strong>Password:</strong> {credentialSuccess.password}</div>
+                      <div><strong>Portal URL:</strong> <a href="/login" target="_blank" className="text-[#A58A64] underline">http://localhost:3000/login</a></div>
+                    </div>
+                    <p className="text-[10px] text-[#77736C]">
+                      The vendor can now sign in at the login page using these credentials.
+                    </p>
+                  </div>
+                )}
+
+                {showDirectCredentials ? (
+                  <div className="mt-5 border border-[#A58A64]/40 bg-[#FAF9F5] p-4 rounded-sm space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-xs font-semibold uppercase tracking-wider text-[#171717] flex items-center gap-1.5">
+                        <KeyRound size={14} className="text-[#A58A64]" /> Direct Vendor Credentials
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setShowDirectCredentials(false)}
+                        className="text-[10px] uppercase text-[#77736C] hover:text-[#171717]"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                    <p className="text-[11px] text-[#77736C] leading-relaxed">
+                      Configure username &amp; password for immediate vendor portal login without requiring email verification.
+                    </p>
+
+                    {credentialError && (
+                      <p className="text-xs text-red-600 bg-red-50 p-2 border border-red-200">
+                        {credentialError}
+                      </p>
+                    )}
+
+                    <div>
+                      <label className="block text-[10px] uppercase font-mono tracking-wider text-[#77736C] mb-1">
+                        Username
+                      </label>
+                      <input
+                        type="text"
+                        value={portalUsername}
+                        onChange={(e) => setPortalUsername(e.target.value)}
+                        placeholder="e.g. vendor_username"
+                        className="w-full border border-[#D8D6D0] bg-white px-3 py-2 text-xs font-mono focus:border-[#A58A64] focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] uppercase font-mono tracking-wider text-[#77736C] mb-1">
+                        Password
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          value={portalPassword}
+                          onChange={(e) => setPortalPassword(e.target.value)}
+                          placeholder="Password"
+                          className="w-full border border-[#D8D6D0] bg-white px-3 py-2 text-xs font-mono pr-9 focus:border-[#A58A64] focus:outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#77736C] hover:text-[#171717]"
+                        >
+                          {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      disabled={credentialsLoading || !portalUsername.trim() || !portalPassword.trim()}
+                      onClick={async () => {
+                        if (!onCreatePortalAccount) return;
+                        setCredentialsLoading(true);
+                        setCredentialError(null);
+                        try {
+                          await onCreatePortalAccount(selectedVendor.id, portalUsername.trim(), portalPassword.trim());
+                          setCredentialSuccess({ username: portalUsername.trim(), password: portalPassword.trim() });
+                          setShowDirectCredentials(false);
+                          selectedVendor.portalAccess = "Active";
+                        } catch (err: unknown) {
+                          setCredentialError(err instanceof Error ? err.message : "Failed to create vendor credentials.");
+                        } finally {
+                          setCredentialsLoading(false);
+                        }
+                      }}
+                      className="w-full inline-flex items-center justify-center gap-2 bg-[#171717] px-4 py-3 text-[10px] uppercase tracking-widest text-white hover:bg-[#A58A64] disabled:opacity-40 transition-colors"
+                    >
+                      <KeyRound size={14} />
+                      {credentialsLoading ? "Saving..." : "Save Credentials & Enable Login"}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="mt-4 pt-3 border-t border-[#E5E2DC]">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowDirectCredentials(true);
+                        setCredentialSuccess(null);
+                        setCredentialError(null);
+                      }}
+                      className="inline-flex w-full items-center justify-center gap-2 border border-[#A58A64] bg-[#F7F5F0] px-4 py-3 text-[9px] uppercase tracking-widest text-[#8A704C] hover:bg-[#A58A64] hover:text-white transition-colors"
+                    >
+                      <KeyRound size={14} />
+                      {selectedVendor.portalAccess === "Active" ? "Reset Login Password" : "Set Direct Login Password"}
+                    </button>
+                  </div>
                 )}
 
                 {selectedVendor.portalAccess === "Suspended" && (

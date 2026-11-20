@@ -116,11 +116,7 @@ button {
   cursor: pointer;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  body, a, button, input, textarea, select, [role="button"] {
-    cursor: none;
-  }
-}
+/* Native cursor styles */
 
 button:disabled {
   cursor: not-allowed;

@@ -139,6 +139,20 @@ export default function AdminClientsPage() {
     }
   };
 
+  const handleCreatePortalAccount = async (clientId: string, username: string, password: string) => {
+    try {
+      const res = await apiFetch(`/api/clients/${clientId}/portal-account`, {
+        method: "POST",
+        body: { username, password },
+      });
+      const data = await res.json();
+      await loadClients();
+      return data;
+    } catch (err: unknown) {
+      throw err;
+    }
+  };
+
   return (
     <div className="p-4 sm:p-8">
       {actionFeedback && (
@@ -174,6 +188,7 @@ export default function AdminClientsPage() {
         onInviteClient={handleInviteClient}
         onUpdateClientStatus={handleUpdateStatus}
         onUpdatePortalAccess={handleUpdatePortalAccess}
+        onCreatePortalAccount={handleCreatePortalAccount}
         onOpenProject={(projId) => router.push(`/admin/projects?id=${projId}`)}
         onAddClient={() => setIsCreateModalOpen(true)}
         onEditClient={(client) => setEditingClient(client)}
