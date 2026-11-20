@@ -408,4 +408,33 @@ public class VendorService {
             vendorRepository.save(v);
         });
     }
+
+    @Transactional
+    public void deleteVendor(UUID vendorId, Authentication auth) {
+        if (!isInternalStaff(auth.getAuthorities())) {
+            throw new AccessDeniedException("Only studio administrators and staff can delete vendors");
+        }
+        VendorEntity vendor = vendorRepository.findById(vendorId)
+                .orElseThrow(() -> new IllegalArgumentException("Vendor not found: " + vendorId));
+
+        List<UserEntity> linkedUsers = userRepository.findByVendorId(vendorId);
+        for (UserEntity user : linkedUsers) {
+            user.setEnabled(false);
+            user.setStatus("DELETED");
+            refreshTokenRepository.revokeAllForUser(user.getUsername());
+            tokenRevocationService.revokeAllForUser(user.getUsername());
+            userRepository.delete(user);
+        }
+
+        vendorRepository.delete(vendor);
+
+        auditEventRepository.save(AuditEventEntity.builder()
+                .actorId(auth.getName())
+                .actorRole("STAFF")
+                .action("VENDOR_DELETED")
+                .entityName("Vendor")
+                .entityId(vendorId.toString())
+                .detailsJson(String.format("{\"reference\": \"%s\", \"email\": \"%s\"}", vendor.getVendorReference(), vendor.getEmail()))
+                .build());
+    }
 }

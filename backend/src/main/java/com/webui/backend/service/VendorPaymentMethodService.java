@@ -71,6 +71,19 @@ public class VendorPaymentMethodService {
     }
 
     @Transactional
+    public VendorPaymentMethodEntity savePaymentMethodForAdmin(UUID vendorId, SavePaymentMethodRequest req, Authentication auth) {
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new AccessDeniedException("Authentication required");
+        }
+        boolean isStaff = auth.getAuthorities().stream().anyMatch(a ->
+                a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_STAFF"));
+        if (!isStaff) {
+            throw new AccessDeniedException("Only studio administrators can manage vendor payment settings");
+        }
+        return savePaymentMethod(vendorId, req);
+    }
+
+    @Transactional
     public VendorPaymentMethodEntity savePaymentMethod(UUID vendorId, SavePaymentMethodRequest req) {
         VendorPaymentMethodEntity existing = paymentMethodRepository.findByVendorId(vendorId).orElse(null);
 

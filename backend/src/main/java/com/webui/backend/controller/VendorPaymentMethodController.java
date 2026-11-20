@@ -48,4 +48,19 @@ public class VendorPaymentMethodController {
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.noContent().build());
     }
+
+    @PutMapping("/vendor/{vendorId}")
+    public ResponseEntity<?> updatePaymentMethodForVendor(
+            @PathVariable UUID vendorId,
+            @RequestBody SavePaymentMethodRequest req,
+            Authentication auth) {
+        try {
+            VendorPaymentMethodEntity entity = paymentMethodService.savePaymentMethodForAdmin(vendorId, req, auth);
+            return ResponseEntity.ok(entity);
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
 }

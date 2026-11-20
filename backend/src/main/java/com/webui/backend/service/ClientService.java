@@ -329,4 +329,33 @@ public class ClientService {
             clientRepository.save(c);
         });
     }
+
+    @Transactional
+    public void deleteClient(UUID clientId, Authentication auth) {
+        if (!isInternalStaff(auth.getAuthorities())) {
+            throw new AccessDeniedException("Only studio administrators and staff can delete clients");
+        }
+        ClientEntity client = clientRepository.findById(clientId)
+                .orElseThrow(() -> new IllegalArgumentException("Client not found: " + clientId));
+
+        List<UserEntity> linkedUsers = userRepository.findByClientId(clientId);
+        for (UserEntity user : linkedUsers) {
+            user.setEnabled(false);
+            user.setStatus("DELETED");
+            refreshTokenRepository.revokeAllForUser(user.getUsername());
+            tokenRevocationService.revokeAllForUser(user.getUsername());
+            userRepository.delete(user);
+        }
+
+        clientRepository.delete(client);
+
+        auditEventRepository.save(AuditEventEntity.builder()
+                .actorId(auth.getName())
+                .actorRole("STAFF")
+                .action("CLIENT_DELETED")
+                .entityName("Client")
+                .entityId(clientId.toString())
+                .detailsJson(String.format("{\"reference\": \"%s\", \"email\": \"%s\"}", client.getClientReference(), client.getEmail()))
+                .build());
+    }
 }

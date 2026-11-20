@@ -130,4 +130,16 @@ public class VendorController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteVendor(@PathVariable UUID id, Authentication auth) {
+        try {
+            vendorService.deleteVendor(id, auth);
+            return ResponseEntity.ok(Map.of("success", true, "message", "Vendor deleted successfully"));
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
 }
