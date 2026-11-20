@@ -91,6 +91,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/manifesto/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/approvals/config").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/leads").permitAll()
+                        .requestMatchers("/api/webhooks/**").permitAll()
+                        .requestMatchers("/api/site-updates/**").authenticated()
+                        .requestMatchers("/api/vendor-payment-methods/**").authenticated()
+                        .requestMatchers("/api/billing/**").authenticated()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
 
                         // 2. Protected Identity Domain (Users, Clients, Vendors, Invitations)

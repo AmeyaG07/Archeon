@@ -38,9 +38,17 @@ public class BillApprovalEntity {
 
     private String disputeReason;
 
+    private String billPhotoUrl;
+
     private String paymentProofUrl;
 
     private String paymentProofUtr;
+
+    private LocalDateTime lastReminderSentAt;
+
+    private LocalDateTime paidAt;
+
+    private String tradeCategory;
 
     @Column(nullable = false)
     private String currency; // "INR"
