@@ -1,0 +1,71 @@
+{
+  "public_visitor": {
+    "public_projects_status": 200,
+    "manifesto_status": 200,
+    "approval_config_status": 200,
+    "lead_submission_status": 200,
+    "lead_id": "e21abe5a-1eeb-4df3-b115-e6f945edab3f",
+    "private_clients_denied": true,
+    "private_vendors_denied": true,
+    "private_audit_denied": true,
+    "private_finance_denied": true
+  },
+  "studio_admin": {
+    "login": true,
+    "role": "ROLE_ADMIN",
+    "dashboard_status": 200,
+    "clients_status": 200,
+    "vendors_status": 200,
+    "approvals_status": 200,
+    "approvals_count": 4,
+    "cash_settlements_status": 200,
+    "audit_logs_status": 200,
+    "leads_status": 200,
+    "leads_count": 1
+  },
+  "project_manager": {
+    "login": true,
+    "user": "admin_mandar",
+    "role": "ROLE_ADMIN",
+    "projects_status": 200,
+    "clients_status": 200,
+    "audit_status": 200
+  },
+  "finance": {
+    "maker_role": "ROLE_FINANCE_MAKER",
+    "checker_role": "ROLE_FINANCE_CHECKER",
+    "sec_checker_role": "ROLE_FINANCE_CHECKER_2",
+    "bill_id": "BILL-CLIENT-OWNED-1795163674",
+    "bill_initiation": 200,
+    "self_approval_prevented": true,
+    "primary_approval_status": 200,
+    "secondary_approval_status": 200
+  },
+  "content_editor": {
+    "user": "admin_user",
+    "role": "ROLE_ADMIN",
+    "projects_access": true,
+    "manifesto_access": true
+  },
+  "client": {
+    "login": true,
+    "role": "ROLE_CLIENT",
+    "dashboard_status": 200,
+    "profile_status": 200,
+    "invoices_status": 200,
+    "audit_denied": true,
+    "vendors_denied": true,
+    "dispute_submission_status": 200,
+    "payment_proof_status": 200
+  },
+  "vendor": {
+    "login": true,
+    "role": "ROLE_VENDOR",
+    "dashboard_status": 200,
+    "profile_status": 200,
+    "settlements_status": 200,
+    "vendor_bills_status": 200,
+    "client_directory_denied": true,
+    "internal_reports_denied": true
+  }
+}

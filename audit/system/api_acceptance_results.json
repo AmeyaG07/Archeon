@@ -1,0 +1,170 @@
+[
+  {
+    "description": "Public Projects Showcase",
+    "method": "GET",
+    "endpoint": "/api/projects",
+    "status": 200,
+    "latency_ms": 11.51,
+    "pass": true
+  },
+  {
+    "description": "Public Design Philosophy",
+    "method": "GET",
+    "endpoint": "/api/manifesto",
+    "status": 200,
+    "latency_ms": 13.46,
+    "pass": true
+  },
+  {
+    "description": "Public Approval Policy Config",
+    "method": "GET",
+    "endpoint": "/api/approvals/config",
+    "status": 200,
+    "latency_ms": 8.11,
+    "pass": true
+  },
+  {
+    "description": "Public Lead Submission",
+    "method": "POST",
+    "endpoint": "/api/leads",
+    "status": 200,
+    "latency_ms": 21.52,
+    "pass": true
+  },
+  {
+    "description": "Admin Dashboard KPIs",
+    "method": "GET",
+    "endpoint": "/api/dashboards/admin",
+    "status": 200,
+    "latency_ms": 46.72,
+    "pass": true
+  },
+  {
+    "description": "Admin Clients Directory",
+    "method": "GET",
+    "endpoint": "/api/clients",
+    "status": 200,
+    "latency_ms": 26.2,
+    "pass": true
+  },
+  {
+    "description": "Admin Vendors Directory",
+    "method": "GET",
+    "endpoint": "/api/vendors",
+    "status": 200,
+    "latency_ms": 26.22,
+    "pass": true
+  },
+  {
+    "description": "Admin Operational Projects",
+    "method": "GET",
+    "endpoint": "/api/operational-projects",
+    "status": 200,
+    "latency_ms": 24.64,
+    "pass": true
+  },
+  {
+    "description": "Admin Invoices Register",
+    "method": "GET",
+    "endpoint": "/api/invoices",
+    "status": 200,
+    "latency_ms": 22.23,
+    "pass": true
+  },
+  {
+    "description": "Admin Bill Approvals Queue",
+    "method": "GET",
+    "endpoint": "/api/approvals",
+    "status": 200,
+    "latency_ms": 19.32,
+    "pass": true
+  },
+  {
+    "description": "Admin Cash Settlements",
+    "method": "GET",
+    "endpoint": "/api/finance/cash/my-settlements",
+    "status": 200,
+    "latency_ms": 17.58,
+    "pass": true
+  },
+  {
+    "description": "Admin Audit Ledger",
+    "method": "GET",
+    "endpoint": "/api/admin/audit",
+    "status": 200,
+    "latency_ms": 30.28,
+    "pass": true
+  },
+  {
+    "description": "Admin Leads Pipeline",
+    "method": "GET",
+    "endpoint": "/api/leads",
+    "status": 200,
+    "latency_ms": 16.66,
+    "pass": true
+  },
+  {
+    "description": "Client Dashboard",
+    "method": "GET",
+    "endpoint": "/api/dashboards/client",
+    "status": 200,
+    "latency_ms": 28.64,
+    "pass": true
+  },
+  {
+    "description": "Client Profile Self-Service",
+    "method": "GET",
+    "endpoint": "/api/clients/me",
+    "status": 200,
+    "latency_ms": 19.83,
+    "pass": true
+  },
+  {
+    "description": "Client Scoped Invoices",
+    "method": "GET",
+    "endpoint": "/api/invoices",
+    "status": 200,
+    "latency_ms": 30.21,
+    "pass": true
+  },
+  {
+    "description": "Client Notifications",
+    "method": "GET",
+    "endpoint": "/api/notifications",
+    "status": 200,
+    "latency_ms": 22.63,
+    "pass": true
+  },
+  {
+    "description": "Vendor Dashboard",
+    "method": "GET",
+    "endpoint": "/api/dashboards/vendor",
+    "status": 200,
+    "latency_ms": 38.73,
+    "pass": true
+  },
+  {
+    "description": "Vendor Profile Self-Service",
+    "method": "GET",
+    "endpoint": "/api/vendors/me",
+    "status": 200,
+    "latency_ms": 20.58,
+    "pass": true
+  },
+  {
+    "description": "Vendor Scoped Bills",
+    "method": "GET",
+    "endpoint": "/api/approvals",
+    "status": 200,
+    "latency_ms": 23.36,
+    "pass": true
+  },
+  {
+    "description": "Vendor Scoped Cash Settlements",
+    "method": "GET",
+    "endpoint": "/api/finance/cash/my-settlements",
+    "status": 200,
+    "latency_ms": 20.02,
+    "pass": true
+  }
+]
