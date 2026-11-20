@@ -15,6 +15,14 @@ import { apiFetch, resolveApiBaseUrl, getAuthToken } from "@/lib/api";
 import { useAuth } from "@/providers/AuthProvider";
 import { CreditCard, FileText, MessageSquareWarning, ShieldCheck, UploadCloud, CheckCircle2 } from "lucide-react";
 
+export default function ClientInvoicesPage() {
+  return (
+    <Suspense fallback={<div className="p-12 text-center font-mono text-xs text-[#777]">Loading Invoices...</div>}>
+      <ClientInvoicesContent />
+    </Suspense>
+  );
+}
+
 function ClientInvoicesContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -257,13 +265,5 @@ function ClientInvoicesContent() {
         />
       )}
     </div>
-  );
-}
-
-export default function ClientInvoicesPage() {
-  return (
-    <Suspense fallback={<div className="p-12 text-center font-mono text-xs text-[#777]">Loading Invoices...</div>}>
-      <ClientInvoicesContent />
-    </Suspense>
   );
 }

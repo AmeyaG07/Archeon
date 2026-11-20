@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   AdminSystemSettings,
@@ -64,11 +64,13 @@ export default function AdminSettingsPage() {
     },
   ]);
 
-  if (authLoading) return null;
-  if (!isAuthenticated) {
-    router.push("/login");
-    return null;
-  }
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      router.push("/login");
+    }
+  }, [authLoading, isAuthenticated, router]);
+
+  if (authLoading || !isAuthenticated) return null;
 
   const handleSubmitChange = async (request: SystemSettingsChangeRequest) => {
     setHistory((prev) => [

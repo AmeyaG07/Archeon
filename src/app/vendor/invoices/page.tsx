@@ -46,6 +46,14 @@ interface AssignedProject {
   projectReference?: string;
 }
 
+export default function VendorInvoicesPage() {
+  return (
+    <Suspense fallback={<div className="p-12 text-center font-mono text-xs text-[#777]">Loading Vendor Invoices...</div>}>
+      <VendorInvoicesContent />
+    </Suspense>
+  );
+}
+
 function VendorInvoicesContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -738,13 +746,5 @@ function VendorInvoicesContent() {
         </div>
       )}
     </div>
-  );
-}
-
-export default function VendorInvoicesPage() {
-  return (
-    <Suspense fallback={<div className="p-12 text-center font-mono text-xs text-[#777]">Loading Vendor Invoices...</div>}>
-      <VendorInvoicesContent />
-    </Suspense>
   );
 }
