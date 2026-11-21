@@ -222,8 +222,12 @@ export function VendorProjectOverview({
                     </span>
                   </div>
 
-                  <h3 className="mt-6 font-serif text-2xl text-[#171717]">
-                    {project.projectName}
+                  <h3
+                    onClick={() => onOpenProject(project)}
+                    className="mt-6 font-serif text-2xl text-[#171717] hover:text-[#A58A64] cursor-pointer transition-colors flex items-center justify-between group"
+                  >
+                    <span>{project.projectName}</span>
+                    <ArrowUpRight size={18} className="text-[#A58A64] opacity-0 group-hover:opacity-100 transition-opacity" />
                   </h3>
 
                   <p className="mt-3 flex items-center gap-2 text-xs text-[#77736C]">

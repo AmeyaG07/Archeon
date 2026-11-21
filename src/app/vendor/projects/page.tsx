@@ -66,7 +66,7 @@ export default function VendorProjectsPage() {
       loading={loading}
       error={error ?? undefined}
       onRetry={loadProjects}
-      onOpenProject={() => {}}
+      onOpenProject={(proj) => router.push(`/vendor/projects/${proj.id}`)}
       onOpenDocument={() => {}}
       onBack={() => router.push("/vendor")}
     />
