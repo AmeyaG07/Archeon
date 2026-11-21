@@ -1,16 +1,15 @@
 "use client";
 
-import React from "react";
-import Image from "next/image";
-import { ArrowUpRight, MapPin } from "lucide-react";
+import React, { useState } from "react";
+import { ArrowUpRight, MapPin, Sparkles, Scan, Crosshair, Layers } from "lucide-react";
 import type { PortfolioProject } from "@/config/siteConfig";
 import {
   RevealText,
-  ClipReveal,
   HairlineRule,
   StaggerGrid,
   StaggerItem,
 } from "@/components/motion/EditorialMotion";
+import { ProjectImageCard, ProjectAnimationMode } from "./ProjectImageCard";
 
 interface ProjectsSectionProps {
   projects: PortfolioProject[];
@@ -21,6 +20,35 @@ export function ProjectsSection({
   projects,
   onSelectProject,
 }: ProjectsSectionProps) {
+  const [animationMode, setAnimationMode] = useState<ProjectAnimationMode>("combined");
+
+  const demoModes: { id: ProjectAnimationMode; label: string; desc: string; icon: React.ElementType }[] = [
+    {
+      id: "tilt",
+      label: "01 · 3D Tectonic Tilt",
+      desc: "Interactive gyroscope tilt with dynamic specular glass reflection & depth parallax",
+      icon: Sparkles,
+    },
+    {
+      id: "blueprint",
+      label: "02 · CAD Blueprint Scan",
+      desc: "Laser scan sweep revealing underlying CAD gridlines, dimension strings & elevation specs",
+      icon: Scan,
+    },
+    {
+      id: "viewfinder",
+      label: "03 · Cinematic Viewfinder",
+      desc: "Slow aperture zoom drift with dynamic crosshair reticle tracking coordinates",
+      icon: Crosshair,
+    },
+    {
+      id: "combined",
+      label: "★ All Combined (Grand Master)",
+      desc: "Harmonious synergy of 3D tilt, specular sheen, CAD scan, and precision reticle",
+      icon: Layers,
+    },
+  ];
+
   return (
     <section
       id="projects"
@@ -125,7 +153,58 @@ export function ProjectsSection({
           </RevealText>
         </div>
 
-        <HairlineRule color="bg-[#D8D6D0]" className="mb-14" />
+        <HairlineRule color="bg-[#D8D6D0]" className="mb-10" />
+
+        {/* Interactive Animation Demo Switcher Bar */}
+        <div className="mb-14 rounded-2xl border border-[#E5E0D8] bg-[#FAF8F5]/90 p-5 sm:p-6 backdrop-blur-md shadow-sm">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-2.5 w-2.5 rounded-full bg-[#B68A4A] animate-ping" />
+              <p className="font-mono text-xs uppercase tracking-widest text-[#B68A4A] font-semibold">
+                Project Image Animation Showcase
+              </p>
+            </div>
+            <p className="font-mono text-[11px] text-[#777777]">
+              Hover your cursor over the project images below to test live motion & effects
+            </p>
+          </div>
+
+          <div className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
+            {demoModes.map((mode) => {
+              const Icon = mode.icon;
+              const isActive = animationMode === mode.id;
+              return (
+                <button
+                  key={mode.id}
+                  type="button"
+                  onClick={() => setAnimationMode(mode.id)}
+                  className={`group relative flex flex-col text-left rounded-xl p-4 transition-all duration-300 border ${
+                    isActive
+                      ? "border-[#B68A4A] bg-[#111111] text-white shadow-lg ring-1 ring-[#B68A4A]/50 scale-[1.01]"
+                      : "border-[#E5E0D8] bg-white hover:border-[#B68A4A]/50 text-[#111111] shadow-sm hover:shadow-md"
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <span className="font-mono text-xs font-semibold tracking-wider">
+                      {mode.label}
+                    </span>
+                    <Icon
+                      size={15}
+                      className={isActive ? "text-[#C6A779]" : "text-[#777777] group-hover:text-[#B68A4A]"}
+                    />
+                  </div>
+                  <p
+                    className={`mt-2 text-[11px] leading-relaxed ${
+                      isActive ? "text-[#D8D6D0]" : "text-[#777777]"
+                    }`}
+                  >
+                    {mode.desc}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         {/* Project Cards with Stagger & Clip-Path Curtain Reveal */}
         <StaggerGrid
@@ -137,77 +216,20 @@ export function ProjectsSection({
               key={project.id}
               className={`group ${index === 0 ? "md:col-span-2" : ""}`}
             >
-              <button
-                type="button"
-                onClick={() => onSelectProject(project)}
-                className="block w-full text-left"
-                aria-label={`View ${project.title} project`}
-              >
-                {/* Architectural Clip-Path Image Reveal with Exact Native Aspect Ratios */}
-                <ClipReveal
-                  duration={1.2}
-                  className={`relative overflow-hidden rounded-sm bg-[#111111] shadow-md transition-shadow duration-500 group-hover:shadow-xl ${
-                    index === 0
-                      ? "aspect-[3/2] w-full"
-                      : "aspect-[16/9] w-full"
-                  }`}
-                >
-                  {project.image ? (
-                    <>
-                      <Image
-                        src={project.image}
-                        alt={project.title}
-                        fill
-                        priority={index === 0}
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 1200px"
-                        className="object-contain sm:object-cover object-center transition-transform duration-700 ease-out group-hover:scale-[1.02]"
-                      />
-                      {/* Subtle hover vignette without obscuring image graphics */}
-                      <div className="absolute inset-0 bg-black/0 transition-colors duration-300 group-hover:bg-black/10" />
-
-                      {/* Interactive Floating Arrow Badge (Bottom-Right) */}
-                      <div className="absolute bottom-5 right-5 z-10">
-                        <span className="flex h-11 w-11 items-center justify-center rounded-full border border-white/70 bg-black/50 backdrop-blur-md text-white shadow-lg transition-all duration-300 group-hover:border-[#B68A4A] group-hover:bg-[#B68A4A] group-hover:text-[#111111] group-hover:scale-105">
-                          <ArrowUpRight size={19} />
-                        </span>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="absolute inset-0 opacity-40 transition-transform duration-700 ease-out group-hover:scale-105">
-                        <div className="absolute right-[12%] top-[12%] h-[85%] w-[35%] -skew-x-12 border-l border-white/40 bg-white/10" />
-                        <div className="absolute bottom-0 left-[10%] h-[45%] w-[65%] border-t border-white/30 bg-black/10" />
-                        <div className="absolute right-[20%] top-[20%] h-[55%] w-[18%] border-l border-white/30 bg-white/10" />
-                      </div>
-
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-black/10 transition-opacity duration-500 group-hover:opacity-85" />
-
-                      <div className="absolute left-5 top-5">
-                        <span className="border border-white/40 bg-black/40 px-3 py-2 font-mono text-[9px] uppercase tracking-widest text-white backdrop-blur-md">
-                          {project.category}
-                        </span>
-                      </div>
-
-                      <div className="absolute bottom-5 left-5 right-5 flex items-end justify-between">
-                        <div>
-                          <p className="editorial-eyebrow text-white/80">
-                            {project.code}
-                          </p>
-                          <p className="mt-2 text-xs text-white/90 font-light">
-                            Architectural project visual pending
-                          </p>
-                        </div>
-
-                        <span className="flex h-11 w-11 items-center justify-center rounded-full border border-white/60 bg-black/30 backdrop-blur-sm text-white transition-all duration-300 group-hover:border-[#B68A4A] group-hover:bg-[#B68A4A] group-hover:text-[#111111]">
-                          <ArrowUpRight size={19} />
-                        </span>
-                      </div>
-                    </>
-                  )}
-                </ClipReveal>
+              <div className="block w-full text-left">
+                {/* Architectural Interactive Project Image */}
+                <ProjectImageCard
+                  project={project}
+                  index={index}
+                  animationMode={animationMode}
+                  onClick={() => onSelectProject(project)}
+                />
 
                 {/* Project Information */}
-                <div className="mt-6 flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+                <div
+                  onClick={() => onSelectProject(project)}
+                  className="mt-6 flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between cursor-pointer"
+                >
                   <div>
                     <h3 className="font-serif text-3xl font-normal text-[#111111] transition-colors group-hover:text-[#9C7138] sm:text-4xl">
                       {project.title}
@@ -244,7 +266,7 @@ export function ProjectsSection({
                     </span>
                   ))}
                 </div>
-              </button>
+              </div>
             </StaggerItem>
           ))}
         </StaggerGrid>

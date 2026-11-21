@@ -420,3 +420,21 @@ pre,
 .animate-spin-3d-slow {
   animation: spin-3d-slow 24s linear infinite;
 }
+
+@keyframes laserSweep {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(1000%);
+    opacity: 0;
+  }
+}
+
