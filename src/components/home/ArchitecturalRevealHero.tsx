@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, ArrowDown } from "lucide-react";
 
 interface ArchitecturalRevealHeroProps {
   onOpenConsultation?: () => void;
@@ -176,18 +176,21 @@ export function ArchitecturalRevealHero({
             ARCHITECTURE &nbsp;·&nbsp; INTERIOR ENVIRONMENTS &nbsp;·&nbsp; LANDSCAPE
           </p>
 
-          {/* Display Serif Headline */}
-          <h1 className="font-serif font-normal text-[44px] xs:text-[54px] sm:text-[76px] lg:text-[98px] xl:text-[108px] leading-[0.96] sm:leading-[0.92] tracking-[-0.025em] text-[#F2EFE9]">
-            Spaces shaped by<br />
-            <span className="italic text-[#C8621E] font-normal">intention.</span>
-          </h1>
+          {/* Hero Heading */}
+<h1 className="font-serif font-normal text-[28px] xs:text-[32px] sm:text-[38px] lg:text-[65px] xl:text-[65px] leading-[1.08] sm:leading-[1.02] tracking-[-0.035em] text-[#F2EFE9]">
+  Spaces Designed
+  <br />
+  <span className="italic text-[#C8621E] font-normal">
+    Around the Way You Live.
+  </span>
+</h1>
 
-          {/* Editorial Subcopy */}
-          <p className="mt-6 sm:mt-8 max-w-[560px] text-[15px] sm:text-[17px] leading-[1.72] font-light text-[#C2BEB6]">
-            A multidisciplinary architecture and spatial design practice crafting
-            monolithic, light-sculpted residences and bespoke environments with quiet
-            precision in Nagpur, India.
-          </p>
+{/* Editorial Subcopy */}
+<p className="mt-6 sm:mt-8 max-w-[540px] text-[14px] sm:text-[15px] lg:text-[16px] leading-[1.75] font-light text-[#C2BEB6]">
+  We design thoughtful architecture and interiors that bring together beauty,
+  comfort, and functionality. From your first idea to the final details,
+  we create spaces that feel truly yours.
+</p>
         </div>
       </div>
 
@@ -195,24 +198,36 @@ export function ArchitecturalRevealHero({
       {/* 4. BOTTOM ROW: DOWNWARD CTA BUTTONS & ARCHITECTURAL DISCIPLINES     */}
       {/* =================================================================== */}
       <div className="relative z-10 w-full px-4 sm:px-10 lg:px-14 pb-8 pt-4 flex flex-col md:flex-row md:items-end justify-between gap-6">
-        {/* Bottom-Left: Downward CTA Buttons */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 w-full sm:w-auto">
+        {/* Bottom-Left: Glassmorphic CTA Buttons */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3.5 sm:gap-4 w-full sm:w-auto">
+          {/* Primary Glassmorphic Button: Discuss Your Project */}
           <button
             type="button"
             onClick={onOpenConsultation}
-            className="w-full sm:w-auto justify-center px-6 sm:px-7 py-3.5 sm:py-4 bg-[#F2EFE9] text-[#0A0A0A] hover:bg-white transition-all font-mono text-[11px] tracking-[0.22em] uppercase inline-flex items-center gap-3 font-medium shadow-xl hover:shadow-2xl hover:-translate-y-0.5 touch-target"
+            className="group relative w-full sm:w-auto inline-flex items-center justify-between sm:justify-center gap-4 px-7 py-3.5 sm:py-4 rounded-full bg-gradient-to-r from-[#C6A779]/25 via-[#B68A4A]/20 to-[#C8621E]/15 hover:from-[#C6A779]/40 hover:via-[#B68A4A]/30 hover:to-[#C8621E]/25 backdrop-blur-2xl border border-[#C6A779]/50 hover:border-[#C6A779] text-[#F2EFE9] font-['Outfit',sans-serif] text-[13px] sm:text-[13.5px] font-medium tracking-[0.12em] uppercase shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),0_8px_32px_rgba(182,138,74,0.3)] hover:shadow-[inset_0_1px_1px_rgba(255,255,255,0.6),0_12px_40px_rgba(182,138,74,0.5)] transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer overflow-hidden"
           >
-            <span>DISCUSS YOUR PROJECT</span>
-            <ArrowUpRight size={14} aria-hidden="true" />
+            {/* Shimmer light reflection effect */}
+            <span className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/25 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-[300%] transition-transform duration-1000 ease-out pointer-events-none" />
+
+            <span className="relative z-10">Discuss Your Project</span>
+            <span className="relative z-10 w-7 h-7 rounded-full bg-white/10 border border-white/25 flex items-center justify-center text-[#E0D8C3] group-hover:bg-[#C6A779] group-hover:text-black transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5">
+              <ArrowUpRight size={14} strokeWidth={2.2} />
+            </span>
           </button>
 
+          {/* Secondary Glassmorphic Button: Explore Projects */}
           <button
             type="button"
             onClick={scrollToProjects}
-            className="w-full sm:w-auto justify-center px-6 sm:px-7 py-3.5 sm:py-4 bg-black/60 backdrop-blur-md border border-white/25 text-[#F2EFE9] hover:border-white/55 hover:bg-white/[0.08] transition-all font-mono text-[11px] tracking-[0.22em] uppercase inline-flex items-center gap-3 shadow-xl hover:-translate-y-0.5 touch-target"
+            className="group relative w-full sm:w-auto inline-flex items-center justify-between sm:justify-center gap-4 px-7 py-3.5 sm:py-4 rounded-full bg-white/[0.06] hover:bg-white/[0.12] backdrop-blur-2xl border border-white/20 hover:border-white/50 text-[#E8E5DF] hover:text-white font-['Outfit',sans-serif] text-[13px] sm:text-[13.5px] font-medium tracking-[0.12em] uppercase shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_8px_32px_rgba(0,0,0,0.5)] hover:shadow-[inset_0_1px_1px_rgba(255,255,255,0.45),0_12px_40px_rgba(0,0,0,0.7)] transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer overflow-hidden"
           >
-            <span>EXPLORE PROJECTS</span>
-            <span aria-hidden="true">↓</span>
+            {/* Shimmer light reflection effect */}
+            <span className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/15 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-[300%] transition-transform duration-1000 ease-out pointer-events-none" />
+
+            <span className="relative z-10">Explore Projects</span>
+            <span className="relative z-10 w-7 h-7 rounded-full bg-white/[0.08] border border-white/15 flex items-center justify-center text-[#C6A779] group-hover:bg-white/25 group-hover:text-white transition-all duration-300 group-hover:translate-y-0.5">
+              <ArrowDown size={14} className="text-[#C6A779] group-hover:text-white transition-colors" strokeWidth={2.2} />
+            </span>
           </button>
         </div>
 
