@@ -17,11 +17,6 @@ const FooterClockEmblem = dynamic(
   }
 );
 
-const FooterCosmicCanvas = dynamic(
-  () => import("@/components/home/FooterCosmicCanvas").then((m) => m.FooterCosmicCanvas),
-  { ssr: false }
-);
-
 interface SiteFooterProps {
   onOpenClientPortal: () => void;
   onOpenVendorPortal: () => void;
@@ -51,9 +46,6 @@ export function SiteFooter({
       {/* FULL-SECTION AMBIENT COLORFUL SHADE & ARCHITECTURAL AURA            */}
       {/* =================================================================== */}
       <div className="pointer-events-none absolute inset-0 -z-0 overflow-hidden select-none">
-        {/* Interactive Cosmic Space Starfield & 3D Refractive Glass Bubbles */}
-        <FooterCosmicCanvas />
-
         {/* Primary Radiant Terracotta & Amber Core (Spreading across the whole footer) */}
         <div
           className="absolute -top-24 left-1/4 h-[550px] w-[900px] -translate-x-1/2 rounded-full blur-[140px] opacity-35 animate-[pulse_8s_ease-in-out_infinite]"

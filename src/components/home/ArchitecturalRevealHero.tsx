@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { ArrowUpRight, ArrowDown } from "lucide-react";
 
 interface ArchitecturalRevealHeroProps {
@@ -76,11 +77,18 @@ export function ArchitecturalRevealHero({
           />
         </video>
 
-        {/* Refined Dark Architectural Scrim / Vignette: High Contrast on Left, Open Clarity on Right */}
+        {/* Refined Dark Architectural Scrim / Vignette: High Contrast on Left, Open Clarity on Right, Occluding Bottom-Right */}
         <div
           className="pointer-events-none absolute inset-0 z-[2]"
           style={{
             background: `
+              radial-gradient(
+                circle at 100% 100%,
+                rgba(10, 10, 10, 0.98) 0%,
+                rgba(10, 10, 10, 0.92) 80px,
+                rgba(10, 10, 10, 0.5) 140px,
+                transparent 200px
+              ),
               linear-gradient(
                 90deg,
                 rgba(8, 8, 8, 0.94) 0%,
@@ -172,15 +180,15 @@ export function ArchitecturalRevealHero({
       <div className="relative z-10 w-full px-4 sm:px-10 lg:px-14 my-auto py-8 lg:py-12">
         <div className="max-w-[720px]">
           {/* Eyebrow */}
-          <p className="font-mono text-[10px] sm:text-[11px] tracking-[0.24em] sm:tracking-[0.28em] uppercase text-[#B8894A] mb-4 sm:mb-6">
+          {/* <p className="font-mono text-[10px] sm:text-[11px] tracking-[0.24em] sm:tracking-[0.28em] uppercase text-[#B8894A] mb-4 sm:mb-6">
             ARCHITECTURE &nbsp;·&nbsp; INTERIOR ENVIRONMENTS &nbsp;·&nbsp; LANDSCAPE
-          </p>
+          </p> */}
 
           {/* Hero Heading - 3-Line Editorial Composition */}
           <h1 className="font-serif font-normal text-[32px] xs:text-[38px] sm:text-[46px] lg:text-[64px] xl:text-[68px] leading-[1.04] sm:leading-[0.98] tracking-[-0.03em] text-[#F2EFE9]">
-            <span>Spaces Designed</span>
+            <span className="italic text-[#C8621E] font-normal">Spaces Designed</span>
             <br />
-            <span className="italic text-[#C8621E] font-normal">Around the</span>
+            <span >Around the</span>
             <br />
             <span className="italic text-[#C8621E] font-normal">Way You Live.</span>
           </h1>
@@ -231,38 +239,27 @@ export function ArchitecturalRevealHero({
           </button>
         </div>
 
-        {/* Bottom-Right: Architectural Disciplines Block with Solid Dark Background */}
-        <aside className="rounded-xl border border-white/15 bg-black/80 p-4 sm:p-5 backdrop-blur-md shadow-2xl self-start md:self-end max-w-sm">
-          <div className="flex items-center justify-between gap-4 mb-2.5">
-            <p className="font-mono text-[9.5px] tracking-[0.24em] uppercase text-[#B8894A]">
-              ARCHITECTURAL DISCIPLINES
-            </p>
-            <span className="w-1.5 h-1.5 rounded-full bg-[#C8621E] inline-block animate-pulse" />
+        {/* Bottom-Right: ArcheOn Atelier Brand Seal & Logo Badge (Covering bottom-right video watermark) */}
+        <div className="relative z-20 self-start md:self-end flex items-center gap-3 px-4 py-2 rounded-full bg-black/85 backdrop-blur-2xl border border-[#B68A4A]/40 shadow-[0_12px_40px_rgba(0,0,0,0.85)]">
+          <div className="relative w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center">
+            <Image
+              src="/brand-assets/logo-transparent.png"
+              alt="ArcheOn Design Studio"
+              width={34}
+              height={34}
+              priority
+              className="object-contain drop-shadow-[0_0_10px_rgba(182,138,74,0.6)]"
+            />
           </div>
-
-          <div className="grid grid-cols-2 gap-x-6 gap-y-2 font-mono text-[9.5px] tracking-[0.16em] uppercase text-[#C8C3BA]">
-            <div className="flex items-center gap-2">
-              <span className="w-1 h-1 rounded-full bg-[#C8621E] inline-block" />
-              <span>01. FORM</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-1 h-1 rounded-full bg-[#C8621E] inline-block" />
-              <span>02. STRUCTURE</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-1 h-1 rounded-full bg-[#C8621E] inline-block" />
-              <span>03. MATERIALITY</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-1 h-1 rounded-full bg-[#C8621E] inline-block" />
-              <span>04. LANDSCAPE</span>
-            </div>
+          <div className="flex flex-col border-l border-white/20 pl-2.5 pr-1">
+            <span className="font-['Cinzel',serif] text-[9.5px] font-semibold tracking-[0.24em] text-[#E0D8C3] uppercase">
+              ArcheOn Atelier
+            </span>
+            <span className="font-mono text-[7.5px] tracking-[0.16em] text-[#B68A4A] uppercase">
+              Ar. Mandar Bhalekar
+            </span>
           </div>
-
-          <div className="mt-3 pt-2.5 border-t border-white/10 font-mono text-[9px] tracking-[0.14em] text-[#8D8880]">
-            Nagpur Studio · Full Turnkey Execution
-          </div>
-        </aside>
+        </div>
       </div>
     </section>
   );
