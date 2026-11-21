@@ -40,6 +40,15 @@ public class BillingExpenseController {
         return ResponseEntity.ok(billingExpenseService.getBillsForCurrentVendor(auth));
     }
 
+    // 1c. All Bills (Admin / Multi-role View with filters)
+    @GetMapping("/bills")
+    public ResponseEntity<List<BillApprovalEntity>> getAllBills(
+            @RequestParam(required = false) String clientId,
+            @RequestParam(required = false) String projectId,
+            Authentication auth) {
+        return ResponseEntity.ok(billingExpenseService.getBills(clientId, projectId, auth));
+    }
+
     // 2. Request Cash Payment (Vendor Action)
     @PostMapping("/bills/{billId}/request-cash")
     public ResponseEntity<?> requestCashPayment(@PathVariable String billId, Authentication auth) {

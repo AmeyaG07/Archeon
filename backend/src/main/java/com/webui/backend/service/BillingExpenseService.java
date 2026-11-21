@@ -58,6 +58,7 @@ public class BillingExpenseService {
         private String billPhotoUrl;
         private String tradeCategory;
         private String invoiceNumber;
+        private String description;
     }
 
     @Data
@@ -136,8 +137,24 @@ public class BillingExpenseService {
             throw new IllegalArgumentException("Bill amount must be greater than zero");
         }
 
-        OperationalProjectEntity project = projectRepository.findById(req.getProjectId())
-                .orElseThrow(() -> new IllegalArgumentException("Project not found: " + req.getProjectId()));
+        OperationalProjectEntity project = null;
+        if (req.getProjectId() != null) {
+            project = projectRepository.findById(req.getProjectId()).orElse(null);
+        }
+        if (project == null && req.getClientId() != null) {
+            List<OperationalProjectEntity> clientProjects = projectRepository.findByClientIdOrderByCreatedAtDesc(req.getClientId());
+            if (!clientProjects.isEmpty()) {
+                project = clientProjects.get(0);
+            }
+        }
+        if (project == null) {
+            List<OperationalProjectEntity> all = projectRepository.findAll();
+            if (!all.isEmpty()) {
+                project = all.get(0);
+            } else {
+                throw new IllegalArgumentException("Project not found: " + req.getProjectId());
+            }
+        }
 
         String username = auth.getName();
         UserEntity user = userRepository.findByUsername(username).orElse(null);
@@ -182,6 +199,7 @@ public class BillingExpenseService {
                 .initiatorId(username)
                 .billPhotoUrl(req.getBillPhotoUrl())
                 .tradeCategory(tradeCategory != null ? tradeCategory : "Contractor")
+                .disputeReason(req.getDescription() != null ? req.getDescription() : "")
                 .status("PENDING") // Initial lifecycle status per PDF
                 .createdAt(LocalDateTime.now())
                 .build();
@@ -490,5 +508,19 @@ public class BillingExpenseService {
             bills = billRepository.findAll();
         }
         return bills;
+    }
+
+    // ==========================================
+    // 7. General Bills Query (Admin & Multi-role)
+    // ==========================================
+
+    @Transactional(readOnly = true)
+    public List<BillApprovalEntity> getBills(String clientId, String projectId, Authentication auth) {
+        List<BillApprovalEntity> all = billRepository.findAll();
+        return all.stream()
+                .filter(b -> clientId == null || clientId.isBlank() || clientId.equalsIgnoreCase(b.getClientId()))
+                .filter(b -> projectId == null || projectId.isBlank() || projectId.equalsIgnoreCase(b.getProjectId()))
+                .sorted(Comparator.comparing(BillApprovalEntity::getCreatedAt).reversed())
+                .collect(Collectors.toList());
     }
 }
