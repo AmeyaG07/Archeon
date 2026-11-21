@@ -206,10 +206,10 @@ export function AdminCreateClientModal({
             </div>
           </div>
 
-          {/* Notes */}
+          {/* Client Specifications */}
           <div>
             <label className="flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
-              <FileText size={12} /> Client & Design Preferences / Notes
+              <FileText size={12} /> Client Specifications
             </label>
             <textarea
               rows={2}

@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { X, UserPlus, Mail, Phone, Building2, MapPin, CreditCard, ShieldCheck, AlertCircle, CheckCircle2 } from "lucide-react";
+import React, { useState, useRef } from "react";
+import { X, UserPlus, Mail, Phone, Building2, MapPin, CreditCard, ShieldCheck, AlertCircle, CheckCircle2, QrCode, Image as ImageIcon, Trash2, UploadCloud } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 
 const TRADE_CATEGORIES = [
@@ -12,7 +12,7 @@ const TRADE_CATEGORIES = [
   { value: "HVAC", label: "HVAC & Climate Systems" },
   { value: "MASONRY", label: "Stone, Marble & Masonry" },
   { value: "FABRICATION", label: "Structural Glass & Metal Fabrication" },
-  { value: "OTHER", label: "Finishing & Decorative Hardware" },
+  { value: "OTHER", label: "Others (Custom Trade)" },
 ];
 
 interface AdminCreateVendorModalProps {
@@ -26,13 +26,14 @@ export function AdminCreateVendorModal({
   onClose,
   onVendorCreated,
 }: AdminCreateVendorModalProps) {
+  const qrInputRef = useRef<HTMLInputElement>(null);
   const [businessName, setBusinessName] = useState("");
   const [contactPerson, setContactPerson] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [category, setCategory] = useState("CIVIL_WORK");
+  const [customCategory, setCustomCategory] = useState("");
   const [location, setLocation] = useState("");
-  const [gstin, setGstin] = useState("");
 
   // Payment details (optional initial setup)
   const [accountHolderName, setAccountHolderName] = useState("");
@@ -40,6 +41,8 @@ export function AdminCreateVendorModal({
   const [accountNumber, setAccountNumber] = useState("");
   const [ifscCode, setIfscCode] = useState("");
   const [upiId, setUpiId] = useState("");
+  const [qrPhotoPreview, setQrPhotoPreview] = useState<string | null>(null);
+  const [qrFileName, setQrFileName] = useState<string | null>(null);
 
   const [sendInvite, setSendInvite] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -47,6 +50,26 @@ export function AdminCreateVendorModal({
   const [success, setSuccess] = useState(false);
 
   if (!isOpen) return null;
+
+  const handleQrPhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setQrFileName(file.name);
+      const reader = new FileReader();
+      reader.onload = () => {
+        setQrPhotoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveQrPhoto = () => {
+    setQrPhotoPreview(null);
+    setQrFileName(null);
+    if (qrInputRef.current) {
+      qrInputRef.current.value = "";
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,7 +82,12 @@ export function AdminCreateVendorModal({
 
     setSubmitting(true);
     try {
-      // 1. Create vendor record
+      const resolvedCategory =
+        category === "OTHER"
+          ? (customCategory.trim() || "OTHER")
+          : category;
+
+      // 1. Create vendor record (without GSTIN as requested)
       const res = await apiFetch("/api/vendors", {
         method: "POST",
         body: {
@@ -67,9 +95,8 @@ export function AdminCreateVendorModal({
           contactPerson: contactPerson.trim(),
           email: email.trim().toLowerCase(),
           phone: phone.trim(),
-          category,
+          category: resolvedCategory,
           location: location.trim() || undefined,
-          gstin: gstin.trim() || undefined,
         },
       });
 
@@ -80,8 +107,8 @@ export function AdminCreateVendorModal({
 
       const vendor = await res.json();
 
-      // 2. If banking details provided, save payment method for vendor
-      if (vendor.id && (accountNumber.trim() || upiId.trim())) {
+      // 2. If banking details or QR provided, save payment method for vendor
+      if (vendor.id && (accountNumber.trim() || upiId.trim() || qrPhotoPreview)) {
         try {
           await apiFetch(`/api/vendor-payment-methods/vendor/${vendor.id}`, {
             method: "PUT",
@@ -91,6 +118,7 @@ export function AdminCreateVendorModal({
               accountNumber: accountNumber.trim() || undefined,
               ifscCode: ifscCode.trim() || undefined,
               upiId: upiId.trim() || undefined,
+              qrCodeUrl: qrPhotoPreview || undefined,
             },
           });
         } catch {
@@ -119,12 +147,13 @@ export function AdminCreateVendorModal({
         setEmail("");
         setPhone("");
         setLocation("");
-        setGstin("");
         setAccountHolderName("");
         setBankName("");
         setAccountNumber("");
         setIfscCode("");
         setUpiId("");
+        setQrPhotoPreview(null);
+        setQrFileName(null);
         setSuccess(false);
       }, 1000);
     } catch (err: unknown) {
@@ -202,6 +231,16 @@ export function AdminCreateVendorModal({
                   </option>
                 ))}
               </select>
+              {category === "OTHER" && (
+                <input
+                  type="text"
+                  required
+                  placeholder="Specify custom trade discipline (e.g. Glass Inlay, Copper Flashing)..."
+                  value={customCategory}
+                  onChange={(e) => setCustomCategory(e.target.value)}
+                  className="mt-2 w-full rounded-sm border border-[#A58A64] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:ring-1 focus:ring-[#A58A64] focus:outline-none"
+                />
+              )}
             </div>
           </div>
 
@@ -234,8 +273,8 @@ export function AdminCreateVendorModal({
             </div>
           </div>
 
-          {/* Email, Phone & GSTIN */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {/* Email & Phone (GSTIN / Tax ID removed as requested) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
                 <Mail size={12} /> Email Address *
@@ -262,25 +301,66 @@ export function AdminCreateVendorModal({
                 className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
               />
             </div>
-            <div>
-              <label className="block font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
-                GSTIN / Tax ID
-              </label>
-              <input
-                type="text"
-                value={gstin}
-                onChange={(e) => setGstin(e.target.value.toUpperCase())}
-                placeholder="27AABCU9603R1ZM"
-                className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
-              />
-            </div>
           </div>
 
-          {/* Initial Banking & UPI Section (Optional) */}
+          {/* Initial Banking, UPI & Payment QR Section */}
           <div className="rounded-sm border border-[#D8D6D0] bg-white p-4">
-            <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-[#A58A64]">
-              <CreditCard size={13} /> Direct Settlement & Payment Settings (Optional)
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-[#A58A64]">
+                <CreditCard size={13} /> Direct Settlement & Payment Settings (Optional)
+              </div>
+              
+              {/* Option to Add QR Photo */}
+              <button
+                type="button"
+                onClick={() => qrInputRef.current?.click()}
+                className="inline-flex items-center gap-1 font-mono text-[9.5px] uppercase tracking-wider text-[#A58A64] hover:text-[#171717] transition-colors cursor-pointer"
+              >
+                <QrCode size={13} />
+                <span>{qrPhotoPreview ? "Change QR Photo" : "+ Add QR Photo"}</span>
+              </button>
+              <input
+                ref={qrInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleQrPhotoChange}
+                className="hidden"
+              />
             </div>
+
+            {/* QR Photo Preview Card */}
+            {qrPhotoPreview && (
+              <div className="mt-3 flex items-center justify-between rounded-sm border border-[#C6A779]/40 bg-[#FAF8F5] p-3">
+                <div className="flex items-center gap-3">
+                  <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xs border border-[#D8D6D0] bg-white p-1">
+                    <img
+                      src={qrPhotoPreview}
+                      alt="Vendor Payment QR Preview"
+                      className="h-full w-full object-contain"
+                    />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-1.5 font-mono text-xs font-semibold text-[#171717]">
+                      <QrCode size={13} className="text-[#A58A64]" />
+                      <span>{qrFileName || "Vendor Payment QR Code"}</span>
+                    </div>
+                    <p className="font-mono text-[9px] uppercase tracking-wider text-[#A58A64] mt-0.5">
+                      Ready for Direct UPI / Escrow Disbursements
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleRemoveQrPhoto}
+                  className="rounded-xs p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                  title="Remove QR code"
+                >
+                  <Trash2 size={15} />
+                </button>
+              </div>
+            )}
+
             <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block font-mono text-[9px] uppercase tracking-wider text-[#77736C]">

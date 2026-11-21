@@ -3,7 +3,9 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { ArrowUpRight, Shield, ChevronDown, Phone, Mail } from "lucide-react";
+import { useAuth } from "@/providers/AuthProvider";
 
 interface HeaderProps {
   lightingMode: "noon" | "sunset" | "night";
@@ -28,9 +30,31 @@ export function Header({
   onOpenClientPortal,
   onOpenVendorPortal,
 }: HeaderProps) {
+  const router = useRouter();
+  const { user, isAuthenticated } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [portalDropdownOpen, setPortalDropdownOpen] = useState(false);
+
+  const handleClientPortalClick = () => {
+    setPortalDropdownOpen(false);
+    setMobileMenuOpen(false);
+    if (isAuthenticated && (user?.role === "ROLE_CLIENT" || user?.role === "CLIENT")) {
+      router.push("/client");
+    } else {
+      onOpenClientPortal();
+    }
+  };
+
+  const handleVendorPortalClick = () => {
+    setPortalDropdownOpen(false);
+    setMobileMenuOpen(false);
+    if (isAuthenticated && (user?.role === "ROLE_VENDOR" || user?.role === "VENDOR")) {
+      router.push("/vendor");
+    } else {
+      onOpenVendorPortal();
+    }
+  };
 
   const closeMenu = () => {
     setMobileMenuOpen(false);
@@ -182,10 +206,7 @@ export function Header({
 
                   <button
                     type="button"
-                    onClick={() => {
-                      setPortalDropdownOpen(false);
-                      onOpenClientPortal();
-                    }}
+                    onClick={handleClientPortalClick}
                     className="w-full text-left px-3 py-2 text-xs font-['Outfit',sans-serif] text-stone-300 hover:text-white hover:bg-white/10 rounded-xs transition-colors flex items-center justify-between group"
                   >
                     <span>Client Portal</span>
@@ -197,10 +218,7 @@ export function Header({
 
                   <button
                     type="button"
-                    onClick={() => {
-                      setPortalDropdownOpen(false);
-                      onOpenVendorPortal();
-                    }}
+                    onClick={handleVendorPortalClick}
                     className="w-full text-left px-3 py-2 text-xs font-['Outfit',sans-serif] text-stone-300 hover:text-white hover:bg-white/10 rounded-xs transition-colors flex items-center justify-between group"
                   >
                     <span>Vendor Portal</span>
@@ -327,10 +345,7 @@ export function Header({
               <button
                 type="button"
                 tabIndex={mobileMenuOpen ? 0 : -1}
-                onClick={() => {
-                  closeMenu();
-                  onOpenClientPortal();
-                }}
+                onClick={handleClientPortalClick}
                 className="border border-white/15 bg-white/[0.03] px-4 py-3 text-left font-['Outfit',sans-serif] text-[12px] tracking-wider text-white/80 hover:border-[#B68A4A] hover:text-[#C6A779] transition-all rounded-xs flex items-center justify-between"
               >
                 <span>Client Portal</span>
@@ -340,10 +355,7 @@ export function Header({
               <button
                 type="button"
                 tabIndex={mobileMenuOpen ? 0 : -1}
-                onClick={() => {
-                  closeMenu();
-                  onOpenVendorPortal();
-                }}
+                onClick={handleVendorPortalClick}
                 className="border border-white/15 bg-white/[0.03] px-4 py-3 text-left font-['Outfit',sans-serif] text-[12px] tracking-wider text-white/80 hover:border-[#B68A4A] hover:text-[#C6A779] transition-all rounded-xs flex items-center justify-between"
               >
                 <span>Vendor Portal</span>

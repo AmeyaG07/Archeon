@@ -71,6 +71,7 @@ export default function AdminClientsPage() {
             : "Not Invited") as any,
           createdAt: c.createdAt || new Date().toISOString(),
           lastUpdated: c.updatedAt || new Date().toISOString(),
+          notes: c.notes || c.clientPreferences || c.specifications || "",
           projects: [],
         }));
         setClients(records);

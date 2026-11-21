@@ -173,13 +173,13 @@ export function AdminEditClientModal({
 
           <div>
             <label className="flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
-              <FileText size={12} /> Notes & Preferences
+              <FileText size={12} /> Client Specifications
             </label>
             <textarea
               rows={2}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Update client notes..."
+              placeholder="e.g. Modern minimalist villa, bespoke stone finishes..."
               className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
             />
           </div>

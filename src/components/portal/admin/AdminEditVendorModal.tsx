@@ -13,7 +13,7 @@ const TRADE_CATEGORIES = [
   { value: "HVAC", label: "HVAC & Climate Systems" },
   { value: "MASONRY", label: "Stone, Marble & Masonry" },
   { value: "FABRICATION", label: "Structural Glass & Metal Fabrication" },
-  { value: "OTHER", label: "Finishing & Decorative Hardware" },
+  { value: "OTHER", label: "Others (Custom Trade)" },
 ];
 
 interface AdminEditVendorModalProps {
@@ -33,8 +33,8 @@ export function AdminEditVendorModal({
   const [contactPerson, setContactPerson] = useState("");
   const [phone, setPhone] = useState("");
   const [category, setCategory] = useState("CIVIL_WORK");
+  const [customCategory, setCustomCategory] = useState("");
   const [location, setLocation] = useState("");
-  const [gstin, setGstin] = useState("");
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,9 +45,15 @@ export function AdminEditVendorModal({
       setBusinessName(vendor.businessName || "");
       setContactPerson(vendor.contactPerson || "");
       setPhone(vendor.phone || "");
-      setCategory(vendor.vendorCategory || vendor.category || "CIVIL_WORK");
+      const matchedCat = TRADE_CATEGORIES.some((c) => c.value === vendor.category);
+      if (matchedCat) {
+        setCategory(vendor.category || "CIVIL_WORK");
+        setCustomCategory("");
+      } else {
+        setCategory("OTHER");
+        setCustomCategory(vendor.category || "");
+      }
       setLocation(vendor.location || "");
-      setGstin(vendor.taxId || "");
       setError(null);
       setSuccess(false);
     }
@@ -66,15 +72,19 @@ export function AdminEditVendorModal({
 
     setSubmitting(true);
     try {
+      const resolvedCategory =
+        category === "OTHER"
+          ? (customCategory.trim() || "OTHER")
+          : category;
+
       const res = await apiFetch(`/api/vendors/${vendor.id}`, {
         method: "PUT",
         body: {
           businessName: businessName.trim(),
           contactPerson: contactPerson.trim(),
           phone: phone.trim(),
-          category,
+          category: resolvedCategory,
           location: location.trim() || undefined,
-          gstin: gstin.trim() || undefined,
         },
       });
 
@@ -163,6 +173,16 @@ export function AdminEditVendorModal({
                   </option>
                 ))}
               </select>
+              {category === "OTHER" && (
+                <input
+                  type="text"
+                  required
+                  placeholder="Specify custom trade discipline..."
+                  value={customCategory}
+                  onChange={(e) => setCustomCategory(e.target.value)}
+                  className="mt-2 w-full rounded-sm border border-[#A58A64] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:ring-1 focus:ring-[#A58A64] focus:outline-none"
+                />
+              )}
             </div>
             <div>
               <label className="block font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
@@ -192,28 +212,16 @@ export function AdminEditVendorModal({
               />
             </div>
             <div>
-              <label className="block font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
-                GSTIN / Tax ID
+              <label className="flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
+                <MapPin size={12} /> Workshop / City
               </label>
               <input
                 type="text"
-                value={gstin}
-                onChange={(e) => setGstin(e.target.value.toUpperCase())}
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
                 className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
               />
             </div>
-          </div>
-
-          <div>
-            <label className="flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
-              <MapPin size={12} /> Workshop / City
-            </label>
-            <input
-              type="text"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
-            />
           </div>
 
           <div className="mt-6 flex items-center justify-end gap-3 border-t border-[#D8D6D0] pt-4">

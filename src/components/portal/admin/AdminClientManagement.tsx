@@ -25,6 +25,7 @@ import {
   Check,
   Copy,
   ExternalLink,
+  FileText,
 } from "lucide-react";
 
 export type AdminClientStatus =
@@ -63,6 +64,7 @@ export interface AdminClientRecord {
   portalAccess: ClientPortalAccessStatus;
   createdAt: string;
   lastUpdated: string;
+  notes?: string;
   projects: AdminClientProject[];
 }
 
@@ -552,6 +554,17 @@ export function AdminClientManagement({
                       label="Location"
                       value={selectedClient.location}
                     />
+                  )}
+
+                  {selectedClient.notes && (
+                    <div className="mt-4 rounded-xs border border-[#E5E2DC] bg-[#FAF8F5] p-3 text-xs">
+                      <div className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-wider text-[#A58A64] font-semibold mb-1">
+                        <FileText size={11} /> Client Specifications
+                      </div>
+                      <p className="font-sans text-xs text-[#444] leading-relaxed">
+                        {selectedClient.notes}
+                      </p>
+                    </div>
                   )}
                 </div>
               </section>
@@ -1074,6 +1087,17 @@ function ClientCard({
           value={client.location || "Location not specified"}
         />
       </div>
+
+      {client.notes ? (
+        <div className="mt-4 rounded-xs border border-[#E5E2DC] bg-[#FAF8F5] p-3 text-xs">
+          <div className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-wider text-[#A58A64] font-semibold mb-1">
+            <FileText size={11} /> Client Specifications
+          </div>
+          <p className="font-sans text-xs text-[#55524D] leading-relaxed line-clamp-2">
+            {client.notes}
+          </p>
+        </div>
+      ) : null}
 
       <div className="mt-6 flex flex-col justify-between gap-4 border-t border-[#E5E2DC] pt-5 sm:flex-row sm:items-center">
         <div className="flex flex-wrap gap-x-6 gap-y-2 text-[10px] text-[#77736C]">

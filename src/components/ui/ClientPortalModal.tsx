@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Mail, ShieldCheck, Lock, Layers, FileText, CheckCircle2, ArrowUpRight, Compass } from "lucide-react";
 import { useAudio } from "@/providers/AudioProvider";
+import { useAuth } from "@/providers/AuthProvider";
 
 interface ClientPortalModalProps {
   isOpen: boolean;
@@ -12,6 +13,7 @@ interface ClientPortalModalProps {
 
 export function ClientPortalModal({ isOpen, onClose }: ClientPortalModalProps) {
   const { playSfx } = useAudio();
+  const { isAuthenticated, user } = useAuth();
   const [requested, setRequested] = useState(false);
   const handleRequestAccess = () => {
     playSfx("enter-project");
@@ -168,11 +170,11 @@ export function ClientPortalModal({ isOpen, onClose }: ClientPortalModalProps) {
               )}
 
               <a
-                href="/login"
+                href={isAuthenticated && (user?.role === "ROLE_CLIENT" || user?.role === "CLIENT") ? "/client" : "/login"}
                 className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/15 hover:border-white/30 text-stone-300 hover:text-white font-['Outfit',sans-serif] text-[12.5px] font-medium tracking-wide transition-all"
               >
                 <ShieldCheck size={14} className="text-[#C6A779]" />
-                <span>Sign In to Existing Workspace</span>
+                <span>{isAuthenticated && (user?.role === "ROLE_CLIENT" || user?.role === "CLIENT") ? "Enter Client Workspace" : "Sign In to Existing Workspace"}</span>
               </a>
             </div>
 

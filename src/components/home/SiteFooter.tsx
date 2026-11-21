@@ -2,9 +2,11 @@
 
 import React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { ArrowUpRight } from "lucide-react";
 import { siteConfig } from "@/config/siteConfig";
+import { useAuth } from "@/providers/AuthProvider";
 
 const FooterClockEmblem = dynamic(
   () => import("@/components/home/FooterClockEmblem").then((m) => m.FooterClockEmblem),
@@ -107,6 +109,25 @@ export function SiteFooter({
   onOpenVendorPortal,
   onOpenConsultation,
 }: SiteFooterProps) {
+  const router = useRouter();
+  const { user, isAuthenticated } = useAuth();
+
+  const handleClientPortalClick = () => {
+    if (isAuthenticated && (user?.role === "ROLE_CLIENT" || user?.role === "CLIENT")) {
+      router.push("/client");
+    } else {
+      onOpenClientPortal();
+    }
+  };
+
+  const handleVendorPortalClick = () => {
+    if (isAuthenticated && (user?.role === "ROLE_VENDOR" || user?.role === "VENDOR")) {
+      router.push("/vendor");
+    } else {
+      onOpenVendorPortal();
+    }
+  };
+
   const scrollToSection = (href: string) => {
     document.querySelector(href)?.scrollIntoView({
       behavior: "smooth",
@@ -181,7 +202,7 @@ export function SiteFooter({
                 <div className="flex flex-col gap-3">
                   <button
                     type="button"
-                    onClick={onOpenClientPortal}
+                    onClick={handleClientPortalClick}
                     className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg bg-[#141414] hover:bg-[#1C1C1C] border border-white/10 hover:border-white/30 text-[13px] font-['Outfit',sans-serif] text-white/90 hover:text-white transition-all group shadow-sm cursor-pointer"
                   >
                     <span>Client Portal</span>
@@ -193,7 +214,7 @@ export function SiteFooter({
 
                   <button
                     type="button"
-                    onClick={onOpenVendorPortal}
+                    onClick={handleVendorPortalClick}
                     className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg bg-[#141414] hover:bg-[#1C1C1C] border border-white/10 hover:border-white/30 text-[13px] font-['Outfit',sans-serif] text-white/90 hover:text-white transition-all group shadow-sm cursor-pointer"
                   >
                     <span>Vendor Portal</span>

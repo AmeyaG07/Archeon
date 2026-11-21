@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { X, UserPlus, Building2, Briefcase, IndianRupee, FileText, AlertCircle, CheckCircle2 } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { X, UserPlus, Building2, Briefcase, IndianRupee, FileText, AlertCircle, CheckCircle2, MessageSquare, Image as ImageIcon, Trash2, UploadCloud } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 
 interface VendorOption {
@@ -10,6 +10,7 @@ interface VendorOption {
   vendorReference?: string;
   category?: string;
   contactPerson?: string;
+  phone?: string;
 }
 
 interface AdminAssignVendorModalProps {
@@ -27,10 +28,14 @@ export function AdminAssignVendorModal({
   onClose,
   onVendorAssigned,
 }: AdminAssignVendorModalProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [vendorId, setVendorId] = useState("");
   const [scopeOfWork, setScopeOfWork] = useState("");
   const [contractAmount, setContractAmount] = useState("");
   const [notes, setNotes] = useState("");
+  const [sendWhatsApp, setSendWhatsApp] = useState(true);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [photoFileName, setPhotoFileName] = useState<string | null>(null);
 
   const [vendors, setVendors] = useState<VendorOption[]>([]);
   const [loadingVendors, setLoadingVendors] = useState(false);
@@ -61,6 +66,26 @@ export function AdminAssignVendorModal({
 
   if (!isOpen) return null;
 
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setPhotoFileName(file.name);
+      const reader = new FileReader();
+      reader.onload = () => {
+        setPhotoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemovePhoto = () => {
+    setPhotoPreview(null);
+    setPhotoFileName(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -76,19 +101,45 @@ export function AdminAssignVendorModal({
 
     setSubmitting(true);
     try {
+      const selectedVendor = vendors.find((v) => v.id === vendorId);
+      const enrichedNotes = photoFileName
+        ? `${notes.trim() ? notes.trim() + "\n\n" : ""}[Attached Site Reference Photo: ${photoFileName}]`
+        : notes.trim();
+
       const res = await apiFetch(`/api/operational-projects/${projectId}/vendors`, {
         method: "POST",
         body: {
           vendorId,
           scopeOfWork: scopeOfWork.trim(),
           contractAmount: contractAmount ? Number(contractAmount) : undefined,
-          notes: notes.trim() || undefined,
+          notes: enrichedNotes || undefined,
         },
       });
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
         throw new Error(errData.error || `Failed to assign vendor (HTTP ${res.status})`);
+      }
+
+      // If sendWhatsApp is enabled, dispatch WhatsApp update
+      if (sendWhatsApp && selectedVendor) {
+        const targetPhone = selectedVendor.phone ? selectedVendor.phone.replace(/[^0-9]/g, "") : "";
+        const waMessage =
+          `*ArcheOn Design Studio — Project Assignment Notice*\n\n` +
+          `Hello ${selectedVendor.contactPerson || selectedVendor.businessName},\n` +
+          `You have been assigned to project: *${projectName}*.\n\n` +
+          `*Scope of Work:* ${scopeOfWork.trim()}\n` +
+          (contractAmount ? `*Allocated Budget:* ₹${Number(contractAmount).toLocaleString("en-IN")}\n` : "") +
+          (notes.trim() ? `*Instructions & Site Conditions:* ${notes.trim()}\n\n` : "\n") +
+          (photoFileName ? `*Attachment:* ${photoFileName}\n\n` : "") +
+          `Please access your ArcheOn Vendor Portal to view project files, progress logs, and submit invoices.`;
+
+        const waUrl = targetPhone
+          ? `https://wa.me/${targetPhone}?text=${encodeURIComponent(waMessage)}`
+          : `https://wa.me/?text=${encodeURIComponent(waMessage)}`;
+
+        // Open WhatsApp web/app in a new window
+        window.open(waUrl, "_blank", "noopener,noreferrer");
       }
 
       setSuccess(true);
@@ -98,6 +149,8 @@ export function AdminAssignVendorModal({
         setScopeOfWork("");
         setContractAmount("");
         setNotes("");
+        setPhotoPreview(null);
+        setPhotoFileName(null);
         setSuccess(false);
       }, 1000);
     } catch (err: unknown) {
@@ -206,11 +259,31 @@ export function AdminAssignVendorModal({
             </p>
           </div>
 
-          {/* Notes */}
+          {/* Specific Instructions or Site Conditions */}
           <div>
-            <label className="flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
-              <FileText size={12} /> Specific Instructions or Site Conditions
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
+                <FileText size={12} /> Specific Instructions or Site Conditions
+              </label>
+
+              {/* Add Photo Button */}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="inline-flex items-center gap-1 text-[10px] font-mono uppercase tracking-wider text-[#A58A64] hover:text-[#171717] transition-colors cursor-pointer"
+              >
+                <ImageIcon size={12} />
+                <span>{photoPreview ? "Change Photo" : "+ Add Photo"}</span>
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoChange}
+                className="hidden"
+              />
+            </div>
+
             <textarea
               rows={2}
               value={notes}
@@ -218,6 +291,63 @@ export function AdminAssignVendorModal({
               placeholder="e.g. Material staging permitted only on Ground Floor west terrace."
               className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
             />
+
+            {/* Photo Preview Card */}
+            {photoPreview && (
+              <div className="mt-2.5 flex items-center justify-between rounded-sm border border-[#C6A779]/40 bg-[#FAF8F5] p-2.5">
+                <div className="flex items-center gap-3">
+                  <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xs border border-[#D8D6D0] bg-white">
+                    <img
+                      src={photoPreview}
+                      alt="Site condition thumbnail"
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-mono text-xs font-semibold text-[#171717] truncate max-w-[240px]">
+                      {photoFileName}
+                    </p>
+                    <p className="font-mono text-[9px] uppercase tracking-wider text-[#A58A64]">
+                      Attached to Vendor Instructions
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleRemovePhoto}
+                  className="rounded-xs p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                  title="Remove photo"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Send Update to Vendor via WhatsApp */}
+          <div className="rounded-sm border border-[#25D366]/30 bg-[#25D366]/5 p-3.5 transition-all">
+            <label className="flex items-start gap-2.5 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={sendWhatsApp}
+                onChange={(e) => setSendWhatsApp(e.target.checked)}
+                className="mt-0.5 rounded border-[#25D366] text-[#25D366] focus:ring-[#25D366]"
+              />
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[#25D366] text-white">
+                    <MessageSquare size={10} />
+                  </span>
+                  <span className="font-mono text-xs font-semibold text-[#171717]">
+                    Send this update to the vendor (WhatsApp message)
+                  </span>
+                </div>
+                <p className="mt-1 font-mono text-[10.5px] text-[#55514A] leading-relaxed">
+                  Automatically prepares and dispatches a verified WhatsApp notification to the trade partner with the project scope, budget, and site instructions.
+                </p>
+              </div>
+            </label>
           </div>
 
           <div className="mt-6 flex items-center justify-end gap-3 border-t border-[#D8D6D0] pt-4">

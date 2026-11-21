@@ -25,6 +25,7 @@ export function AdminCreateProjectModal({
   const [name, setName] = useState("");
   const [clientId, setClientId] = useState("");
   const [projectType, setProjectType] = useState("RESIDENTIAL_ARCHITECTURE");
+  const [customProjectType, setCustomProjectType] = useState("");
   const [siteAddress, setSiteAddress] = useState("");
   const [contractValue, setContractValue] = useState("");
   const [budgetAllocated, setBudgetAllocated] = useState("");
@@ -32,6 +33,15 @@ export function AdminCreateProjectModal({
   const [expectedCompletionDate, setExpectedCompletionDate] = useState("");
   const [lastVisitDate, setLastVisitDate] = useState("");
   const [notes, setNotes] = useState("");
+
+  const handleSetDuration = (months: number) => {
+    const base = startDate ? new Date(startDate) : new Date();
+    base.setMonth(base.getMonth() + months);
+    const yyyy = base.getFullYear();
+    const mm = String(base.getMonth() + 1).padStart(2, "0");
+    const dd = String(base.getDate()).padStart(2, "0");
+    setExpectedCompletionDate(`${yyyy}-${mm}-${dd}`);
+  };
 
   const [clients, setClients] = useState<ClientOption[]>([]);
   const [loadingClients, setLoadingClients] = useState(false);
@@ -76,10 +86,15 @@ export function AdminCreateProjectModal({
 
     setSubmitting(true);
     try {
+      const resolvedType =
+        projectType === "OTHER"
+          ? (customProjectType.trim() || "OTHER")
+          : projectType;
+
       const payload: Record<string, any> = {
         name: name.trim(),
         clientId,
-        projectType,
+        projectType: resolvedType,
         siteAddress: siteAddress.trim() || undefined,
         contractValue: contractValue ? parseFloat(contractValue) : undefined,
         budgetAllocated: budgetAllocated ? parseFloat(budgetAllocated) : undefined,
@@ -201,7 +216,18 @@ export function AdminCreateProjectModal({
                 <option value="COMMERCIAL_INTERIOR">Commercial Interior</option>
                 <option value="LANDSCAPE_DESIGN">Landscape Architecture</option>
                 <option value="TURNKEY_EXECUTION">Turnkey Execution</option>
+                <option value="OTHER">Others (Custom Category)</option>
               </select>
+              {projectType === "OTHER" && (
+                <input
+                  type="text"
+                  required
+                  placeholder="Specify custom project category..."
+                  value={customProjectType}
+                  onChange={(e) => setCustomProjectType(e.target.value)}
+                  className="mt-2 w-full border border-[#A58A64] bg-white px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-[#A58A64]"
+                />
+              )}
             </div>
           </div>
 
@@ -273,9 +299,37 @@ export function AdminCreateProjectModal({
             </div>
 
             <div>
-              <label className="block font-mono text-[9px] uppercase tracking-widest text-[#77736C] mb-1">
-                Expected Completion
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block font-mono text-[9px] uppercase tracking-widest text-[#77736C]">
+                  Expected Completion
+                </label>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => handleSetDuration(3)}
+                    className="rounded border border-[#D8D6D0] bg-[#FAF8F5] px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-wider text-[#77736C] hover:border-[#A58A64] hover:bg-[#A58A64] hover:text-white transition-all cursor-pointer"
+                    title="Set to 3 months"
+                  >
+                    3 Mo
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSetDuration(6)}
+                    className="rounded border border-[#D8D6D0] bg-[#FAF8F5] px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-wider text-[#77736C] hover:border-[#A58A64] hover:bg-[#A58A64] hover:text-white transition-all cursor-pointer"
+                    title="Set to 6 months"
+                  >
+                    6 Mo
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSetDuration(12)}
+                    className="rounded border border-[#D8D6D0] bg-[#FAF8F5] px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-wider text-[#77736C] hover:border-[#A58A64] hover:bg-[#A58A64] hover:text-white transition-all cursor-pointer"
+                    title="Set to 1 year"
+                  >
+                    1 Yr
+                  </button>
+                </div>
+              </div>
               <input
                 type="date"
                 value={expectedCompletionDate}

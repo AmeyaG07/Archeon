@@ -9,7 +9,7 @@ type LoginTarget = "admin" | "client" | "vendor";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, user, isAuthenticated, isLoading: authLoading } = useAuth();
 
   const [activeTab, setActiveTab] = useState<LoginTarget>("admin");
   const [username, setUsername] = useState("");
@@ -17,6 +17,19 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Persistent login check: If already authenticated, redirect directly without re-login
+  React.useEffect(() => {
+    if (!authLoading && isAuthenticated && user) {
+      if (user.role === "ROLE_ADMIN" || user.role === "ADMIN") {
+        router.replace("/admin");
+      } else if (user.role === "ROLE_CLIENT" || user.role === "CLIENT") {
+        router.replace("/client");
+      } else if (user.role === "ROLE_VENDOR" || user.role === "VENDOR") {
+        router.replace("/vendor");
+      }
+    }
+  }, [authLoading, isAuthenticated, user, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
