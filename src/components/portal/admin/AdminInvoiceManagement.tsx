@@ -18,6 +18,9 @@ import {
   Filter,
   Clock3,
   CheckCircle2,
+  FileSpreadsheet,
+  Receipt,
+  ImageIcon,
 } from "lucide-react";
 
 export type AdminInvoicePartyType = "Client" | "Vendor";
@@ -59,6 +62,9 @@ export interface AdminInvoiceRecord {
   financeRemarks?: string;
   attachmentCount: number;
   lastUpdated: string;
+  projectTotalExpenses?: number;
+  billPhotoUrl?: string;
+  clientId?: string;
 }
 
 export interface AdminInvoiceSummary {
@@ -73,11 +79,13 @@ export interface AdminInvoiceSummary {
 interface AdminInvoiceManagementProps {
   invoices: AdminInvoiceRecord[];
   summary?: AdminInvoiceSummary;
+  clientsList?: { id: string; fullName: string; reference?: string }[];
   loading?: boolean;
   error?: string;
   updatingInvoiceId?: string;
 
   onRefresh?: () => void;
+  onAddBill?: (clientId?: string) => void;
   onOpenInvoice?: (invoiceId: string) => void;
   onReviewInvoice?: (invoiceId: string) => void;
   onOpenParty?: (
@@ -169,10 +177,12 @@ function isValidMoney(value: number) {
 export function AdminInvoiceManagement({
   invoices,
   summary,
+  clientsList = [],
   loading = false,
   error,
   updatingInvoiceId,
   onRefresh,
+  onAddBill,
   onOpenInvoice,
   onReviewInvoice,
   onOpenParty,
@@ -184,6 +194,7 @@ export function AdminInvoiceManagement({
     useState<StatusFilter>("All");
   const [partyFilter, setPartyFilter] =
     useState<PartyFilter>("All");
+  const [selectedClientId, setSelectedClientId] = useState<string>("All");
   const [selectedInvoice, setSelectedInvoice] =
     useState<AdminInvoiceRecord | null>(null);
 
@@ -242,24 +253,78 @@ export function AdminInvoiceManagement({
         partyFilter === "All" ||
         invoice.partyType === partyFilter;
 
-      return matchesSearch && matchesStatus && matchesParty;
+      const matchesClient =
+        selectedClientId === "All" ||
+        invoice.clientId === selectedClientId ||
+        invoice.partyId === selectedClientId;
+
+      return matchesSearch && matchesStatus && matchesParty && matchesClient;
     });
-  }, [invoices, search, statusFilter, partyFilter]);
+  }, [invoices, search, statusFilter, partyFilter, selectedClientId]);
 
   function clearFilters() {
     setSearch("");
     setStatusFilter("All");
     setPartyFilter("All");
+    setSelectedClientId("All");
   }
 
   function openInvoice(invoice: AdminInvoiceRecord) {
     setSelectedInvoice(invoice);
   }
 
+  const handleExportExcel = () => {
+    if (filteredInvoices.length === 0) {
+      alert("No invoices or bills available to export.");
+      return;
+    }
+
+    const headers = [
+      "Bill / Invoice Ref",
+      "Party Type",
+      "Client / Vendor Name",
+      "Project Name",
+      "Issue Date",
+      "Bill Amount (INR)",
+      "Total Project Expenses (INR)",
+      "Status",
+      "Details / Scope Description",
+      "Attachment Available"
+    ];
+
+    const rows = filteredInvoices.map((inv) => [
+      `"${inv.reference.replace(/"/g, '""')}"`,
+      `"${inv.partyType}"`,
+      `"${inv.partyName.replace(/"/g, '""')}"`,
+      `"${(inv.projectName || "General Architecture").replace(/"/g, '""')}"`,
+      `"${formatDate(inv.invoiceDate)}"`,
+      inv.totalAmount,
+      inv.projectTotalExpenses ?? inv.totalAmount,
+      `"${inv.status}"`,
+      `"${(inv.description || "N/A").replace(/"/g, '""')}"`,
+      inv.attachmentCount > 0 || inv.billPhotoUrl ? "Yes" : "No"
+    ]);
+
+    const csvContent = "\uFEFF" + [headers.join(","), ...rows.map((r) => r.join(","))].join("\r\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `ArcheOn_Invoices_and_Bills_Report_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const selectedClientObj = clientsList.find((c) => c.id === selectedClientId);
+  const selectedClientTotalExpenses = filteredInvoices.reduce((acc, curr) => acc + (curr.totalAmount || 0), 0);
+
   const hasFilters =
     Boolean(search) ||
     statusFilter !== "All" ||
-    partyFilter !== "All";
+    partyFilter !== "All" ||
+    selectedClientId !== "All";
 
   return (
     <main className="min-h-screen bg-[#F2F0EB] px-5 py-9 md:px-10 md:py-12 lg:px-12">
@@ -281,17 +346,39 @@ export function AdminInvoiceManagement({
           </p>
         </div>
 
-        {onRefresh && (
+        <div className="flex flex-wrap items-center gap-3">
+          {onRefresh && (
+            <button
+              type="button"
+              onClick={onRefresh}
+              disabled={loading}
+              className="inline-flex w-fit items-center gap-2 border border-[#D8D6D0] bg-white px-5 py-3 text-[10px] uppercase tracking-widest text-[#55514A] hover:border-[#A58A64] disabled:opacity-50 transition-colors"
+            >
+              <RefreshCw size={14} />
+              Refresh
+            </button>
+          )}
+
           <button
             type="button"
-            onClick={onRefresh}
-            disabled={loading}
-            className="inline-flex w-fit items-center gap-2 border border-[#D8D6D0] bg-white px-5 py-3 text-[10px] uppercase tracking-widest text-[#55514A] hover:border-[#A58A64] disabled:opacity-50"
+            onClick={handleExportExcel}
+            className="inline-flex items-center gap-2 rounded-sm border border-[#2e7d32] bg-[#f1f8e9] px-5 py-3 font-mono text-[10px] uppercase tracking-widest text-[#1b5e20] hover:bg-[#2e7d32] hover:text-white transition-colors shadow-xs font-semibold cursor-pointer"
           >
-            <RefreshCw size={14} />
-            Refresh Invoices
+            <FileSpreadsheet size={15} />
+            Export Excel Report
           </button>
-        )}
+
+          {onAddBill && (
+            <button
+              type="button"
+              onClick={() => onAddBill(selectedClientId !== "All" ? selectedClientId : undefined)}
+              className="inline-flex items-center gap-2 rounded-sm bg-[#171717] px-6 py-3 font-mono text-[10px] uppercase tracking-widest text-white hover:bg-[#A58A64] transition-colors shadow-sm font-semibold cursor-pointer"
+            >
+              <Receipt size={15} className="text-[#A58A64]" />
+              + Add Amount / Bill
+            </button>
+          )}
+        </div>
       </header>
 
       {error && (
@@ -388,7 +475,7 @@ export function AdminInvoiceManagement({
           />
         </div>
 
-        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
           <FilterSelect
             label="Invoice Status"
             value={statusFilter}
@@ -406,7 +493,61 @@ export function AdminInvoiceManagement({
               setPartyFilter(value as PartyFilter)
             }
           />
+
+          <div>
+            <span className="mb-2 block font-mono text-[9px] uppercase tracking-widest text-[#77736C]">
+              Client List / Select Client
+            </span>
+            <select
+              value={selectedClientId}
+              onChange={(e) => setSelectedClientId(e.target.value)}
+              className="h-12 w-full border border-[#D8D6D0] bg-white px-4 text-xs font-mono text-[#171717] outline-none focus:border-[#A58A64]"
+            >
+              <option value="All">All Clients (Full Registry)</option>
+              {clientsList.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.fullName} {c.reference ? `(${c.reference})` : ""}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
+
+        {/* Selected Client Project Financial Banner */}
+        {selectedClientId !== "All" && selectedClientObj && (
+          <div className="mt-5 border border-[#C6A779]/40 bg-[#FAF8F5] p-5 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <span className="font-mono text-[9px] uppercase tracking-wider text-[#A58A64] font-semibold">
+                  Client Project Expenses Summary
+                </span>
+                <h3 className="font-serif text-xl text-[#171717] mt-0.5">
+                  {selectedClientObj.fullName}
+                </h3>
+              </div>
+              <div className="flex flex-wrap items-center gap-6">
+                <div>
+                  <span className="block font-mono text-[9px] uppercase text-[#77736C]">
+                    Total Expenses for that Project
+                  </span>
+                  <span className="font-mono text-base font-bold text-[#171717]">
+                    {formatCurrency(selectedClientTotalExpenses)}
+                  </span>
+                </div>
+                {onAddBill && (
+                  <button
+                    type="button"
+                    onClick={() => onAddBill(selectedClientId)}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#171717] hover:bg-[#A58A64] text-white text-xs font-mono uppercase tracking-wider rounded-xs transition-colors"
+                  >
+                    <Receipt size={13} />
+                    + Add Bill for Client
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
           <p className="text-xs text-[#77736C]">
@@ -687,7 +828,43 @@ export function AdminInvoiceManagement({
                     />
                   </div>
                 </div>
+
+                <div className="mt-5 rounded-xs border border-[#C6A779]/40 bg-[#FAF8F5] p-3">
+                  <p className="font-mono text-[9px] uppercase tracking-widest text-[#A58A64] font-semibold">
+                    Total Expenses for this Project
+                  </p>
+                  <p className="font-mono text-lg font-bold text-[#171717] mt-1">
+                    {formatCurrency(selectedInvoice.projectTotalExpenses ?? selectedInvoice.totalAmount)}
+                  </p>
+                  <p className="font-mono text-[8px] uppercase text-[#77736C] mt-0.5">
+                    Cumulative Recorded Project Spend
+                  </p>
+                </div>
               </section>
+
+              {/* Attached Bill Voucher Photo */}
+              {selectedInvoice.billPhotoUrl && (
+                <section className="border border-[#D8D6D0] bg-white p-6">
+                  <SectionHeading>Attached Bill Voucher</SectionHeading>
+                  <div className="mt-3 overflow-hidden rounded-xs border border-[#D8D6D0] bg-[#FAF9F6] p-2">
+                    <img
+                      src={selectedInvoice.billPhotoUrl}
+                      alt="Bill Voucher"
+                      className="max-h-72 w-full object-contain"
+                    />
+                    <div className="mt-2 flex justify-end">
+                      <a
+                        href={selectedInvoice.billPhotoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-mono text-[10px] uppercase text-[#987543] hover:underline"
+                      >
+                        Open High-Res Attachment ↗
+                      </a>
+                    </div>
+                  </div>
+                </section>
+              )}
 
               {/* Description and Finance Remarks */}
               {(selectedInvoice.description ||
@@ -882,9 +1059,9 @@ function InvoiceCard({
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-4 border-t border-[#E5E2DC] pt-5 md:grid-cols-4">
+      <div className="mt-6 grid grid-cols-2 gap-4 border-t border-[#E5E2DC] pt-5 sm:grid-cols-3 md:grid-cols-5">
         <InvoiceMetric
-          label="Invoice Total"
+          label="Bill / Invoice Total"
           value={formatCurrency(invoice.totalAmount)}
         />
 
@@ -902,7 +1079,52 @@ function InvoiceCard({
           label="Outstanding"
           value={formatCurrency(invoice.outstandingAmount)}
         />
+
+        <div className="rounded-xs border border-[#C6A779]/40 bg-[#FAF8F5] p-2.5">
+          <p className="font-mono text-[9px] uppercase tracking-widest text-[#A58A64] font-semibold">
+            Total Project Expenses
+          </p>
+          <p className="mt-1 font-mono text-sm font-bold text-[#171717]">
+            {formatCurrency(invoice.projectTotalExpenses ?? invoice.totalAmount)}
+          </p>
+          <p className="text-[8px] text-[#77736C] uppercase font-mono mt-0.5">Project Cumulative</p>
+        </div>
       </div>
+
+      {invoice.description && (
+        <div className="mt-4 rounded-xs border border-[#E5E2DC] bg-[#FAF8F5] p-3 text-xs">
+          <div className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-wider text-[#A58A64] font-semibold mb-1">
+            <FileText size={11} /> Bill Scope &amp; Details
+          </div>
+          <p className="font-sans text-xs text-[#55524D] leading-relaxed">
+            {invoice.description}
+          </p>
+        </div>
+      )}
+
+      {invoice.billPhotoUrl && (
+        <div className="mt-3 flex items-center gap-3 rounded-xs border border-[#E5E2DC] bg-white p-2">
+          <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-xs border border-[#D8D6D0]">
+            <img src={invoice.billPhotoUrl} alt="Bill Voucher" className="h-full w-full object-cover" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-mono text-[9.5px] font-semibold text-[#171717] truncate">
+              Attached Physical Bill Voucher
+            </p>
+            <p className="font-mono text-[8.5px] uppercase tracking-wider text-[#A58A64]">
+              Available to Client &amp; Vendor
+            </p>
+          </div>
+          <a
+            href={invoice.billPhotoUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[9px] font-mono uppercase tracking-wider text-[#987543] hover:underline shrink-0"
+          >
+            View Full Voucher ↗
+          </a>
+        </div>
+      )}
 
       <div className="mt-6 flex flex-col justify-between gap-4 border-t border-[#E5E2DC] pt-5 sm:flex-row sm:items-center">
         <div className="flex flex-wrap gap-x-6 gap-y-2 text-[10px] text-[#77736C]">

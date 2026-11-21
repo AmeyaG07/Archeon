@@ -26,6 +26,7 @@ import {
   Copy,
   ExternalLink,
   FileText,
+  Receipt,
 } from "lucide-react";
 
 export type AdminClientStatus =
@@ -100,6 +101,7 @@ interface AdminClientManagementProps {
 
   onOpenProject?: (projectId: string) => void;
   onAddClient?: () => void;
+  onAddBill?: (client?: AdminClientRecord) => void;
   onEditClient?: (client: AdminClientRecord) => void;
   onDeleteClient?: (clientId: string) => Promise<void>;
 }
@@ -171,6 +173,7 @@ export function AdminClientManagement({
   onCreatePortalAccount,
   onOpenProject,
   onAddClient,
+  onAddBill,
   onEditClient,
   onDeleteClient,
 }: AdminClientManagementProps) {
@@ -303,6 +306,17 @@ export function AdminClientManagement({
             >
               <RefreshCw size={14} />
               Refresh Clients
+            </button>
+          )}
+
+          {onAddBill && (
+            <button
+              type="button"
+              onClick={() => onAddBill()}
+              className="inline-flex items-center gap-2 rounded-sm border border-[#A58A64] bg-[#FAF9F5] px-5 py-3 font-mono text-[10px] uppercase tracking-widest text-[#171717] hover:bg-[#A58A64] hover:text-white transition-colors shadow-sm font-semibold"
+            >
+              <Receipt size={15} className="text-[#A58A64]" />
+              + Add Bill
             </button>
           )}
 
@@ -457,6 +471,7 @@ export function AdminClientManagement({
                 key={client.id}
                 client={client}
                 onOpen={() => openClient(client)}
+                onAddBill={onAddBill ? () => onAddBill(client) : undefined}
               />
             ))}
           </div>
@@ -1027,9 +1042,11 @@ function SummaryCard({
 function ClientCard({
   client,
   onOpen,
+  onAddBill,
 }: {
   client: AdminClientRecord;
   onOpen: () => void;
+  onAddBill?: () => void;
 }) {
   return (
     <article className="border border-[#D8D6D0] bg-white p-5 md:p-7">
@@ -1114,14 +1131,27 @@ function ClientCard({
           </span>
         </div>
 
-        <button
-          type="button"
-          onClick={onOpen}
-          className="inline-flex items-center gap-2 text-[9px] uppercase tracking-widest text-[#987543] hover:text-[#171717]"
-        >
-          Review Client
-          <ArrowUpRight size={14} />
-        </button>
+        <div className="flex items-center gap-3">
+          {onAddBill && (
+            <button
+              type="button"
+              onClick={onAddBill}
+              className="inline-flex items-center gap-1.5 rounded-xs bg-[#171717] px-3.5 py-1.5 font-mono text-[9px] uppercase tracking-widest text-white hover:bg-[#A58A64] transition-colors shadow-xs"
+            >
+              <Receipt size={12} className="text-[#A58A64]" />
+              + Add Bill
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={onOpen}
+            className="inline-flex items-center gap-2 text-[9px] uppercase tracking-widest text-[#987543] hover:text-[#171717]"
+          >
+            Review Client
+            <ArrowUpRight size={14} />
+          </button>
+        </div>
       </div>
     </article>
   );

@@ -93,7 +93,39 @@ function ClientInvoicesContent() {
         currency: "INR" as const,
       }));
 
-      setInvoices(records);
+      // 2. Also load trade partner bills uploaded for this client's projects
+      let billRecords: ClientInvoice[] = [];
+      try {
+        const bRes = await apiFetch("/api/billing/bills");
+        const bList = await bRes.json();
+        if (Array.isArray(bList)) {
+          billRecords = bList.map((b: any) => {
+            const isSettled = b.status === "PAID_CASH" || b.status === "PAID_ONLINE";
+            const isApproved = isSettled || b.status === "APPROVED";
+            return {
+              id: b.id ? String(b.id) : b.billId || "BILL",
+              invoiceNumber: b.invoiceNumber || b.billId || "BILL",
+              projectName: b.tradeCategory ? `${b.tradeCategory} (Contractor Bill)` : "Trade Partner Bill",
+              description: b.disputeReason || `Vendor: ${b.vendorId}`,
+              issueDate: b.createdAt || new Date().toISOString(),
+              dueDate: "Immediate",
+              totalAmount: Number(b.amount || 0),
+              paidAmount: Number(b.paidAmount || 0),
+              outstandingAmount: Math.max(0, Number(b.amount || 0) - Number(b.paidAmount || 0)),
+              status: (isSettled
+                ? "Paid"
+                : isApproved
+                ? "Issued"
+                : "Under Review") as ClientInvoiceStatus,
+              currency: "INR" as const,
+            };
+          });
+        }
+      } catch (err) {
+        console.warn("Could not load client bills:", err);
+      }
+
+      setInvoices([...records, ...billRecords]);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to load invoices");
     } finally {

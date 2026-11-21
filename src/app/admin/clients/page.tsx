@@ -9,6 +9,7 @@ import {
 } from "@/components/portal/admin/AdminClientManagement";
 import { AdminCreateClientModal } from "@/components/portal/admin/AdminCreateClientModal";
 import { AdminEditClientModal } from "@/components/portal/admin/AdminEditClientModal";
+import { AdminCreateBillModal } from "@/components/portal/admin/AdminCreateBillModal";
 import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/providers/AuthProvider";
 
@@ -20,6 +21,8 @@ export default function AdminClientsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isAddBillModalOpen, setIsAddBillModalOpen] = useState(false);
+  const [selectedBillClient, setSelectedBillClient] = useState<AdminClientRecord | null>(null);
   const [editingClient, setEditingClient] = useState<AdminClientRecord | null>(null);
 
   const handleDeleteClient = async (clientId: string) => {
@@ -238,8 +241,22 @@ export default function AdminClientsPage() {
         onCreatePortalAccount={handleCreatePortalAccount}
         onOpenProject={(projId) => router.push(`/admin/projects?id=${projId}`)}
         onAddClient={() => setIsCreateModalOpen(true)}
+        onAddBill={(client) => {
+          setSelectedBillClient(client || null);
+          setIsAddBillModalOpen(true);
+        }}
         onEditClient={(client) => setEditingClient(client)}
         onDeleteClient={handleDeleteClient}
+      />
+
+      <AdminCreateBillModal
+        isOpen={isAddBillModalOpen}
+        onClose={() => {
+          setIsAddBillModalOpen(false);
+          setSelectedBillClient(null);
+        }}
+        onBillCreated={loadClients}
+        defaultClientId={selectedBillClient?.id}
       />
 
       <AdminCreateClientModal

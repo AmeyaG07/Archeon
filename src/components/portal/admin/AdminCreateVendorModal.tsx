@@ -12,6 +12,7 @@ const TRADE_CATEGORIES = [
   { value: "HVAC", label: "HVAC & Climate Systems" },
   { value: "MASONRY", label: "Stone, Marble & Masonry" },
   { value: "FABRICATION", label: "Structural Glass & Metal Fabrication" },
+  { value: "FINISHING", label: "Finishing & Decorative Hardware" },
   { value: "OTHER", label: "Others (Custom Trade)" },
 ];
 

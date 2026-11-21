@@ -179,6 +179,35 @@ export async function apiFetch(
 
   // Handle 401: token missing or expired.
   if (response.status === 401) {
+    const refreshToken = getRefreshToken();
+    const isAuthRoute = typeof input === "string" && input.includes("/api/auth/");
+    if (refreshToken && !isAuthRoute) {
+      try {
+        const refreshRes = await fetch(`${baseUrl}/api/auth/refresh`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ refreshToken }),
+        });
+        if (refreshRes.ok) {
+          const data = await refreshRes.json();
+          setAuthSession(data.token, data.refreshToken, getStoredUser() || undefined);
+          headers.set("Authorization", `Bearer ${data.token}`);
+          return fetch(url, {
+            ...init,
+            headers,
+            body: isFormData
+              ? (init.body as FormData)
+              : init.body
+              ? typeof init.body === "string"
+                ? init.body
+                : JSON.stringify(init.body)
+              : undefined,
+          });
+        }
+      } catch (err) {
+        console.warn("Silent token refresh attempt failed:", err);
+      }
+    }
     clearAuthSession();
     throw new AuthError("Session expired or unauthorized. Please log in again.", await response.json().catch(() => ({})));
   }
