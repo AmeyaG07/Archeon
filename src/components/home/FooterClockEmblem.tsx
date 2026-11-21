@@ -164,46 +164,24 @@ export function FooterClockEmblem({
 
   return (
     <div
-      className={`relative select-none ${compact
-        ? `flex flex-col items-start justify-start py-1 overflow-visible ${className}`
-        : `w-full flex flex-col items-center justify-center py-10 overflow-hidden ${className}`
-        }`}
+      className={`relative select-none bg-black ${
+        compact
+          ? `flex flex-col items-start justify-start py-1 overflow-visible ${className}`
+          : `w-full flex flex-col items-center justify-center py-2 overflow-visible ${className}`
+      }`}
     >
       {/* ================================================================= */}
-      {/* 1. FAST VIBRANT CHROMATIC AURORA BEAMS & CONIC HALOS               */}
+      {/* 1. SEAMLESS SOLID BLACK AMBIENT BACKGROUND (MATCHES FOOTER #000)  */}
       {/* ================================================================= */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none -z-10 overflow-visible">
-        {/* Fast Spinning Multi-Color Conic Aura (Clockwise) */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none -z-10 overflow-hidden">
+        {/* Subtle Warm Amber Core Glow blending seamlessly into pure black */}
         <div
-          className={`absolute rounded-full transition-opacity duration-700 ${compact ? "w-[240px] h-[240px] blur-[36px]" : "w-[380px] h-[380px] blur-[50px]"
-            }`}
+          className={`absolute rounded-full ${
+            compact ? "w-[180px] h-[180px] blur-[30px]" : "w-[240px] h-[240px] blur-[40px]"
+          }`}
           style={{
             background:
-              "conic-gradient(from 0deg, #F59E0B 0%, #EC4899 22%, #8B5CF6 44%, #06B6D4 66%, #10B981 85%, #F59E0B 100%)",
-            opacity: isHovered ? 0.75 : 0.5,
-            animation: "spin 5s linear infinite",
-          }}
-        />
-
-        {/* Counter-Spinning Chromatic Secondary Halo */}
-        <div
-          className={`absolute rounded-full transition-opacity duration-700 ${compact ? "w-[260px] h-[260px] blur-[42px]" : "w-[420px] h-[420px] blur-[60px]"
-            }`}
-          style={{
-            background:
-              "conic-gradient(from 180deg, #06B6D4 0%, #8B5CF6 25%, #EC4899 50%, #F59E0B 75%, #10B981 100%)",
-            opacity: isHovered ? 0.6 : 0.4,
-            animation: "spin 8s linear infinite reverse",
-          }}
-        />
-
-        {/* Ambient Radial Core Light */}
-        <div
-          className={`absolute rounded-full ${compact ? "w-[190px] h-[190px] blur-[24px]" : "w-[300px] h-[300px] blur-[32px]"
-            }`}
-          style={{
-            background:
-              "radial-gradient(circle at center, rgba(245, 158, 11, 0.28) 0%, rgba(6, 182, 212, 0.2) 40%, rgba(236, 72, 153, 0.15) 70%, transparent 85%)",
+              "radial-gradient(circle at center, rgba(198, 167, 121, 0.12) 0%, rgba(200, 98, 30, 0.05) 45%, transparent 75%)",
           }}
         />
       </div>
@@ -218,8 +196,8 @@ export function FooterClockEmblem({
         onMouseLeave={handleMouseLeave}
         className={`relative transition-transform duration-200 ease-out cursor-pointer ${
           compact
-            ? "w-[240px] h-[240px] sm:w-[270px] sm:h-[270px]"
-            : "w-[300px] h-[300px] sm:w-[360px] sm:h-[360px]"
+            ? "w-[220px] h-[220px] sm:w-[240px] sm:h-[240px]"
+            : "w-[240px] h-[240px] sm:w-[260px] sm:h-[260px]"
         }`}
         style={{
           transform: reducedMotion

@@ -44,8 +44,8 @@ const socialLinks = [
     href: "https://instagram.com/dsarcheon",
     icon: (
       <svg
-        width="14"
-        height="14"
+        width="16"
+        height="16"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -65,8 +65,8 @@ const socialLinks = [
     href: "https://facebook.com/dsarcheon",
     icon: (
       <svg
-        width="14"
-        height="14"
+        width="16"
+        height="16"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -84,8 +84,8 @@ const socialLinks = [
     href: "https://linkedin.com/company/archeon-design-studio",
     icon: (
       <svg
-        width="14"
-        height="14"
+        width="16"
+        height="16"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -117,11 +117,11 @@ export function SiteFooter({
     <footer className="relative overflow-hidden bg-[#000000] text-[#F2F0EB] border-t border-white/10">
       <div className="editorial-container relative z-10 py-16 lg:py-20">
         
-        {/* Main 2-Column Section: Left (Clock Animation) & Right (3-Column Content) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+        {/* Main Section: Left (Clock Animation) & Right (4 Columns) */}
+        <div className="flex flex-col lg:flex-row gap-10 xl:gap-14 items-start">
           
-          {/* Left Side: Clock Animation Logo */}
-          <div className="lg:col-span-4 xl:col-span-4 flex flex-col items-center lg:items-start">
+          {/* Left Side: Clock Animation Logo (Background seamlessly matching pure black #000) */}
+          <div className="w-full lg:w-[260px] shrink-0 flex flex-col items-center lg:items-start">
             <Link
               href="/"
               aria-label="ArcheOn Design Studio home"
@@ -130,27 +130,27 @@ export function SiteFooter({
               <FooterClockEmblem />
             </Link>
 
-            <p className="mt-5 text-center lg:text-left font-['Outfit',sans-serif] text-xs leading-relaxed text-white/50 max-w-xs">
+            <p className="mt-4 text-center lg:text-left font-['Outfit',sans-serif] text-xs leading-relaxed text-white/50 max-w-xs">
               {siteConfig.tagline}
             </p>
           </div>
 
-          {/* Right Side: 3-Column Content with Left Vertical Divider */}
-          <div className="lg:col-span-8 xl:col-span-8 lg:border-l lg:border-white/15 lg:pl-12 xl:pl-16">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10 lg:gap-8">
+          {/* Right Side: 4-Column Content with Left Vertical Divider & Compact Spacing */}
+          <div className="flex-1 min-w-0 w-full lg:border-l lg:border-white/15 lg:pl-10 xl:pl-12">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 lg:gap-6 xl:gap-8">
               
               {/* Column 1: EXPLORE */}
               <div className="flex flex-col">
-                <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#C6A779] font-medium mb-6">
+                <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#C6A779] font-medium mb-5">
                   EXPLORE
                 </p>
-                <nav className="flex flex-col gap-3.5">
+                <nav className="flex flex-col gap-3">
                   {exploreLinks.map((link) => (
                     <button
                       key={link.label}
                       type="button"
                       onClick={() => scrollToSection(link.href)}
-                      className="text-left font-['Outfit',sans-serif] text-[14px] text-white/70 hover:text-white transition-colors duration-200 cursor-pointer"
+                      className="text-left font-['Outfit',sans-serif] text-[13.5px] text-white/70 hover:text-white transition-colors duration-200 cursor-pointer"
                     >
                       {link.label}
                     </button>
@@ -160,14 +160,14 @@ export function SiteFooter({
 
               {/* Column 2: DISCIPLINES */}
               <div className="flex flex-col">
-                <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#C6A779] font-medium mb-6">
+                <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#C6A779] font-medium mb-5">
                   DISCIPLINES
                 </p>
-                <div className="flex flex-col gap-3.5">
+                <div className="flex flex-col gap-3">
                   {disciplines.map((item) => (
                     <span
                       key={item}
-                      className="font-['Outfit',sans-serif] text-[14px] text-white/70"
+                      className="font-['Outfit',sans-serif] text-[13.5px] text-white/70"
                     >
                       {item}
                     </span>
@@ -175,9 +175,9 @@ export function SiteFooter({
                 </div>
               </div>
 
-              {/* Column 3: PRIVATE ACCESS, STUDIO INQUIRIES & FOLLOW US */}
+              {/* Column 3: PRIVATE ACCESS */}
               <div className="flex flex-col">
-                <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#C6A779] font-medium mb-6">
+                <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#C6A779] font-medium mb-5">
                   PRIVATE ACCESS
                 </p>
                 
@@ -186,11 +186,11 @@ export function SiteFooter({
                   <button
                     type="button"
                     onClick={onOpenClientPortal}
-                    className="w-full flex items-center justify-between px-4 py-3 rounded-lg bg-[#141414] hover:bg-[#1C1C1C] border border-white/10 hover:border-white/30 text-[13.5px] font-['Outfit',sans-serif] text-white/90 hover:text-white transition-all group shadow-sm cursor-pointer"
+                    className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg bg-[#141414] hover:bg-[#1C1C1C] border border-white/10 hover:border-white/30 text-[13px] font-['Outfit',sans-serif] text-white/90 hover:text-white transition-all group shadow-sm cursor-pointer"
                   >
                     <span>Client Portal</span>
                     <ArrowUpRight
-                      size={14}
+                      size={13}
                       className="text-white/60 group-hover:text-white transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
                     />
                   </button>
@@ -198,27 +198,27 @@ export function SiteFooter({
                   <button
                     type="button"
                     onClick={onOpenVendorPortal}
-                    className="w-full flex items-center justify-between px-4 py-3 rounded-lg bg-[#141414] hover:bg-[#1C1C1C] border border-white/10 hover:border-white/30 text-[13.5px] font-['Outfit',sans-serif] text-white/90 hover:text-white transition-all group shadow-sm cursor-pointer"
+                    className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg bg-[#141414] hover:bg-[#1C1C1C] border border-white/10 hover:border-white/30 text-[13px] font-['Outfit',sans-serif] text-white/90 hover:text-white transition-all group shadow-sm cursor-pointer"
                   >
                     <span>Vendor Portal</span>
                     <ArrowUpRight
-                      size={14}
+                      size={13}
                       className="text-white/60 group-hover:text-white transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
                     />
                   </button>
                 </div>
+              </div>
 
-                {/* Divider Line */}
-                <div className="my-5 border-t border-white/10" />
-
-                {/* Studio Inquiries */}
-                <p className="font-mono text-[10.5px] uppercase tracking-[0.22em] text-[#C6A779] font-medium mb-3">
+              {/* Column 4: STUDIO INQUIRIES & FOLLOW US (Only Logos) */}
+              <div className="flex flex-col">
+                <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#C6A779] font-medium mb-5">
                   STUDIO INQUIRIES
                 </p>
-                <div className="flex flex-col gap-2 font-['Outfit',sans-serif] text-[13.5px] text-white/80">
+                <div className="flex flex-col gap-2 font-['Outfit',sans-serif] text-[13px] text-white/80">
                   <a
                     href="mailto:dsarcheon@gmail.com"
-                    className="hover:text-white transition-colors"
+                    className="hover:text-white transition-colors truncate"
+                    title="dsarcheon@gmail.com"
                   >
                     dsarcheon@gmail.com
                   </a>
@@ -230,43 +230,42 @@ export function SiteFooter({
                   </a>
                 </div>
 
-                <div className="mt-4">
+                <div className="mt-3">
                   <button
                     type="button"
                     onClick={onOpenConsultation || (() => scrollToSection("#contact"))}
-                    className="inline-flex items-center gap-1.5 font-['Outfit',sans-serif] text-[13.5px] font-medium text-[#C6A779] hover:text-[#E0D8C3] transition-colors cursor-pointer group"
+                    className="inline-flex items-center gap-1.5 font-['Outfit',sans-serif] text-[12.5px] font-medium text-[#C6A779] hover:text-[#E0D8C3] transition-colors cursor-pointer group"
                   >
                     <span>Schedule a Consultation</span>
                     <ArrowUpRight
-                      size={13}
+                      size={12}
                       className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
                     />
                   </button>
                 </div>
 
-                {/* Divider Line */}
-                <div className="my-5 border-t border-white/10" />
-
-                {/* Follow Us */}
-                <p className="font-mono text-[10.5px] uppercase tracking-[0.22em] text-[#C6A779] font-medium mb-3">
-                  FOLLOW US
-                </p>
-                <div className="flex flex-wrap items-center gap-2.5">
-                  {socialLinks.map((s) => (
-                    <a
-                      key={s.name}
-                      href={s.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#141414] hover:bg-[#1E1E1E] border border-white/10 hover:border-[#C6A779]/50 text-white/70 hover:text-white text-xs font-['Outfit',sans-serif] transition-all group"
-                      title={s.name}
-                    >
-                      <span className="text-[#C6A779] group-hover:text-[#E0D8C3] transition-colors">
-                        {s.icon}
-                      </span>
-                      <span>{s.name}</span>
-                    </a>
-                  ))}
+                {/* Follow Us - Only Logos */}
+                <div className="mt-5 pt-4 border-t border-white/10">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#C6A779] font-medium mb-3">
+                    FOLLOW US
+                  </p>
+                  <div className="flex items-center gap-2">
+                    {socialLinks.map((s) => (
+                      <a
+                        key={s.name}
+                        href={s.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={s.name}
+                        title={s.name}
+                        className="w-8 h-8 rounded-lg bg-[#141414] hover:bg-[#1E1E1E] border border-white/10 hover:border-[#C6A779]/60 text-white/70 hover:text-[#C6A779] flex items-center justify-center transition-all shadow-sm group"
+                      >
+                        <span className="transition-transform duration-200 group-hover:scale-110">
+                          {s.icon}
+                        </span>
+                      </a>
+                    ))}
+                  </div>
                 </div>
 
               </div>
