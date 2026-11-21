@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import { ArrowUpRight, MapPin, MoveUpRight } from "lucide-react";
 import {
   RevealText,
@@ -14,6 +14,21 @@ interface ContactSectionProps {
 export function ContactSection({
   onOpenConsultation,
 }: ContactSectionProps) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (video) {
+      video.muted = true;
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // Handled gracefully if autoplay policy blocks before interaction
+        });
+      }
+    }
+  }, []);
+
   return (
     <section
       id="contact"
@@ -21,59 +36,30 @@ export function ContactSection({
     >
       {/* Thematic Background: Planetary Rotation & Nagpur Studio Radar Geographic Scan */}
       <div className="pointer-events-none absolute inset-0 -z-0 overflow-hidden select-none">
-        {/* Full-Bleed Global Earth Rotating Video Layer */}
-        <div className="absolute right-[-10%] sm:right-[5%] top-1/2 -translate-y-1/2 w-[650px] sm:w-[850px] lg:w-[1050px] h-[650px] sm:h-[850px] lg:h-[1050px] overflow-hidden rounded-full pointer-events-none opacity-30 mix-blend-screen">
+        {/* Full-Bleed Global Earth Rotating Video Layer - Positioned & Rotating Smoothly on Right */}
+        <div className="absolute right-[-10%] sm:right-[-4%] lg:right-[-2%] xl:right-[1%] top-1/2 -translate-y-1/2 w-[520px] sm:w-[680px] lg:w-[820px] xl:w-[860px] h-[520px] sm:h-[680px] lg:h-[820px] xl:h-[860px] overflow-hidden rounded-full pointer-events-none opacity-70 mix-blend-screen">
           <video
-            className="w-full h-full object-cover object-center brightness-110 contrast-125"
+            ref={videoRef}
+            className="w-full h-full object-cover object-center brightness-115 contrast-125"
             autoPlay
             loop
             muted
             playsInline
             preload="auto"
+            src="/earth-globe.mp4"
+            onCanPlay={(e) => {
+              const v = e.currentTarget;
+              v.play().catch(() => {});
+            }}
           >
             <source
-              src="https://videos.pexels.com/video-files/3129957/3129957-hd_1920_1080_25fps.mp4"
-              type="video/mp4"
-            />
-            <source
-              src="https://videos.pexels.com/video-files/3129957/3129957-uhd_2560_1440_25fps.mp4"
+              src="/earth-globe.mp4"
               type="video/mp4"
             />
           </video>
           {/* Radial Feather Vignette around the Earth Sphere */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_45%,#111111_78%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_46%,#111111_78%)]" />
         </div>
-
-        {/* Full-Bleed Ambient Colorful Shade & Atmospheric Aura */}
-        {/* 1. Primary Full-Section Amber / Terracotta Ambient Wash */}
-        <div
-          className="absolute inset-0 opacity-40 pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(ellipse at 70% 40%, rgba(200, 98, 30, 0.3) 0%, rgba(217, 119, 36, 0.18) 40%, rgba(184, 137, 74, 0.08) 65%, transparent 85%)",
-          }}
-        />
-
-        {/* 2. Left-Side Editorial Heading Warm Underglow */}
-        <div
-          className="absolute top-1/4 -left-20 h-[550px] w-[650px] rounded-full blur-[140px] opacity-35"
-          style={{
-            background:
-              "radial-gradient(circle, rgba(200, 98, 30, 0.35) 0%, rgba(217, 119, 36, 0.15) 55%, transparent 80%)",
-          }}
-        />
-
-        {/* 3. Breathing Amber / Terracotta Horizon Glow Spreading Downwards */}
-        <div className="absolute -bottom-20 left-0 right-0 h-[480px] bg-gradient-to-t from-[#C8621E]/28 via-[#D97724]/14 to-transparent blur-[90px] animate-[pulse_7s_ease-in-out_infinite]" />
-
-        {/* 4. Top-Right Ambient Beacon */}
-        <div
-          className="absolute -top-32 right-10 h-[600px] w-[600px] rounded-full blur-[120px] opacity-40"
-          style={{
-            background:
-              "radial-gradient(circle, rgba(200, 98, 30, 0.28) 0%, rgba(184, 137, 74, 0.12) 50%, transparent 75%)",
-          }}
-        />
 
         {/* Nagpur Geographic Coordinates Radar Scan SVG */}
         <svg

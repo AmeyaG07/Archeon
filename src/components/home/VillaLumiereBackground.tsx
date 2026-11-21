@@ -284,8 +284,11 @@ export function VillaLumiereBackground() {
     const width = container.clientWidth || window.innerWidth;
     const height = container.clientHeight || 750;
 
+    const isDesktop = width > 1024;
+    const shiftX = isDesktop ? 7.8 : width > 768 ? 4.5 : 0.0;
+
     const camera = new THREE.PerspectiveCamera(35, width / height, 0.2, 220);
-    camera.position.set(24.0, 15.0, 25.0);
+    camera.position.set(22.0 + shiftX, 15.0, 24.0);
 
     const renderer = new THREE.WebGLRenderer({
       canvas: canvas,
@@ -303,10 +306,8 @@ export function VillaLumiereBackground() {
     const controls = new OrbitControls(camera, canvas);
     controls.enableDamping = true;
     controls.dampingFactor = 0.055;
-    // Shift target leftward on wider viewports so villa is framed cleanly in the right half, avoiding left editorial text
-    const isDesktop = width > 1024;
-    const targetX = isDesktop ? -4.2 : width > 768 ? -3.0 : 0.0;
-    controls.target.set(targetX, 4.8, -0.2);
+    // Shift target to right side so villa is framed cleanly in the open right half, avoiding left editorial text
+    controls.target.set(shiftX, 4.8, 0.0);
     controls.minDistance = 10.0;
     controls.maxDistance = 55.0;
     controls.maxPolarAngle = Math.PI * 0.485;
@@ -370,8 +371,6 @@ export function VillaLumiereBackground() {
       transparent: true,
       opacity: 0.16,
     });
-    scene.add(new THREE.LineSegments(gridGeo, gridMat));
-
     // Refined Bronze Drafting Frame
     const rx = 12.2, rz = 9.7;
     const framePts = [
@@ -387,11 +386,17 @@ export function VillaLumiereBackground() {
       transparent: true,
       opacity: 0.32,
     });
-    scene.add(new THREE.LineSegments(frameGeo, frameMat));
 
     // --- ENTITIES & GROUPS ---
+    const villaMasterGroup = new THREE.Group();
+    villaMasterGroup.position.x = shiftX;
+    scene.add(villaMasterGroup);
+
+    villaMasterGroup.add(new THREE.LineSegments(gridGeo, gridMat));
+    villaMasterGroup.add(new THREE.LineSegments(frameGeo, frameMat));
+
     const villaRoot = new THREE.Group();
-    scene.add(villaRoot);
+    villaMasterGroup.add(villaRoot);
 
     function addBox(
       parent: THREE.Group,
@@ -918,6 +923,11 @@ export function VillaLumiereBackground() {
       camera.aspect = nw / nh;
       camera.updateProjectionMatrix();
       renderer.setSize(nw, nh);
+
+      const isD = nw > 1024;
+      const sX = isD ? 7.8 : nw > 768 ? 4.5 : 0.0;
+      villaMasterGroup.position.x = sX;
+      controls.target.set(sX, 4.8, 0.0);
     });
     resizeObserver.observe(container);
 
@@ -945,16 +955,16 @@ export function VillaLumiereBackground() {
             linear-gradient(
               90deg,
               #F2F0EB 0%,
-              #F2F0EB 42%,
-              rgba(242, 240, 235, 0.92) 52%,
-              rgba(242, 240, 235, 0.45) 66%,
-              transparent 82%
+              #F2F0EB 28%,
+              rgba(242, 240, 235, 0.7) 38%,
+              rgba(242, 240, 235, 0.1) 48%,
+              transparent 56%
             ),
             linear-gradient(
               180deg,
               #F2F0EB 0%,
-              transparent 14%,
-              transparent 86%,
+              transparent 12%,
+              transparent 88%,
               #F2F0EB 100%
             )
           `,

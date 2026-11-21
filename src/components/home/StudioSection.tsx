@@ -35,7 +35,7 @@ export function StudioSection() {
           {/* =========================================================================
               LEFT COLUMN: 100% VISIBLE FROSTED ARCHITECTURAL EDITORIAL PANEL
               ========================================================================= */}
-          <div className="lg:col-span-7 xl:col-span-6 relative">
+          <div className="lg:col-span-6 xl:col-span-5 relative">
             <div className="rounded-3xl bg-[#F2F0EB]/92 backdrop-blur-xl p-4 xs:p-6 sm:p-9 md:p-11 border border-[#23211E]/10 shadow-[0_24px_50px_-16px_rgba(35,33,30,0.08)] transition-all duration-300">
               
               {/* Top Header Badge & Compass Motion */}
