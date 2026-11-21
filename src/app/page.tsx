@@ -101,6 +101,7 @@ export default function Home() {
           <SiteFooter
             onOpenClientPortal={() => setClientPortalOpen(true)}
             onOpenVendorPortal={() => setVendorPortalOpen(true)}
+            onOpenConsultation={() => openConsultationWithService()}
           />
 
           {/* Interactive Modals */}
