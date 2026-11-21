@@ -176,14 +176,14 @@ export function ArchitecturalRevealHero({
             ARCHITECTURE &nbsp;·&nbsp; INTERIOR ENVIRONMENTS &nbsp;·&nbsp; LANDSCAPE
           </p>
 
-          {/* Hero Heading */}
-<h1 className="font-serif font-normal text-[28px] xs:text-[32px] sm:text-[38px] lg:text-[65px] xl:text-[65px] leading-[1.08] sm:leading-[1.02] tracking-[-0.035em] text-[#F2EFE9]">
-  Spaces Designed
-  <br />
-  <span className="italic text-[#C8621E] font-normal">
-    Around the Way You Live.
-  </span>
-</h1>
+          {/* Hero Heading - 3-Line Editorial Composition */}
+          <h1 className="font-serif font-normal text-[32px] xs:text-[38px] sm:text-[46px] lg:text-[64px] xl:text-[68px] leading-[1.04] sm:leading-[0.98] tracking-[-0.03em] text-[#F2EFE9]">
+            <span>Spaces Designed</span>
+            <br />
+            <span className="italic text-[#C8621E] font-normal">Around the</span>
+            <br />
+            <span className="italic text-[#C8621E] font-normal">Way You Live.</span>
+          </h1>
 
 {/* Editorial Subcopy */}
 <p className="mt-6 sm:mt-8 max-w-[540px] text-[14px] sm:text-[15px] lg:text-[16px] leading-[1.75] font-light text-[#C2BEB6]">
