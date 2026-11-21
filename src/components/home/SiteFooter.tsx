@@ -17,6 +17,11 @@ const FooterClockEmblem = dynamic(
   }
 );
 
+const FooterCosmicCanvas = dynamic(
+  () => import("@/components/home/FooterCosmicCanvas").then((m) => m.FooterCosmicCanvas),
+  { ssr: false }
+);
+
 interface SiteFooterProps {
   onOpenClientPortal: () => void;
   onOpenVendorPortal: () => void;
@@ -46,6 +51,9 @@ export function SiteFooter({
       {/* FULL-SECTION AMBIENT COLORFUL SHADE & ARCHITECTURAL AURA            */}
       {/* =================================================================== */}
       <div className="pointer-events-none absolute inset-0 -z-0 overflow-hidden select-none">
+        {/* Interactive Cosmic Space Starfield & 3D Refractive Glass Bubbles */}
+        <FooterCosmicCanvas />
+
         {/* Primary Radiant Terracotta & Amber Core (Spreading across the whole footer) */}
         <div
           className="absolute -top-24 left-1/4 h-[550px] w-[900px] -translate-x-1/2 rounded-full blur-[140px] opacity-35 animate-[pulse_8s_ease-in-out_infinite]"
@@ -85,58 +93,6 @@ export function SiteFooter({
               "linear-gradient(to right, rgba(245, 158, 11, 0.25) 1px, transparent 1px), linear-gradient(to bottom, rgba(245, 158, 11, 0.25) 1px, transparent 1px)",
           }}
         />
-
-        {/* =================================================================== */}
-        {/* CRAZY FLOATING ARCHITECTURAL ELEMENTS & KINETIC MONOLITH SLABS      */}
-        {/* =================================================================== */}
-        {/* Floating Telemetry Slab 1: Top Right Coordinates */}
-        <div className="absolute top-12 right-[8%] sm:right-[15%] animate-float-slow hidden md:flex items-center gap-3 px-3.5 py-1.5 rounded-full border border-[#B68A4A]/30 bg-black/40 backdrop-blur-md shadow-[0_8px_32px_rgba(182,138,74,0.15)]">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#C8621E] animate-ping" />
-          <span className="font-mono text-[9px] uppercase tracking-[0.22em] text-[#C6A779]">
-            LAT 21.1458° N · LON 79.0882° E
-          </span>
-        </div>
-
-        {/* Floating Telemetry Slab 2: Mid-Left Tectonic Elevation */}
-        <div className="absolute top-1/2 left-[3%] sm:left-[6%] animate-float-reverse hidden sm:flex items-center gap-2.5 px-3 py-1.5 rounded-sm border border-white/10 bg-white/[0.03] backdrop-blur-md shadow-2xl">
-          <span className="font-mono text-[8.5px] uppercase tracking-[0.24em] text-white/50">
-            [ TECTONIC DATUM +14.2M ]
-          </span>
-          <span className="w-1 h-1 rounded-full bg-[#B68A4A]" />
-        </div>
-
-        {/* Floating Kinetic Wireframe 3D Gyroscope: Right Bottom */}
-        <div className="absolute bottom-16 right-[4%] sm:right-[10%] animate-float-drift hidden lg:block opacity-40 hover:opacity-80 transition-opacity">
-          <div className="relative w-28 h-28 flex items-center justify-center">
-            {/* Outer spinning dashed ring */}
-            <div className="absolute inset-0 rounded-full border border-dashed border-[#B68A4A]/50 animate-[spin_18s_linear_infinite]" />
-            {/* Inner counter-rotating ring */}
-            <div className="absolute inset-3 rounded-full border border-[#C8621E]/60 animate-[spin_12s_linear_infinite_reverse]" />
-            {/* 3D wireframe core */}
-            <div className="w-10 h-10 border border-white/40 rotate-45 animate-spin-3d-slow flex items-center justify-center">
-              <div className="w-4 h-4 bg-[#B68A4A]/30 rounded-full" />
-            </div>
-            {/* Architectural Crosshair */}
-            <span className="absolute text-[8px] font-mono text-[#C6A779] -bottom-5 tracking-widest uppercase">
-              AXIS // 1:1
-            </span>
-          </div>
-        </div>
-
-        {/* Floating Architectural Dimension Marker: Top Center */}
-        <div className="absolute top-6 left-1/2 -translate-x-1/2 animate-float-drift hidden xl:flex items-center gap-3 opacity-30">
-          <div className="w-8 h-[1px] bg-gradient-to-r from-transparent to-[#B68A4A]" />
-          <span className="font-mono text-[8px] uppercase tracking-[0.3em] text-[#C6A779]">
-            SPATIAL HARMONIC 432 HZ
-          </span>
-          <div className="w-8 h-[1px] bg-gradient-to-l from-transparent to-[#B68A4A]" />
-        </div>
-
-        {/* Floating Ambient Glowing Particles / Embers */}
-        <div className="absolute top-1/4 left-[20%] w-2 h-2 rounded-full bg-[#C8621E]/60 blur-[1px] animate-float-slow" />
-        <div className="absolute top-2/3 left-[40%] w-1.5 h-1.5 rounded-full bg-[#B68A4A]/70 blur-[0.5px] animate-float-reverse" />
-        <div className="absolute top-1/3 right-[25%] w-2.5 h-2.5 rounded-full bg-[#F59E0B]/50 blur-[1px] animate-float-drift" />
-        <div className="absolute bottom-24 left-[15%] w-1.5 h-1.5 rounded-full bg-[#B68A4A]/50 blur-[0.5px] animate-float-slow" />
       </div>
 
       <div className="editorial-container relative z-10">
