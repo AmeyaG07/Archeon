@@ -11,14 +11,11 @@ export function ArchitecturalRevealHero({
   onOpenConsultation,
 }: ArchitecturalRevealHeroProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const heroSectionRef = useRef<HTMLElement>(null);
 
   const [videoReady, setVideoReady] = useState(false);
-  const [loadLabel, setLoadLabel] = useState("LOAD VIDEO");
-  const [activeObjectUrl, setActiveObjectUrl] = useState<string | null>(null);
 
-  // Play video on mount and when source updates
+  // Play video on mount
   useEffect(() => {
     const video = videoRef.current;
     if (video) {
@@ -32,59 +29,11 @@ export function ArchitecturalRevealHero({
         });
       }
     }
-
-    return () => {
-      if (activeObjectUrl) {
-        URL.revokeObjectURL(activeObjectUrl);
-      }
-    };
-  }, [activeObjectUrl]);
+  }, []);
 
   const handleVideoCanPlay = useCallback(() => {
     setVideoReady(true);
   }, []);
-
-  // ---------------------------------------------------------------------------
-  // OPTIONAL LOCAL VIDEO TESTER (LOAD VIDEO BUTTON)
-  // ---------------------------------------------------------------------------
-  const handleLoadClick = useCallback(() => {
-    fileInputRef.current?.click();
-  }, []);
-
-  const handleFileChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (!file || !videoRef.current) return;
-
-      try {
-        if (activeObjectUrl) {
-          URL.revokeObjectURL(activeObjectUrl);
-        }
-        const newUrl = URL.createObjectURL(file);
-        setActiveObjectUrl(newUrl);
-
-        const video = videoRef.current;
-        video.pause();
-        video.src = newUrl;
-        video.load();
-
-        const playPromise = video.play();
-        if (playPromise && typeof playPromise.catch === "function") {
-          playPromise.catch(() => {});
-        }
-
-        const shortName = file.name
-          .replace(/\.[^/.]+$/, "")
-          .slice(0, 14)
-          .toUpperCase();
-        setLoadLabel(shortName || "CUSTOM VIDEO");
-        setVideoReady(true);
-      } catch {
-        // Fall back gracefully
-      }
-    },
-    [activeObjectUrl]
-  );
 
   const scrollToProjects = useCallback(() => {
     const el = document.getElementById("projects");
@@ -97,7 +46,7 @@ export function ArchitecturalRevealHero({
     <section
       ref={heroSectionRef}
       id="heroSection"
-      className="relative w-full min-h-[calc(100vh-76px)] pt-[76px] overflow-hidden bg-[#0A0A0A] text-[#F2EFE9] flex flex-col justify-between select-none"
+      className="relative w-full h-screen min-h-[720px] max-h-[1200px] pt-[80px] pb-6 sm:pb-8 overflow-hidden bg-[#0A0A0A] text-[#F2EFE9] flex flex-col justify-between select-none"
     >
       {/* =================================================================== */}
       {/* 1. FULL-BLEED BACKGROUND ARCHITECTURAL VIDEO LAYER                  */}
@@ -116,13 +65,13 @@ export function ArchitecturalRevealHero({
           playsInline
           preload="auto"
           crossOrigin="anonymous"
-          src={activeObjectUrl || "/hero-architectural-video.mp4"}
+          src="/hero-architectural-video.mp4"
           onCanPlay={handleVideoCanPlay}
           onPlaying={handleVideoCanPlay}
           onLoadedData={handleVideoCanPlay}
         >
           <source
-            src={activeObjectUrl || "/hero-architectural-video.mp4"}
+            src="/hero-architectural-video.mp4"
             type="video/mp4"
           />
         </video>
@@ -220,21 +169,21 @@ export function ArchitecturalRevealHero({
       {/* =================================================================== */}
       {/* 3. MAIN LEFT HERO CONTENT                                           */}
       {/* =================================================================== */}
-      <div className="relative z-10 w-full px-4 sm:px-10 lg:px-14 my-auto py-8 lg:py-10">
-        <div className="max-w-[660px]">
+      <div className="relative z-10 w-full px-4 sm:px-10 lg:px-14 my-auto py-8 lg:py-12">
+        <div className="max-w-[720px]">
           {/* Eyebrow */}
-          <p className="font-mono text-[10px] sm:text-[10.5px] tracking-[0.24em] sm:tracking-[0.26em] uppercase text-[#B8894A] mb-4 sm:mb-5">
+          <p className="font-mono text-[10px] sm:text-[11px] tracking-[0.24em] sm:tracking-[0.28em] uppercase text-[#B8894A] mb-4 sm:mb-6">
             ARCHITECTURE &nbsp;·&nbsp; INTERIOR ENVIRONMENTS &nbsp;·&nbsp; LANDSCAPE
           </p>
 
           {/* Display Serif Headline */}
-          <h1 className="font-serif font-normal text-[38px] xs:text-[46px] sm:text-[68px] lg:text-[90px] leading-[0.98] sm:leading-[0.94] tracking-[-0.02em] text-[#F2EFE9]">
+          <h1 className="font-serif font-normal text-[44px] xs:text-[54px] sm:text-[76px] lg:text-[98px] xl:text-[108px] leading-[0.96] sm:leading-[0.92] tracking-[-0.025em] text-[#F2EFE9]">
             Spaces shaped by<br />
             <span className="italic text-[#C8621E] font-normal">intention.</span>
           </h1>
 
           {/* Editorial Subcopy */}
-          <p className="mt-5 sm:mt-7 max-w-[520px] text-[14px] sm:text-[16px] leading-[1.68] font-light text-[#B8B4AC]">
+          <p className="mt-6 sm:mt-8 max-w-[560px] text-[15px] sm:text-[17px] leading-[1.72] font-light text-[#C2BEB6]">
             A multidisciplinary architecture and spatial design practice crafting
             monolithic, light-sculpted residences and bespoke environments with quiet
             precision in Nagpur, India.
@@ -246,64 +195,25 @@ export function ArchitecturalRevealHero({
       {/* 4. BOTTOM ROW: DOWNWARD CTA BUTTONS & ARCHITECTURAL DISCIPLINES     */}
       {/* =================================================================== */}
       <div className="relative z-10 w-full px-4 sm:px-10 lg:px-14 pb-8 pt-4 flex flex-col md:flex-row md:items-end justify-between gap-6">
-        {/* Bottom-Left: Downward CTA Buttons + Discreet Local Video Tester */}
-        <div className="flex flex-col gap-4 w-full sm:w-auto">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 w-full sm:w-auto">
-            <button
-              type="button"
-              onClick={onOpenConsultation}
-              className="w-full sm:w-auto justify-center px-6 sm:px-7 py-3.5 sm:py-4 bg-[#F2EFE9] text-[#0A0A0A] hover:bg-white transition-all font-mono text-[11px] tracking-[0.22em] uppercase inline-flex items-center gap-3 font-medium shadow-xl hover:shadow-2xl hover:-translate-y-0.5 touch-target"
-            >
-              <span>DISCUSS YOUR PROJECT</span>
-              <ArrowUpRight size={14} aria-hidden="true" />
-            </button>
+        {/* Bottom-Left: Downward CTA Buttons */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 w-full sm:w-auto">
+          <button
+            type="button"
+            onClick={onOpenConsultation}
+            className="w-full sm:w-auto justify-center px-6 sm:px-7 py-3.5 sm:py-4 bg-[#F2EFE9] text-[#0A0A0A] hover:bg-white transition-all font-mono text-[11px] tracking-[0.22em] uppercase inline-flex items-center gap-3 font-medium shadow-xl hover:shadow-2xl hover:-translate-y-0.5 touch-target"
+          >
+            <span>DISCUSS YOUR PROJECT</span>
+            <ArrowUpRight size={14} aria-hidden="true" />
+          </button>
 
-            <button
-              type="button"
-              onClick={scrollToProjects}
-              className="w-full sm:w-auto justify-center px-6 sm:px-7 py-3.5 sm:py-4 bg-black/60 backdrop-blur-md border border-white/25 text-[#F2EFE9] hover:border-white/55 hover:bg-white/[0.08] transition-all font-mono text-[11px] tracking-[0.22em] uppercase inline-flex items-center gap-3 shadow-xl hover:-translate-y-0.5 touch-target"
-            >
-              <span>EXPLORE PROJECTS</span>
-              <span aria-hidden="true">↓</span>
-            </button>
-          </div>
-
-          {/* Discreet Local Video Tester */}
-          <div className="flex items-center">
-            <input
-              ref={fileInputRef}
-              id="localVideoInput"
-              type="file"
-              accept="video/mp4,video/webm"
-              className="hidden"
-              onChange={handleFileChange}
-            />
-            <button
-              id="loadVideoBtn"
-              type="button"
-              title="Load a local .mp4 or .webm night architecture video"
-              onClick={handleLoadClick}
-              className="group inline-flex items-center gap-2.5 px-3 py-2 rounded-full bg-black/75 border border-white/15 hover:border-[#B8894A]/60 transition-colors focus:outline-none cursor-pointer backdrop-blur-sm"
-            >
-              <span className="w-5 h-5 rounded-full bg-white/[0.07] flex items-center justify-center text-[#F2EFE9]/80 group-hover:text-[#B8894A] transition-colors">
-                <svg
-                  width="10"
-                  height="10"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
-                  <polygon points="6 4 20 12 6 20 6 4" />
-                </svg>
-              </span>
-              <span
-                id="loadVideoLabel"
-                className="font-mono text-[9.5px] tracking-[0.2em] uppercase text-[#F2EFE9]/65 group-hover:text-[#F2EFE9] pr-1 transition-colors"
-              >
-                {loadLabel}
-              </span>
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={scrollToProjects}
+            className="w-full sm:w-auto justify-center px-6 sm:px-7 py-3.5 sm:py-4 bg-black/60 backdrop-blur-md border border-white/25 text-[#F2EFE9] hover:border-white/55 hover:bg-white/[0.08] transition-all font-mono text-[11px] tracking-[0.22em] uppercase inline-flex items-center gap-3 shadow-xl hover:-translate-y-0.5 touch-target"
+          >
+            <span>EXPLORE PROJECTS</span>
+            <span aria-hidden="true">↓</span>
+          </button>
         </div>
 
         {/* Bottom-Right: Architectural Disciplines Block with Solid Dark Background */}

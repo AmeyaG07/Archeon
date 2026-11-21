@@ -16,11 +16,11 @@ interface HeaderProps {
 }
 
 const navigation = [
-  { label: "Studio", href: "#studio", index: "01" },
-  { label: "Expertise", href: "#expertise", index: "02" },
-  { label: "Projects", href: "#projects", index: "03" },
-  { label: "Process", href: "#process", index: "04" },
-  { label: "Contact", href: "#contact", index: "05" },
+  { label: "Studio", href: "#studio" },
+  { label: "Expertise", href: "#expertise" },
+  { label: "Projects", href: "#projects" },
+  { label: "Process", href: "#process" },
+  { label: "Contact", href: "#contact" },
 ];
 
 export function Header({
@@ -87,16 +87,16 @@ export function Header({
       <header
         className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ease-out ${
           scrolled
-            ? "h-[70px] bg-[#0c0c0c]/90 border-b border-[#B68A4A]/25 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.55)]"
+            ? "h-[70px] bg-[#0A0A0C]/92 border-b border-[#B68A4A]/25 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.55)]"
             : "h-[80px] bg-gradient-to-b from-[#0A0A0A]/95 via-[#0E0E0E]/80 to-transparent border-b border-white/[0.08] backdrop-blur-md"
         } text-[#F2F0EB]`}
       >
         {/* Subtle top architectural ambient gold accent line */}
         <div className="absolute top-0 inset-x-0 h-[1.5px] bg-gradient-to-r from-transparent via-[#C6A779]/50 to-transparent" />
 
-        <div className="editorial-container flex h-full items-center justify-between">
-          {/* Left: Brand Identity & Atelier Monogram */}
-          <div className="flex items-center gap-3 xl:gap-7">
+        <div className="editorial-container flex h-full items-center justify-between gap-4">
+          {/* Column 1: Left Brand Identity & Atelier Stamp */}
+          <div className="flex shrink-0 items-center">
             <Link
               href="/"
               aria-label="ArcheOn Design Studio homepage"
@@ -125,52 +125,45 @@ export function Header({
                 </span>
               </div>
             </Link>
-
-            {/* Desktop Navigation Links — Luxury Classical Roman Typography with Gold Index */}
-            <nav
-              aria-label="Main navigation"
-              className="hidden items-center gap-0.5 xl:gap-1.5 lg:flex"
-            >
-              {navigation.map((item) => (
-                <button
-                  key={item.label}
-                  type="button"
-                  onClick={() => handleNavigation(item.href)}
-                  className="group relative px-2 xl:px-3 py-2 text-[11px] xl:text-[12px] font-['Cinzel',serif] font-medium uppercase tracking-[0.18em] xl:tracking-[0.22em] text-[#D0CBBF] hover:text-[#FFFFFF] transition-all duration-300"
-                >
-                  <span className="flex items-center gap-1 xl:gap-1.5">
-                    <span className="font-mono text-[8.5px] xl:text-[9px] text-[#B68A4A] opacity-50 group-hover:opacity-100 group-hover:text-[#D4AF37] transition-all">
-                      {item.index}
-                    </span>
-                    <span className="transition-transform duration-200 group-hover:translate-x-0.5">
-                      {item.label}
-                    </span>
-                  </span>
-
-                  {/* Refined Gold Ambient Underline Indicator */}
-                  <span className="absolute bottom-0 left-1/2 h-[1.5px] w-0 -translate-x-1/2 bg-gradient-to-r from-transparent via-[#C6A779] to-transparent transition-all duration-300 group-hover:w-4/5 shadow-[0_0_8px_rgba(198,167,121,0.8)]" />
-                </button>
-              ))}
-            </nav>
           </div>
 
-          {/* Right: Desktop Action Suite & Portals */}
-          <div className="hidden items-center gap-4 lg:flex">
+          {/* Column 2: Center Navigation Links (Cleanly Spaced, Capitalized, No Numbers) */}
+          <nav
+            aria-label="Main navigation"
+            className="hidden lg:flex items-center justify-center gap-5 xl:gap-8 mx-auto"
+          >
+            {navigation.map((item) => (
+              <button
+                key={item.label}
+                type="button"
+                onClick={() => handleNavigation(item.href)}
+                className="group relative py-1.5 px-1 text-[13px] xl:text-[14px] font-['Outfit',sans-serif] font-normal tracking-[0.12em] text-[#D4D0C5] hover:text-white transition-colors duration-300"
+              >
+                <span className="capitalize">{item.label}</span>
+
+                {/* Refined Gold Ambient Underline Indicator */}
+                <span className="absolute bottom-0 left-1/2 h-[1.5px] w-0 -translate-x-1/2 bg-gradient-to-r from-transparent via-[#C6A779] to-transparent transition-all duration-300 group-hover:w-full shadow-[0_0_8px_rgba(198,167,121,0.8)]" />
+              </button>
+            ))}
+          </nav>
+
+          {/* Column 3: Right Desktop Action Suite (Portals & Inquire Project) */}
+          <div className="hidden items-center gap-3 shrink-0 lg:flex">
             {/* Portals Access Dropdown Pill */}
             <div className="relative">
               <button
                 type="button"
                 onClick={() => setPortalDropdownOpen((prev) => !prev)}
-                className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border transition-all duration-300 font-mono text-[10.5px] tracking-[0.16em] uppercase backdrop-blur-md ${
+                className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border transition-all duration-300 font-['Outfit',sans-serif] text-[11.5px] font-medium tracking-[0.1em] backdrop-blur-md ${
                   portalDropdownOpen
                     ? "border-[#B68A4A] bg-[#B68A4A]/20 text-[#E0D8C3] shadow-[0_0_15px_rgba(182,138,74,0.3)]"
-                    : "border-white/15 bg-white/[0.04] text-white/75 hover:border-[#B68A4A]/60 hover:bg-[#B68A4A]/10 hover:text-white"
+                    : "border-white/15 bg-white/[0.04] text-white/80 hover:border-[#B68A4A]/60 hover:bg-[#B68A4A]/10 hover:text-white"
                 }`}
               >
                 <Shield size={12} className="text-[#B68A4A]" />
                 <span>Portals</span>
                 <ChevronDown
-                  size={11}
+                  size={12}
                   className={`transition-transform duration-300 text-white/60 ${
                     portalDropdownOpen ? "rotate-180 text-[#B68A4A]" : ""
                   }`}
@@ -193,7 +186,7 @@ export function Header({
                       setPortalDropdownOpen(false);
                       onOpenClientPortal();
                     }}
-                    className="w-full text-left px-3 py-2 text-xs font-mono text-stone-300 hover:text-white hover:bg-white/10 rounded-xs transition-colors flex items-center justify-between group"
+                    className="w-full text-left px-3 py-2 text-xs font-['Outfit',sans-serif] text-stone-300 hover:text-white hover:bg-white/10 rounded-xs transition-colors flex items-center justify-between group"
                   >
                     <span>Client Portal</span>
                     <ArrowUpRight
@@ -208,7 +201,7 @@ export function Header({
                       setPortalDropdownOpen(false);
                       onOpenVendorPortal();
                     }}
-                    className="w-full text-left px-3 py-2 text-xs font-mono text-stone-300 hover:text-white hover:bg-white/10 rounded-xs transition-colors flex items-center justify-between group"
+                    className="w-full text-left px-3 py-2 text-xs font-['Outfit',sans-serif] text-stone-300 hover:text-white hover:bg-white/10 rounded-xs transition-colors flex items-center justify-between group"
                   >
                     <span>Vendor Portal</span>
                     <ArrowUpRight
@@ -222,7 +215,7 @@ export function Header({
                   <Link
                     href="/login"
                     onClick={() => setPortalDropdownOpen(false)}
-                    className="w-full text-left px-3 py-2 text-xs font-mono text-[#C6A779] hover:text-white hover:bg-[#B68A4A]/25 rounded-xs transition-colors flex items-center justify-between group"
+                    className="w-full text-left px-3 py-2 text-xs font-['Outfit',sans-serif] text-[#C6A779] hover:text-white hover:bg-[#B68A4A]/25 rounded-xs transition-colors flex items-center justify-between group"
                   >
                     <span>Admin Login</span>
                     <ArrowUpRight
@@ -234,11 +227,11 @@ export function Header({
               )}
             </div>
 
-            {/* Premium Gold CTA: Start Conversation / Inquire Project */}
+            {/* Premium Gold CTA: Inquire Project */}
             <button
               type="button"
               onClick={onOpenConsultation}
-              className="group relative inline-flex items-center gap-2 overflow-hidden rounded-full border border-[#D4AF37]/80 bg-gradient-to-r from-[#B68A4A] via-[#9F742F] to-[#B68A4A] bg-[length:200%_auto] px-5 py-2 font-['Outfit',sans-serif] text-[11px] font-semibold uppercase tracking-[0.18em] text-[#111111] transition-all duration-500 hover:bg-[position:right_center] hover:shadow-[0_0_22px_rgba(182,138,74,0.5)] hover:scale-[1.02] active:scale-[0.98]"
+              className="group relative inline-flex items-center gap-2 overflow-hidden rounded-full border border-[#D4AF37]/80 bg-gradient-to-r from-[#B68A4A] via-[#9F742F] to-[#B68A4A] bg-[length:200%_auto] px-5 py-2 font-['Outfit',sans-serif] text-[12px] font-medium tracking-[0.12em] text-[#111111] font-semibold transition-all duration-500 hover:bg-[position:right_center] hover:shadow-[0_0_22px_rgba(182,138,74,0.5)] hover:scale-[1.02] active:scale-[0.98]"
             >
               <span>Inquire Project</span>
               <ArrowUpRight
@@ -248,12 +241,12 @@ export function Header({
             </button>
           </div>
 
-          {/* Right Mobile Action: Sleek Architectural Hamburger Toggle */}
+          {/* Right Mobile Action: Hamburger Toggle */}
           <div className="flex items-center gap-3 lg:hidden">
             <button
               type="button"
               onClick={onOpenConsultation}
-              className="px-3 py-1.5 rounded-full border border-[#B68A4A]/70 bg-[#B68A4A]/20 font-['Outfit',sans-serif] text-[10px] font-medium uppercase tracking-[0.16em] text-[#F2F0EB] hover:bg-[#B68A4A] hover:text-[#111111] transition-all"
+              className="px-3 py-1.5 rounded-full border border-[#B68A4A]/70 bg-[#B68A4A]/20 font-['Outfit',sans-serif] text-[11px] font-medium tracking-[0.1em] text-[#F2F0EB] hover:bg-[#B68A4A] hover:text-[#111111] transition-all"
             >
               Inquire
             </button>
@@ -298,7 +291,7 @@ export function Header({
                 ArcheOn Design Studio
               </p>
               <p className="font-mono text-[10px] text-stone-400 tracking-wider">
-                Ar. Mandar Bhalekar · Architecture & Interiors
+                Ar. Mandar Bhalekar · Architecture &amp; Interiors
               </p>
             </div>
             <span className="font-mono text-[10px] px-2 py-0.5 rounded border border-[#B68A4A]/40 text-[#B68A4A]">
@@ -306,7 +299,7 @@ export function Header({
             </span>
           </div>
 
-          {/* Navigation Links in Luxury Serif / Roman Font */}
+          {/* Navigation Links in Clean Capitalized Font */}
           <nav aria-label="Mobile navigation" className="flex flex-col space-y-1">
             {navigation.map((item) => (
               <button
@@ -314,14 +307,12 @@ export function Header({
                 type="button"
                 tabIndex={mobileMenuOpen ? 0 : -1}
                 onClick={() => handleNavigation(item.href)}
-                className="group flex items-center justify-between border-b border-white/[0.08] py-4 text-left font-['Cinzel',serif] text-2xl tracking-[0.16em] text-white/90 hover:text-[#C6A779] transition-all"
+                className="group flex items-center justify-between border-b border-white/[0.08] py-4 text-left font-['Outfit',sans-serif] text-2xl font-normal tracking-[0.1em] text-white/90 hover:text-[#C6A779] transition-all"
               >
-                <span className="group-hover:translate-x-2 transition-transform duration-300">
+                <span className="capitalize group-hover:translate-x-2 transition-transform duration-300">
                   {item.label}
                 </span>
-                <span className="font-mono text-xs text-[#B68A4A] opacity-70 group-hover:opacity-100">
-                  {item.index}
-                </span>
+                <ArrowUpRight size={16} className="text-[#B68A4A] opacity-50 group-hover:opacity-100 transition-opacity" />
               </button>
             ))}
           </nav>
@@ -329,7 +320,7 @@ export function Header({
           {/* Portals & Actions */}
           <div className="mt-8 pt-4 border-t border-white/10 space-y-3">
             <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#B68A4A]">
-              Project Access & Portals
+              Project Access &amp; Portals
             </p>
 
             <div className="grid grid-cols-2 gap-2.5">
@@ -340,7 +331,7 @@ export function Header({
                   closeMenu();
                   onOpenClientPortal();
                 }}
-                className="border border-white/15 bg-white/[0.03] px-4 py-3 text-left font-mono text-[11px] uppercase tracking-wider text-white/80 hover:border-[#B68A4A] hover:text-[#C6A779] transition-all rounded-xs flex items-center justify-between"
+                className="border border-white/15 bg-white/[0.03] px-4 py-3 text-left font-['Outfit',sans-serif] text-[12px] tracking-wider text-white/80 hover:border-[#B68A4A] hover:text-[#C6A779] transition-all rounded-xs flex items-center justify-between"
               >
                 <span>Client Portal</span>
                 <ArrowUpRight size={13} className="text-[#B68A4A]" />
@@ -353,7 +344,7 @@ export function Header({
                   closeMenu();
                   onOpenVendorPortal();
                 }}
-                className="border border-white/15 bg-white/[0.03] px-4 py-3 text-left font-mono text-[11px] uppercase tracking-wider text-white/80 hover:border-[#B68A4A] hover:text-[#C6A779] transition-all rounded-xs flex items-center justify-between"
+                className="border border-white/15 bg-white/[0.03] px-4 py-3 text-left font-['Outfit',sans-serif] text-[12px] tracking-wider text-white/80 hover:border-[#B68A4A] hover:text-[#C6A779] transition-all rounded-xs flex items-center justify-between"
               >
                 <span>Vendor Portal</span>
                 <ArrowUpRight size={13} className="text-[#B68A4A]" />
@@ -363,9 +354,9 @@ export function Header({
             <Link
               href="/login"
               onClick={closeMenu}
-              className="block w-full border border-white/15 bg-white/[0.03] px-4 py-2.5 text-center font-mono text-[11px] uppercase tracking-wider text-stone-300 hover:text-white hover:border-[#B68A4A] transition-all rounded-xs"
+              className="block w-full border border-white/15 bg-white/[0.03] px-4 py-2.5 text-center font-['Outfit',sans-serif] text-[12px] tracking-wider text-stone-300 hover:text-white hover:border-[#B68A4A] transition-all rounded-xs"
             >
-              Studio Staff & Admin Login
+              Studio Staff &amp; Admin Login
             </Link>
 
             <button
