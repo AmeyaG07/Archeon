@@ -51,8 +51,6 @@ export function FooterClockEmblem({
     p4: 270,
   });
 
-  const [formattedTime, setFormattedTime] = useState("12:00:00 IST");
-
   // Fast continuous dynamic clock animation using requestAnimationFrame
   useEffect(() => {
     if (reducedMotion) return;
@@ -63,15 +61,6 @@ export function FooterClockEmblem({
     const animateClock = (timestamp: number) => {
       if (!startTime) startTime = timestamp;
       const elapsed = timestamp - startTime;
-
-      // Real-time IST string for digital readout
-      const now = new Date();
-      const utc = now.getTime() + now.getTimezoneOffset() * 60000;
-      const istTime = new Date(utc + 3600000 * 5.5);
-      const hh = String(istTime.getHours()).padStart(2, "0");
-      const mm = String(istTime.getMinutes()).padStart(2, "0");
-      const ss = String(istTime.getSeconds()).padStart(2, "0");
-      setFormattedTime(`${hh}:${mm}:${ss} IST`);
 
       // Dynamic FAST high-energy sweeps:
       // - Fast seconds needle: 1 full 360 deg spin every 3.2s
@@ -522,28 +511,6 @@ export function FooterClockEmblem({
             />
           </g>
         </svg>
-      </div>
-
-      {/* ================================================================= */}
-      {/* 3. TECHNICAL METADATA READOUT BADGE                               */}
-      {/* ================================================================= */}
-      <div
-        className={`mt-4 flex flex-col items-center gap-1.5 transition-opacity duration-300 ${compact ? "items-start mt-3" : "items-center"
-          }`}
-      >
-        <div className="flex items-center gap-2">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#06B6D4] opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-[#F59E0B]" />
-          </span>
-          <span suppressHydrationWarning className="font-mono text-[10px] tracking-[0.24em] uppercase text-[#F2F0EB]/90 font-medium">
-            {formattedTime}
-          </span>
-        </div>
-
-        <p className="font-mono text-[8.5px] uppercase tracking-[0.2em] text-[#C6A779]/85">
-          NAGPUR STUDIO // 21.1458° N, 79.0882° E
-        </p>
       </div>
     </div>
   );

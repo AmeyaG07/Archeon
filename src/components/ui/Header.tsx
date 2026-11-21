@@ -118,7 +118,7 @@ export function Header({
               {/* Atelier Architectural Stamp */}
               <div className="hidden flex-col border-l border-[#B68A4A]/30 pl-2.5 xl:flex">
                 <span className="font-['Cinzel',serif] text-[9.5px] font-semibold tracking-[0.24em] text-[#E0D8C3] uppercase group-hover:text-[#C6A779] transition-colors">
-                  Atelier
+                  MB's
                 </span>
                 <span className="font-mono text-[8px] tracking-[0.18em] text-[#B68A4A] uppercase">
                   Ar. Mandar Bhalekar

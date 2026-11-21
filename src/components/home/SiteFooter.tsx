@@ -115,7 +115,7 @@ export function SiteFooter({
 
   return (
     <footer className="relative overflow-hidden bg-[#000000] text-[#F2F0EB] border-t border-white/10">
-      <div className="editorial-container relative z-10 py-16 lg:py-20">
+      <div className="editorial-container relative z-10 pt-10 lg:pt-12 pb-6 lg:pb-8">
         
         {/* Main Section: Left (Clock Animation) & Right (4 Columns) */}
         <div className="flex flex-col lg:flex-row gap-10 xl:gap-14 items-start">
@@ -129,10 +129,6 @@ export function SiteFooter({
             >
               <FooterClockEmblem />
             </Link>
-
-            <p className="mt-4 text-center lg:text-left font-['Outfit',sans-serif] text-xs leading-relaxed text-white/50 max-w-xs">
-              {siteConfig.tagline}
-            </p>
           </div>
 
           {/* Right Side: 4-Column Content with Left Vertical Divider & Compact Spacing */}
@@ -274,7 +270,7 @@ export function SiteFooter({
         </div>
 
         {/* Bottom Copyright Bar */}
-        <div className="mt-16 border-t border-white/10 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-[10px] text-white/40 tracking-wider">
+        <div className="mt-8 lg:mt-10 border-t border-white/10 pt-5 flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-[10px] text-white/40 tracking-wider">
           <p>© 2026 ARCHEON DESIGN STUDIO</p>
           <p className="text-center sm:text-left text-[9.5px]">
             All Rights Reserved. Architecture · Interior · Landscape · Turnkey.
