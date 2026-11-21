@@ -57,9 +57,14 @@ export function ArchitecturalRevealHero({
         <video
           ref={videoRef}
           id="bgHeroVideo"
-          className={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-1000 ${
+          className={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-700 ${
             videoReady ? "opacity-100" : "opacity-0"
           }`}
+          style={{
+            filter: "contrast(1.08) brightness(1.08) saturate(1.12)",
+            transform: "translateZ(0)",
+            willChange: "transform",
+          }}
           autoPlay
           loop
           muted
@@ -77,32 +82,31 @@ export function ArchitecturalRevealHero({
           />
         </video>
 
-        {/* Refined Dark Architectural Scrim / Vignette: High Contrast on Left, Open Clarity on Right, Occluding Bottom-Right */}
+        {/* Refined Architectural Scrim: High clarity and brightness with soft directional typography legibility */}
         <div
           className="pointer-events-none absolute inset-0 z-[2]"
           style={{
             background: `
               radial-gradient(
                 circle at 100% 100%,
-                rgba(10, 10, 10, 0.98) 0%,
-                rgba(10, 10, 10, 0.92) 80px,
-                rgba(10, 10, 10, 0.5) 140px,
-                transparent 200px
+                rgba(10, 10, 10, 0.92) 0%,
+                rgba(10, 10, 10, 0.65) 60px,
+                rgba(10, 10, 10, 0.2) 110px,
+                transparent 150px
               ),
               linear-gradient(
                 90deg,
-                rgba(8, 8, 8, 0.94) 0%,
-                rgba(8, 8, 8, 0.82) 32%,
-                rgba(8, 8, 8, 0.35) 58%,
-                rgba(8, 8, 8, 0.12) 80%,
-                rgba(8, 8, 8, 0.05) 100%
+                rgba(8, 8, 8, 0.65) 0%,
+                rgba(8, 8, 8, 0.42) 28%,
+                rgba(8, 8, 8, 0.12) 55%,
+                rgba(8, 8, 8, 0.0) 80%
               ),
               linear-gradient(
                 180deg,
-                rgba(8, 8, 8, 0.72) 0%,
-                rgba(8, 8, 8, 0.15) 20%,
-                rgba(8, 8, 8, 0.15) 75%,
-                rgba(8, 8, 8, 0.88) 100%
+                rgba(8, 8, 8, 0.45) 0%,
+                transparent 15%,
+                transparent 80%,
+                rgba(8, 8, 8, 0.55) 100%
               )
             `,
           }}
@@ -185,7 +189,7 @@ export function ArchitecturalRevealHero({
           </p> */}
 
           {/* Hero Heading - 3-Line Editorial Composition */}
-          <h1 className="font-serif font-normal text-[32px] xs:text-[38px] sm:text-[46px] lg:text-[64px] xl:text-[68px] leading-[1.04] sm:leading-[0.98] tracking-[-0.03em] text-[#F2EFE9]">
+          <h1 className="font-serif font-normal text-[32px] xs:text-[38px] sm:text-[46px] lg:text-[64px] xl:text-[68px] leading-[1.04] sm:leading-[0.98] tracking-[-0.03em] text-[#F2EFE9] drop-shadow-[0_4px_24px_rgba(0,0,0,0.85)]">
             <span className="italic text-[#C8621E] font-normal">Spaces Designed</span>
             <br />
             <span >Around the</span>
@@ -194,7 +198,7 @@ export function ArchitecturalRevealHero({
           </h1>
 
 {/* Editorial Subcopy */}
-<p className="mt-6 sm:mt-8 max-w-[540px] text-[14px] sm:text-[15px] lg:text-[16px] leading-[1.75] font-light text-[#C2BEB6]">
+<p className="mt-6 sm:mt-8 max-w-[540px] text-[14px] sm:text-[15px] lg:text-[16px] leading-[1.75] font-light text-[#C2BEB6] drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]">
   We design thoughtful architecture and interiors that bring together beauty,
   comfort, and functionality. From your first idea to the final details,
   we create spaces that feel truly yours.
@@ -253,7 +257,7 @@ export function ArchitecturalRevealHero({
           </div>
           <div className="flex flex-col border-l border-white/20 pl-2.5 pr-1">
             <span className="font-['Cinzel',serif] text-[9.5px] font-semibold tracking-[0.24em] text-[#E0D8C3] uppercase">
-              ArcheOn Atelier
+              ArcheOn 
             </span>
             <span className="font-mono text-[7.5px] tracking-[0.16em] text-[#B68A4A] uppercase">
               Ar. Mandar Bhalekar
