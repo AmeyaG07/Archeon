@@ -1,0 +1,1514 @@
+[
+  {
+    "viewport": "small_mobile",
+    "path": "/",
+    "name": "Homepage",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_mobile",
+    "path": "/design-system",
+    "name": "Design System",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_mobile",
+    "path": "/login",
+    "name": "Login",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_mobile",
+    "path": "/accept-invitation",
+    "name": "Accept Invitation Alias",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_mobile",
+    "path": "/auth/accept-invitation",
+    "name": "Accept Invitation Canonical",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_mobile",
+    "path": "/admin",
+    "name": "Admin Dashboard",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_mobile",
+    "path": "/admin/projects",
+    "name": "Admin Projects",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_mobile",
+    "path": "/admin/clients",
+    "name": "Admin Clients",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_mobile",
+    "path": "/admin/vendors",
+    "name": "Admin Vendors",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_mobile",
+    "path": "/admin/invoices",
+    "name": "Admin Invoices",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_mobile",
+    "path": "/admin/approvals",
+    "name": "Admin Approvals",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_mobile",
+    "path": "/admin/cash-settlements",
+    "name": "Admin Cash Settlements",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_mobile",
+    "path": "/admin/finance-reports",
+    "name": "Admin Finance Reports",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_mobile",
+    "path": "/admin/audit-logs",
+    "name": "Admin Audit Logs",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_mobile",
+    "path": "/admin/settings",
+    "name": "Admin Settings",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_mobile",
+    "path": "/client",
+    "name": "Client Dashboard",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_mobile",
+    "path": "/client/projects",
+    "name": "Client Projects",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_mobile",
+    "path": "/client/documents",
+    "name": "Client Documents",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_mobile",
+    "path": "/client/invoices",
+    "name": "Client Invoices",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_mobile",
+    "path": "/client/notifications",
+    "name": "Client Notifications",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_mobile",
+    "path": "/client/profile",
+    "name": "Client Profile",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_mobile",
+    "path": "/vendor",
+    "name": "Vendor Dashboard",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_mobile",
+    "path": "/vendor/projects",
+    "name": "Vendor Projects",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_mobile",
+    "path": "/vendor/invoices",
+    "name": "Vendor Invoices",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_mobile",
+    "path": "/vendor/cash-settlements",
+    "name": "Vendor Cash Settlements",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_mobile",
+    "path": "/vendor/notifications",
+    "name": "Vendor Notifications",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_mobile",
+    "path": "/vendor/profile",
+    "name": "Vendor Profile",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "standard_mobile",
+    "path": "/",
+    "name": "Homepage",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "standard_mobile",
+    "path": "/design-system",
+    "name": "Design System",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "standard_mobile",
+    "path": "/login",
+    "name": "Login",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "standard_mobile",
+    "path": "/accept-invitation",
+    "name": "Accept Invitation Alias",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "standard_mobile",
+    "path": "/auth/accept-invitation",
+    "name": "Accept Invitation Canonical",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "standard_mobile",
+    "path": "/admin",
+    "name": "Admin Dashboard",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "standard_mobile",
+    "path": "/admin/projects",
+    "name": "Admin Projects",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "standard_mobile",
+    "path": "/admin/clients",
+    "name": "Admin Clients",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "standard_mobile",
+    "path": "/admin/vendors",
+    "name": "Admin Vendors",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "standard_mobile",
+    "path": "/admin/invoices",
+    "name": "Admin Invoices",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "standard_mobile",
+    "path": "/admin/approvals",
+    "name": "Admin Approvals",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "standard_mobile",
+    "path": "/admin/cash-settlements",
+    "name": "Admin Cash Settlements",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "standard_mobile",
+    "path": "/admin/finance-reports",
+    "name": "Admin Finance Reports",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "standard_mobile",
+    "path": "/admin/audit-logs",
+    "name": "Admin Audit Logs",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "standard_mobile",
+    "path": "/admin/settings",
+    "name": "Admin Settings",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "standard_mobile",
+    "path": "/client",
+    "name": "Client Dashboard",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "standard_mobile",
+    "path": "/client/projects",
+    "name": "Client Projects",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "standard_mobile",
+    "path": "/client/documents",
+    "name": "Client Documents",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "standard_mobile",
+    "path": "/client/invoices",
+    "name": "Client Invoices",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "standard_mobile",
+    "path": "/client/notifications",
+    "name": "Client Notifications",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "standard_mobile",
+    "path": "/client/profile",
+    "name": "Client Profile",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "standard_mobile",
+    "path": "/vendor",
+    "name": "Vendor Dashboard",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "standard_mobile",
+    "path": "/vendor/projects",
+    "name": "Vendor Projects",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "standard_mobile",
+    "path": "/vendor/invoices",
+    "name": "Vendor Invoices",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "standard_mobile",
+    "path": "/vendor/cash-settlements",
+    "name": "Vendor Cash Settlements",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "standard_mobile",
+    "path": "/vendor/notifications",
+    "name": "Vendor Notifications",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "standard_mobile",
+    "path": "/vendor/profile",
+    "name": "Vendor Profile",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_mobile",
+    "path": "/",
+    "name": "Homepage",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_mobile",
+    "path": "/design-system",
+    "name": "Design System",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_mobile",
+    "path": "/login",
+    "name": "Login",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_mobile",
+    "path": "/accept-invitation",
+    "name": "Accept Invitation Alias",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_mobile",
+    "path": "/auth/accept-invitation",
+    "name": "Accept Invitation Canonical",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_mobile",
+    "path": "/admin",
+    "name": "Admin Dashboard",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_mobile",
+    "path": "/admin/projects",
+    "name": "Admin Projects",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_mobile",
+    "path": "/admin/clients",
+    "name": "Admin Clients",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_mobile",
+    "path": "/admin/vendors",
+    "name": "Admin Vendors",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_mobile",
+    "path": "/admin/invoices",
+    "name": "Admin Invoices",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_mobile",
+    "path": "/admin/approvals",
+    "name": "Admin Approvals",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_mobile",
+    "path": "/admin/cash-settlements",
+    "name": "Admin Cash Settlements",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_mobile",
+    "path": "/admin/finance-reports",
+    "name": "Admin Finance Reports",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_mobile",
+    "path": "/admin/audit-logs",
+    "name": "Admin Audit Logs",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_mobile",
+    "path": "/admin/settings",
+    "name": "Admin Settings",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_mobile",
+    "path": "/client",
+    "name": "Client Dashboard",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_mobile",
+    "path": "/client/projects",
+    "name": "Client Projects",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_mobile",
+    "path": "/client/documents",
+    "name": "Client Documents",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_mobile",
+    "path": "/client/invoices",
+    "name": "Client Invoices",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_mobile",
+    "path": "/client/notifications",
+    "name": "Client Notifications",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_mobile",
+    "path": "/client/profile",
+    "name": "Client Profile",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_mobile",
+    "path": "/vendor",
+    "name": "Vendor Dashboard",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_mobile",
+    "path": "/vendor/projects",
+    "name": "Vendor Projects",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_mobile",
+    "path": "/vendor/invoices",
+    "name": "Vendor Invoices",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_mobile",
+    "path": "/vendor/cash-settlements",
+    "name": "Vendor Cash Settlements",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_mobile",
+    "path": "/vendor/notifications",
+    "name": "Vendor Notifications",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_mobile",
+    "path": "/vendor/profile",
+    "name": "Vendor Profile",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_tablet",
+    "path": "/",
+    "name": "Homepage",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_tablet",
+    "path": "/design-system",
+    "name": "Design System",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_tablet",
+    "path": "/login",
+    "name": "Login",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_tablet",
+    "path": "/accept-invitation",
+    "name": "Accept Invitation Alias",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_tablet",
+    "path": "/auth/accept-invitation",
+    "name": "Accept Invitation Canonical",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_tablet",
+    "path": "/admin",
+    "name": "Admin Dashboard",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_tablet",
+    "path": "/admin/projects",
+    "name": "Admin Projects",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_tablet",
+    "path": "/admin/clients",
+    "name": "Admin Clients",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_tablet",
+    "path": "/admin/vendors",
+    "name": "Admin Vendors",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_tablet",
+    "path": "/admin/invoices",
+    "name": "Admin Invoices",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_tablet",
+    "path": "/admin/approvals",
+    "name": "Admin Approvals",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_tablet",
+    "path": "/admin/cash-settlements",
+    "name": "Admin Cash Settlements",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_tablet",
+    "path": "/admin/finance-reports",
+    "name": "Admin Finance Reports",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_tablet",
+    "path": "/admin/audit-logs",
+    "name": "Admin Audit Logs",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_tablet",
+    "path": "/admin/settings",
+    "name": "Admin Settings",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_tablet",
+    "path": "/client",
+    "name": "Client Dashboard",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_tablet",
+    "path": "/client/projects",
+    "name": "Client Projects",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_tablet",
+    "path": "/client/documents",
+    "name": "Client Documents",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_tablet",
+    "path": "/client/invoices",
+    "name": "Client Invoices",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_tablet",
+    "path": "/client/notifications",
+    "name": "Client Notifications",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_tablet",
+    "path": "/client/profile",
+    "name": "Client Profile",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_tablet",
+    "path": "/vendor",
+    "name": "Vendor Dashboard",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_tablet",
+    "path": "/vendor/projects",
+    "name": "Vendor Projects",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_tablet",
+    "path": "/vendor/invoices",
+    "name": "Vendor Invoices",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_tablet",
+    "path": "/vendor/cash-settlements",
+    "name": "Vendor Cash Settlements",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_tablet",
+    "path": "/vendor/notifications",
+    "name": "Vendor Notifications",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "small_tablet",
+    "path": "/vendor/profile",
+    "name": "Vendor Profile",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_tablet",
+    "path": "/",
+    "name": "Homepage",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_tablet",
+    "path": "/design-system",
+    "name": "Design System",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_tablet",
+    "path": "/login",
+    "name": "Login",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_tablet",
+    "path": "/accept-invitation",
+    "name": "Accept Invitation Alias",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_tablet",
+    "path": "/auth/accept-invitation",
+    "name": "Accept Invitation Canonical",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_tablet",
+    "path": "/admin",
+    "name": "Admin Dashboard",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_tablet",
+    "path": "/admin/projects",
+    "name": "Admin Projects",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_tablet",
+    "path": "/admin/clients",
+    "name": "Admin Clients",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_tablet",
+    "path": "/admin/vendors",
+    "name": "Admin Vendors",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_tablet",
+    "path": "/admin/invoices",
+    "name": "Admin Invoices",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_tablet",
+    "path": "/admin/approvals",
+    "name": "Admin Approvals",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_tablet",
+    "path": "/admin/cash-settlements",
+    "name": "Admin Cash Settlements",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_tablet",
+    "path": "/admin/finance-reports",
+    "name": "Admin Finance Reports",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_tablet",
+    "path": "/admin/audit-logs",
+    "name": "Admin Audit Logs",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_tablet",
+    "path": "/admin/settings",
+    "name": "Admin Settings",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_tablet",
+    "path": "/client",
+    "name": "Client Dashboard",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_tablet",
+    "path": "/client/projects",
+    "name": "Client Projects",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_tablet",
+    "path": "/client/documents",
+    "name": "Client Documents",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_tablet",
+    "path": "/client/invoices",
+    "name": "Client Invoices",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_tablet",
+    "path": "/client/notifications",
+    "name": "Client Notifications",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_tablet",
+    "path": "/client/profile",
+    "name": "Client Profile",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_tablet",
+    "path": "/vendor",
+    "name": "Vendor Dashboard",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_tablet",
+    "path": "/vendor/projects",
+    "name": "Vendor Projects",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_tablet",
+    "path": "/vendor/invoices",
+    "name": "Vendor Invoices",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_tablet",
+    "path": "/vendor/cash-settlements",
+    "name": "Vendor Cash Settlements",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_tablet",
+    "path": "/vendor/notifications",
+    "name": "Vendor Notifications",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_tablet",
+    "path": "/vendor/profile",
+    "name": "Vendor Profile",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "laptop",
+    "path": "/",
+    "name": "Homepage",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "laptop",
+    "path": "/design-system",
+    "name": "Design System",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "laptop",
+    "path": "/login",
+    "name": "Login",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "laptop",
+    "path": "/accept-invitation",
+    "name": "Accept Invitation Alias",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "laptop",
+    "path": "/auth/accept-invitation",
+    "name": "Accept Invitation Canonical",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "laptop",
+    "path": "/admin",
+    "name": "Admin Dashboard",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "laptop",
+    "path": "/admin/projects",
+    "name": "Admin Projects",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "laptop",
+    "path": "/admin/clients",
+    "name": "Admin Clients",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "laptop",
+    "path": "/admin/vendors",
+    "name": "Admin Vendors",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "laptop",
+    "path": "/admin/invoices",
+    "name": "Admin Invoices",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "laptop",
+    "path": "/admin/approvals",
+    "name": "Admin Approvals",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "laptop",
+    "path": "/admin/cash-settlements",
+    "name": "Admin Cash Settlements",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "laptop",
+    "path": "/admin/finance-reports",
+    "name": "Admin Finance Reports",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "laptop",
+    "path": "/admin/audit-logs",
+    "name": "Admin Audit Logs",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "laptop",
+    "path": "/admin/settings",
+    "name": "Admin Settings",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "laptop",
+    "path": "/client",
+    "name": "Client Dashboard",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "laptop",
+    "path": "/client/projects",
+    "name": "Client Projects",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "laptop",
+    "path": "/client/documents",
+    "name": "Client Documents",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "laptop",
+    "path": "/client/invoices",
+    "name": "Client Invoices",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "laptop",
+    "path": "/client/notifications",
+    "name": "Client Notifications",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "laptop",
+    "path": "/client/profile",
+    "name": "Client Profile",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "laptop",
+    "path": "/vendor",
+    "name": "Vendor Dashboard",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "laptop",
+    "path": "/vendor/projects",
+    "name": "Vendor Projects",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "laptop",
+    "path": "/vendor/invoices",
+    "name": "Vendor Invoices",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "laptop",
+    "path": "/vendor/cash-settlements",
+    "name": "Vendor Cash Settlements",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "laptop",
+    "path": "/vendor/notifications",
+    "name": "Vendor Notifications",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "laptop",
+    "path": "/vendor/profile",
+    "name": "Vendor Profile",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "desktop",
+    "path": "/",
+    "name": "Homepage",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "desktop",
+    "path": "/design-system",
+    "name": "Design System",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "desktop",
+    "path": "/login",
+    "name": "Login",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "desktop",
+    "path": "/accept-invitation",
+    "name": "Accept Invitation Alias",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "desktop",
+    "path": "/auth/accept-invitation",
+    "name": "Accept Invitation Canonical",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "desktop",
+    "path": "/admin",
+    "name": "Admin Dashboard",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "desktop",
+    "path": "/admin/projects",
+    "name": "Admin Projects",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "desktop",
+    "path": "/admin/clients",
+    "name": "Admin Clients",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "desktop",
+    "path": "/admin/vendors",
+    "name": "Admin Vendors",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "desktop",
+    "path": "/admin/invoices",
+    "name": "Admin Invoices",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "desktop",
+    "path": "/admin/approvals",
+    "name": "Admin Approvals",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "desktop",
+    "path": "/admin/cash-settlements",
+    "name": "Admin Cash Settlements",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "desktop",
+    "path": "/admin/finance-reports",
+    "name": "Admin Finance Reports",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "desktop",
+    "path": "/admin/audit-logs",
+    "name": "Admin Audit Logs",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "desktop",
+    "path": "/admin/settings",
+    "name": "Admin Settings",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "desktop",
+    "path": "/client",
+    "name": "Client Dashboard",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "desktop",
+    "path": "/client/projects",
+    "name": "Client Projects",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "desktop",
+    "path": "/client/documents",
+    "name": "Client Documents",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "desktop",
+    "path": "/client/invoices",
+    "name": "Client Invoices",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "desktop",
+    "path": "/client/notifications",
+    "name": "Client Notifications",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "desktop",
+    "path": "/client/profile",
+    "name": "Client Profile",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "desktop",
+    "path": "/vendor",
+    "name": "Vendor Dashboard",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "desktop",
+    "path": "/vendor/projects",
+    "name": "Vendor Projects",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "desktop",
+    "path": "/vendor/invoices",
+    "name": "Vendor Invoices",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "desktop",
+    "path": "/vendor/cash-settlements",
+    "name": "Vendor Cash Settlements",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "desktop",
+    "path": "/vendor/notifications",
+    "name": "Vendor Notifications",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "desktop",
+    "path": "/vendor/profile",
+    "name": "Vendor Profile",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_desktop",
+    "path": "/",
+    "name": "Homepage",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_desktop",
+    "path": "/design-system",
+    "name": "Design System",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_desktop",
+    "path": "/login",
+    "name": "Login",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_desktop",
+    "path": "/accept-invitation",
+    "name": "Accept Invitation Alias",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_desktop",
+    "path": "/auth/accept-invitation",
+    "name": "Accept Invitation Canonical",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_desktop",
+    "path": "/admin",
+    "name": "Admin Dashboard",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_desktop",
+    "path": "/admin/projects",
+    "name": "Admin Projects",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_desktop",
+    "path": "/admin/clients",
+    "name": "Admin Clients",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_desktop",
+    "path": "/admin/vendors",
+    "name": "Admin Vendors",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_desktop",
+    "path": "/admin/invoices",
+    "name": "Admin Invoices",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_desktop",
+    "path": "/admin/approvals",
+    "name": "Admin Approvals",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_desktop",
+    "path": "/admin/cash-settlements",
+    "name": "Admin Cash Settlements",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_desktop",
+    "path": "/admin/finance-reports",
+    "name": "Admin Finance Reports",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_desktop",
+    "path": "/admin/audit-logs",
+    "name": "Admin Audit Logs",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_desktop",
+    "path": "/admin/settings",
+    "name": "Admin Settings",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_desktop",
+    "path": "/client",
+    "name": "Client Dashboard",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_desktop",
+    "path": "/client/projects",
+    "name": "Client Projects",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_desktop",
+    "path": "/client/documents",
+    "name": "Client Documents",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_desktop",
+    "path": "/client/invoices",
+    "name": "Client Invoices",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_desktop",
+    "path": "/client/notifications",
+    "name": "Client Notifications",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_desktop",
+    "path": "/client/profile",
+    "name": "Client Profile",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_desktop",
+    "path": "/vendor",
+    "name": "Vendor Dashboard",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_desktop",
+    "path": "/vendor/projects",
+    "name": "Vendor Projects",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_desktop",
+    "path": "/vendor/invoices",
+    "name": "Vendor Invoices",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_desktop",
+    "path": "/vendor/cash-settlements",
+    "name": "Vendor Cash Settlements",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_desktop",
+    "path": "/vendor/notifications",
+    "name": "Vendor Notifications",
+    "status": "PASS",
+    "overflowAmount": 0
+  },
+  {
+    "viewport": "large_desktop",
+    "path": "/vendor/profile",
+    "name": "Vendor Profile",
+    "status": "PASS",
+    "overflowAmount": 0
+  }
+]
