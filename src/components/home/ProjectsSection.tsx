@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { ArrowUpRight, MapPin, Sparkles, Scan, Crosshair, Layers } from "lucide-react";
+import React from "react";
+import { ArrowUpRight, MapPin } from "lucide-react";
 import type { PortfolioProject } from "@/config/siteConfig";
 import {
   RevealText,
@@ -9,7 +9,7 @@ import {
   StaggerGrid,
   StaggerItem,
 } from "@/components/motion/EditorialMotion";
-import { ProjectImageCard, ProjectAnimationMode } from "./ProjectImageCard";
+import { ProjectImageCard } from "./ProjectImageCard";
 
 interface ProjectsSectionProps {
   projects: PortfolioProject[];
@@ -20,35 +20,6 @@ export function ProjectsSection({
   projects,
   onSelectProject,
 }: ProjectsSectionProps) {
-  const [animationMode, setAnimationMode] = useState<ProjectAnimationMode>("combined");
-
-  const demoModes: { id: ProjectAnimationMode; label: string; desc: string; icon: React.ElementType }[] = [
-    {
-      id: "tilt",
-      label: "01 · 3D Tectonic Tilt",
-      desc: "Interactive gyroscope tilt with dynamic specular glass reflection & depth parallax",
-      icon: Sparkles,
-    },
-    {
-      id: "blueprint",
-      label: "02 · CAD Blueprint Scan",
-      desc: "Laser scan sweep revealing underlying CAD gridlines, dimension strings & elevation specs",
-      icon: Scan,
-    },
-    {
-      id: "viewfinder",
-      label: "03 · Cinematic Viewfinder",
-      desc: "Slow aperture zoom drift with dynamic crosshair reticle tracking coordinates",
-      icon: Crosshair,
-    },
-    {
-      id: "combined",
-      label: "★ All Combined (Grand Master)",
-      desc: "Harmonious synergy of 3D tilt, specular sheen, CAD scan, and precision reticle",
-      icon: Layers,
-    },
-  ];
-
   return (
     <section
       id="projects"
@@ -153,60 +124,9 @@ export function ProjectsSection({
           </RevealText>
         </div>
 
-        <HairlineRule color="bg-[#D8D6D0]" className="mb-10" />
+        <HairlineRule color="bg-[#D8D6D0]" className="mb-14" />
 
-        {/* Interactive Animation Demo Switcher Bar */}
-        <div className="mb-14 rounded-2xl border border-[#E5E0D8] bg-[#FAF8F5]/90 p-5 sm:p-6 backdrop-blur-md shadow-sm">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-2.5">
-              <span className="flex h-2.5 w-2.5 rounded-full bg-[#B68A4A] animate-ping" />
-              <p className="font-mono text-xs uppercase tracking-widest text-[#B68A4A] font-semibold">
-                Project Image Animation Showcase
-              </p>
-            </div>
-            <p className="font-mono text-[11px] text-[#777777]">
-              Hover your cursor over the project images below to test live motion & effects
-            </p>
-          </div>
-
-          <div className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
-            {demoModes.map((mode) => {
-              const Icon = mode.icon;
-              const isActive = animationMode === mode.id;
-              return (
-                <button
-                  key={mode.id}
-                  type="button"
-                  onClick={() => setAnimationMode(mode.id)}
-                  className={`group relative flex flex-col text-left rounded-xl p-4 transition-all duration-300 border ${
-                    isActive
-                      ? "border-[#B68A4A] bg-[#111111] text-white shadow-lg ring-1 ring-[#B68A4A]/50 scale-[1.01]"
-                      : "border-[#E5E0D8] bg-white hover:border-[#B68A4A]/50 text-[#111111] shadow-sm hover:shadow-md"
-                  }`}
-                >
-                  <div className="flex items-center justify-between w-full">
-                    <span className="font-mono text-xs font-semibold tracking-wider">
-                      {mode.label}
-                    </span>
-                    <Icon
-                      size={15}
-                      className={isActive ? "text-[#C6A779]" : "text-[#777777] group-hover:text-[#B68A4A]"}
-                    />
-                  </div>
-                  <p
-                    className={`mt-2 text-[11px] leading-relaxed ${
-                      isActive ? "text-[#D8D6D0]" : "text-[#777777]"
-                    }`}
-                  >
-                    {mode.desc}
-                  </p>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Project Cards with Stagger & Clip-Path Curtain Reveal */}
+        {/* Project Cards with Stagger */}
         <StaggerGrid
           staggerDelay={0.12}
           className="grid gap-x-8 gap-y-16 md:grid-cols-2"
@@ -217,11 +137,10 @@ export function ProjectsSection({
               className={`group ${index === 0 ? "md:col-span-2" : ""}`}
             >
               <div className="block w-full text-left">
-                {/* Architectural Interactive Project Image */}
+                {/* Architectural Interactive Project Image with Continuous Moving Golden Border */}
                 <ProjectImageCard
                   project={project}
                   index={index}
-                  animationMode={animationMode}
                   onClick={() => onSelectProject(project)}
                 />
 
