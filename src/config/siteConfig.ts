@@ -7,6 +7,16 @@ export interface ServiceItem {
   deliverables: string[];
   enquiryFields: string[];
   accentColor: string;
+  leadArchitect?: string;
+  timeline?: string;
+  philosophy?: string;
+  phases?: {
+    step: string;
+    title: string;
+    duration: string;
+    description: string;
+  }[];
+  standards?: string[];
 }
 
 export interface PortfolioProject {
@@ -103,6 +113,30 @@ export const siteConfig: SiteConfig = {
       code: "STUDIO_SRV_01",
       title: "Architecture",
       tagline: "Concept, spatial planning, schematic development & consultant coordination.",
+      leadArchitect: "Ar. Mandar Bhalekar",
+      timeline: "8 to 16 Weeks (Concept to GFC)",
+      philosophy: "Sculpting monolithic spatial geometries attuned to seasonal solar vectors, terrain topography, and enduring material purity.",
+      phases: [
+        {
+          step: "01",
+          title: "Contextual Analysis & Volumetric Massing",
+          duration: "Weeks 1–3",
+          description: "Site micro-climate analysis, solar orientation modeling, zoning permutations, and preliminary volume massing studies."
+        },
+        {
+          step: "02",
+          title: "Schematic & Architectural Development",
+          duration: "Weeks 4–8",
+          description: "3D architectural form development, tectonic facade framing, structural grid alignment, and material palette calibration."
+        },
+        {
+          step: "03",
+          title: "Statutory Approvals & GFC Documentation",
+          duration: "Weeks 9–14+",
+          description: "Comprehensive working drawings, MEP/structural engineering coordination, authority sanctions, and site layout handover."
+        }
+      ],
+      standards: ["NBC 2016 Compliant", "Tectonic 1:1 Scale Detailing", "Green Building Architecture", "BIM Integrated"],
       scope: [
         "Concept & Master Spatial Planning",
         "Feasibility & Solar Orientation Studies",
@@ -119,6 +153,30 @@ export const siteConfig: SiteConfig = {
       code: "STUDIO_SRV_02",
       title: "Interior Design",
       tagline: "Space planning, bespoke furniture, material moodboards & artisan styling.",
+      leadArchitect: "Ar. Mandar Bhalekar",
+      timeline: "6 to 12 Weeks (Design to Procurement)",
+      philosophy: "Bespoke spatial ergonomics sculpted with tactile natural stones, hand-planed timbers, and calibrated architectural lighting.",
+      phases: [
+        {
+          step: "01",
+          title: "Spatial Zoning & Material Moodboards",
+          duration: "Weeks 1–2",
+          description: "Ergonomic circulation planning, custom finish moodboards, tactile stone/wood swatches, and conceptual spatial narratives."
+        },
+        {
+          step: "02",
+          title: "3D Photorealistic Perspectives & Millwork",
+          duration: "Weeks 3–6",
+          description: "Ray-traced interior renders, bespoke furniture schematics, ceiling design, and architectural lighting lux simulations."
+        },
+        {
+          step: "03",
+          title: "Detailed Joinery & Vendor Procurement",
+          duration: "Weeks 7–10+",
+          description: "Production-ready joinery drawings, finish schedules, artisan fabric sourcing, and turnkey procurement documentation."
+        }
+      ],
+      standards: ["Bespoke Artisan Joinery", "High-CRI Lighting Design", "Zero-VOC Natural Finishes", "Turnkey Procurement Protocol"],
       scope: [
         "Spatial Zoning & Ergonomics",
         "Material & Finish Schedules (Stone, Timber, Metal)",
@@ -135,6 +193,30 @@ export const siteConfig: SiteConfig = {
       code: "STUDIO_SRV_03",
       title: "Landscape Architecture",
       tagline: "Outdoor zoning, climate-responsive planting, water features & hardscaping.",
+      leadArchitect: "Ar. Mandar Bhalekar",
+      timeline: "4 to 8 Weeks",
+      philosophy: "Dissolving interior-exterior boundaries through endemic botanical micro-forests, water reflection courts, and natural stone hardscapes.",
+      phases: [
+        {
+          step: "01",
+          title: "Microclimate & Soil Topography",
+          duration: "Weeks 1–2",
+          description: "Slope contour analysis, drainage hydrology mapping, seasonal sun vectors, and native soil strata profiling."
+        },
+        {
+          step: "02",
+          title: "Zoning, Water Features & Hardscape",
+          duration: "Weeks 3–5",
+          description: "Courtyard layout, reflective infinity pools, endemic stone paving layouts, and pergolas designed for climatic shade."
+        },
+        {
+          step: "03",
+          title: "Botanical Palette & Night Illumination",
+          duration: "Weeks 6–8",
+          description: "Indigenous botanical selection, drip-irrigation layouts, and low-glare warm 2700K landscape illumination schematics."
+        }
+      ],
+      standards: ["Xeriscape Water Efficiency", "Endemic Flora Taxonomy", "Sustainable Stormwater Drainage", "Zero-Glare Dark Sky Illumination"],
       scope: [
         "Site Microclimate & Soil Analysis",
         "Outdoor Circulation & Terrace Zoning",
@@ -151,6 +233,30 @@ export const siteConfig: SiteConfig = {
       code: "STUDIO_SRV_04",
       title: "3D Visualisation",
       tagline: "Cinematic spatial renderings, lighting studies, VR tours & architectural film.",
+      leadArchitect: "Ar. Mandar Bhalekar",
+      timeline: "2 to 4 Weeks",
+      philosophy: "Hyper-realistic architectural film and atmospheric imagery capturing tactile materiality, sun shadows, and cinematic spatial depth.",
+      phases: [
+        {
+          step: "01",
+          title: "BIM / CAD Ingestion & Geometry Polish",
+          duration: "Week 1",
+          description: "Detailed volumetric modeling, architectural bevels, chamfers, and accurate site terrain elevation alignment."
+        },
+        {
+          step: "02",
+          title: "Physically-Based Lighting & Materials",
+          duration: "Weeks 2–3",
+          description: "Calibrated PBR stone/metal textures, diurnal daylight simulations, ambient interior artificial lighting, and twilight atmospheres."
+        },
+        {
+          step: "03",
+          title: "Cinematic Renders & Fly-Through Film",
+          duration: "Week 4",
+          description: "4K ultra-high-resolution still perspectives, camera fly-through sequences, and immersive VR interactive walkthroughs."
+        }
+      ],
+      standards: ["4K Ultra-HD Output", "ACES Color Pipeline", "Physically-Accurate IES Lighting", "VR 360° Panoramas"],
       scope: [
         "High-Fidelity 3D BIM/CAD Modeling",
         "Exterior & Interior Daylight/Twilight Studies",
@@ -167,6 +273,30 @@ export const siteConfig: SiteConfig = {
       code: "STUDIO_SRV_05",
       title: "Turnkey Execution",
       tagline: "Single-window accountability from foundation to styling and defect-free handover.",
+      leadArchitect: "Ar. Mandar Bhalekar",
+      timeline: "6 to 18 Months (Scale Dependent)",
+      philosophy: "Uncompromising single-point accountability bridging theoretical blueprints with immaculate on-site tectonic craftsmanship.",
+      phases: [
+        {
+          step: "01",
+          title: "BOQ & Precision Cost Engineering",
+          duration: "Weeks 1–3",
+          description: "Comprehensive itemized quantities, vendor contracting, cashflow milestones, and critical path scheduling."
+        },
+        {
+          step: "02",
+          title: "Supervised Civil & Tectonic Assembly",
+          duration: "Ongoing",
+          description: "Daily on-site milestone oversight, material cube testing, structural integrity inspections, and bi-weekly client video reports."
+        },
+        {
+          step: "03",
+          title: "Defect-Free Snagging & Handover",
+          duration: "Final Month",
+          description: "Rigorous multi-tier quality snagging, warranty dossiers, testing certificates, and key handover ceremony."
+        }
+      ],
+      standards: ["Milestone Escrow Assurance", "Daily On-Site QA Reports", "Vendor Transparency Protocol", "12-Month Defect Liability Guarantee"],
       scope: [
         "Comprehensive BOQ & Cost Engineering",
         "Vendor Procurement & Material Testing",
