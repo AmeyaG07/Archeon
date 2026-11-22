@@ -1,22 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState, useCallback, useSyncExternalStore } from "react";
-
-function subscribeReducedMotion(callback: () => void) {
-  if (typeof window === "undefined") return () => { };
-  const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-  mq.addEventListener("change", callback);
-  return () => mq.removeEventListener("change", callback);
-}
-
-function getReducedMotionSnapshot() {
-  if (typeof window === "undefined") return false;
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-}
-
-function getReducedMotionServerSnapshot() {
-  return false;
-}
+import React, { useEffect, useRef, useState, useCallback } from "react";
 
 interface FooterClockEmblemProps {
   compact?: boolean;
@@ -30,12 +14,6 @@ export function FooterClockEmblem({
   const containerRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
-
-  const reducedMotion = useSyncExternalStore(
-    subscribeReducedMotion,
-    getReducedMotionSnapshot,
-    getReducedMotionServerSnapshot
-  );
 
   // Fast continuous sweeping angles (degrees)
   const [angles, setAngles] = useState({
@@ -53,8 +31,6 @@ export function FooterClockEmblem({
 
   // Fast continuous dynamic clock animation using requestAnimationFrame
   useEffect(() => {
-    if (reducedMotion) return;
-
     let rafId: number;
     let startTime: number | null = null;
 
@@ -100,7 +76,7 @@ export function FooterClockEmblem({
 
     rafId = requestAnimationFrame(animateClock);
     return () => cancelAnimationFrame(rafId);
-  }, [reducedMotion]);
+  }, []);
 
   // Interactive 3D tilt tracking
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
@@ -189,10 +165,9 @@ export function FooterClockEmblem({
             : "w-[240px] h-[240px] sm:w-[260px] sm:h-[260px]"
         }`}
         style={{
-          transform: reducedMotion
-            ? "none"
-            : `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) scale3d(${isHovered ? 1.04 : 1
-            }, ${isHovered ? 1.04 : 1}, 1)`,
+          transform: `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) scale3d(${
+            isHovered ? 1.04 : 1
+          }, ${isHovered ? 1.04 : 1}, 1)`,
           transformStyle: "preserve-3d",
         }}
       >
