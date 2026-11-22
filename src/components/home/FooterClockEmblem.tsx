@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useRef, useState, useCallback } from "react";
 
 interface FooterClockEmblemProps {
   compact?: boolean;
@@ -15,70 +15,7 @@ export function FooterClockEmblem({
   const [isHovered, setIsHovered] = useState(false);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
 
-  // Fast continuous sweeping angles (degrees)
-  const [angles, setAngles] = useState({
-    fastSeconds: 0,
-    cyan: 45,
-    amber: 120,
-    magenta: 210,
-    ringClockwise: 0,
-    ringCounter: 0,
-    p1: 0,
-    p2: 90,
-    p3: 180,
-    p4: 270,
-  });
-
-  // Fast continuous dynamic clock animation using requestAnimationFrame
-  useEffect(() => {
-    let rafId: number;
-    let startTime: number | null = null;
-
-    const animateClock = (timestamp: number) => {
-      if (!startTime) startTime = timestamp;
-      const elapsed = timestamp - startTime;
-
-      // Dynamic FAST high-energy sweeps:
-      // - Fast seconds needle: 1 full 360 deg spin every 3.2s
-      const fastSeconds = (elapsed / 3200) * 360;
-      // - Electric Cyan sweep: 1 full spin every 7.5s
-      const cyan = (elapsed / 7500) * 360;
-      // - Solar Amber sweep: 1 full spin every 16.0s
-      const amber = (elapsed / 16000) * 360;
-      // - Neon Magenta laser hand: 1 full spin every 2.4s
-      const magenta = (elapsed / 2400) * 360;
-
-      // - Rotating technical dials
-      const ringClockwise = (elapsed / 22000) * 360;
-      const ringCounter = -(elapsed / 16000) * 360;
-
-      // - Fast orbiting colorful photon satellites:
-      const p1 = (elapsed / 2600) * 360;      // Amber: r=148, clockwise 2.6s
-      const p2 = -(elapsed / 1900) * 360;     // Cyan: r=130, counter 1.9s
-      const p3 = (elapsed / 1400) * 360;      // Magenta: r=114, clockwise 1.4s
-      const p4 = -(elapsed / 2100) * 360;     // Emerald: r=96, counter 2.1s
-
-      setAngles({
-        fastSeconds: fastSeconds % 360,
-        cyan: cyan % 360,
-        amber: amber % 360,
-        magenta: magenta % 360,
-        ringClockwise: ringClockwise % 360,
-        ringCounter: ringCounter % 360,
-        p1: p1 % 360,
-        p2: p2 % 360,
-        p3: p3 % 360,
-        p4: p4 % 360,
-      });
-
-      rafId = requestAnimationFrame(animateClock);
-    };
-
-    rafId = requestAnimationFrame(animateClock);
-    return () => cancelAnimationFrame(rafId);
-  }, []);
-
-  // Interactive 3D tilt tracking
+  // Interactive 3D tilt tracking on mouse hover
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
@@ -96,20 +33,6 @@ export function FooterClockEmblem({
     setIsHovered(false);
     setTilt({ x: 0, y: 0 });
   }, []);
-
-  // Compute position of orbiting particle
-  const getOrbitPos = (deg: number, radius: number) => {
-    const rad = ((deg - 90) * Math.PI) / 180;
-    return {
-      x: 180 + radius * Math.cos(rad),
-      y: 180 + radius * Math.sin(rad),
-    };
-  };
-
-  const orbAmber = getOrbitPos(angles.p1, 148);
-  const orbCyan = getOrbitPos(angles.p2, 130);
-  const orbMagenta = getOrbitPos(angles.p3, 114);
-  const orbEmerald = getOrbitPos(angles.p4, 96);
 
   // 12 Hour indices calculation (r = 135, cx = 180, cy = 180)
   const hourIndices = [
@@ -277,9 +200,17 @@ export function FooterClockEmblem({
           <circle cx="180" cy="180" r="96" fill="none" stroke="rgba(16, 185, 129, 0.15)" strokeWidth="0.6" />
 
           {/* ============================================================= */}
-          {/* ROTATING OUTER CALIBRATION DEGREES (FAST CLOCKWISE)           */}
+          {/* ROTATING OUTER CALIBRATION DEGREES (CONTINUOUS CLOCKWISE)     */}
           {/* ============================================================= */}
-          <g transform={`rotate(${angles.ringClockwise} 180 180)`} opacity="0.65">
+          <g opacity="0.65">
+            <animateTransform
+              attributeName="transform"
+              type="rotate"
+              from="0 180 180"
+              to="360 180 180"
+              dur="22s"
+              repeatCount="indefinite"
+            />
             {[0, 45, 90, 135, 180, 225, 270, 315].map((deg) => (
               <g key={`deg-${deg}`} transform={`rotate(${deg} 180 180)`}>
                 <line x1="180" y1="12" x2="180" y2="18" stroke="#F59E0B" strokeWidth="1.2" />
@@ -291,9 +222,17 @@ export function FooterClockEmblem({
           </g>
 
           {/* ============================================================= */}
-          {/* ROTATING INNER PRECISION TICKS (COUNTER-CLOCKWISE)            */}
+          {/* ROTATING INNER PRECISION TICKS (CONTINUOUS COUNTER-CLOCKWISE) */}
           {/* ============================================================= */}
-          <g transform={`rotate(${angles.ringCounter} 180 180)`} opacity="0.55">
+          <g opacity="0.55">
+            <animateTransform
+              attributeName="transform"
+              type="rotate"
+              from="360 180 180"
+              to="0 180 180"
+              dur="16s"
+              repeatCount="indefinite"
+            />
             {Array.from({ length: 60 }).map((_, i) => (
               <line
                 key={`tick-${i}`}
@@ -308,7 +247,7 @@ export function FooterClockEmblem({
             ))}
           </g>
 
-          {/* 12 Hour Numerals */}
+          {/* 12 Hour Numerals (Static Dial Markers) */}
           {hourIndices.map(({ num, deg }) => {
             const rad = ((deg - 90) * Math.PI) / 180;
             const x = 180 + 135 * Math.cos(rad);
@@ -333,11 +272,20 @@ export function FooterClockEmblem({
           })}
 
           {/* ============================================================= */}
-          {/* FAST SWEEPING COLORFUL HANDS & LUMINOUS ARCS                  */}
+          {/* CONTINUOUS SWEEPING COLORFUL HANDS & LUMINOUS ARCS            */}
+          {/* (Native GPU-Accelerated 60/120fps Smooth Compositing)         */}
           {/* ============================================================= */}
 
-          {/* 1. SOLAR AMBER SWEEP HAND (Primary, Warm Gold Glow) */}
-          <g transform={`rotate(${angles.amber} 180 180)`}>
+          {/* 1. SOLAR AMBER SWEEP HAND (Primary, Warm Gold Glow, 16s Rev) */}
+          <g>
+            <animateTransform
+              attributeName="transform"
+              type="rotate"
+              from="0 180 180"
+              to="360 180 180"
+              dur="16s"
+              repeatCount="indefinite"
+            />
             {/* Trailing Amber Arc at r = 118 (~85 degrees sweep) */}
             <path
               d="M 180 62 A 118 118 0 0 0 86 110"
@@ -356,8 +304,16 @@ export function FooterClockEmblem({
             <polygon points="180,60 183.5,69 180,73 176.5,69" fill="#FBBF24" filter="url(#amber-glow)" />
           </g>
 
-          {/* 2. ELECTRIC CYAN SWEEP HAND (Secondary, Neon Blue Glow) */}
-          <g transform={`rotate(${angles.cyan} 180 180)`}>
+          {/* 2. ELECTRIC CYAN SWEEP HAND (Secondary, Neon Blue Glow, 7.5s Rev) */}
+          <g>
+            <animateTransform
+              attributeName="transform"
+              type="rotate"
+              from="45 180 180"
+              to="405 180 180"
+              dur="7.5s"
+              repeatCount="indefinite"
+            />
             {/* Trailing Cyan Arc at r = 138 (~75 degrees sweep) */}
             <path
               d="M 180 42 A 138 138 0 0 0 76 96"
@@ -376,8 +332,16 @@ export function FooterClockEmblem({
             <polygon points="180,40 183.5,49 180,52 176.5,49" fill="#06B6D4" filter="url(#cyan-glow)" />
           </g>
 
-          {/* 3. NEON MAGENTA LASER HAND (Fast ~2.4s rotation) */}
-          <g transform={`rotate(${angles.magenta} 180 180)`}>
+          {/* 3. NEON MAGENTA LASER HAND (Fast 2.4s Rotation) */}
+          <g>
+            <animateTransform
+              attributeName="transform"
+              type="rotate"
+              from="210 180 180"
+              to="570 180 180"
+              dur="2.4s"
+              repeatCount="indefinite"
+            />
             {/* Trailing Magenta Arc at r = 100 (~60 degrees sweep) */}
             <path
               d="M 180 80 A 100 100 0 0 0 110 110"
@@ -391,35 +355,84 @@ export function FooterClockEmblem({
             <circle cx="180" cy="82" r="2.5" fill="#F472B6" />
           </g>
 
-          {/* 4. ULTRA-FAST HAIRLINE SECOND NEEDLE (3.2s Revolution) */}
-          <g transform={`rotate(${angles.fastSeconds} 180 180)`}>
+          {/* 4. ULTRA-FAST HAIRLINE SECONDS NEEDLE (3.2s Revolution) */}
+          <g>
+            <animateTransform
+              attributeName="transform"
+              type="rotate"
+              from="0 180 180"
+              to="360 180 180"
+              dur="3.2s"
+              repeatCount="indefinite"
+            />
             <line x1="180" y1="216" x2="180" y2="180" stroke="#F59E0B" strokeWidth="1.2" opacity="0.8" />
             <line x1="180" y1="180" x2="180" y2="30" stroke="#FFFFFF" strokeWidth="0.9" />
             <circle cx="180" cy="32" r="2.5" fill="#F59E0B" filter="url(#amber-glow)" />
           </g>
 
           {/* ============================================================= */}
-          {/* FAST ORBITING COLORFUL PHOTON SATELLITES (PARTICLES)          */}
+          {/* CONTINUOUS ORBITING COLORFUL PHOTON SATELLITES (PARTICLES)   */}
           {/* ============================================================= */}
-          {/* Orbiting Solar Amber Photon */}
-          <circle cx={orbAmber.x} cy={orbAmber.y} r="4.5" fill="#F59E0B" filter="url(#amber-glow)" />
-          <circle cx={orbAmber.x} cy={orbAmber.y} r="2" fill="#FFFFFF" />
 
-          {/* Orbiting Electric Cyan Photon */}
-          <circle cx={orbCyan.x} cy={orbCyan.y} r="4" fill="#06B6D4" filter="url(#cyan-glow)" />
-          <circle cx={orbCyan.x} cy={orbCyan.y} r="1.8" fill="#FFFFFF" />
+          {/* 1. Orbiting Solar Amber Photon: r = 148, clockwise 2.6s */}
+          <g>
+            <animateTransform
+              attributeName="transform"
+              type="rotate"
+              from="0 180 180"
+              to="360 180 180"
+              dur="2.6s"
+              repeatCount="indefinite"
+            />
+            <circle cx="180" cy={180 - 148} r="4.5" fill="#F59E0B" filter="url(#amber-glow)" />
+            <circle cx="180" cy={180 - 148} r="2" fill="#FFFFFF" />
+          </g>
 
-          {/* Orbiting Neon Magenta Photon */}
-          <circle cx={orbMagenta.x} cy={orbMagenta.y} r="3.5" fill="#EC4899" filter="url(#magenta-glow)" />
+          {/* 2. Orbiting Electric Cyan Photon: r = 130, counter-clockwise 1.9s */}
+          <g>
+            <animateTransform
+              attributeName="transform"
+              type="rotate"
+              from="360 180 180"
+              to="0 180 180"
+              dur="1.9s"
+              repeatCount="indefinite"
+            />
+            <circle cx="180" cy={180 - 130} r="4" fill="#06B6D4" filter="url(#cyan-glow)" />
+            <circle cx="180" cy={180 - 130} r="1.8" fill="#FFFFFF" />
+          </g>
 
-          {/* Orbiting Neon Emerald Photon */}
-          <circle cx={orbEmerald.x} cy={orbEmerald.y} r="3" fill="#10B981" filter="url(#emerald-glow)" />
+          {/* 3. Orbiting Neon Magenta Photon: r = 114, clockwise 1.4s */}
+          <g>
+            <animateTransform
+              attributeName="transform"
+              type="rotate"
+              from="0 180 180"
+              to="360 180 180"
+              dur="1.4s"
+              repeatCount="indefinite"
+            />
+            <circle cx="180" cy={180 - 114} r="3.5" fill="#EC4899" filter="url(#magenta-glow)" />
+          </g>
+
+          {/* 4. Orbiting Neon Emerald Photon: r = 96, counter-clockwise 2.1s */}
+          <g>
+            <animateTransform
+              attributeName="transform"
+              type="rotate"
+              from="360 180 180"
+              to="0 180 180"
+              dur="2.1s"
+              repeatCount="indefinite"
+            />
+            <circle cx="180" cy={180 - 96} r="3" fill="#10B981" filter="url(#emerald-glow)" />
+          </g>
 
           {/* ============================================================= */}
           {/* CENTER CIRCULAR POD HOUSING THE ORIGINAL ARCHEON LOGO (CLEAN) */}
           {/* ============================================================= */}
           <g className="filter drop-shadow-[0_8px_30px_rgba(0,0,0,0.95)]">
-            {/* Concentric Pulsing Chromatic Ring */}
+            {/* Concentric Rotating Chromatic Ring */}
             <circle
               cx="180"
               cy="180"
@@ -428,10 +441,17 @@ export function FooterClockEmblem({
               stroke="#B68A4A"
               strokeWidth="1"
               strokeDasharray="3 4"
-              className="animate-spin"
-              style={{ animationDuration: "16s" }}
               opacity="0.45"
-            />
+            >
+              <animateTransform
+                attributeName="transform"
+                type="rotate"
+                from="0 180 180"
+                to="360 180 180"
+                dur="16s"
+                repeatCount="indefinite"
+              />
+            </circle>
 
             {/* Precision Beveled Warm Amber Outer Rim */}
             <circle
