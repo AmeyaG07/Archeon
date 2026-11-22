@@ -122,6 +122,20 @@ public class BillingExpenseService {
         private BigDecimal totalBilledAmount;
         private int totalBillsCount;
         private List<String> associatedClientNames;
+        private List<VendorProjectItemDto> linkedProjects;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class VendorProjectItemDto {
+        private String id;
+        private String reference;
+        private String name;
+        private String status;
+        private String scopeOfWork;
+        private BigDecimal contractAmount;
     }
 
     // ==========================================
@@ -454,6 +468,28 @@ public class BillingExpenseService {
                     .map(ClientEntity::getFullName)
                     .collect(Collectors.toSet());
 
+            List<VendorProjectItemDto> vProjects = allAssignments.stream()
+                    .filter(a -> a.getVendorId().equals(v.getId()))
+                    .map(a -> {
+                        OperationalProjectEntity p = projectMap.get(a.getProjectId());
+                        if (p == null) return null;
+                        String status = "Under Execution";
+                        if ("PLANNING".equalsIgnoreCase(p.getStatus())) status = "Planning";
+                        else if ("COMPLETED".equalsIgnoreCase(p.getStatus())) status = "Completed";
+                        else if ("ON_HOLD".equalsIgnoreCase(p.getStatus())) status = "On Hold";
+                        else if ("IN_PROGRESS".equalsIgnoreCase(p.getStatus())) status = "Under Execution";
+                        return VendorProjectItemDto.builder()
+                                .id(p.getId().toString())
+                                .reference(p.getProjectReference())
+                                .name(p.getName())
+                                .status(status)
+                                .scopeOfWork(a.getScopeOfWork())
+                                .contractAmount(a.getContractAmount())
+                                .build();
+                    })
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+
             return VendorDirectoryItemDto.builder()
                     .vendorId(v.getId())
                     .vendorReference(v.getVendorReference())
@@ -465,6 +501,7 @@ public class BillingExpenseService {
                     .totalBilledAmount(totalBilled)
                     .totalBillsCount(vBills.size())
                     .associatedClientNames(new ArrayList<>(clientNames))
+                    .linkedProjects(vProjects)
                     .build();
         }).collect(Collectors.toList());
     }
