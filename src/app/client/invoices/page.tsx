@@ -93,6 +93,21 @@ function ClientInvoicesContent() {
         currency: "INR" as const,
       }));
 
+      // Fetch vendors map to display human-readable business names instead of raw UUIDs
+      const vendorMap: Record<string, string> = {};
+      try {
+        const vRes = await apiFetch("/api/vendors");
+        const vPage = await vRes.json();
+        const vList = Array.isArray(vPage) ? vPage : vPage.content || [];
+        vList.forEach((v: any) => {
+          const name = v.businessName || v.contactPerson || v.vendorReference;
+          if (v.id) vendorMap[String(v.id)] = name;
+          if (v.vendorReference) vendorMap[v.vendorReference] = name;
+        });
+      } catch (err) {
+        console.warn("Could not load vendors map:", err);
+      }
+
       // 2. Also load trade partner bills uploaded for this client's projects
       let billRecords: ClientInvoice[] = [];
       try {
@@ -102,12 +117,13 @@ function ClientInvoicesContent() {
           billRecords = bList.map((b: any) => {
             const isSettled = b.status === "PAID_CASH" || b.status === "PAID_ONLINE";
             const isApproved = isSettled || b.status === "APPROVED";
+            const vDisplay = vendorMap[String(b.vendorId)] || b.tradeCategory || "Trade Contractor";
             return {
               id: b.id ? String(b.id) : b.billId || "BILL",
               invoiceNumber: b.invoiceNumber || b.billId || "BILL",
               projectName: b.tradeCategory ? `${b.tradeCategory} (Contractor Bill)` : "Trade Partner Bill",
-              description: b.disputeReason || `Vendor: ${b.vendorId}`,
-              issueDate: b.createdAt || new Date().toISOString(),
+              description: b.disputeReason ? `${b.disputeReason} · Contractor: ${vDisplay}` : `Contractor: ${vDisplay}`,
+              issueDate: b.createdAt ? new Date(b.createdAt).toLocaleDateString() : new Date().toISOString(),
               dueDate: "Immediate",
               totalAmount: Number(b.amount || 0),
               paidAmount: Number(b.paidAmount || 0),
@@ -118,7 +134,8 @@ function ClientInvoicesContent() {
                 ? "Issued"
                 : "Under Review") as ClientInvoiceStatus,
               currency: "INR" as const,
-            };
+              fileUrl: b.billPhotoUrl || b.paymentProofUrl || "",
+            } as ClientInvoice & { fileUrl?: string };
           });
         }
       } catch (err) {
@@ -150,7 +167,13 @@ function ClientInvoicesContent() {
       const res = await fetch(`${baseUrl}/api/invoices/${invoice.id}/pdf`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
-      if (!res.ok) throw new Error("Failed to download tax invoice PDF");
+      if (!res.ok) {
+        if ((invoice as any).fileUrl) {
+          window.open((invoice as any).fileUrl, "_blank");
+          return;
+        }
+        throw new Error("Failed to download tax invoice PDF");
+      }
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -161,7 +184,11 @@ function ClientInvoicesContent() {
       a.remove();
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      alert("Error downloading invoice: " + (err instanceof Error ? err.message : String(err)));
+      if ((invoice as any).fileUrl) {
+        window.open((invoice as any).fileUrl, "_blank");
+      } else {
+        alert("Error downloading invoice: " + (err instanceof Error ? err.message : String(err)));
+      }
     }
   };
 
