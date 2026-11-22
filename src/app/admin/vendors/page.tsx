@@ -97,7 +97,7 @@ export default function AdminVendorsPage() {
             outstandingInvoiceCount: 0,
             totalBilledAmount: bInfo.totalBilledAmount || 0,
             totalSettledAmount: bInfo.totalSettledAmount || 0,
-            associatedClients: bInfo.associatedClients || [],
+            associatedClients: bInfo.associatedClientNames || bInfo.associatedClients || v.associatedClientNames || [],
             createdAt: v.createdAt || new Date().toISOString(),
             lastUpdated: v.updatedAt || new Date().toISOString(),
           };

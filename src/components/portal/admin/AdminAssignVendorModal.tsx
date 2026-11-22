@@ -38,6 +38,7 @@ export function AdminAssignVendorModal({
   const [photoFileName, setPhotoFileName] = useState<string | null>(null);
 
   const [vendors, setVendors] = useState<VendorOption[]>([]);
+  const [assignedVendorIds, setAssignedVendorIds] = useState<Set<string>>(new Set());
   const [loadingVendors, setLoadingVendors] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,20 +50,34 @@ export function AdminAssignVendorModal({
       setSuccess(false);
       setLoadingVendors(true);
 
-      apiFetch("/api/vendors")
-        .then((res) => res.json())
-        .then((data) => {
-          if (Array.isArray(data)) {
-            setVendors(data);
-            if (data.length > 0 && !vendorId) {
-              setVendorId(data[0].id);
+      Promise.all([
+        apiFetch("/api/vendors").then((res) => res.json()).catch(() => []),
+        apiFetch(`/api/operational-projects/${projectId}/vendors`).then((res) => res.json()).catch(() => []),
+      ])
+        .then(([allVendors, currentAssignments]) => {
+          const assignedIds = new Set<string>();
+          if (Array.isArray(currentAssignments)) {
+            currentAssignments.forEach((a: any) => {
+              if (a.vendorId) assignedIds.add(a.vendorId);
+            });
+          }
+          setAssignedVendorIds(assignedIds);
+
+          if (Array.isArray(allVendors)) {
+            setVendors(allVendors);
+            // Default select first vendor that is NOT already assigned
+            const firstUnassigned = allVendors.find((v: VendorOption) => !assignedIds.has(v.id));
+            if (firstUnassigned) {
+              setVendorId(firstUnassigned.id);
+            } else if (allVendors.length > 0) {
+              setVendorId(allVendors[0].id);
             }
           }
         })
         .catch(() => setError("Failed to load registered trade vendors"))
         .finally(() => setLoadingVendors(false));
     }
-  }, [isOpen, vendorId]);
+  }, [isOpen, projectId]);
 
   if (!isOpen) return null;
 
@@ -118,7 +133,12 @@ export function AdminAssignVendorModal({
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || `Failed to assign vendor (HTTP ${res.status})`);
+        const msg =
+          errData.error ||
+          errData.message ||
+          (typeof errData === "string" ? errData : null) ||
+          `Failed to assign vendor (HTTP ${res.status})`;
+        throw new Error(msg);
       }
 
       // If sendWhatsApp is enabled, dispatch WhatsApp update
@@ -209,6 +229,10 @@ export function AdminAssignVendorModal({
               <div className="p-3 bg-amber-50 border border-amber-200 rounded-sm text-xs font-mono text-amber-800">
                 No registered vendors found. Please register a vendor first in the Vendor Management directory.
               </div>
+            ) : vendors.length > 0 && vendors.every((v) => assignedVendorIds.has(v.id)) ? (
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-sm text-xs font-mono text-amber-800">
+                All registered trade partners are currently assigned to this project. To assign a new partner, please register one under Trade Partners first.
+              </div>
             ) : (
               <select
                 value={vendorId}
@@ -216,11 +240,15 @@ export function AdminAssignVendorModal({
                 required
                 className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
               >
-                {vendors.map((v) => (
-                  <option key={v.id} value={v.id}>
-                    {v.businessName} ({v.category || "General"} — {v.contactPerson || "Partner"})
-                  </option>
-                ))}
+                {vendors.map((v) => {
+                  const isAssigned = assignedVendorIds.has(v.id);
+                  return (
+                    <option key={v.id} value={v.id} disabled={isAssigned}>
+                      {v.businessName} ({v.category || "General"} — {v.contactPerson || "Partner"})
+                      {isAssigned ? " [Already Assigned]" : ""}
+                    </option>
+                  );
+                })}
               </select>
             )}
           </div>
