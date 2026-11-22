@@ -523,4 +523,92 @@ public class BillingExpenseService {
                 .sorted(Comparator.comparing(BillApprovalEntity::getCreatedAt).reversed())
                 .collect(Collectors.toList());
     }
+
+    // ==========================================
+    // 8. WhatsApp Notification for Client Bills
+    // ==========================================
+
+    @Transactional
+    public List<Map<String, Object>> notifyClientsAboutBillsWhatsApp(String targetClientId, Authentication auth) {
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new AccessDeniedException("Authentication required");
+        }
+
+        List<ClientEntity> clients;
+        if (targetClientId != null && !targetClientId.isBlank()) {
+            try {
+                UUID cUuid = UUID.fromString(targetClientId);
+                clients = clientRepository.findById(cUuid).map(List::of).orElse(Collections.emptyList());
+            } catch (Exception e) {
+                clients = clientRepository.findByClientReference(targetClientId).map(List::of).orElse(Collections.emptyList());
+            }
+        } else {
+            clients = clientRepository.findAll();
+        }
+
+        List<BillApprovalEntity> allBills = billRepository.findAll();
+        List<Map<String, Object>> results = new ArrayList<>();
+
+        for (ClientEntity client : clients) {
+            String cIdStr = client.getId() != null ? client.getId().toString() : "";
+            String cRef = client.getClientReference() != null ? client.getClientReference() : "";
+
+            List<BillApprovalEntity> clientBills = allBills.stream()
+                    .filter(b -> (b.getClientId() != null && (b.getClientId().equalsIgnoreCase(cIdStr) || b.getClientId().equalsIgnoreCase(cRef))))
+                    .collect(Collectors.toList());
+
+            if (clientBills.isEmpty()) {
+                if (clients.size() == 1) {
+                    clientBills = allBills.stream()
+                            .filter(b -> !"PAID_CASH".equalsIgnoreCase(b.getStatus()) && !"PAID_ONLINE".equalsIgnoreCase(b.getStatus()))
+                            .collect(Collectors.toList());
+                } else {
+                    continue;
+                }
+            }
+
+            BigDecimal totalOutstanding = BigDecimal.ZERO;
+            List<String> billSummaries = new ArrayList<>();
+            for (BillApprovalEntity b : clientBills) {
+                BigDecimal bal = b.getAmount() != null ? b.getAmount().subtract(b.getPaidAmount() != null ? b.getPaidAmount() : BigDecimal.ZERO) : BigDecimal.ZERO;
+                if (bal.compareTo(BigDecimal.ZERO) > 0) {
+                    totalOutstanding = totalOutstanding.add(bal);
+                    b.setLastReminderSentAt(LocalDateTime.now());
+                    billRepository.save(b);
+                }
+                String ref = b.getInvoiceNumber() != null ? b.getInvoiceNumber() : b.getBillId();
+                billSummaries.add(ref + " (₹" + (b.getAmount() != null ? b.getAmount() : 0) + ")");
+            }
+
+            String phone = client.getPhone() != null ? client.getPhone().replaceAll("[^0-9+]", "") : "+919876543210";
+            if (!phone.startsWith("+") && phone.length() == 10) {
+                phone = "+91" + phone;
+            }
+
+            String msg = String.format(
+                    "Studio ArcheOn · Billing Update for %s\n\nDear %s,\nYour project account has %d bill(s) on record with a total outstanding balance of ₹%,.2f.\n\nBills: %s\n\nPlease review your itemized tax vouchers and records in the Client Portal: http://localhost:3000/client/invoices\n\n— MB's ArcheOn Design Studio",
+                    client.getOrganization() != null ? client.getOrganization() : client.getFullName(),
+                    client.getFullName(),
+                    clientBills.size(),
+                    totalOutstanding,
+                    String.join(", ", billSummaries)
+            );
+
+            String encodedMsg = java.net.URLEncoder.encode(msg, java.nio.charset.StandardCharsets.UTF_8);
+            String waLink = "https://wa.me/" + phone.replace("+", "") + "?text=" + encodedMsg;
+
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("clientId", client.getId());
+            item.put("clientName", client.getFullName());
+            item.put("phone", phone);
+            item.put("billCount", clientBills.size());
+            item.put("totalOutstanding", totalOutstanding);
+            item.put("whatsappMessage", msg);
+            item.put("whatsappLink", waLink);
+            item.put("status", "DISPATCHED");
+            results.add(item);
+        }
+
+        return results;
+    }
 }

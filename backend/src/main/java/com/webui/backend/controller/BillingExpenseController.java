@@ -114,4 +114,20 @@ public class BillingExpenseController {
     public ResponseEntity<List<VendorDirectoryItemDto>> getVendorsDirectory() {
         return ResponseEntity.ok(billingExpenseService.getVendorDirectorySummary());
     }
+
+    // 8. Notify Clients via WhatsApp about Bills
+    @PostMapping("/notify-whatsapp")
+    public ResponseEntity<?> notifyClientsViaWhatsApp(
+            @RequestBody(required = false) Map<String, Object> req,
+            Authentication auth
+    ) {
+        try {
+            String clientId = req != null && req.get("clientId") != null ? req.get("clientId").toString() : null;
+            return ResponseEntity.ok(billingExpenseService.notifyClientsAboutBillsWhatsApp(clientId, auth));
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
 }

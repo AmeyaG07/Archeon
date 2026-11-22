@@ -45,6 +45,12 @@ public class ProjectController {
             existing.setLinksJson(updated.getLinksJson());
             existing.setSocialsJson(updated.getSocialsJson());
             existing.setAccentColor(updated.getAccentColor());
+            if (updated.getImage() != null) existing.setImage(updated.getImage());
+            if (updated.getCategory() != null) existing.setCategory(updated.getCategory());
+            if (updated.getLocation() != null) existing.setLocation(updated.getLocation());
+            if (updated.getArea() != null) existing.setArea(updated.getArea());
+            if (updated.getStatus() != null) existing.setStatus(updated.getStatus());
+            if (updated.getProjectYear() != null) existing.setProjectYear(updated.getProjectYear());
             return ResponseEntity.ok(projectRepository.save(existing));
         }).orElse(ResponseEntity.notFound().build());
     }
