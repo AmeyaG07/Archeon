@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: com.webui.backend.invoicing.InvoicingNotificationsAndDashboardsTest
--------------------------------------------------------------------------------
-Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.245 s -- in com.webui.backend.invoicing.InvoicingNotificationsAndDashboardsTest

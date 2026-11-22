@@ -85,18 +85,38 @@ public class InvoiceController {
     }
 
     @GetMapping(value = "/{id}/pdf", produces = MediaType.APPLICATION_PDF_VALUE)
-    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE_MANAGER', 'STAFF', 'CLIENT')")
-    @Operation(summary = "Download printable PDF of statutory tax invoice")
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE_MANAGER', 'STAFF', 'CLIENT', 'VENDOR')")
+    @Operation(summary = "Download printable PDF of statutory tax invoice or contractor bill voucher")
     public ResponseEntity<byte[]> downloadInvoicePdf(
-            @PathVariable UUID id,
+            @PathVariable String id,
             Authentication auth
     ) {
-        byte[] pdfBytes = invoiceService.generatePdf(id, auth);
-        InvoiceDto.InvoiceResponse invoice = invoiceService.getInvoiceById(id, auth);
+        byte[] pdfBytes = null;
+        String filename = "Document-" + id + ".pdf";
+
+        try {
+            UUID uuid = UUID.fromString(id);
+            try {
+                pdfBytes = invoiceService.generatePdf(uuid, auth);
+                InvoiceDto.InvoiceResponse invoice = invoiceService.getInvoiceById(uuid, auth);
+                filename = (invoice != null && invoice.getInvoiceNumber() != null ? invoice.getInvoiceNumber() : id) + ".pdf";
+            } catch (Exception notAnInvoice) {
+                pdfBytes = invoiceService.generateBillPdf(id, auth);
+                filename = "Bill-" + id + ".pdf";
+            }
+        } catch (IllegalArgumentException notUuid) {
+            // Numeric or reference ID - handle as Contractor Bill Voucher
+            pdfBytes = invoiceService.generateBillPdf(id, auth);
+            filename = "Bill-" + id + ".pdf";
+        }
+
+        if (pdfBytes == null) {
+            pdfBytes = invoiceService.generateBillPdf(id, auth);
+        }
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
-        headers.setContentDispositionFormData("inline", invoice.getInvoiceNumber() + ".pdf");
+        headers.setContentDispositionFormData("inline", filename);
         headers.setContentLength(pdfBytes.length);
 
         return ResponseEntity.ok().headers(headers).body(pdfBytes);
