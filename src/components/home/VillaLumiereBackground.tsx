@@ -301,7 +301,7 @@ export function VillaLumiereBackground() {
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.05;
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
 
     const controls = new OrbitControls(camera, canvas);
     controls.enableDamping = true;
@@ -815,13 +815,16 @@ export function VillaLumiereBackground() {
     // --- ANIMATION LOOP ---
     let animationFrameId: number;
     let cycleTime = 0.4;
-    const clock = new THREE.Clock();
+    let lastTime = performance.now();
+    const startTime = performance.now();
 
     function render() {
       animationFrameId = requestAnimationFrame(render);
 
-      const dt = Math.min(clock.getDelta(), 0.05);
-      const elapsed = clock.getElapsedTime();
+      const now = performance.now();
+      const dt = Math.min((now - lastTime) / 1000, 0.05);
+      lastTime = now;
+      const elapsed = (now - startTime) / 1000;
 
       if (isPlayingRef.current) {
         cycleTime = (cycleTime + dt) % TOTAL_CYCLE;

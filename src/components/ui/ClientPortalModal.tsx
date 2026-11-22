@@ -46,7 +46,12 @@ export function ClientPortalModal({ isOpen, onClose }: ClientPortalModalProps) {
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 md:p-8 pointer-events-auto">
+        <div
+          data-lenis-prevent="true"
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 md:p-8 pointer-events-auto"
+        >
           {/* Backdrop Blur */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -61,11 +66,12 @@ export function ClientPortalModal({ isOpen, onClose }: ClientPortalModalProps) {
 
           {/* Modal Container with Custom Dark Minimal Scrollbar */}
           <motion.div
+            data-lenis-prevent="true"
             initial={{ opacity: 0, scale: 0.95, y: 25 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: "spring", stiffness: 320, damping: 30 }}
-            className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-3xl border border-[#C6A779]/30 bg-[#0C0B0A]/95 backdrop-blur-2xl p-5 sm:p-8 md:p-9 shadow-[0_25px_80px_rgba(0,0,0,0.95),inset_0_1px_1px_rgba(255,255,255,0.12)] text-[#F2F0EB] [scrollbar-width:thin] [scrollbar-color:#2a2725_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-stone-800 [&::-webkit-scrollbar-thumb]:rounded-full"
+            className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-3xl border border-[#C6A779]/30 bg-[#0C0B0A]/95 backdrop-blur-2xl p-5 sm:p-8 md:p-9 shadow-[0_25px_80px_rgba(0,0,0,0.95),inset_0_1px_1px_rgba(255,255,255,0.12)] text-[#F2F0EB] overscroll-contain [scrollbar-width:thin] [scrollbar-color:#2a2725_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-stone-800 [&::-webkit-scrollbar-thumb]:rounded-full"
           >
             {/* Top Bar */}
             <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-6">

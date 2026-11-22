@@ -128,8 +128,16 @@ export function AdminCreateProjectModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-2xl border border-[#D8D6D0] bg-[#FAF9F6] p-6 shadow-2xl md:p-8 my-8 max-h-[90vh] overflow-y-auto">
+    <div
+      data-lenis-prevent="true"
+      role="dialog"
+      aria-modal="true"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm overflow-y-auto"
+    >
+      <div
+        data-lenis-prevent="true"
+        className="relative w-full max-w-2xl border border-[#D8D6D0] bg-[#FAF9F6] p-6 shadow-2xl md:p-8 my-8 max-h-[90vh] overflow-y-auto overscroll-contain"
+      >
         <button
           type="button"
           onClick={onClose}

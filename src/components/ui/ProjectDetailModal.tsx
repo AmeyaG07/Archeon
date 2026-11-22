@@ -71,7 +71,10 @@ export function ProjectDetailModal({ project, onClose, onEnquire }: ProjectDetai
   return (
     <AnimatePresence>
       {project && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-8 pointer-events-auto">
+        <div
+          data-lenis-prevent
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-8 pointer-events-auto"
+        >
           {/* Backdrop Blur */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -86,6 +89,9 @@ export function ProjectDetailModal({ project, onClose, onEnquire }: ProjectDetai
 
           {/* Modal Container */}
           <motion.div
+            data-lenis-prevent
+            role="dialog"
+            aria-modal="true"
             initial={{ opacity: 0, scale: 0.95, y: 25 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}

@@ -17,7 +17,12 @@ export function ManifestoModal({ isOpen, onClose }: ManifestoModalProps) {
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8 pointer-events-auto">
+        <div
+          data-lenis-prevent="true"
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8 pointer-events-auto"
+        >
           {/* Backdrop Blur */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -32,11 +37,12 @@ export function ManifestoModal({ isOpen, onClose }: ManifestoModalProps) {
 
           {/* Modal Container — Editorial Ivory Visual Foundation */}
           <motion.div
+            data-lenis-prevent="true"
             initial={{ opacity: 0, scale: 0.96, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 15 }}
             transition={{ type: "spring", stiffness: 300, damping: 28 }}
-            className="relative w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-sm border border-[#D8D6D0] bg-[#F2F0EB] p-6 md:p-12 shadow-[0_20px_60px_rgba(0,0,0,0.25)] text-[#111111]"
+            className="relative w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-sm border border-[#D8D6D0] bg-[#F2F0EB] p-6 md:p-12 shadow-[0_20px_60px_rgba(0,0,0,0.25)] text-[#111111] overscroll-contain"
           >
             {/* Top Bar */}
             <div className="flex items-center justify-between border-b border-[#D8D6D0] pb-4 mb-8">

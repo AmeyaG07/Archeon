@@ -689,8 +689,16 @@ export function AdminWebsiteProjectList() {
 
       {/* EDIT / CREATE PROJECT MODAL */}
       {editingProject && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-          <div className="relative max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] p-6 sm:p-8 shadow-2xl">
+        <div
+          data-lenis-prevent="true"
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs"
+        >
+          <div
+            data-lenis-prevent="true"
+            className="relative max-h-[92vh] w-full max-w-3xl overflow-y-auto overscroll-contain rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] p-6 sm:p-8 shadow-2xl"
+          >
             <button
               onClick={handleCloseModal}
               className="absolute right-4 top-4 text-[#77736C] hover:text-[#171717]"

@@ -467,4 +467,14 @@ pre,
   }
 }
 
+/* Ensure modals, drawers, cards, and scrollable containers isolate their scroll events and scroll smoothly without background scrolling */
+[data-lenis-prevent],
+.overflow-y-auto,
+.overflow-y-scroll,
+.overflow-auto,
+[role="dialog"] {
+  overscroll-behavior: contain !important;
+  -webkit-overflow-scrolling: touch;
+}
+
 

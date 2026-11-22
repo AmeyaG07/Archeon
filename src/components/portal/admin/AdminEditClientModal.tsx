@@ -83,8 +83,16 @@ export function AdminEditClientModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-      <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-sm border border-[#D8D6D0] bg-[#FAF9F5] p-6 sm:p-8 shadow-2xl">
+    <div
+      data-lenis-prevent="true"
+      role="dialog"
+      aria-modal="true"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs"
+    >
+      <div
+        data-lenis-prevent="true"
+        className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto overscroll-contain rounded-sm border border-[#D8D6D0] bg-[#FAF9F5] p-6 sm:p-8 shadow-2xl"
+      >
         <button
           onClick={onClose}
           disabled={submitting}

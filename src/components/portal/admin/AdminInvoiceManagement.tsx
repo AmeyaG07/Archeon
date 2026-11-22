@@ -637,6 +637,7 @@ export function AdminInvoiceManagement({
       {/* Invoice Details */}
       {selectedInvoice && (
         <div
+          data-lenis-prevent="true"
           className="fixed inset-0 z-[60] flex justify-end bg-black/50"
           role="presentation"
           onMouseDown={(event) => {
@@ -646,10 +647,11 @@ export function AdminInvoiceManagement({
           }}
         >
           <aside
+            data-lenis-prevent="true"
             role="dialog"
             aria-modal="true"
             aria-labelledby="invoice-detail-title"
-            className="flex h-full w-full max-w-2xl flex-col overflow-y-auto bg-[#F2F0EB] shadow-2xl"
+            className="flex h-full w-full max-w-2xl flex-col overflow-y-auto overscroll-contain bg-[#F2F0EB] shadow-2xl"
           >
             <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#D8D6D0] bg-[#F2F0EB] px-6 py-5 md:px-8">
               <div>

@@ -78,8 +78,16 @@ export function AdminNotifyBillsWhatsAppModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full max-w-2xl bg-[#FCFBF8] border border-[#D8D6D0] shadow-2xl p-6 sm:p-8 rounded-sm">
+    <div
+      data-lenis-prevent="true"
+      role="dialog"
+      aria-modal="true"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+    >
+      <div
+        data-lenis-prevent="true"
+        className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto overscroll-contain bg-[#FCFBF8] border border-[#D8D6D0] shadow-2xl p-6 sm:p-8 rounded-sm"
+      >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[#E8E6E0] pb-4 mb-6">
           <div className="flex items-center gap-3">
