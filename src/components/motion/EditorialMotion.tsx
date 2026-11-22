@@ -25,6 +25,15 @@ export function RevealText({
   delay = 0,
   duration = 0.85,
 }: RevealTextProps) {
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return <div className={className}>{children}</div>;
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 18 }}
@@ -59,6 +68,15 @@ export function ClipReveal({
   delay = 0,
   duration = 1.0,
 }: ClipRevealProps) {
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return <div className={`overflow-hidden ${className}`}>{children}</div>;
+  }
+
   return (
     <motion.div
       initial={{

@@ -100,6 +100,26 @@ export function FooterClockEmblem({
           aria-label="ArcheOn Chronometer Emblem with Original Brand Logo"
           role="img"
         >
+          <style>{`
+            @keyframes chronoSpinCw {
+              from { transform: rotate(0deg); }
+              to { transform: rotate(360deg); }
+            }
+            @keyframes chronoSpinCcw {
+              from { transform: rotate(0deg); }
+              to { transform: rotate(-360deg); }
+            }
+            .chrono-cw-22 { transform-origin: 180px 180px; animation: chronoSpinCw 22s linear infinite !important; }
+            .chrono-ccw-16 { transform-origin: 180px 180px; animation: chronoSpinCcw 16s linear infinite !important; }
+            .chrono-cw-16 { transform-origin: 180px 180px; animation: chronoSpinCw 16s linear infinite !important; }
+            .chrono-cw-75 { transform-origin: 180px 180px; animation: chronoSpinCw 7.5s linear infinite !important; }
+            .chrono-cw-24 { transform-origin: 180px 180px; animation: chronoSpinCw 2.4s linear infinite !important; }
+            .chrono-cw-32 { transform-origin: 180px 180px; animation: chronoSpinCw 3.2s linear infinite !important; }
+            .chrono-orbit-amber { transform-origin: 180px 180px; animation: chronoSpinCw 2.6s linear infinite !important; }
+            .chrono-orbit-cyan { transform-origin: 180px 180px; animation: chronoSpinCcw 1.9s linear infinite !important; }
+            .chrono-orbit-magenta { transform-origin: 180px 180px; animation: chronoSpinCw 1.4s linear infinite !important; }
+            .chrono-orbit-green { transform-origin: 180px 180px; animation: chronoSpinCcw 2.1s linear infinite !important; }
+          `}</style>
           <defs>
             {/* Metallic Outer Bezel */}
             <linearGradient id="outer-bezel-rim" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -202,7 +222,7 @@ export function FooterClockEmblem({
           {/* ============================================================= */}
           {/* ROTATING OUTER CALIBRATION DEGREES (CONTINUOUS CLOCKWISE)     */}
           {/* ============================================================= */}
-          <g opacity="0.65">
+          <g opacity="0.65" className="chrono-cw-22">
             <animateTransform
               attributeName="transform"
               type="rotate"
@@ -224,7 +244,7 @@ export function FooterClockEmblem({
           {/* ============================================================= */}
           {/* ROTATING INNER PRECISION TICKS (CONTINUOUS COUNTER-CLOCKWISE) */}
           {/* ============================================================= */}
-          <g opacity="0.55">
+          <g opacity="0.55" className="chrono-ccw-16">
             <animateTransform
               attributeName="transform"
               type="rotate"
@@ -277,7 +297,7 @@ export function FooterClockEmblem({
           {/* ============================================================= */}
 
           {/* 1. SOLAR AMBER SWEEP HAND (Primary, Warm Gold Glow, 16s Rev) */}
-          <g>
+          <g className="chrono-cw-16">
             <animateTransform
               attributeName="transform"
               type="rotate"
@@ -305,7 +325,7 @@ export function FooterClockEmblem({
           </g>
 
           {/* 2. ELECTRIC CYAN SWEEP HAND (Secondary, Neon Blue Glow, 7.5s Rev) */}
-          <g>
+          <g className="chrono-cw-75">
             <animateTransform
               attributeName="transform"
               type="rotate"
@@ -333,7 +353,7 @@ export function FooterClockEmblem({
           </g>
 
           {/* 3. NEON MAGENTA LASER HAND (Fast 2.4s Rotation) */}
-          <g>
+          <g className="chrono-cw-24">
             <animateTransform
               attributeName="transform"
               type="rotate"
@@ -356,7 +376,7 @@ export function FooterClockEmblem({
           </g>
 
           {/* 4. ULTRA-FAST HAIRLINE SECONDS NEEDLE (3.2s Revolution) */}
-          <g>
+          <g className="chrono-cw-32">
             <animateTransform
               attributeName="transform"
               type="rotate"
@@ -375,7 +395,7 @@ export function FooterClockEmblem({
           {/* ============================================================= */}
 
           {/* 1. Orbiting Solar Amber Photon: r = 148, clockwise 2.6s */}
-          <g>
+          <g className="chrono-orbit-amber">
             <animateTransform
               attributeName="transform"
               type="rotate"
@@ -389,7 +409,7 @@ export function FooterClockEmblem({
           </g>
 
           {/* 2. Orbiting Electric Cyan Photon: r = 130, counter-clockwise 1.9s */}
-          <g>
+          <g className="chrono-orbit-cyan">
             <animateTransform
               attributeName="transform"
               type="rotate"
@@ -403,7 +423,7 @@ export function FooterClockEmblem({
           </g>
 
           {/* 3. Orbiting Neon Magenta Photon: r = 114, clockwise 1.4s */}
-          <g>
+          <g className="chrono-orbit-magenta">
             <animateTransform
               attributeName="transform"
               type="rotate"
@@ -416,7 +436,7 @@ export function FooterClockEmblem({
           </g>
 
           {/* 4. Orbiting Neon Emerald Photon: r = 96, counter-clockwise 2.1s */}
-          <g>
+          <g className="chrono-orbit-green">
             <animateTransform
               attributeName="transform"
               type="rotate"

@@ -2,6 +2,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/providers/AuthProvider";
+import { MotionProvider } from "@/providers/MotionProvider";
 import { ClientCursorWrapper } from "@/components/ui/ClientCursorWrapper";
 
 export const metadata: Metadata = {
@@ -44,10 +45,12 @@ export default function RootLayout({
       </head>
 
       <body className="min-h-screen bg-[#F2F0EB] text-[#111111] antialiased">
-        <ClientCursorWrapper />
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        <MotionProvider>
+          <ClientCursorWrapper />
+          <AuthProvider>
+            {children}
+          </AuthProvider>
+        </MotionProvider>
       </body>
     </html>
   );

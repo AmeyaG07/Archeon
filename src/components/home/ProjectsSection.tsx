@@ -97,11 +97,7 @@ export function ProjectsSection({
         {/* Section Header */}
         <div className="mb-16 flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="editorial-eyebrow text-[#B68A4A]">
-              03 / Selected Work
-            </p>
-
-            <div className="mt-6">
+            <div>
               <RevealText>
                 <h2 className="font-serif text-5xl font-light leading-[0.95] tracking-tight text-[#111111] sm:text-7xl">
                   Spaces that tell

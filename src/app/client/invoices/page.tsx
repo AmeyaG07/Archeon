@@ -162,34 +162,130 @@ function ClientInvoicesContent() {
 
   const handleDownloadPdf = async (invoice: ClientInvoice) => {
     try {
+      // 1. If physical bill photo or document URL is attached, open it
+      const fileUrl = (invoice as any).fileUrl;
+      if (fileUrl && typeof fileUrl === "string" && (fileUrl.startsWith("http") || fileUrl.startsWith("/uploads") || fileUrl.startsWith("data:"))) {
+        window.open(fileUrl, "_blank");
+        return;
+      }
+
       const baseUrl = resolveApiBaseUrl();
       const token = getAuthToken();
-      const res = await fetch(`${baseUrl}/api/invoices/${invoice.id}/pdf`, {
+
+      // 2. Try fetching server PDF by ID
+      let res = await fetch(`${baseUrl}/api/invoices/${invoice.id}/pdf`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
-      if (!res.ok) {
-        if ((invoice as any).fileUrl) {
-          window.open((invoice as any).fileUrl, "_blank");
-          return;
-        }
-        throw new Error("Failed to download tax invoice PDF");
+
+      // 3. Fallback: try by invoiceNumber if different
+      if (!res.ok && invoice.invoiceNumber && invoice.invoiceNumber !== invoice.id) {
+        res = await fetch(`${baseUrl}/api/invoices/${invoice.invoiceNumber}/pdf`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
       }
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${invoice.invoiceNumber}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-    } catch (err) {
-      if ((invoice as any).fileUrl) {
-        window.open((invoice as any).fileUrl, "_blank");
-      } else {
-        alert("Error downloading invoice: " + (err instanceof Error ? err.message : String(err)));
+
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${invoice.invoiceNumber}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+        return;
       }
+
+      // If server returned non-ok, open printable voucher window directly
+      printClientInvoiceVoucher(invoice);
+    } catch {
+      printClientInvoiceVoucher(invoice);
     }
+  };
+
+  const printClientInvoiceVoucher = (invoice: ClientInvoice) => {
+    const win = window.open("", "_blank");
+    if (!win) return;
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>${invoice.invoiceNumber} - Tax Invoice / Voucher</title>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace; padding: 40px; color: #171717; max-width: 800px; margin: 0 auto; }
+            .header { border-bottom: 2px solid #171717; padding-bottom: 15px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: flex-start; }
+            .title { font-size: 22px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+            .subtitle { font-size: 12px; color: #666; margin-top: 4px; }
+            .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; font-size: 13px; }
+            .box { border: 1px solid #ddd; padding: 15px; border-radius: 4px; }
+            .box-title { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #888; margin-bottom: 8px; font-weight: 600; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; }
+            th { background: #f8f8f8; text-align: left; padding: 10px; border-bottom: 2px solid #ddd; font-size: 11px; text-transform: uppercase; }
+            td { padding: 12px 10px; border-bottom: 1px solid #eee; }
+            .text-right { text-align: right; }
+            .total-row { font-weight: 700; font-size: 15px; border-top: 2px solid #171717; }
+            .badge { display: inline-block; padding: 3px 8px; font-size: 10px; text-transform: uppercase; font-weight: 600; background: #eee; border-radius: 3px; }
+            .print-btn { background: #171717; color: #fff; border: none; padding: 8px 16px; font-size: 12px; cursor: pointer; border-radius: 3px; margin-top: 20px; }
+            @media print { .print-btn { display: none; } }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div>
+              <div class="title">ArcheOn Design Studio</div>
+              <div class="subtitle">Principal Architect: Ar. Mandar Bhalekar · GSTIN: 27AABCA1234F1Z9 · State: Maharashtra (27)</div>
+            </div>
+            <div style="text-align: right;">
+              <div class="badge">${invoice.status}</div>
+              <div style="font-size: 14px; font-weight: 700; margin-top: 6px;">${invoice.invoiceNumber}</div>
+              <div class="subtitle">Date: ${invoice.issueDate}</div>
+            </div>
+          </div>
+
+          <div class="meta-grid">
+            <div class="box">
+              <div class="box-title">Project & Scope</div>
+              <div style="font-weight: 600;">${invoice.projectName || "Architectural Services"}</div>
+              <div style="color: #555; margin-top: 4px;">${invoice.description || "SAC 998321 - Professional Services"}</div>
+            </div>
+            <div class="box">
+              <div class="box-title">Settlement Status</div>
+              <div>Total Bill: ₹${invoice.totalAmount.toLocaleString("en-IN")}</div>
+              <div style="color: #10B981; margin-top: 4px;">Recorded Paid: ₹${invoice.paidAmount.toLocaleString("en-IN")}</div>
+              <div style="color: #D97724; font-weight: 600; margin-top: 4px;">Outstanding: ₹${invoice.outstandingAmount.toLocaleString("en-IN")}</div>
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Description / SAC</th>
+                <th class="text-right">Qty</th>
+                <th class="text-right">Rate</th>
+                <th class="text-right">Amount (₹)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>${invoice.description || "Architectural Execution & Professional Services"}</td>
+                <td class="text-right">1</td>
+                <td class="text-right">₹${invoice.totalAmount.toLocaleString("en-IN")}</td>
+                <td class="text-right">₹${invoice.totalAmount.toLocaleString("en-IN")}</td>
+              </tr>
+              <tr class="total-row">
+                <td colspan="3">Grand Total</td>
+                <td class="text-right">₹${invoice.totalAmount.toLocaleString("en-IN")}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <button class="print-btn" onclick="window.print()">Print / Save as PDF</button>
+        </body>
+      </html>
+    `;
+    win.document.write(html);
+    win.document.close();
   };
 
   return (

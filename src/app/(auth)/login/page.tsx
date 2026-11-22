@@ -51,7 +51,10 @@ export default function LoginPage() {
         router.push("/admin");
       }
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Authentication failed. Please verify your credentials.";
+      let message = err instanceof Error ? err.message : "Authentication failed. Please verify your credentials.";
+      if (message.includes("Session expired") || message.toLowerCase().includes("unauthorized")) {
+        message = "Invalid credentials. Please verify your username and password.";
+      }
       setError(message);
     } finally {
       setLoading(false);

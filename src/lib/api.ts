@@ -80,8 +80,10 @@ export function setAuthSession(token: string, refreshToken?: string, user?: Stor
   if (typeof window === "undefined") return;
   try {
     localStorage.setItem(TOKEN_KEY, token);
+    document.cookie = `archeon_auth_token=${encodeURIComponent(token)}; path=/; max-age=31536000; SameSite=Lax`;
     if (refreshToken) {
       localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+      document.cookie = `archeon_refresh_token=${encodeURIComponent(refreshToken)}; path=/; max-age=31536000; SameSite=Lax`;
     }
     if (user) {
       localStorage.setItem(USER_KEY, JSON.stringify(user));
@@ -97,6 +99,8 @@ export function clearAuthSession(): void {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(REFRESH_TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
+    document.cookie = "archeon_auth_token=; path=/; max-age=0; SameSite=Lax";
+    document.cookie = "archeon_refresh_token=; path=/; max-age=0; SameSite=Lax";
   } catch (err) {
     console.error("Failed to clear auth session", err);
   }
@@ -179,9 +183,18 @@ export async function apiFetch(
 
   // Handle 401: token missing or expired.
   if (response.status === 401) {
-    const refreshToken = getRefreshToken();
     const isAuthRoute = typeof input === "string" && input.includes("/api/auth/");
-    if (refreshToken && !isAuthRoute) {
+    if (isAuthRoute) {
+      const body = await response.json().catch(() => ({}));
+      const message =
+        body && typeof body === "object" && ("message" in body || "error" in body)
+          ? String((body as any).message || (body as any).error)
+          : "Invalid credentials. Please verify your username and password.";
+      throw new AuthError(message, body);
+    }
+
+    const refreshToken = getRefreshToken();
+    if (refreshToken) {
       try {
         const refreshRes = await fetch(`${baseUrl}/api/auth/refresh`, {
           method: "POST",

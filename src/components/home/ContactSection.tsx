@@ -101,11 +101,7 @@ export function ContactSection({
         <div className="grid gap-16 lg:grid-cols-12">
           {/* Main CTA */}
           <div className="lg:col-span-7">
-            <p className="editorial-eyebrow text-[#B68A4A]">
-              05 / Start a Conversation
-            </p>
-
-            <div className="mt-8 max-w-3xl">
+            <div className="mt-2 max-w-3xl">
               <RevealText>
                 <h2 className="font-serif text-6xl font-light leading-[0.92] tracking-tight sm:text-8xl">
                   Have a space

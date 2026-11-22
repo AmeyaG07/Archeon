@@ -206,22 +206,10 @@ export function ProcessSection({
         </div>
 
         {/* Closing CTA */}
-        <div className="mt-14 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-14 py-4">
           <p className="max-w-xl font-serif text-2xl italic leading-relaxed text-[#777777]">
             Every meaningful space begins with a meaningful conversation.
           </p>
-
-          <button
-            type="button"
-            onClick={onOpenConsultation}
-            className="group inline-flex min-h-14 shrink-0 items-center justify-center gap-5 bg-[#111111] px-7 text-[10px] font-medium uppercase tracking-[0.15em] text-white transition-colors duration-300 hover:bg-[#D97724]"
-          >
-            Begin Your Project
-            <ArrowUpRight
-              size={16}
-              className="transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
-            />
-          </button>
         </div>
       </div>
     </section>

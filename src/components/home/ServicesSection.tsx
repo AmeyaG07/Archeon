@@ -148,20 +148,6 @@ export function ServicesSection({
           </defs>
           <rect width="1440" height="900" fill="url(#expertise-bg-grid-v3)" />
         </svg>
-
-        {/* Corner Telemetry Calibration Crosshairs */}
-        <div className="absolute top-8 left-8 font-mono text-[9px] tracking-widest text-[#B68A4A]/50 select-none">
-          ┌ 3D TECTONIC ROTATION // 60 FPS
-        </div>
-        <div className="absolute top-8 right-8 font-mono text-[9px] tracking-widest text-[#B68A4A]/50 select-none">
-          NAGPUR // 21.1458° N, 79.0882° E ┐
-        </div>
-        <div className="absolute bottom-8 left-8 font-mono text-[9px] tracking-widest text-[#B68A4A]/50 select-none">
-          └ AXIAL SPAN: 32.400M · 1:1 TRUE SCALE
-        </div>
-        <div className="absolute bottom-8 right-8 font-mono text-[9px] tracking-widest text-[#B68A4A]/50 select-none">
-          CONTINUOUS 360° ORBITAL ┘
-        </div>
       </div>
 
       {/* =========================================================================
@@ -169,121 +155,17 @@ export function ServicesSection({
           ========================================================================= */}
       <div className="editorial-container relative z-10">
         {/* Section Introduction */}
-        <div className="mb-10 grid gap-8 lg:grid-cols-12 lg:items-end">
-          <div className="lg:col-span-7">
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-[#D97724] animate-pulse" />
-              <p className="editorial-eyebrow text-[#B68A4A]">
-                02 / Our Expertise
-              </p>
-            </div>
-
-            <div className="mt-5">
-              <RevealText>
-                <h2 className="max-w-3xl font-serif text-5xl font-light leading-[0.98] tracking-tight text-[#F2F0EB] sm:text-6xl lg:text-7xl">
-                  A considered approach
-                </h2>
-              </RevealText>
-              <RevealText delay={0.12}>
-                <h2 className="max-w-3xl font-serif text-5xl font-light leading-[0.98] tracking-tight text-[#F2F0EB] sm:text-6xl lg:text-7xl">
-                  to <span className="italic text-[#C6A779]">every space.</span>
-                </h2>
-              </RevealText>
-            </div>
-          </div>
-
-          <div className="lg:col-span-5 lg:col-start-8">
-            <RevealText delay={0.2}>
-              <p className="max-w-md text-sm leading-7 text-[#B8B5AD]">
-                From initial schematic cutaways to precision tectonic execution,
-                our multidisciplinary practice orchestrates structure, materiality,
-                and landscape into one seamless spatial dialogue.
-              </p>
-            </RevealText>
-
-            {/* Quick Filter Tabs */}
-            <div className="mt-6 flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={() => handleSelectDiscipline("all")}
-                className={`rounded-full px-3.5 py-1 text-[11px] font-mono tracking-wider uppercase transition-all duration-300 ${
-                  activeDiscipline === "all"
-                    ? "bg-[#D97724] text-white shadow-lg shadow-[#D97724]/20"
-                    : "border border-white/20 bg-black/60 text-white/70 hover:border-white/50 hover:text-white"
-                }`}
-              >
-                ● All Disciplines
-              </button>
-              {services.map((srv) => (
-                <button
-                  key={srv.id}
-                  type="button"
-                  onClick={() => handleSelectDiscipline(srv.id)}
-                  className={`rounded-full px-3.5 py-1 text-[11px] font-mono tracking-wider uppercase transition-all duration-300 ${
-                    activeDiscipline === srv.id
-                      ? "bg-[#D97724] text-white shadow-lg shadow-[#D97724]/20"
-                      : "border border-white/20 bg-black/60 text-white/70 hover:border-white/50 hover:text-white"
-                  }`}
-                >
-                  {srv.title}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* =========================================================================
-            FLOATING CAD CALLOUT NODES (DOCKED HORIZONTALLY, ZERO COLLISION)
-            ========================================================================= */}
-        <div className="mb-10 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-          {CAD_NODES.map((node, idx) => {
-            const isHighlighted =
-              activeDiscipline === "all" || activeDiscipline === node.disciplineId;
-
-            return (
-              <button
-                key={node.id}
-                type="button"
-                onClick={() => handleSelectDiscipline(node.disciplineId)}
-                className={`group flex flex-col justify-between rounded-xl border p-3.5 text-left backdrop-blur-md transition-all duration-400 ${
-                  isHighlighted
-                    ? "border-white/20 bg-black/60 shadow-lg shadow-black/40 hover:border-[#D97724] hover:bg-black/80"
-                    : "border-white/10 bg-black/30 opacity-60 hover:opacity-100"
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="relative flex h-2 w-2">
-                      <span
-                        className={`absolute inline-flex h-full w-full animate-ping rounded-full ${node.pulseColor} opacity-75`}
-                      />
-                      <span
-                        className={`relative inline-flex h-2 w-2 rounded-full ${node.pulseColor}`}
-                      />
-                    </span>
-                    <span className="font-mono text-[9px] tracking-wider text-[#B68A4A]">
-                      {node.tag}
-                    </span>
-                  </div>
-                  <span className="font-mono text-[8px] text-white/40">
-                    #{idx + 1}
-                  </span>
-                </div>
-
-                <div className="mt-3">
-                  <div className="font-serif text-sm font-medium text-white transition-colors group-hover:text-[#C6A779]">
-                    {node.title}
-                  </div>
-                  <div className="mt-1 flex items-center justify-between font-mono text-[9px] text-white/50">
-                    <span>{node.elevation}</span>
-                  </div>
-                  <div className="mt-0.5 text-[10px] text-white/60 line-clamp-1">
-                    {node.spec}
-                  </div>
-                </div>
-              </button>
-            );
-          })}
+        <div className="mb-14">
+          <RevealText>
+            <h2 className="max-w-4xl font-serif text-5xl font-light leading-[0.98] tracking-tight text-[#F2F0EB] sm:text-6xl lg:text-7xl">
+              A considered approach
+            </h2>
+          </RevealText>
+          <RevealText delay={0.12}>
+            <h2 className="max-w-4xl font-serif text-5xl font-light leading-[0.98] tracking-tight text-[#F2F0EB] sm:text-6xl lg:text-7xl mt-2">
+              to <span className="italic text-[#C6A779]">every space.</span>
+            </h2>
+          </RevealText>
         </div>
 
         <HairlineRule color="bg-white/15" className="mb-0" />
@@ -367,27 +249,12 @@ export function ServicesSection({
           })}
         </StaggerGrid>
 
-        {/* Closing Statement & Background Video Telemetry Indicator */}
+        {/* Closing Statement */}
         <HairlineRule color="bg-white/15" className="mt-12" />
-        <div className="flex flex-col gap-4 py-8 sm:flex-row sm:items-center sm:justify-between text-white/70">
+        <div className="py-8 text-white/70">
           <p className="font-serif text-2xl italic text-[#B8B5AD]">
             One vision. Multiple disciplines. A cohesive result.
           </p>
-
-          <div className="flex items-center gap-4">
-            <span className="flex items-center gap-2 font-mono text-[10px] tracking-widest text-[#B68A4A] uppercase">
-              <RotateCw size={12} className="animate-spin" style={{ animationDuration: "14s" }} />
-              3D ORBITAL BACKGROUND ACTIVE
-            </span>
-            <button
-              type="button"
-              onClick={toggleMute}
-              aria-label="Toggle audio"
-              className="rounded-full border border-white/20 p-1.5 text-white/60 hover:border-white/50 hover:text-white"
-            >
-              {isMuted ? <VolumeX size={13} /> : <Volume2 size={13} />}
-            </button>
-          </div>
         </div>
       </div>
     </section>

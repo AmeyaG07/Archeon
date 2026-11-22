@@ -21,6 +21,7 @@ import {
   FileSpreadsheet,
   Receipt,
   ImageIcon,
+  MessageSquare,
 } from "lucide-react";
 
 export type AdminInvoicePartyType = "Client" | "Vendor";
@@ -86,6 +87,7 @@ interface AdminInvoiceManagementProps {
 
   onRefresh?: () => void;
   onAddBill?: (clientId?: string) => void;
+  onNotifyWhatsApp?: () => void;
   onOpenInvoice?: (invoiceId: string) => void;
   onReviewInvoice?: (invoiceId: string) => void;
   onOpenParty?: (
@@ -183,6 +185,7 @@ export function AdminInvoiceManagement({
   updatingInvoiceId,
   onRefresh,
   onAddBill,
+  onNotifyWhatsApp,
   onOpenInvoice,
   onReviewInvoice,
   onOpenParty,
@@ -367,6 +370,17 @@ export function AdminInvoiceManagement({
             <FileSpreadsheet size={15} />
             Export Excel Report
           </button>
+
+          {onNotifyWhatsApp && (
+            <button
+              type="button"
+              onClick={onNotifyWhatsApp}
+              className="inline-flex items-center gap-2 rounded-sm border border-[#25D366] bg-[#E8F8EE] px-5 py-3 font-mono text-[10px] uppercase tracking-widest text-[#128C7E] hover:bg-[#25D366] hover:text-white transition-colors shadow-xs font-semibold cursor-pointer"
+            >
+              <MessageSquare size={15} />
+              Notify Clients via WhatsApp
+            </button>
+          )}
 
           {onAddBill && (
             <button

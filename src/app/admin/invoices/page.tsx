@@ -9,6 +9,7 @@ import {
   type AdminInvoiceStatus,
 } from "@/components/portal/admin/AdminInvoiceManagement";
 import { AdminCreateBillModal } from "@/components/portal/admin/AdminCreateBillModal";
+import { AdminNotifyBillsWhatsAppModal } from "@/components/portal/admin/AdminNotifyBillsWhatsAppModal";
 import { apiFetch, resolveApiBaseUrl, getAuthToken } from "@/lib/api";
 import { useAuth } from "@/providers/AuthProvider";
 
@@ -23,6 +24,7 @@ export default function AdminInvoicesPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [isAddBillOpen, setIsAddBillOpen] = useState(false);
+  const [isNotifyWhatsAppOpen, setIsNotifyWhatsAppOpen] = useState(false);
   const [defaultBillClientId, setDefaultBillClientId] = useState<string | undefined>();
 
   const loadInvoices = useCallback(async () => {
@@ -273,6 +275,7 @@ export default function AdminInvoicesPage() {
           setDefaultBillClientId(clientId);
           setIsAddBillOpen(true);
         }}
+        onNotifyWhatsApp={() => setIsNotifyWhatsAppOpen(true)}
         onDownloadAttachment={handleDownloadPdf}
         onOpenInvoice={(id) => handleDownloadPdf(id)}
       />
@@ -285,6 +288,13 @@ export default function AdminInvoicesPage() {
         }}
         onBillCreated={loadInvoices}
         defaultClientId={defaultBillClientId}
+      />
+
+      <AdminNotifyBillsWhatsAppModal
+        isOpen={isNotifyWhatsAppOpen}
+        onClose={() => setIsNotifyWhatsAppOpen(false)}
+        clientsList={clientsList}
+        selectedClientId={defaultBillClientId}
       />
     </div>
   );

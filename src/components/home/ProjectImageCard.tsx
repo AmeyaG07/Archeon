@@ -61,6 +61,30 @@ export function ProjectImageCard({
       {/* =========================================================================
           CONTINUOUSLY MOVING GOLDEN LINE BORDER (Always streaming around perimeter)
          ========================================================================= */}
+      <style>{`
+        @keyframes svgBorderMove {
+          0% { stroke-dashoffset: 0; }
+          100% { stroke-dashoffset: -100; }
+        }
+        .moving-golden-border-path {
+          animation: svgBorderMove 4s linear infinite !important;
+        }
+        @keyframes continuousCadLaserScan {
+          0% { transform: translateX(-100%); opacity: 0; }
+          15% { opacity: 1; }
+          85% { opacity: 1; }
+          100% { transform: translateX(1100%); opacity: 0; }
+        }
+        .cad-laser-scanner {
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          width: 12%;
+          pointer-events: none;
+          z-index: 15;
+          animation: continuousCadLaserScan 3.5s cubic-bezier(0.4, 0, 0.2, 1) infinite !important;
+        }
+      `}</style>
       <div className="pointer-events-none absolute inset-0 z-30 rounded-sm overflow-hidden">
         <svg className="h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
           <defs>

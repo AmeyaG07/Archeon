@@ -38,30 +38,6 @@ export function StudioSection() {
           <div className="lg:col-span-6 xl:col-span-5 relative">
             <div className="rounded-3xl bg-[#F2F0EB]/92 backdrop-blur-xl p-4 xs:p-6 sm:p-9 md:p-11 border border-[#23211E]/10 shadow-[0_24px_50px_-16px_rgba(35,33,30,0.08)] transition-all duration-300">
               
-              {/* Top Header Badge & Compass Motion */}
-              <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-                <div className="flex items-center gap-3">
-                  <span className="group relative flex h-7 w-7 items-center justify-center rounded-full border border-[#9F7947]/40 bg-white/60 text-[#9F7947] shadow-sm transition-transform duration-500 hover:rotate-180">
-                    <Compass size={14} className="animate-[spin_24s_linear_infinite]" />
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-[10px] tracking-[0.24em] uppercase text-[#777777] font-semibold">
-                      01 / The Studio
-                    </span>
-                    <span className="h-1 w-1 rounded-full bg-[#9F7947]" />
-                    <span className="font-mono text-[9px] tracking-wider uppercase text-[#9F7947]">
-                      Nagpur Studio
-                    </span>
-                  </div>
-                </div>
-
-                {/* Live Tectonic Coordinates */}
-                <div className="hidden sm:flex items-center gap-2 font-mono text-[9.5px] tracking-wider text-stone-500 bg-white/70 px-2.5 py-1 rounded-full border border-stone-800/10 shadow-xs">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span>21.1458° N, 79.0882° E</span>
-                </div>
-              </div>
-
               {/* Main Architectural Statement Headline */}
               <div className="mb-8">
                 <RevealText>

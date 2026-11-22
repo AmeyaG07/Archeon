@@ -355,6 +355,33 @@ export function VillaLumiereBackground() {
     fillLight.position.set(-20, 14, -18);
     scene.add(fillLight);
 
+    // Dynamic Warm Golden Cursor Hover Light
+    const cursorHoverLight = new THREE.PointLight(0xd97724, 0.0, 30, 1.4);
+    cursorHoverLight.position.set(shiftX, 6.0, 8.0);
+    scene.add(cursorHoverLight);
+
+    // Mouse Tracking for Interactive 3D Villa Hover Effects
+    let targetMouseX = 0;
+    let targetMouseY = 0;
+    let currentMouseX = 0;
+    let currentMouseY = 0;
+    let isHovering = false;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!container) return;
+      const rect = container.getBoundingClientRect();
+      const inX = e.clientX >= rect.left && e.clientX <= rect.right;
+      const inY = e.clientY >= rect.top && e.clientY <= rect.bottom;
+      if (inX && inY) {
+        targetMouseX = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+        targetMouseY = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+        isHovering = true;
+      } else {
+        isHovering = false;
+      }
+    };
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+
     // Subtle Architectural Drafting Grid Lines
     const gridPts: number[] = [];
     const gy = 0.015;
@@ -909,6 +936,24 @@ export function VillaLumiereBackground() {
 
       setCallouts(nextCallouts);
 
+      // Interactive hover parallax & dynamic golden illumination
+      if (isHovering) {
+        currentMouseX += (targetMouseX - currentMouseX) * 0.05;
+        currentMouseY += (targetMouseY - currentMouseY) * 0.05;
+        villaMasterGroup.rotation.y = currentMouseX * 0.22;
+        villaMasterGroup.rotation.x = currentMouseY * 0.10;
+        cursorHoverLight.intensity = THREE.MathUtils.lerp(cursorHoverLight.intensity, 3.8, 0.08);
+        cursorHoverLight.position.x = villaMasterGroup.position.x + currentMouseX * 9.0;
+        cursorHoverLight.position.y = 5.5 - currentMouseY * 5.0;
+        cursorHoverLight.position.z = 8.0 + currentMouseY * 3.5;
+      } else {
+        currentMouseX += (0 - currentMouseX) * 0.03;
+        currentMouseY += (0 - currentMouseY) * 0.03;
+        villaMasterGroup.rotation.y = currentMouseX * 0.22;
+        villaMasterGroup.rotation.x = currentMouseY * 0.10;
+        cursorHoverLight.intensity = THREE.MathUtils.lerp(cursorHoverLight.intensity, 0.0, 0.05);
+      }
+
       controls.update();
       renderer.render(scene, camera);
     }
@@ -933,6 +978,7 @@ export function VillaLumiereBackground() {
 
     return () => {
       cancelAnimationFrame(animationFrameId);
+      window.removeEventListener("mousemove", handleMouseMove);
       resizeObserver.disconnect();
       controls.dispose();
       renderer.dispose();
@@ -980,24 +1026,16 @@ export function VillaLumiereBackground() {
               transform: `translate3d(${c.x}px, ${c.y - 12}px, 0)`,
               opacity: c.visible ? 1 : 0,
             }}
-            className="absolute top-0 left-0 flex items-center transition-opacity duration-300 will-change-transform"
+            className="absolute top-0 left-0 flex items-center transition-opacity duration-300 will-change-transform pointer-events-auto cursor-pointer group"
           >
-            <span className="h-2 w-2 rounded-full bg-[#B68A4A] shadow-[0_0_0_3px_rgba(182,138,74,0.25)]" />
-            <span className="h-[1px] w-6 bg-[#B68A4A]/70" />
-            <div className="flex items-center gap-1.5 rounded-full border border-stone-800/10 bg-[#FCFBF8]/90 px-2.5 py-1 font-mono text-[9px] font-medium tracking-widest text-[#23211E] uppercase shadow-lg backdrop-blur-md">
-              <span className="font-bold text-[#B68A4A]">{c.num}</span>
+            <span className="h-2 w-2 rounded-full bg-[#B68A4A] shadow-[0_0_0_3px_rgba(182,138,74,0.25)] group-hover:scale-125 group-hover:bg-[#D97724] transition-transform duration-300" />
+            <span className="h-[1px] w-6 bg-[#B68A4A]/70 group-hover:bg-[#D97724] transition-colors duration-300" />
+            <div className="flex items-center gap-1.5 rounded-full border border-stone-800/10 bg-[#FCFBF8]/90 px-2.5 py-1 font-mono text-[9px] font-medium tracking-widest text-[#23211E] uppercase shadow-lg backdrop-blur-md group-hover:border-[#D97724]/40 group-hover:shadow-xl group-hover:scale-105 transition-all duration-300">
+              <span className="font-bold text-[#B68A4A] group-hover:text-[#D97724]">{c.num}</span>
               <span>— {c.name}</span>
             </div>
           </div>
         ))}
-      </div>
-
-      {/* Top-Right Ambient Studio Assembly Status Badge */}
-      <div className="absolute top-6 right-6 z-20 hidden items-center gap-3 sm:flex">
-        <div className="flex items-center gap-2 rounded-full border border-stone-800/10 bg-white/70 px-3.5 py-1.5 font-mono text-[10px] tracking-wider text-stone-700 uppercase shadow-sm backdrop-blur-md">
-          <span className="h-1.5 w-1.5 rounded-full bg-[#B68A4A] animate-pulse" />
-          <span>VILLA LUMIÈRE // {phaseStatus}</span>
-        </div>
       </div>
     </div>
   );
