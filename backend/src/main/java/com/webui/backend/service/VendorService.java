@@ -31,7 +31,7 @@ public class VendorService {
 
     private static final Set<String> ALLOWED_CATEGORIES = Set.of(
             "CARPENTRY", "ELECTRICAL", "CIVIL_WORK", "HVAC", "PLUMBING",
-            "FABRICATION", "MASONRY", "PAINTING", "LANDSCAPING", "LIGHTING", "OTHER"
+            "FABRICATION", "MASONRY", "PAINTING", "LANDSCAPING", "LIGHTING", "FINISHING", "OTHER"
     );
 
     @Autowired
