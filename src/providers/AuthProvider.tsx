@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { MotionConfig } from "framer-motion";
 import {
   getAuthToken,
   getStoredUser,
@@ -96,7 +97,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         hasRole,
       }}
     >
-      {children}
+      <MotionConfig reducedMotion="user">
+        {children}
+      </MotionConfig>
     </AuthContext.Provider>
   );
 }

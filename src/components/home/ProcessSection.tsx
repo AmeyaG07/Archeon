@@ -6,7 +6,6 @@ import {
   motion,
   useScroll,
   useTransform,
-  useReducedMotion,
 } from "framer-motion";
 import {
   RevealText,
@@ -56,7 +55,6 @@ export function ProcessSection({
   onOpenConsultation,
 }: ProcessSectionProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const shouldReduceMotion = useReducedMotion();
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -155,18 +153,16 @@ export function ProcessSection({
         <div ref={containerRef} className="relative mt-8">
           {/* Vertical Bronze Track & Rail (Desktop) */}
           <div className="absolute left-[2.2rem] top-0 bottom-0 hidden w-0.5 bg-[#D8D6D0] md:block">
-            {!shouldReduceMotion && (
-              <motion.div
-                style={{ scaleY: railScaleY }}
-                className="w-full h-full bg-gradient-to-b from-[#D97724] via-[#B68A4A] to-[#F59E0B] origin-top"
-              />
-            )}
+            <motion.div
+              style={{ scaleY: railScaleY }}
+              className="w-full h-full bg-gradient-to-b from-[#D97724] via-[#B68A4A] to-[#F59E0B] origin-top"
+            />
           </div>
 
           {processStages.map((stage, idx) => (
             <motion.article
               key={stage.number}
-              initial={shouldReduceMotion ? undefined : { opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.3 }}
               transition={{ duration: 0.7, delay: idx * 0.08 }}

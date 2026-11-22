@@ -3,7 +3,6 @@
 import React from "react";
 import {
   motion,
-  useReducedMotion,
   Variants,
 } from "framer-motion";
 
@@ -26,12 +25,6 @@ export function RevealText({
   delay = 0,
   duration = 0.85,
 }: RevealTextProps) {
-  const shouldReduceMotion = useReducedMotion();
-
-  if (shouldReduceMotion) {
-    return <div className={className}>{children}</div>;
-  }
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 18 }}
@@ -66,12 +59,6 @@ export function ClipReveal({
   delay = 0,
   duration = 1.0,
 }: ClipRevealProps) {
-  const shouldReduceMotion = useReducedMotion();
-
-  if (shouldReduceMotion) {
-    return <div className={className}>{children}</div>;
-  }
-
   return (
     <motion.div
       initial={{
@@ -116,18 +103,12 @@ export function HairlineRule({
   duration = 0.85,
   origin = "left",
 }: HairlineRuleProps) {
-  const shouldReduceMotion = useReducedMotion();
-
   const originClass =
     origin === "center"
       ? "origin-center"
       : origin === "right"
       ? "origin-right"
       : "origin-left";
-
-  if (shouldReduceMotion) {
-    return <div className={`h-px w-full ${color} ${className}`} />;
-  }
 
   return (
     <motion.div
@@ -170,12 +151,6 @@ export function StaggerGrid({
   className = "",
   staggerDelay = 0.08,
 }: StaggerGridProps) {
-  const shouldReduceMotion = useReducedMotion();
-
-  if (shouldReduceMotion) {
-    return <div className={className}>{children}</div>;
-  }
-
   return (
     <motion.div
       variants={gridContainerVariants}
@@ -218,12 +193,6 @@ export function StaggerItem({
   children,
   className = "",
 }: StaggerItemProps) {
-  const shouldReduceMotion = useReducedMotion();
-
-  if (shouldReduceMotion) {
-    return <div className={className}>{children}</div>;
-  }
-
   return (
     <motion.div variants={itemVariants} className={className}>
       {children}
