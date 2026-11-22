@@ -22,11 +22,13 @@ import {
   ShieldCheck,
   Search,
   Bell,
+  Globe,
 } from "lucide-react";
 
 export type AdminPortalSection =
   | "dashboard"
   | "projects"
+  | "website-projects"
   | "leads"
   | "clients"
   | "vendors"
@@ -86,6 +88,12 @@ const NAVIGATION_GROUPS: NavigationGroup[] = [
         label: "Projects",
         description: "Project oversight",
         icon: FolderKanban,
+      },
+      {
+        id: "website-projects",
+        label: "Website Content",
+        description: "Showcase & Philosophy CMS",
+        icon: Globe,
       },
       {
         id: "leads",

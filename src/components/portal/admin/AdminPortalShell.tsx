@@ -10,6 +10,7 @@ import { useAuth } from "@/providers/AuthProvider";
 const routes: Record<AdminPortalSection, string> = {
   dashboard: "/admin",
   projects: "/admin/projects",
+  "website-projects": "/admin/website-projects",
   leads: "/admin/leads",
   clients: "/admin/clients",
   vendors: "/admin/vendors",
@@ -22,6 +23,7 @@ const routes: Record<AdminPortalSection, string> = {
 };
 
 function getActiveSection(pathname: string): AdminPortalSection {
+  if (pathname.includes("/website-projects")) return "website-projects";
   if (pathname.includes("/projects")) return "projects";
   if (pathname.includes("/leads")) return "leads";
   if (pathname.includes("/clients")) return "clients";

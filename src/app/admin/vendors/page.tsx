@@ -92,7 +92,12 @@ export default function AdminVendorsPage() {
               : v.invitationStatus === "SENT"
               ? "Invitation Pending"
               : "Not Invited") as any,
-            linkedProjects: [],
+            linkedProjects: (bInfo.linkedProjects || v.linkedProjects || []).map((p: any) => ({
+              id: p.id || "",
+              reference: p.reference || p.projectReference || "",
+              name: p.name || "",
+              status: (p.status || "Under Execution") as any,
+            })),
             submittedInvoiceCount: bInfo.activeBillsCount || 0,
             outstandingInvoiceCount: 0,
             totalBilledAmount: bInfo.totalBilledAmount || 0,

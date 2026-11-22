@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 import { Header } from "@/components/ui/Header";
 import { OpeningPreloader } from "@/components/ui/OpeningPreloader";
@@ -46,6 +46,49 @@ export default function Home() {
   const [vendorPortalOpen, setVendorPortalOpen] =
     useState(false);
 
+  const [projects, setProjects] =
+    useState<PortfolioProject[]>(siteConfig.projects);
+
+  useEffect(() => {
+    fetch("/api/projects")
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch");
+        return res.json();
+      })
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          const mapped: PortfolioProject[] = data.map((p: any) => {
+            const base = siteConfig.projects.find((sp) => sp.id === p.id) || siteConfig.projects[0];
+            let tags: string[] = base.tags;
+            try {
+              if (p.tagsJson) tags = JSON.parse(p.tagsJson);
+              else if (Array.isArray(p.tags)) tags = p.tags;
+            } catch {}
+
+            return {
+              ...base,
+              id: p.id || base.id,
+              code: p.code || base.code,
+              title: p.title || base.title,
+              image: p.image || base.image,
+              category: (p.category || base.category) as any,
+              location: p.location || base.location,
+              area: p.area || base.area,
+              status: (p.status || base.status) as any,
+              year: p.projectYear || p.year || base.year,
+              heroSummary: p.summary || base.heroSummary,
+              brief: p.summary || base.brief,
+              designResponse: p.summary || base.designResponse,
+              tags: tags.length > 0 ? tags : base.tags,
+              accentColor: p.accentColor || base.accentColor,
+            };
+          });
+          setProjects(mapped);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const openConsultationWithService = (serviceId?: string) => {
     setConsultationServiceId(serviceId || "architecture");
     setConsultationOpen(true);
@@ -83,7 +126,7 @@ export default function Home() {
 
           {/* 4. Selected Projects */}
           <ProjectsSection
-            projects={siteConfig.projects}
+            projects={projects}
             onSelectProject={setSelectedProject}
           />
 
