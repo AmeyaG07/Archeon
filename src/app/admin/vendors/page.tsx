@@ -50,17 +50,17 @@ export default function AdminVendorsPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await apiFetch("/api/vendors");
-      const list = await res.json();
+      const [vRes, bDirRes, billsRes, projRes] = await Promise.all([
+        apiFetch("/api/vendors").catch(() => null),
+        apiFetch("/api/billing/vendors-directory").catch(() => null),
+        apiFetch("/api/billing/bills").catch(() => null),
+        apiFetch("/api/operational-projects").catch(() => null),
+      ]);
 
-      // Fetch vendors directory with billing totals & associated clients
-      let billingDirectory: any[] = [];
-      try {
-        const bRes = await apiFetch("/api/billing/vendors-directory");
-        billingDirectory = await bRes.json();
-      } catch (bErr) {
-        console.warn("Could not load billing directory:", bErr);
-      }
+      const list = vRes && vRes.ok ? await vRes.json() : [];
+      const billingDirectory = bDirRes && bDirRes.ok ? await bDirRes.json() : [];
+      const rawBills: any[] = billsRes && billsRes.ok ? await billsRes.json() : [];
+      const rawProjects: any[] = projRes && projRes.ok ? await projRes.json() : [];
 
       const billingMap = new Map<string, any>();
       if (Array.isArray(billingDirectory)) {
@@ -70,9 +70,60 @@ export default function AdminVendorsPage() {
         });
       }
 
+      const projectMap = new Map<string, any>();
+      if (Array.isArray(rawProjects)) {
+        rawProjects.forEach((p) => {
+          if (p.id) projectMap.set(String(p.id), p);
+          if (p.projectReference) projectMap.set(p.projectReference, p);
+        });
+      }
+
       if (Array.isArray(list)) {
         const records: AdminVendorRecord[] = list.map((v: any) => {
           const bInfo = billingMap.get(v.id) || billingMap.get(v.vendorReference) || {};
+
+          // Associate all bills for this vendor
+          const vendorBills = (Array.isArray(rawBills) ? rawBills : [])
+            .filter((b: any) =>
+              String(b.vendorId) === String(v.id) ||
+              String(b.vendorId) === String(v.vendorReference) ||
+              String(b.vendorId) === String(v.reference)
+            )
+            .map((b: any) => {
+              const pId = b.projectId ? String(b.projectId) : "";
+              const proj = projectMap.get(pId);
+              const isSettled = b.status === "PAID_CASH" || b.status === "PAID_ONLINE";
+              const isApproved = isSettled || b.status === "APPROVED";
+              return {
+                id: String(b.id || b.billId),
+                billId: b.billId || "BILL",
+                invoiceNumber: b.invoiceNumber || b.billId || "BILL",
+                projectName: proj?.name || b.projectId || "Studio Architecture Project",
+                projectReference: proj?.projectReference || b.projectId || "",
+                amount: Number(b.amount || 0),
+                paidAmount: Number(b.paidAmount || 0),
+                outstandingAmount: Math.max(0, Number(b.amount || 0) - Number(b.paidAmount || 0)),
+                status: isSettled
+                  ? "Paid"
+                  : isApproved
+                  ? "Approved"
+                  : b.status === "CASH_REQUESTED"
+                  ? "Payment Processing"
+                  : "Pending",
+                createdAt: b.createdAt || new Date().toISOString(),
+                billPhotoUrl: b.billPhotoUrl || b.paymentProofUrl || "",
+                tradeCategory: b.tradeCategory || v.category || v.tradeDiscipline || bInfo.tradeCategory || "Contractor Bill",
+              };
+            });
+
+          const totalBilled = vendorBills.length > 0
+            ? vendorBills.reduce((acc, b) => acc + b.amount, 0)
+            : (bInfo.totalBilledAmount || 0);
+
+          const totalSettled = vendorBills.length > 0
+            ? vendorBills.reduce((acc, b) => acc + b.paidAmount, 0)
+            : (bInfo.totalSettledAmount || 0);
+
           return {
             id: v.id || "",
             reference: v.vendorReference || v.reference || "VEN",
@@ -98,13 +149,14 @@ export default function AdminVendorsPage() {
               name: p.name || "",
               status: (p.status || "Under Execution") as any,
             })),
-            submittedInvoiceCount: bInfo.activeBillsCount || 0,
-            outstandingInvoiceCount: 0,
-            totalBilledAmount: bInfo.totalBilledAmount || 0,
-            totalSettledAmount: bInfo.totalSettledAmount || 0,
+            submittedInvoiceCount: vendorBills.length || bInfo.activeBillsCount || 0,
+            outstandingInvoiceCount: vendorBills.filter((b) => b.status !== "Paid").length,
+            totalBilledAmount: totalBilled,
+            totalSettledAmount: totalSettled,
             associatedClients: bInfo.associatedClientNames || bInfo.associatedClients || v.associatedClientNames || [],
             createdAt: v.createdAt || new Date().toISOString(),
             lastUpdated: v.updatedAt || new Date().toISOString(),
+            bills: vendorBills,
           };
         });
         setVendors(records);
@@ -270,7 +322,6 @@ export default function AdminVendorsPage() {
         onUpdatePortalAccess={handleUpdatePortalAccess}
         onCreatePortalAccount={handleCreatePortalAccount}
         onOpenProject={(projId) => router.push(`/admin/projects?id=${projId}`)}
-        onOpenInvoices={() => router.push("/admin/approvals")}
         onAddVendor={() => setIsCreateModalOpen(true)}
         onEditVendor={(vendor) => setEditingVendor(vendor)}
         onManagePaymentSettings={(vendor) => setPaymentSettingsVendor(vendor)}

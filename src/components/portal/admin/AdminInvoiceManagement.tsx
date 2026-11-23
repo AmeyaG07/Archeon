@@ -98,7 +98,7 @@ interface AdminInvoiceManagementProps {
   onDownloadAttachment?: (invoiceId: string) => void;
 }
 
-type StatusFilter = "All" | AdminInvoiceStatus;
+type StatusFilter = "All" | "Paid" | "Partially Paid" | "Pending";
 type PartyFilter = "All" | AdminInvoicePartyType;
 
 const INVOICE_STATUSES: AdminInvoiceStatus[] = [
@@ -250,7 +250,13 @@ export function AdminInvoiceManagement({
 
       const matchesStatus =
         statusFilter === "All" ||
-        invoice.status === statusFilter;
+        (statusFilter === "Paid" && invoice.status === "Paid") ||
+        (statusFilter === "Partially Paid" && invoice.status === "Partially Paid") ||
+        (statusFilter === "Pending" &&
+          invoice.status !== "Paid" &&
+          invoice.status !== "Partially Paid" &&
+          invoice.status !== "Cancelled" &&
+          invoice.status !== "Rejected");
 
       const matchesParty =
         partyFilter === "All" ||
@@ -491,15 +497,6 @@ export function AdminInvoiceManagement({
 
         <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
           <FilterSelect
-            label="Invoice Status"
-            value={statusFilter}
-            options={["All", ...INVOICE_STATUSES]}
-            onChange={(value) =>
-              setStatusFilter(value as StatusFilter)
-            }
-          />
-
-          <FilterSelect
             label="Party Type"
             value={partyFilter}
             options={["All", "Client", "Vendor"]}
@@ -515,7 +512,7 @@ export function AdminInvoiceManagement({
             <select
               value={selectedClientId}
               onChange={(e) => setSelectedClientId(e.target.value)}
-              className="h-12 w-full border border-[#D8D6D0] bg-white px-4 text-xs font-mono text-[#171717] outline-none focus:border-[#A58A64]"
+              className="h-11 w-full border border-[#D8D6D0] bg-white px-3 text-xs outline-none focus:border-[#A58A64]"
             >
               <option value="All">All Clients (Full Registry)</option>
               {clientsList.map((c) => (
@@ -523,6 +520,22 @@ export function AdminInvoiceManagement({
                   {c.fullName} {c.reference ? `(${c.reference})` : ""}
                 </option>
               ))}
+            </select>
+          </div>
+
+          <div>
+            <span className="mb-2 block font-mono text-[9px] uppercase tracking-widest text-[#77736C]">
+              Invoice Status
+            </span>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
+              className="h-11 w-full border border-[#D8D6D0] bg-white px-3 text-xs outline-none focus:border-[#A58A64]"
+            >
+              <option value="All">All Invoices</option>
+              <option value="Paid">Paid</option>
+              <option value="Partially Paid">Partially Paid</option>
+              <option value="Pending">Pending</option>
             </select>
           </div>
         </div>

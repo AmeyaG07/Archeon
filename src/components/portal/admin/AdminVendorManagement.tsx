@@ -26,6 +26,7 @@ import {
   Check,
   Copy,
   ExternalLink,
+  Receipt,
 } from "lucide-react";
 
 export type AdminVendorStatus =
@@ -52,6 +53,21 @@ export interface AdminVendorProject {
     | "Completed";
 }
 
+export interface AdminVendorBillItem {
+  id: string;
+  billId?: string;
+  invoiceNumber?: string;
+  projectName?: string;
+  projectReference?: string;
+  amount: number;
+  paidAmount: number;
+  outstandingAmount?: number;
+  status: string;
+  createdAt: string;
+  billPhotoUrl?: string;
+  tradeCategory?: string;
+}
+
 export interface AdminVendorRecord {
   id: string;
   reference: string;
@@ -73,6 +89,7 @@ export interface AdminVendorRecord {
   associatedClients?: string[];
   createdAt: string;
   lastUpdated: string;
+  bills?: AdminVendorBillItem[];
 }
 
 interface AdminVendorManagementProps {
@@ -141,6 +158,101 @@ function formatDate(value: string) {
     month: "short",
     year: "numeric",
   }).format(date);
+}
+
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 2,
+  }).format(value);
+}
+
+function printBillVoucher(bill: AdminVendorBillItem, vendor: AdminVendorRecord) {
+  const win = window.open("", "_blank");
+  if (!win) return;
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>${bill.invoiceNumber || bill.billId || "BILL"} - Trade Partner Bill Voucher</title>
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace; padding: 40px; color: #171717; max-width: 800px; margin: 0 auto; }
+          .header { border-bottom: 2px solid #171717; padding-bottom: 15px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: flex-start; }
+          .title { font-size: 22px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+          .subtitle { font-size: 12px; color: #666; margin-top: 4px; }
+          .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; font-size: 13px; }
+          .box { border: 1px solid #ddd; padding: 15px; border-radius: 4px; }
+          .box-title { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #888; margin-bottom: 8px; font-weight: 600; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; }
+          th { background: #f8f8f8; text-align: left; padding: 10px; border-bottom: 2px solid #ddd; font-size: 11px; text-transform: uppercase; }
+          td { padding: 12px 10px; border-bottom: 1px solid #eee; }
+          .text-right { text-align: right; }
+          .total-row { font-weight: 700; font-size: 15px; border-top: 2px solid #171717; }
+          .badge { display: inline-block; padding: 3px 8px; font-size: 10px; text-transform: uppercase; font-weight: 600; background: #eee; border-radius: 3px; }
+          .print-btn { background: #171717; color: #fff; border: none; padding: 8px 16px; font-size: 12px; cursor: pointer; border-radius: 3px; margin-top: 20px; }
+          @media print { .print-btn { display: none; } }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div>
+            <div class="title">ArcheOn Design Studio</div>
+            <div class="subtitle">Trade Contractor Disbursement Voucher · Ar. Mandar Bhalekar</div>
+          </div>
+          <div style="text-align: right;">
+            <div class="badge">${bill.status}</div>
+            <div style="font-size: 14px; font-weight: 700; margin-top: 6px;">${bill.invoiceNumber || bill.billId || "BILL"}</div>
+            <div class="subtitle">Date: ${formatDate(bill.createdAt)}</div>
+          </div>
+        </div>
+
+        <div class="meta-grid">
+          <div class="box">
+            <div class="box-title">Trade Partner (Vendor)</div>
+            <div style="font-weight: 600;">${vendor.businessName}</div>
+            <div style="color: #555; margin-top: 4px;">Ref: ${vendor.reference} · ${vendor.vendorCategory}</div>
+            <div style="color: #555; margin-top: 2px;">Contact: ${vendor.contactPerson} (${vendor.phone})</div>
+          </div>
+          <div class="box">
+            <div class="box-title">Project & Scope</div>
+            <div style="font-weight: 600;">${bill.projectName || "Studio Project"}</div>
+            <div style="color: #555; margin-top: 4px;">Category: ${bill.tradeCategory || vendor.vendorCategory}</div>
+            <div style="color: #555; margin-top: 2px;">Total Bill: ₹${bill.amount.toLocaleString("en-IN")}</div>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Description / Trade Category</th>
+              <th class="text-right">Billed Amount</th>
+              <th class="text-right">Recorded Paid</th>
+              <th class="text-right">Outstanding</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>${bill.tradeCategory || "Contractor Services"} (${bill.projectName || "Studio Project"})</td>
+              <td class="text-right">₹${bill.amount.toLocaleString("en-IN")}</td>
+              <td class="text-right">₹${bill.paidAmount.toLocaleString("en-IN")}</td>
+              <td class="text-right">₹${(bill.outstandingAmount ?? Math.max(0, bill.amount - bill.paidAmount)).toLocaleString("en-IN")}</td>
+            </tr>
+            <tr class="total-row">
+              <td>Net Payable</td>
+              <td class="text-right">₹${bill.amount.toLocaleString("en-IN")}</td>
+              <td class="text-right">₹${bill.paidAmount.toLocaleString("en-IN")}</td>
+              <td class="text-right">₹${(bill.outstandingAmount ?? Math.max(0, bill.amount - bill.paidAmount)).toLocaleString("en-IN")}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <button class="print-btn" onclick="window.print()">Print / Save as PDF</button>
+      </body>
+    </html>
+  `;
+  win.document.write(html);
+  win.document.close();
 }
 
 function vendorStatusStyle(status: AdminVendorStatus) {
@@ -568,7 +680,240 @@ export function AdminVendorManagement({
                 </div>
               </section>
 
-              {/* Vendor Account */}
+              {/* 1. Project Associations */}
+              <section>
+                <div className="flex items-end justify-between border-b border-[#D8D6D0] pb-4">
+                  <div>
+                    <SectionHeading>Project Association</SectionHeading>
+
+                    <h3 className="mt-3 font-serif text-2xl text-[#171717]">
+                      Assigned Projects
+                    </h3>
+                  </div>
+
+                  <p className="font-mono text-[9px] text-[#99958D]">
+                    {selectedVendor.linkedProjects.length} PROJECTS
+                  </p>
+                </div>
+
+                {selectedVendor.linkedProjects.length === 0 ? (
+                  <div className="mt-4 border border-[#D8D6D0] bg-white p-7 text-center">
+                    <FolderKanban
+                      size={24}
+                      className="mx-auto text-[#A58A64]"
+                    />
+
+                    <p className="mt-3 text-xs text-[#77736C]">
+                      No projects are assigned to this vendor.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="mt-4 space-y-3">
+                    {selectedVendor.linkedProjects.map((project) => (
+                      <button
+                        key={project.id}
+                        type="button"
+                        disabled={!onOpenProject}
+                        onClick={() => onOpenProject?.(project.id)}
+                        className="flex w-full items-center justify-between gap-4 border border-[#D8D6D0] bg-white p-5 text-left hover:border-[#A58A64] disabled:cursor-default"
+                      >
+                        <span className="min-w-0">
+                          <span className="block font-mono text-[9px] uppercase tracking-widest text-[#A58A64]">
+                            {project.reference}
+                          </span>
+
+                          <span className="mt-2 block font-serif text-xl text-[#171717]">
+                            {project.name}
+                          </span>
+
+                          <span className="mt-2 block text-[9px] text-[#77736C]">
+                            {project.status}
+                          </span>
+                        </span>
+
+                        <ArrowUpRight
+                          size={17}
+                          className="shrink-0 text-[#A58A64]"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </section>
+
+              {/* 2. Financial Relationship & Bills List (Direct on-page listing, no redirect) */}
+              <section className="border border-[#D8D6D0] bg-white p-6">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <SectionHeading>Financial Relationship</SectionHeading>
+
+                    <h3 className="mt-3 font-serif text-2xl text-[#171717]">
+                      Bills &amp; Invoices
+                    </h3>
+                  </div>
+
+                  <FileText
+                    size={21}
+                    className="text-[#A58A64]"
+                  />
+                </div>
+
+                <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-px border border-[#D8D6D0] bg-[#D8D6D0]">
+                  <div className="bg-[#FAF9F6] p-4">
+                    <p className="font-mono text-[8px] uppercase tracking-widest text-[#99958D]">
+                      Submitted Bills
+                    </p>
+                    <p className="mt-2 font-serif text-2xl text-[#171717]">
+                      {selectedVendor.bills?.length ?? selectedVendor.submittedInvoiceCount}
+                    </p>
+                  </div>
+
+                  <div className="bg-[#FAF9F6] p-4">
+                    <p className="font-mono text-[8px] uppercase tracking-widest text-[#99958D]">
+                      Total Billed
+                    </p>
+                    <p className="mt-2 font-mono text-sm sm:text-base font-bold text-[#171717]">
+                      {formatCurrency(selectedVendor.totalBilledAmount || 0)}
+                    </p>
+                  </div>
+
+                  <div className="bg-[#FAF9F6] p-4">
+                    <p className="font-mono text-[8px] uppercase tracking-widest text-[#99958D]">
+                      Recorded Settled
+                    </p>
+                    <p className="mt-2 font-mono text-sm sm:text-base font-bold text-emerald-700">
+                      {formatCurrency(selectedVendor.totalSettledAmount || 0)}
+                    </p>
+                  </div>
+
+                  <div className="bg-[#FAF9F6] p-4">
+                    <p className="font-mono text-[8px] uppercase tracking-widest text-[#99958D]">
+                      Outstanding
+                    </p>
+                    <p className="mt-2 font-mono text-sm sm:text-base font-bold text-[#A58A64]">
+                      {formatCurrency(Math.max(0, (selectedVendor.totalBilledAmount || 0) - (selectedVendor.totalSettledAmount || 0)))}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Direct Bills Listing */}
+                <div className="mt-6 border-t border-[#E5E2DC] pt-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="font-mono text-[9px] uppercase tracking-widest text-[#A58A64] font-semibold flex items-center gap-1.5">
+                      <Receipt size={13} /> Recorded Bills &amp; Vouchers
+                    </span>
+                    <span className="font-mono text-[9px] text-[#77736C]">
+                      {(selectedVendor.bills || []).length} item{(selectedVendor.bills || []).length === 1 ? "" : "s"}
+                    </span>
+                  </div>
+
+                  {(!selectedVendor.bills || selectedVendor.bills.length === 0) ? (
+                    <div className="border border-[#D8D6D0] bg-[#FAF9F6] p-6 text-center">
+                      <Receipt size={22} className="mx-auto text-[#A58A64]" />
+                      <p className="mt-2 font-mono text-xs text-[#77736C]">
+                        No bills recorded for this trade partner yet.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {selectedVendor.bills.map((bill) => (
+                        <div
+                          key={bill.id}
+                          className="border border-[#D8D6D0] bg-[#FAF9F6] p-4 transition-colors hover:border-[#A58A64]"
+                        >
+                          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono text-xs font-bold text-[#171717]">
+                                  {bill.invoiceNumber || bill.billId || "BILL"}
+                                </span>
+                                {bill.tradeCategory && (
+                                  <span className="font-mono text-[10px] text-[#A58A64] bg-[#F4EFE2] px-1.5 py-0.5 rounded-xs">
+                                    {bill.tradeCategory}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="mt-1 text-xs text-[#555] font-medium truncate">
+                                {bill.projectName || "Studio Architecture Project"}
+                              </p>
+                              <p className="mt-0.5 font-mono text-[10px] text-[#888]">
+                                Issued: {formatDate(bill.createdAt)}
+                              </p>
+                            </div>
+
+                            <div className="sm:text-right shrink-0">
+                              <span
+                                className={`inline-block px-2 py-0.5 text-[8px] uppercase font-mono tracking-wider ${
+                                  bill.status === "Paid"
+                                    ? "bg-[#EAF1E8] text-[#547A51]"
+                                    : bill.status === "Approved"
+                                    ? "bg-[#EAEFF5] text-[#526C8A]"
+                                    : "bg-[#F4EFE2] text-[#94743F]"
+                                }`}
+                              >
+                                {bill.status}
+                              </span>
+                              <div className="mt-1 font-mono text-sm font-bold text-[#171717]">
+                                {formatCurrency(bill.amount)}
+                              </div>
+                              {bill.paidAmount > 0 && (
+                                <p className="font-mono text-[10px] text-emerald-700">
+                                  Paid: {formatCurrency(bill.paidAmount)}
+                                </p>
+                              )}
+                              {bill.outstandingAmount !== undefined && bill.outstandingAmount > 0 && (
+                                <p className="font-mono text-[10px] text-[#A58A64]">
+                                  Bal: {formatCurrency(bill.outstandingAmount)}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Bill Actions - Print voucher & View Upload without redirecting */}
+                          <div className="mt-3 flex items-center justify-end gap-3 border-t border-[#EAE7E0] pt-2">
+                            {bill.billPhotoUrl && (
+                              <a
+                                href={bill.billPhotoUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 font-mono text-[9px] uppercase tracking-wider text-[#A58A64] hover:underline"
+                              >
+                                <ExternalLink size={11} /> View Upload
+                              </a>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => printBillVoucher(bill, selectedVendor)}
+                              className="inline-flex items-center gap-1 font-mono text-[9px] uppercase tracking-wider text-[#171717] hover:text-[#A58A64] transition-colors"
+                            >
+                              <FileText size={11} /> Print Voucher
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <p className="mt-4 text-[10px] leading-5 text-[#99958D]">
+                  All bills recorded for this trade contractor are listed directly above. Settlement and cash disbursements are logged in the studio finance registry.
+                </p>
+              </section>
+
+              {/* 3. Metadata */}
+              <section className="grid grid-cols-2 gap-3">
+                <MetadataCard
+                  label="Vendor Created"
+                  value={formatDate(selectedVendor.createdAt)}
+                />
+
+                <MetadataCard
+                  label="Last Updated"
+                  value={formatDate(selectedVendor.lastUpdated)}
+                />
+              </section>
+
+              {/* 4. Vendor Account ("Acc access tile" - moved to the end) */}
               <section className="border border-[#D8D6D0] bg-white p-6">
                 <SectionHeading>Vendor Account</SectionHeading>
 
@@ -616,7 +961,7 @@ export function AdminVendorManagement({
                 </label>
               </section>
 
-              {/* Portal Access */}
+              {/* 5. Portal Access ("Portal invite tile" - moved to the end) */}
               <section className="border border-[#D8D6D0] bg-white p-6">
                 <div className="flex items-start gap-3">
                   <ShieldCheck
@@ -864,125 +1209,6 @@ export function AdminVendorManagement({
                     procedure.
                   </p>
                 )}
-              </section>
-
-              {/* Project Associations */}
-              <section>
-                <div className="flex items-end justify-between border-b border-[#D8D6D0] pb-4">
-                  <div>
-                    <SectionHeading>Project Association</SectionHeading>
-
-                    <h3 className="mt-3 font-serif text-2xl text-[#171717]">
-                      Assigned Projects
-                    </h3>
-                  </div>
-
-                  <p className="font-mono text-[9px] text-[#99958D]">
-                    {selectedVendor.linkedProjects.length} PROJECTS
-                  </p>
-                </div>
-
-                {selectedVendor.linkedProjects.length === 0 ? (
-                  <div className="mt-4 border border-[#D8D6D0] bg-white p-7 text-center">
-                    <FolderKanban
-                      size={24}
-                      className="mx-auto text-[#A58A64]"
-                    />
-
-                    <p className="mt-3 text-xs text-[#77736C]">
-                      No projects are assigned to this vendor.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="mt-4 space-y-3">
-                    {selectedVendor.linkedProjects.map((project) => (
-                      <button
-                        key={project.id}
-                        type="button"
-                        disabled={!onOpenProject}
-                        onClick={() => onOpenProject?.(project.id)}
-                        className="flex w-full items-center justify-between gap-4 border border-[#D8D6D0] bg-white p-5 text-left hover:border-[#A58A64] disabled:cursor-default"
-                      >
-                        <span className="min-w-0">
-                          <span className="block font-mono text-[9px] uppercase tracking-widest text-[#A58A64]">
-                            {project.reference}
-                          </span>
-
-                          <span className="mt-2 block font-serif text-xl text-[#171717]">
-                            {project.name}
-                          </span>
-
-                          <span className="mt-2 block text-[9px] text-[#77736C]">
-                            {project.status}
-                          </span>
-                        </span>
-
-                        <ArrowUpRight
-                          size={17}
-                          className="shrink-0 text-[#A58A64]"
-                        />
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </section>
-
-              {/* Invoice Relationship */}
-              <section className="border border-[#D8D6D0] bg-white p-6">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <SectionHeading>Financial Relationship</SectionHeading>
-
-                    <h3 className="mt-3 font-serif text-2xl text-[#171717]">
-                      Invoice Overview
-                    </h3>
-                  </div>
-
-                  <FileText
-                    size={21}
-                    className="text-[#A58A64]"
-                  />
-                </div>
-
-                <div className="mt-6 grid grid-cols-2 gap-px border border-[#D8D6D0] bg-[#D8D6D0]">
-                  <div className="bg-[#FAF9F6] p-5">
-                    <p className="font-mono text-[8px] uppercase tracking-widest text-[#99958D]">
-                      Submitted Invoices
-                    </p>
-
-                    <p className="mt-3 font-serif text-3xl text-[#171717]">
-                      {selectedVendor.submittedInvoiceCount}
-                    </p>
-                  </div>
-
-                  <div className="bg-[#FAF9F6] p-5">
-                    <p className="font-mono text-[8px] uppercase tracking-widest text-[#99958D]">
-                      Outstanding Invoices
-                    </p>
-
-                    <p className="mt-3 font-serif text-3xl text-[#171717]">
-                      {selectedVendor.outstandingInvoiceCount}
-                    </p>
-                  </div>
-                </div>
-
-                {onOpenInvoices && (
-                  <button
-                    type="button"
-                    onClick={() => onOpenInvoices(selectedVendor.id)}
-                    className="mt-5 inline-flex w-full items-center justify-center gap-2 border border-[#D8D6D0] px-5 py-4 text-[9px] uppercase tracking-widest text-[#55514A] hover:border-[#A58A64]"
-                  >
-                    <FileText size={15} />
-                    Open Vendor Invoices
-                    <ArrowUpRight size={14} />
-                  </button>
-                )}
-
-                <p className="mt-4 text-[10px] leading-5 text-[#99958D]">
-                  Invoice counts are informational. Approval,
-                  outstanding balances and payment status must come
-                  from verified finance records.
-                </p>
               </section>
 
               {/* Metadata */}
