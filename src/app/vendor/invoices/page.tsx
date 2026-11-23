@@ -81,6 +81,14 @@ function VendorInvoicesContent() {
   const [updateNote, setUpdateNote] = useState("");
   const [updatePhotoUrl, setUpdatePhotoUrl] = useState("");
 
+  // Client Filter & Direct Architect Billing State
+  const [selectedClientFilter, setSelectedClientFilter] = useState("ALL");
+  const [showArchitectBillModal, setShowArchitectBillModal] = useState(false);
+  const [architectBillAmount, setArchitectBillAmount] = useState("");
+  const [architectBillSpecifics, setArchitectBillSpecifics] = useState("");
+  const [architectBillPhotoUrl, setArchitectBillPhotoUrl] = useState("");
+  const [isSubmittingArchitectBill, setIsSubmittingArchitectBill] = useState(false);
+
   const loadData = useCallback(async () => {
     setLoading(true);
     setFeedback(null);
@@ -226,6 +234,45 @@ function VendorInvoicesContent() {
     }
   };
 
+  // Submit Direct Bill to Architect
+  const handleArchitectBillSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!architectBillAmount || !architectBillSpecifics) return;
+
+    setIsSubmittingArchitectBill(true);
+    try {
+      await apiFetch("/api/billing/bills", {
+        method: "POST",
+        body: JSON.stringify({
+          projectId: "STUDIO-DIRECT",
+          clientId: "ArcheOn Studio / Ar. Mandar Bhalekar",
+          amount: parseFloat(architectBillAmount),
+          tradeCategory: "Studio Direct Billing",
+          description: architectBillSpecifics,
+          billPhotoUrl: architectBillPhotoUrl || undefined,
+        }),
+      });
+
+      setShowArchitectBillModal(false);
+      setArchitectBillAmount("");
+      setArchitectBillSpecifics("");
+      setArchitectBillPhotoUrl("");
+      setFeedback({
+        type: "success",
+        message: "Direct bill submitted to the Architect / Studio successfully.",
+      });
+      await loadData();
+    } catch (err: unknown) {
+      setFeedback({
+        type: "error",
+        message: err instanceof Error ? err.message : "Failed to bill architect.",
+      });
+    } finally {
+      setIsSubmittingArchitectBill(false);
+      setTimeout(() => setFeedback(null), 5000);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "PAID_CASH":
@@ -257,6 +304,13 @@ function VendorInvoicesContent() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={() => setShowArchitectBillModal(true)}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#FAF9F5] border border-[#B68A4A] text-[#8A6D3B] hover:bg-[#B68A4A] hover:text-white font-mono text-xs uppercase tracking-wider transition-colors rounded-sm"
+          >
+            <DollarSign size={14} /> Bill to Architect (Studio Direct)
+          </button>
+
           <button
             onClick={() => setShowUpdateModal(true)}
             className="inline-flex items-center gap-2 px-4 py-2.5 border border-[#B68A4A] text-[#B68A4A] hover:bg-[#B68A4A] hover:text-white font-mono text-xs uppercase tracking-wider transition-colors rounded-sm"
@@ -357,11 +411,37 @@ function VendorInvoicesContent() {
 
           {/* Submitted Bills Table */}
           <div className="max-w-7xl mx-auto rounded-sm border border-[#D8D6D0] bg-white p-6 shadow-sm">
-            <div className="flex items-center justify-between border-b border-[#E5E2DC] pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#E5E2DC] pb-4 gap-3">
               <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-[#B68A4A]">
-                <FileText size={14} /> Submitted Bills & Settlement Statuses
+                <FileText size={14} /> Submitted Bills &amp; Settlement Statuses
               </div>
-              <span className="font-mono text-xs text-[#777777]">{bills.length} Bills Total</span>
+
+              {/* Client Filter Dropdown */}
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-[10px] uppercase text-[#777]">Filter by Client:</span>
+                <select
+                  value={selectedClientFilter}
+                  onChange={(e) => setSelectedClientFilter(e.target.value)}
+                  className="border border-[#D8D6D0] bg-white px-2.5 py-1.5 font-mono text-xs text-[#111] focus:border-[#B68A4A] focus:outline-none"
+                >
+                  <option value="ALL">All Clients ({bills.length} Bills)</option>
+                  {Array.from(
+                    new Set([
+                      ...assignedProjects.map((p) => p.clientName).filter(Boolean),
+                      ...bills.map((b) => b.clientName).filter(Boolean),
+                    ])
+                  )
+                    .sort()
+                    .map((client) => {
+                      const count = bills.filter((b) => (b.clientName || "Studio Client") === client).length;
+                      return (
+                        <option key={String(client)} value={String(client)}>
+                          {String(client)} ({count})
+                        </option>
+                      );
+                    })}
+                </select>
+              </div>
             </div>
 
             {loading ? (
@@ -388,7 +468,13 @@ function VendorInvoicesContent() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#E5E2DC]">
-                    {bills.map((bill) => (
+                    {bills
+                      .filter(
+                        (b) =>
+                          selectedClientFilter === "ALL" ||
+                          (b.clientName || "Studio Client") === selectedClientFilter
+                      )
+                      .map((bill) => (
                       <tr key={bill.id} className="hover:bg-[#FAF9F5]">
                         <td className="py-3 px-4">
                           {bill.billPhotoUrl ? (
@@ -470,20 +556,11 @@ function VendorInvoicesContent() {
       {activeTab === "payments" && (
         <div className="max-w-7xl mx-auto space-y-6">
           <div className="rounded-sm border border-[#D8D6D0] bg-white p-6 shadow-sm">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E5E2DC] pb-4">
-              <div>
-                <h2 className="font-serif text-2xl text-[#111111]">Payment Settlements &amp; Remittances</h2>
-                <p className="text-xs text-[#777777] mt-1">
-                  Track confirmed bank payments and physical cash settlement vouchers.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => router.push("/vendor/cash-settlements")}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#111111] text-white font-mono text-xs uppercase tracking-wider hover:bg-[#B68A4A] rounded-sm transition-colors"
-              >
-                <Banknote size={14} /> Open Cash Settlements Vouchers ↗
-              </button>
+            <div className="border-b border-[#E5E2DC] pb-4">
+              <h2 className="font-serif text-2xl text-[#111111]">Payment Settlements &amp; Remittances</h2>
+              <p className="text-xs text-[#777777] mt-1">
+                Track confirmed bank payments and physical cash settlement vouchers.
+              </p>
             </div>
 
             <div className="mt-6 overflow-x-auto">
@@ -724,6 +801,116 @@ function VendorInvoicesContent() {
                   className="px-6 py-2 bg-[#B68A4A] text-white hover:bg-[#A3783A] font-mono text-xs uppercase tracking-wider rounded-sm transition-colors disabled:opacity-50"
                 >
                   {actionLoading ? "Sending..." : "Send Update"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Bill Directly to Architect */}
+      {showArchitectBillModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4"
+          onClick={() => setShowArchitectBillModal(false)}
+          data-lenis-prevent
+        >
+          <div
+            className="relative w-full max-w-lg border border-[#D8D6D0] bg-[#F2F0EB] p-6 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-[#D8D6D0] pb-4">
+              <div>
+                <p className="font-mono text-[10px] uppercase tracking-widest text-[#A58A64]">
+                  Principal Architect Direct Account
+                </p>
+                <h3 className="font-serif text-xl text-[#171717]">
+                  Bill to Architect (Studio Direct)
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowArchitectBillModal(false)}
+                className="flex h-8 w-8 items-center justify-center border border-[#D8D6D0] bg-white text-[#777] hover:text-[#111]"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <form onSubmit={handleArchitectBillSubmit} className="mt-4 space-y-4 font-mono text-xs">
+              <div className="rounded bg-[#FAF9F5] border border-[#EAE8E3] p-3 text-[11px] text-[#555]">
+                Billed directly to: <strong>Ar. Mandar Bhalekar · ArcheOn Design Studio</strong> for architectural consultancy, retained packages, or studio-borne execution costs.
+              </div>
+
+              <div>
+                <label className="block text-[10px] uppercase tracking-wider text-[#555] mb-1">
+                  Bill Amount (₹ INR) *
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  required
+                  placeholder="e.g. 75000"
+                  value={architectBillAmount}
+                  onChange={(e) => setArchitectBillAmount(e.target.value)}
+                  className="w-full border border-[#D8D6D0] bg-white p-2.5 text-[#111] focus:border-[#A58A64] focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] uppercase tracking-wider text-[#555] mb-1">
+                  Bill Specifics &amp; Work Scope Description *
+                </label>
+                <textarea
+                  required
+                  rows={3}
+                  placeholder="Specify bill specifics: e.g. Studio scale model prototyping, architectural mockups, sample procurement, milestone..."
+                  value={architectBillSpecifics}
+                  onChange={(e) => setArchitectBillSpecifics(e.target.value)}
+                  className="w-full border border-[#D8D6D0] bg-white p-2.5 text-[#111] focus:border-[#A58A64] focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] uppercase tracking-wider text-[#555] mb-1">
+                  Upload Bill / Invoice Document Photograph
+                </label>
+                <input
+                  type="file"
+                  accept="image/*,.pdf"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                      setArchitectBillPhotoUrl(ev.target?.result as string);
+                    };
+                    reader.readAsDataURL(file);
+                  }}
+                  className="w-full border border-[#D8D6D0] bg-white p-2 text-[#333] file:mr-3 file:border-0 file:bg-[#171717] file:px-3 file:py-1 file:font-mono file:text-[10px] file:uppercase file:text-white hover:file:bg-[#A58A64]"
+                />
+              </div>
+
+              {architectBillPhotoUrl && (
+                <div className="border border-[#D8D6D0] bg-white p-2 text-center">
+                  <img src={architectBillPhotoUrl} alt="Bill Preview" className="max-h-32 mx-auto object-contain" />
+                </div>
+              )}
+
+              <div className="mt-6 flex justify-end gap-3 pt-2 border-t border-[#D8D6D0]">
+                <button
+                  type="button"
+                  onClick={() => setShowArchitectBillModal(false)}
+                  className="border border-[#D8D6D0] bg-white px-4 py-2 uppercase tracking-wider text-[#555] hover:bg-[#e8e6e1]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingArchitectBill}
+                  className="bg-[#171717] px-5 py-2 uppercase tracking-wider text-white hover:bg-[#A58A64] disabled:opacity-50"
+                >
+                  {isSubmittingArchitectBill ? "Submitting..." : "Submit to Architect"}
                 </button>
               </div>
             </form>

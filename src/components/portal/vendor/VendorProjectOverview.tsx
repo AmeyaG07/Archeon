@@ -41,6 +41,7 @@ export interface VendorProjectRecord {
   projectManager?: string;
   instructions?: string;
   documents: VendorProjectDocument[];
+  imageUrl?: string;
 }
 
 interface VendorProjectOverviewProps {
@@ -204,51 +205,83 @@ export function VendorProjectOverview({
             <EmptyState message="No projects have been assigned to your vendor account yet." />
           ) : (
             <div className="mt-7 grid grid-cols-1 gap-6 lg:grid-cols-2">
-              {projects.map((project) => (
-                <article
-                  key={project.id}
-                  className="border border-[#D8D6D0] bg-white p-6 md:p-8"
-                >
-                  {/* Project Title */}
-                  <div className="flex items-start justify-between gap-4">
-                    <span className="font-mono text-[9px] uppercase tracking-widest text-[#A58A64]">
-                      Vendor Assignment
-                    </span>
+              {projects.map((project) => {
+                const getCover = (title: string, url?: string) => {
+                  if (url) return url;
+                  const t = title.toLowerCase();
+                  if (t.includes("monolith") || t.includes("sanctuary")) {
+                    return "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=900&auto=format&fit=crop&q=80";
+                  }
+                  if (t.includes("travertine") || t.includes("penthouse")) {
+                    return "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=900&auto=format&fit=crop&q=80";
+                  }
+                  if (t.includes("bhalekar") || t.includes("residence")) {
+                    return "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=900&auto=format&fit=crop&q=80";
+                  }
+                  return "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?w=900&auto=format&fit=crop&q=80";
+                };
 
-                    <span
-                      className={`px-3 py-2 text-[9px] uppercase tracking-widest ${getStatusStyle(project.status)}`}
-                    >
-                      {project.status}
-                    </span>
-                  </div>
-
-                  <h3
-                    onClick={() => onOpenProject(project)}
-                    className="mt-6 font-serif text-2xl text-[#171717] hover:text-[#A58A64] cursor-pointer transition-colors flex items-center justify-between group"
+                return (
+                  <article
+                    key={project.id}
+                    className="group overflow-hidden border border-[#D8D6D0] bg-white transition-all hover:border-[#A58A64] hover:shadow-md"
                   >
-                    <span>{project.projectName}</span>
-                    <ArrowUpRight size={18} className="text-[#A58A64] opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </h3>
+                    <div className="relative h-48 w-full overflow-hidden bg-black/5">
+                      <img
+                        src={getCover(project.projectName, project.imageUrl)}
+                        alt={project.projectName}
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src =
+                            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=900&auto=format&fit=crop&q=80";
+                        }}
+                      />
+                      <div className="absolute top-2.5 right-2.5 bg-black/75 px-2.5 py-1 font-mono text-[9px] uppercase tracking-wider text-[#C5A36D] backdrop-blur-sm">
+                        {project.status}
+                      </div>
+                    </div>
 
-                  <p className="mt-3 flex items-center gap-2 text-xs text-[#77736C]">
-                    <MapPin size={14} className="text-[#A58A64]" />
-                    {project.location}
-                  </p>
+                    <div className="p-6 md:p-8">
+                      {/* Project Title */}
+                      <div className="flex items-start justify-between gap-4">
+                        <span className="font-mono text-[9px] uppercase tracking-widest text-[#A58A64]">
+                          Vendor Assignment
+                        </span>
 
-                  {/* Assignment */}
-                  <div className="mt-7 border-t border-[#E5E2DC] pt-6">
-                    <p className="font-mono text-[9px] uppercase tracking-widest text-[#99958D]">
-                      Assigned Scope
-                    </p>
+                        <span
+                          className={`px-3 py-1.5 text-[9px] uppercase tracking-widest ${getStatusStyle(project.status)}`}
+                        >
+                          {project.status}
+                        </span>
+                      </div>
 
-                    <p className="mt-3 text-sm font-medium text-[#33312D]">
-                      {project.assignment}
-                    </p>
+                      <h3
+                        onClick={() => onOpenProject(project)}
+                        className="mt-4 font-serif text-2xl text-[#171717] hover:text-[#A58A64] cursor-pointer transition-colors flex items-center justify-between group/title"
+                      >
+                        <span>{project.projectName}</span>
+                        <ArrowUpRight size={18} className="text-[#A58A64] opacity-0 group-hover/title:opacity-100 transition-opacity" />
+                      </h3>
 
-                    <p className="mt-3 text-xs leading-7 text-[#77736C]">
-                      {project.scopeDescription}
-                    </p>
-                  </div>
+                      <p className="mt-2 flex items-center gap-2 text-xs text-[#77736C]">
+                        <MapPin size={14} className="text-[#A58A64]" />
+                        {project.location}
+                      </p>
+
+                      {/* Assignment */}
+                      <div className="mt-5 border-t border-[#E5E2DC] pt-5">
+                        <p className="font-mono text-[9px] uppercase tracking-widest text-[#99958D]">
+                          Assigned Scope
+                        </p>
+
+                        <p className="mt-2 text-sm font-medium text-[#33312D]">
+                          {project.assignment}
+                        </p>
+
+                        <p className="mt-2 text-xs leading-6 text-[#77736C]">
+                          {project.scopeDescription}
+                        </p>
+                      </div>
 
                   {/* Project Details */}
                   <div className="mt-7 grid grid-cols-1 gap-5 border-t border-[#E5E2DC] pt-6 sm:grid-cols-2">
@@ -352,9 +385,11 @@ export function VendorProjectOverview({
                     Open Project Details
                     <ArrowUpRight size={15} />
                   </button>
-                </article>
-              ))}
-            </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
           )}
         </section>
 

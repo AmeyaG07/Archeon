@@ -10,25 +10,18 @@ import { useAuth } from "@/providers/AuthProvider";
 
 const routes: Record<ClientPortalSection, string> = {
   dashboard: "/client",
+  invoices: "/client/invoices",
   projects: "/client/projects",
-  drawings: "/client/documents",
   documents: "/client/documents",
-  invoices: "/client/invoices?tab=invoices",
-  payments: "/client/invoices?tab=payments",
-  disputes: "/client/invoices?tab=disputes",
   notifications: "/client/notifications",
   support: "/client/support",
   settings: "/client/profile",
 };
 
-function getActiveSection(pathname: string, tab?: string | null): ClientPortalSection {
+function getActiveSection(pathname: string): ClientPortalSection {
+  if (pathname.includes("/invoices")) return "invoices";
   if (pathname.includes("/projects")) return "projects";
   if (pathname.includes("/documents")) return "documents";
-  if (pathname.includes("/invoices")) {
-    if (tab === "payments") return "payments";
-    if (tab === "disputes") return "disputes";
-    return "invoices";
-  }
   if (pathname.includes("/notifications")) return "notifications";
   if (pathname.includes("/support")) return "support";
   if (pathname.includes("/profile")) return "settings";
@@ -40,11 +33,9 @@ function ClientPortalShellInner({ children }: { children: React.ReactNode }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { user, logout } = useAuth();
-  const currentTab = searchParams?.get("tab");
-
   return (
     <ClientPortalLayout
-      activeSection={getActiveSection(pathname, currentTab)}
+      activeSection={getActiveSection(pathname)}
       clientName={user?.username || "Studio Client"}
       clientReference="CLIENT-PORTAL"
       pageTitle="Client Portal"

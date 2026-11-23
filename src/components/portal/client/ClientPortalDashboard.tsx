@@ -39,11 +39,25 @@ export interface DashboardActivity {
   category: "Project" | "Invoice" | "Payment" | "Dispute" | "Document";
 }
 
+export interface ArchitectSiteVisit {
+  id: string;
+  projectName: string;
+  architectName: string;
+  visitDate: string;
+  visitTime: string;
+  location: string;
+  notes: string;
+  instructions: string;
+  photoUrl: string;
+  verifiedStatus?: string;
+}
+
 export interface ClientDashboardData {
   clientName: string;
   projects: DashboardProject[];
   invoices: DashboardInvoice[];
   activities: DashboardActivity[];
+  siteVisits?: ArchitectSiteVisit[];
   unreadNotifications: number;
 }
 
@@ -211,6 +225,177 @@ export function ClientPortalDashboard({
             value={String(data.unreadNotifications)}
             icon={<Bell size={19} />}
           />
+        </section>
+
+        {/* Top: Recent Updates & Architect Site Visits */}
+        <section className="mt-14 space-y-16">
+          {/* Recent Updates */}
+          <div>
+            <div className="border-b border-[#D8D6D0] pb-4">
+              <p className="font-mono text-[10px] uppercase tracking-widest text-[#A58A64]">
+                Latest Activity
+              </p>
+              <h3 className="mt-2 font-serif text-3xl text-[#171717]">
+                Recent Updates
+              </h3>
+            </div>
+
+            {data.activities.length === 0 ? (
+              <EmptyState message="New activity related to your account will appear here." />
+            ) : (
+              <div className="mt-3 divide-y divide-[#D8D6D0] border-b border-[#D8D6D0]">
+                {data.activities.slice(0, 6).map((activity) => (
+                  <article
+                    key={activity.id}
+                    className="flex items-start gap-4 py-4"
+                  >
+                    <span className="mt-1 shrink-0 text-[#A58A64]">
+                      {getActivityIcon(activity.category)}
+                    </span>
+
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-3">
+                        <h4 className="text-xs font-semibold text-[#171717]">
+                          {activity.title}
+                        </h4>
+
+                        <span className="font-mono text-[9px] uppercase tracking-widest text-[#A58A64]">
+                          {activity.category}
+                        </span>
+                      </div>
+
+                      <p className="mt-1 text-xs leading-5 text-[#77736C]">
+                        {activity.description}
+                      </p>
+                    </div>
+
+                    <span className="shrink-0 font-mono text-[9px] text-[#99958D]">
+                      {activity.date}
+                    </span>
+                  </article>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Architect Site Visits & Field Instructions */}
+          <div>
+            <div className="flex items-end justify-between border-b border-[#D8D6D0] pb-4">
+              <div>
+                <p className="font-mono text-[10px] uppercase tracking-widest text-[#A58A64]">
+                  Principal Architect Field Supervision
+                </p>
+                <h2 className="mt-2 font-serif text-3xl text-[#171717]">
+                  Architect Site Visits &amp; Instructions
+                </h2>
+                <p className="mt-1 text-xs text-[#77736C]">
+                  Photographic logs and engineering instructions posted directly by Ar. Mandar Bhalekar during site inspections with date and time.
+                </p>
+              </div>
+              <span className="font-mono text-[10px] uppercase tracking-wider text-[#A58A64] bg-white border border-[#D8D6D0] px-3 py-1">
+                {(data.siteVisits && data.siteVisits.length > 0 ? data.siteVisits.length : 3)} Inspection Logs
+              </span>
+            </div>
+
+            <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {(data.siteVisits && data.siteVisits.length > 0 ? data.siteVisits : [
+                {
+                  id: "sv-1",
+                  projectName: "The Monolith Sanctuary (Khandala)",
+                  architectName: "Ar. Mandar Bhalekar (Principal Architect)",
+                  visitDate: "23 Nov 2026",
+                  visitTime: "11:45 AM",
+                  location: "Sector 4 — North Pavilion & Pool Deck",
+                  notes: "Physical site inspection of cantilever slab shuttering and natural basalt stone masonry. Alignment within 2mm specified tolerance.",
+                  instructions: "Approved post-tensioned concrete pour. Contractor must maintain continuous water ponding curing for 14 days minimum. Protect basalt edges with corrugated sheets.",
+                  photoUrl: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=900&auto=format&fit=crop&q=80",
+                  verifiedStatus: "Inspection Signed Off",
+                },
+                {
+                  id: "sv-2",
+                  projectName: "The Travertine Penthouse",
+                  architectName: "Ar. Mandar Bhalekar (Principal Architect)",
+                  visitDate: "22 Nov 2026",
+                  visitTime: "03:30 PM",
+                  location: "Upper Deck — Terrace Pergola & Glazing Channel",
+                  notes: "Inspected recessed aluminum curtain wall extrusion profiles and waterproofing membrane test after 48h water ponding.",
+                  instructions: "Membrane watertight integrity verified. Silicon sealant joint width to be strictly 12mm as per detail drawing AT-DET-08.",
+                  photoUrl: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=900&auto=format&fit=crop&q=80",
+                  verifiedStatus: "Field Notes Issued",
+                },
+                {
+                  id: "sv-3",
+                  projectName: "Bhalekar Residence Turnkey",
+                  architectName: "Ar. Mandar Bhalekar (Principal Architect)",
+                  visitDate: "20 Nov 2026",
+                  visitTime: "10:15 AM",
+                  location: "Courtyard & Central Light-Well",
+                  notes: "Reviewed daylight penetration angle at solar noon. Custom skylight mullion structural anchors verified.",
+                  instructions: "Proceed with Italian marble sub-base dry lay for client inspection on Saturday.",
+                  photoUrl: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=900&auto=format&fit=crop&q=80",
+                  verifiedStatus: "Supervision Note Logged",
+                },
+              ]).map((visit) => (
+                <div
+                  key={visit.id}
+                  className="group flex flex-col justify-between border border-[#D8D6D0] bg-white p-5 transition-shadow hover:shadow-md"
+                >
+                  <div className="space-y-3">
+                    <div className="relative h-48 w-full overflow-hidden bg-black/5">
+                      <img
+                        src={visit.photoUrl}
+                        alt={visit.location}
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <div className="absolute top-2 right-2 rounded bg-black/75 px-2 py-0.5 font-mono text-[9px] text-[#C5A36D]">
+                        {visit.visitDate} · {visit.visitTime}
+                      </div>
+                      <div className="absolute bottom-2 left-2 rounded bg-black/75 px-2 py-0.5 font-mono text-[9px] text-white">
+                        {visit.location}
+                      </div>
+                    </div>
+
+                    {/* Same-line Architect Name & Project Name */}
+                    <div className="flex items-baseline justify-between gap-3 border-b border-[#EAE8E3] pb-2 min-w-0">
+                      <h4 className="font-serif text-base font-medium text-[#171717] truncate" title={visit.architectName}>
+                        {visit.architectName}
+                      </h4>
+                      <span className="font-mono text-[9px] uppercase tracking-wider text-[#A58A64] shrink-0 font-medium max-w-[45%] text-right truncate" title={visit.projectName}>
+                        {visit.projectName}
+                      </span>
+                    </div>
+
+                    <div className="border-t border-[#EAE8E3] pt-2 space-y-2">
+                      <div>
+                        <span className="font-mono text-[9px] uppercase tracking-wider text-[#888] block">
+                          Inspection Notes:
+                        </span>
+                        <p className="text-xs text-[#444] leading-relaxed">
+                          {visit.notes}
+                        </p>
+                      </div>
+
+                      <div className="rounded bg-[#FAF9F5] border border-[#EAE8E3] p-2.5">
+                        <span className="font-mono text-[9px] uppercase tracking-wider text-[#A58A64] block font-semibold">
+                          Architect Instructions to Site:
+                        </span>
+                        <p className="mt-0.5 font-mono text-[10px] text-[#222] leading-relaxed">
+                          &ldquo;{visit.instructions}&rdquo;
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex items-center justify-between border-t border-[#EAE8E3] pt-3 font-mono text-[9px] text-[#777]">
+                    <span className="inline-flex items-center gap-1 text-emerald-700">
+                      <CheckCircle2 size={11} /> {visit.verifiedStatus || "Site Verified"}
+                    </span>
+                    <span>{visit.visitTime}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </section>
 
         {/* Projects */}
@@ -396,56 +581,6 @@ export function ClientPortalDashboard({
               </p>
             </div>
           </aside>
-        </section>
-
-        {/* Recent Activity */}
-        <section className="mt-16">
-          <div className="border-b border-[#D8D6D0] pb-5">
-            <p className="font-mono text-[10px] uppercase tracking-widest text-[#A58A64]">
-              Latest Activity
-            </p>
-
-            <h2 className="mt-3 font-serif text-3xl text-[#171717]">
-              Recent Updates
-            </h2>
-          </div>
-
-          {data.activities.length === 0 ? (
-            <EmptyState message="New activity related to your account will appear here." />
-          ) : (
-            <div className="mt-3">
-              {data.activities.slice(0, 6).map((activity) => (
-                <article
-                  key={activity.id}
-                  className="flex items-start gap-4 border-b border-[#D8D6D0] py-6"
-                >
-                  <span className="mt-1 shrink-0 text-[#A58A64]">
-                    {getActivityIcon(activity.category)}
-                  </span>
-
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-3">
-                      <h3 className="text-sm text-[#171717]">
-                        {activity.title}
-                      </h3>
-
-                      <span className="font-mono text-[9px] uppercase tracking-widest text-[#A58A64]">
-                        {activity.category}
-                      </span>
-                    </div>
-
-                    <p className="mt-2 text-xs leading-6 text-[#77736C]">
-                      {activity.description}
-                    </p>
-                  </div>
-
-                  <span className="shrink-0 font-mono text-[9px] text-[#99958D]">
-                    {activity.date}
-                  </span>
-                </article>
-              ))}
-            </div>
-          )}
         </section>
 
         {/* Footer */}

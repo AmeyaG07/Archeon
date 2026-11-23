@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { ClientPortalShell } from "@/components/portal/client/ClientPortalShell";
 import {
   ClientSupportCentre,
   type ClientSupportTicket,
@@ -89,16 +88,18 @@ export default function ClientSupportPage() {
   };
 
   return (
-    <ClientPortalShell>
-      <ClientSupportCentre
-        tickets={tickets}
-        loading={loading}
-        submitting={submitting}
-        error={error || undefined}
-        onCreateTicket={handleCreateTicket}
-        onReplyTicket={handleReplyTicket}
-        onRefresh={loadTickets}
-      />
-    </ClientPortalShell>
+    <main className="min-h-screen bg-[#F2F0EB] px-5 py-9 md:px-10 md:py-12">
+      <div className="mx-auto max-w-7xl">
+        <ClientSupportCentre
+          tickets={tickets}
+          loading={loading}
+          submitting={submitting}
+          error={error || undefined}
+          onCreateTicket={handleCreateTicket}
+          onReplyTicket={handleReplyTicket}
+          onRefresh={loadTickets}
+        />
+      </div>
+    </main>
   );
 }

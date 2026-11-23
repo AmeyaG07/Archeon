@@ -49,6 +49,43 @@ export function AdminCreateVendorModal({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [createdCredentials, setCreatedCredentials] = useState<{ username: string; password: string } | null>(null);
+
+  // Auto-derived credentials state
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [isCredentialsCustom, setIsCredentialsCustom] = useState(false);
+
+  const deriveFirstname = (name: string) => {
+    return name
+      .trim()
+      .replace(/^(Dr\.|Mr\.|Mrs\.|Ms\.|Prof\.)\s+/i, "")
+      .split(/\s+/)[0]
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, "");
+  };
+
+  const handleContactPersonChange = (val: string) => {
+    setContactPerson(val);
+    if (!isCredentialsCustom) {
+      const first = deriveFirstname(val) || deriveFirstname(businessName);
+      if (first) {
+        setUsername(first);
+        setPassword(`${first}123`);
+      }
+    }
+  };
+
+  const handleBusinessNameChange = (val: string) => {
+    setBusinessName(val);
+    if (!isCredentialsCustom && !contactPerson) {
+      const first = deriveFirstname(val);
+      if (first) {
+        setUsername(first);
+        setPassword(`${first}123`);
+      }
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -127,7 +164,25 @@ export function AdminCreateVendorModal({
         }
       }
 
-      // 3. Optionally dispatch vendor invitation
+      // 3. Auto-provision portal credentials: username = firstname, password = firstname123
+      const finalUsername = username.trim() || deriveFirstname(contactPerson || businessName) || "vendor";
+      const finalPassword = password.trim() || `${finalUsername}123`;
+
+      if (vendor.id) {
+        try {
+          await apiFetch(`/api/vendors/${vendor.id}/portal-account`, {
+            method: "POST",
+            body: {
+              username: finalUsername,
+              password: finalPassword,
+            },
+          });
+        } catch (accErr) {
+          console.warn("Could not auto-provision vendor credentials:", accErr);
+        }
+      }
+
+      // 4. Optionally dispatch vendor invitation
       if (sendInvite && vendor.id) {
         try {
           await apiFetch(`/api/vendors/${vendor.id}/invite`, {
@@ -138,25 +193,8 @@ export function AdminCreateVendorModal({
         }
       }
 
+      setCreatedCredentials({ username: finalUsername, password: finalPassword });
       setSuccess(true);
-      setTimeout(() => {
-        onVendorCreated();
-        onClose();
-        // Reset form
-        setBusinessName("");
-        setContactPerson("");
-        setEmail("");
-        setPhone("");
-        setLocation("");
-        setAccountHolderName("");
-        setBankName("");
-        setAccountNumber("");
-        setIfscCode("");
-        setUpiId("");
-        setQrPhotoPreview(null);
-        setQrFileName(null);
-        setSuccess(false);
-      }, 1000);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to register vendor");
     } finally {
@@ -175,25 +213,79 @@ export function AdminCreateVendorModal({
         data-lenis-prevent="true"
         className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto overscroll-contain rounded-sm border border-[#D8D6D0] bg-[#FAF9F5] p-6 sm:p-8 shadow-2xl"
       >
-        <button
-          onClick={onClose}
-          disabled={submitting}
-          className="absolute top-5 right-5 p-1 text-[#77736C] hover:text-[#171717] transition-colors"
-        >
-          <X size={20} />
-        </button>
+        {createdCredentials ? (
+          <div className="py-6 text-center font-mono">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-800">
+              <CheckCircle2 size={28} />
+            </div>
+            <h3 className="mt-4 font-serif text-2xl text-[#171717]">Vendor Portal Account Created!</h3>
+            <p className="mt-1 text-xs text-[#77736C]">
+              Default login credentials have been provisioned and linked:
+            </p>
 
-        <div className="border-b border-[#D8D6D0] pb-4">
-          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-[#A58A64]">
-            <UserPlus size={14} /> Trade Partner Registration
+            <div className="mt-6 border border-[#D8D6D0] bg-white p-5 text-left space-y-3 text-xs rounded-sm">
+              <div className="flex justify-between items-center border-b border-[#E5E2DC] pb-2">
+                <span className="text-[#888] text-[10px] uppercase">Default Username</span>
+                <strong className="text-[#111] font-mono text-sm">{createdCredentials.username}</strong>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-[#888] text-[10px] uppercase">Default Password</span>
+                <strong className="text-[#A58A64] font-mono text-sm">{createdCredentials.password}</strong>
+              </div>
+            </div>
+
+            <p className="mt-4 text-[10px] text-[#888] leading-relaxed">
+              The vendor / contractor can now log in immediately at <code>/login</code> using these credentials.
+            </p>
+
+            <button
+              onClick={() => {
+                setCreatedCredentials(null);
+                onVendorCreated();
+                onClose();
+                setBusinessName("");
+                setContactPerson("");
+                setEmail("");
+                setPhone("");
+                setLocation("");
+                setAccountHolderName("");
+                setBankName("");
+                setAccountNumber("");
+                setIfscCode("");
+                setUpiId("");
+                setQrPhotoPreview(null);
+                setQrFileName(null);
+                setUsername("");
+                setPassword("");
+                setIsCredentialsCustom(false);
+                setSuccess(false);
+              }}
+              className="mt-6 w-full bg-[#171717] py-3 text-xs uppercase tracking-wider text-white hover:bg-[#A58A64] transition-colors"
+            >
+              Done · Return to Vendor Directory
+            </button>
           </div>
-          <h2 className="mt-1 font-serif text-2xl text-[#171717]">
-            Register New Vendor
-          </h2>
-          <p className="mt-1 font-mono text-xs text-[#77736C]">
-            Register a contractor or trade specialist and configure their settlement and portal permissions.
-          </p>
-        </div>
+        ) : (
+          <>
+            <button
+              onClick={onClose}
+              disabled={submitting}
+              className="absolute top-5 right-5 p-1 text-[#77736C] hover:text-[#171717] transition-colors"
+            >
+              <X size={20} />
+            </button>
+
+            <div className="border-b border-[#D8D6D0] pb-4">
+              <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-[#A58A64]">
+                <UserPlus size={14} /> Trade Partner Registration
+              </div>
+              <h2 className="mt-1 font-serif text-2xl text-[#171717]">
+                Register New Vendor
+              </h2>
+              <p className="mt-1 font-mono text-xs text-[#77736C]">
+                Register a contractor or trade specialist. Default login will be auto-set to <strong>firstname</strong> / <strong>firstname123</strong>.
+              </p>
+            </div>
 
         {error && (
           <div className="mt-4 flex items-center gap-2 rounded-sm border border-red-300 bg-red-50 p-3 font-mono text-xs text-red-800">
@@ -220,7 +312,7 @@ export function AdminCreateVendorModal({
                 type="text"
                 required
                 value={businessName}
-                onChange={(e) => setBusinessName(e.target.value)}
+                onChange={(e) => handleBusinessNameChange(e.target.value)}
                 placeholder="e.g. Paramount Millwork & Joinery"
                 className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
               />
@@ -263,7 +355,7 @@ export function AdminCreateVendorModal({
                 type="text"
                 required
                 value={contactPerson}
-                onChange={(e) => setContactPerson(e.target.value)}
+                onChange={(e) => handleContactPersonChange(e.target.value)}
                 placeholder="e.g. Rajesh S. Parmar"
                 className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
               />
@@ -309,6 +401,57 @@ export function AdminCreateVendorModal({
                 placeholder="+91 98200 55443"
                 className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
               />
+            </div>
+          </div>
+
+          {/* Auto-Provisioned Credentials Section */}
+          <div className="rounded-sm border border-[#D8D6D0] bg-[#FAF9F5] p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ShieldCheck size={14} className="text-[#A58A64]" />
+                <span className="font-mono text-[10px] uppercase tracking-wider text-[#171717] font-semibold">
+                  Portal Login Credentials (Auto-Generated)
+                </span>
+              </div>
+              <span className="font-mono text-[9px] uppercase tracking-wider text-[#A58A64] bg-white border border-[#D8D6D0] px-2 py-0.5">
+                Default: firstname / firstname123
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block font-mono text-[9px] uppercase tracking-wider text-[#77736C]">
+                  Portal Username
+                </label>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => {
+                    setIsCredentialsCustom(true);
+                    setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""));
+                  }}
+                  placeholder="e.g. rajesh"
+                  className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
+                />
+                <span className="font-mono text-[8px] text-[#888] mt-0.5 block">Auto-derived from first name</span>
+              </div>
+
+              <div>
+                <label className="block font-mono text-[9px] uppercase tracking-wider text-[#77736C]">
+                  Initial Portal Password
+                </label>
+                <input
+                  type="text"
+                  value={password}
+                  onChange={(e) => {
+                    setIsCredentialsCustom(true);
+                    setPassword(e.target.value);
+                  }}
+                  placeholder="e.g. rajesh123"
+                  className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
+                />
+                <span className="font-mono text-[8px] text-[#888] mt-0.5 block">Auto-derived as firstname123</span>
+              </div>
             </div>
           </div>
 
@@ -472,6 +615,8 @@ export function AdminCreateVendorModal({
             </button>
           </div>
         </form>
+        </>
+        )}
       </div>
     </div>
   );

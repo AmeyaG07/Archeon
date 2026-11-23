@@ -280,9 +280,9 @@ export function VendorPortalLayout({
             <button
               type="button"
               onClick={() => setLogoutConfirmation(true)}
-              className="mt-5 flex w-full items-center gap-3 border border-[#343434] px-4 py-3 text-left text-[10px] uppercase tracking-widest text-[#B7B3AC] transition-colors hover:border-[#A58A64] hover:text-white"
+              className="mt-3.5 inline-flex items-center gap-2 rounded border border-[#2c2c2c] bg-[#161616] px-2.5 py-1.5 font-mono text-[9px] uppercase tracking-wider text-[#8e8a83] transition-colors hover:border-[#A58A64]/60 hover:bg-[#1f1e1a] hover:text-white"
             >
-              <LogOut size={15} />
+              <LogOut size={12} />
               Sign Out
             </button>
           </div>
@@ -330,9 +330,9 @@ export function VendorPortalLayout({
               <button
                 type="button"
                 onClick={() => setLogoutConfirmation(true)}
-                className="mt-auto flex items-center gap-3 border border-[#343434] px-5 py-4 text-xs uppercase tracking-widest text-[#D8D6D0]"
+                className="mt-auto inline-flex items-center justify-center gap-2 rounded border border-[#2c2c2c] bg-[#161616] px-3 py-2 font-mono text-[10px] uppercase tracking-wider text-[#8e8a83] transition-colors hover:text-white"
               >
-                <LogOut size={16} />
+                <LogOut size={13} />
                 Sign Out
               </button>
             </div>
@@ -420,7 +420,7 @@ export function VendorPortalLayout({
       {/* Logout Confirmation */}
       {logoutConfirmation && (
         <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-5"
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4"
           role="presentation"
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) {
@@ -432,38 +432,39 @@ export function VendorPortalLayout({
             role="dialog"
             aria-modal="true"
             aria-labelledby="vendor-logout-title"
-            className="w-full max-w-md border border-[#D8D6D0] bg-[#F2F0EB] p-7 md:p-9"
+            className="w-full max-w-xs border border-[#D8D6D0] bg-[#F2F0EB] p-5 shadow-2xl"
           >
-            <div className="flex h-12 w-12 items-center justify-center border border-[#D8D6D0] bg-white text-[#A58A64]">
-              <LogOut size={20} />
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center border border-[#D8D6D0] bg-white text-[#A58A64]">
+                <LogOut size={14} />
+              </div>
+              <h2
+                id="vendor-logout-title"
+                className="font-serif text-lg text-[#171717]"
+              >
+                Sign out?
+              </h2>
             </div>
 
-            <h2
-              id="vendor-logout-title"
-              className="mt-6 font-serif text-3xl text-[#171717]"
-            >
-              Sign out?
-            </h2>
-
-            <p className="mt-3 text-sm leading-7 text-[#77736C]">
+            <p className="mt-2 text-xs leading-relaxed text-[#77736C]">
               Are you sure you want to leave your vendor workspace?
             </p>
 
-            <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row">
+            <div className="mt-5 flex gap-2">
               <button
                 type="button"
                 onClick={() => setLogoutConfirmation(false)}
-                className="flex-1 border border-[#D8D6D0] px-5 py-4 text-[10px] uppercase tracking-widest text-[#77736C]"
+                className="flex-1 border border-[#D8D6D0] bg-white px-3 py-2 text-[9px] font-mono uppercase tracking-wider text-[#77736C] hover:bg-[#e8e6e1]"
               >
-                Stay Signed In
+                Stay
               </button>
 
               <button
                 type="button"
                 onClick={handleLogout}
-                className="flex-1 bg-[#171717] px-5 py-4 text-[10px] uppercase tracking-widest text-white hover:bg-[#A58A64]"
+                className="flex-1 bg-[#171717] px-3 py-2 text-[9px] font-mono uppercase tracking-wider text-white hover:bg-[#A58A64]"
               >
-                Confirm Sign Out
+                Sign Out
               </button>
             </div>
           </section>

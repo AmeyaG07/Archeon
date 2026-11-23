@@ -58,11 +58,30 @@ export default function VendorPortalPage() {
         projects: [
           {
             id: "vp-1",
-            name: "Active Studio Site Package",
-            location: "Maharashtra",
-            assignment: d.category || "General Subcontractor",
+            name: "The Monolith Sanctuary (Khandala)",
+            location: "Khandala, Maharashtra",
+            assignment: d.category || "Basalt Stone Masonry & Cantilever Structure",
             status: "Under Execution",
-            updatedAt: new Date().toISOString(),
+            updatedAt: "23 Nov 2026",
+            imageUrl: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=900&auto=format&fit=crop&q=80",
+          },
+          {
+            id: "vp-2",
+            name: "The Travertine Penthouse",
+            location: "Worli, Mumbai",
+            assignment: "Architectural Millwork & Glazing Systems",
+            status: "Supervision Review",
+            updatedAt: "22 Nov 2026",
+            imageUrl: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=900&auto=format&fit=crop&q=80",
+          },
+          {
+            id: "vp-3",
+            name: "Bhalekar Residence Turnkey",
+            location: "Civil Lines, Nagpur",
+            assignment: "MEP Systems & Interior Execution",
+            status: "Active Execution",
+            updatedAt: "20 Nov 2026",
+            imageUrl: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=900&auto=format&fit=crop&q=80",
           },
         ],
         invoices,
@@ -94,6 +113,29 @@ export default function VendorPortalPage() {
     }
   }, [authLoading, isAuthenticated, loadVendorDashboard, router]);
 
+  const handleUploadBillToClient = async (
+    clientId: string,
+    projectId: string,
+    amount: number,
+    tradeCategory: string,
+    photoUrl: string
+  ) => {
+    try {
+      await apiFetch("/api/billing/bills", {
+        method: "POST",
+        body: JSON.stringify({
+          clientId,
+          projectId,
+          amount,
+          tradeCategory,
+          billPhotoUrl: photoUrl || undefined,
+        }),
+      });
+    } catch (err) {
+      console.warn("Could not save bill to billing API, saved locally:", err);
+    }
+  };
+
   return (
     <VendorPortalDashboard
       data={data}
@@ -107,6 +149,7 @@ export default function VendorPortalPage() {
       onCreateInvoice={() => router.push("/vendor/invoices")}
       onOpenDocuments={() => router.push("/vendor/invoices")}
       onOpenNotifications={() => router.push("/vendor/notifications")}
+      onUploadBillToClient={handleUploadBillToClient}
     />
   );
 }

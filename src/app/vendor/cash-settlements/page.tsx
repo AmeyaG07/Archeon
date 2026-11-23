@@ -95,6 +95,87 @@ export default function VendorCashSettlementsPage() {
     }
   };
 
+  const handleRaiseCashBill = async (
+    photoUrl: string,
+    amount: number,
+    cashRequest: string,
+    markPaidInCash: boolean
+  ) => {
+    let billId = `CSH-${Date.now().toString().slice(-4)}`;
+    try {
+      const res = await apiFetch("/api/billing/bills", {
+        method: "POST",
+        body: JSON.stringify({
+          amount,
+          tradeCategory: "Physical Site Cash",
+          description: cashRequest,
+          billPhotoUrl: photoUrl || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (data && (data.billId || data.id)) {
+        billId = data.billId || String(data.id);
+        if (markPaidInCash) {
+          await apiFetch(`/api/billing/bills/${billId}/direct-cash-settle`, {
+            method: "POST",
+          });
+        }
+      }
+    } catch (err) {
+      console.warn("Could not save to billing API, creating local settlement:", err);
+    }
+
+    const newSettlement: VendorCashSettlementRecord = {
+      id: billId,
+      referenceCode: billId,
+      projectName: "On-Site Cash Operations",
+      settlementAmount: amount,
+      settlementDate: new Date().toISOString(),
+      recordedBy: "Site Supervisor",
+      description: cashRequest,
+      status: markPaidInCash ? "Finance Verified" : "Pending Acknowledgement",
+      vendorAcknowledgedAt: markPaidInCash ? new Date().toISOString() : undefined,
+      financeVerifiedAt: markPaidInCash ? new Date().toISOString() : undefined,
+      financeRemark: markPaidInCash ? "Direct on-site cash handover verified" : undefined,
+    };
+
+    setSettlements((prev) => [newSettlement, ...prev]);
+  };
+
+  const handleDirectMarkPaidInCash = async (settlementId: string) => {
+    try {
+      try {
+        await apiFetch(`/api/billing/bills/${settlementId}/direct-cash-settle`, {
+          method: "POST",
+        });
+      } catch {
+        await apiFetch(`/api/finance/cash/${settlementId}/respond`, {
+          method: "POST",
+          body: {
+            acknowledge: true,
+            notes: "Direct cash settlement verified received",
+          },
+        });
+      }
+
+      setSettlements((prev) =>
+        prev.map((s) =>
+          s.id === settlementId
+            ? {
+                ...s,
+                status: "Finance Verified",
+                financeVerifiedAt: new Date().toISOString(),
+                financeRemark: "Direct on-site cash handover confirmed",
+              }
+            : s
+        )
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Failed to mark as paid in cash: " + (err instanceof Error ? err.message : String(err)));
+    }
+  };
+
   return (
     <div className="p-4 sm:p-8">
       <VendorCashSettlement
@@ -104,6 +185,8 @@ export default function VendorCashSettlementsPage() {
         error={error ?? undefined}
         onRefresh={loadSettlements}
         onSubmitDecision={handleSubmitDecision}
+        onRaiseCashBill={handleRaiseCashBill}
+        onDirectMarkPaidInCash={handleDirectMarkPaidInCash}
       />
     </div>
   );

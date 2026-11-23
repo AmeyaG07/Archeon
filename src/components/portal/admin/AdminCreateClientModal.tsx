@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, UserPlus, Mail, Phone, Building2, MapPin, FileText, AlertCircle, CheckCircle2 } from "lucide-react";
+import { X, UserPlus, Mail, Phone, Building2, MapPin, FileText, AlertCircle, CheckCircle2, ShieldCheck } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 
 interface AdminCreateClientModalProps {
@@ -26,6 +26,32 @@ export function AdminCreateClientModal({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [createdCredentials, setCreatedCredentials] = useState<{ username: string; password: string } | null>(null);
+
+  // Auto-derived credentials state
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [isCredentialsCustom, setIsCredentialsCustom] = useState(false);
+
+  const deriveFirstname = (name: string) => {
+    return name
+      .trim()
+      .replace(/^(Dr\.|Mr\.|Mrs\.|Ms\.|Prof\.)\s+/i, "")
+      .split(/\s+/)[0]
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, "");
+  };
+
+  const handleFullNameChange = (val: string) => {
+    setFullName(val);
+    if (!isCredentialsCustom) {
+      const first = deriveFirstname(val);
+      if (first) {
+        setUsername(first);
+        setPassword(`${first}123`);
+      }
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -40,6 +66,9 @@ export function AdminCreateClientModal({
 
     setSubmitting(true);
     try {
+      const finalUsername = username.trim() || deriveFirstname(fullName) || "client";
+      const finalPassword = password.trim() || `${finalUsername}123`;
+
       // 1. Create client in registry
       const res = await apiFetch("/api/clients", {
         method: "POST",
@@ -60,7 +89,22 @@ export function AdminCreateClientModal({
 
       const client = await res.json();
 
-      // 2. Optionally trigger instant portal invitation
+      // 2. Auto-provision portal credentials: username = firstname, password = firstname123
+      if (client.id) {
+        try {
+          await apiFetch(`/api/clients/${client.id}/portal-account`, {
+            method: "POST",
+            body: {
+              username: finalUsername,
+              password: finalPassword,
+            },
+          });
+        } catch (accErr) {
+          console.warn("Could not auto-provision client credentials:", accErr);
+        }
+      }
+
+      // 3. Optionally trigger instant portal invitation
       if (sendInvite && client.id) {
         try {
           await apiFetch(`/api/clients/${client.id}/invite`, {
@@ -71,19 +115,8 @@ export function AdminCreateClientModal({
         }
       }
 
+      setCreatedCredentials({ username: finalUsername, password: finalPassword });
       setSuccess(true);
-      setTimeout(() => {
-        onClientCreated();
-        onClose();
-        // Reset form
-        setFullName("");
-        setEmail("");
-        setPhone("");
-        setOrganization("");
-        setLocation("");
-        setNotes("");
-        setSuccess(false);
-      }, 1000);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to register client");
     } finally {
@@ -102,27 +135,75 @@ export function AdminCreateClientModal({
         data-lenis-prevent="true"
         className="relative w-full max-w-xl max-h-[90vh] overflow-y-auto overscroll-contain rounded-sm border border-[#D8D6D0] bg-[#FAF9F5] p-6 sm:p-8 shadow-2xl"
       >
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          disabled={submitting}
-          className="absolute top-5 right-5 p-1 text-[#77736C] hover:text-[#171717] transition-colors"
-        >
-          <X size={20} />
-        </button>
+        {createdCredentials ? (
+          <div className="py-6 text-center font-mono">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-800">
+              <CheckCircle2 size={28} />
+            </div>
+            <h3 className="mt-4 font-serif text-2xl text-[#171717]">Client Portal Account Created!</h3>
+            <p className="mt-1 text-xs text-[#77736C]">
+              Default login credentials have been provisioned and linked:
+            </p>
 
-        {/* Modal Header */}
-        <div className="border-b border-[#D8D6D0] pb-4">
-          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-[#A58A64]">
-            <UserPlus size={14} /> Studio Client Registration
+            <div className="mt-6 border border-[#D8D6D0] bg-white p-5 text-left space-y-3 text-xs rounded-sm">
+              <div className="flex justify-between items-center border-b border-[#E5E2DC] pb-2">
+                <span className="text-[#888] text-[10px] uppercase">Default Username</span>
+                <strong className="text-[#111] font-mono text-sm">{createdCredentials.username}</strong>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-[#888] text-[10px] uppercase">Default Password</span>
+                <strong className="text-[#A58A64] font-mono text-sm">{createdCredentials.password}</strong>
+              </div>
+            </div>
+
+            <p className="mt-4 text-[10px] text-[#888] leading-relaxed">
+              The client can now log in immediately at <code>/login</code> using these credentials.
+            </p>
+
+            <button
+              onClick={() => {
+                setCreatedCredentials(null);
+                onClientCreated();
+                onClose();
+                setFullName("");
+                setEmail("");
+                setPhone("");
+                setOrganization("");
+                setLocation("");
+                setNotes("");
+                setUsername("");
+                setPassword("");
+                setIsCredentialsCustom(false);
+                setSuccess(false);
+              }}
+              className="mt-6 w-full bg-[#171717] py-3 text-xs uppercase tracking-wider text-white hover:bg-[#A58A64] transition-colors"
+            >
+              Done · Return to Client Directory
+            </button>
           </div>
-          <h2 className="mt-1 font-serif text-2xl text-[#171717]">
-            Register New Client
-          </h2>
-          <p className="mt-1 font-mono text-xs text-[#77736C]">
-            Add a new client entity to the studio directory and establish their dedicated client portal.
-          </p>
-        </div>
+        ) : (
+          <>
+            {/* Close Button */}
+            <button
+              onClick={onClose}
+              disabled={submitting}
+              className="absolute top-5 right-5 p-1 text-[#77736C] hover:text-[#171717] transition-colors"
+            >
+              <X size={20} />
+            </button>
+
+            {/* Modal Header */}
+            <div className="border-b border-[#D8D6D0] pb-4">
+              <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-[#A58A64]">
+                <UserPlus size={14} /> Studio Client Registration
+              </div>
+              <h2 className="mt-1 font-serif text-2xl text-[#171717]">
+                Register New Client
+              </h2>
+              <p className="mt-1 font-mono text-xs text-[#77736C]">
+                Add a new client entity to the studio directory. Default login will be auto-set to <strong>firstname</strong> / <strong>firstname123</strong>.
+              </p>
+            </div>
 
         {/* Alerts */}
         {error && (
@@ -150,7 +231,7 @@ export function AdminCreateClientModal({
               type="text"
               required
               value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
+              onChange={(e) => handleFullNameChange(e.target.value)}
               placeholder="e.g. Ar. Vikramaditya Singhania"
               className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
             />
@@ -183,6 +264,57 @@ export function AdminCreateClientModal({
                 placeholder="+91 98200 12345"
                 className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
               />
+            </div>
+          </div>
+
+          {/* Auto-Provisioned Credentials Section */}
+          <div className="rounded-sm border border-[#D8D6D0] bg-[#FAF9F5] p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ShieldCheck size={14} className="text-[#A58A64]" />
+                <span className="font-mono text-[10px] uppercase tracking-wider text-[#171717] font-semibold">
+                  Portal Login Credentials (Auto-Generated)
+                </span>
+              </div>
+              <span className="font-mono text-[9px] uppercase tracking-wider text-[#A58A64] bg-white border border-[#D8D6D0] px-2 py-0.5">
+                Default: firstname / firstname123
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block font-mono text-[9px] uppercase tracking-wider text-[#77736C]">
+                  Portal Username
+                </label>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => {
+                    setIsCredentialsCustom(true);
+                    setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""));
+                  }}
+                  placeholder="e.g. vikramaditya"
+                  className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
+                />
+                <span className="font-mono text-[8px] text-[#888] mt-0.5 block">Auto-derived from first name</span>
+              </div>
+
+              <div>
+                <label className="block font-mono text-[9px] uppercase tracking-wider text-[#77736C]">
+                  Initial Portal Password
+                </label>
+                <input
+                  type="text"
+                  value={password}
+                  onChange={(e) => {
+                    setIsCredentialsCustom(true);
+                    setPassword(e.target.value);
+                  }}
+                  placeholder="e.g. vikramaditya123"
+                  className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
+                />
+                <span className="font-mono text-[8px] text-[#888] mt-0.5 block">Auto-derived as firstname123</span>
+              </div>
             </div>
           </div>
 
@@ -266,6 +398,8 @@ export function AdminCreateClientModal({
             </button>
           </div>
         </form>
+        </>
+        )}
       </div>
     </div>
   );
