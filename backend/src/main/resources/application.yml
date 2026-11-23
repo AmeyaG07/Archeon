@@ -79,7 +79,7 @@ app:
 
   mail:
     enabled: ${APP_MAIL_ENABLED:true}
-    provider: ${APP_MAIL_PROVIDER:mock} # 'smtp' for live authenticated SMTP, 'mock' for in-memory deterministic test capture
+    provider: ${APP_MAIL_PROVIDER:} # 'smtp' for live authenticated SMTP, 'mock' for in-memory deterministic test capture
     from-address: ${APP_MAIL_FROM_ADDRESS:invitations@archeon.design}
     from-name: ${APP_MAIL_FROM_NAME:ArcheOn Design Studio}
     reply-to: ${APP_MAIL_REPLY_TO:support@archeon.design}
