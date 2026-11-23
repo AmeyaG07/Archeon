@@ -221,11 +221,6 @@ public class UserInvitationService {
 
             String email = req.getEmail().trim().toLowerCase();
 
-            // Check if active user already exists with this email
-            if (userRepository.existsByEmail(email)) {
-                throw new IllegalArgumentException("An active user account is already registered with email: " + email);
-            }
-
             // Revoke any previous pending invitations for this email
             List<UserInvitationEntity> existingInvites = invitationRepository.findByEmail(email);
             for (UserInvitationEntity existing : existingInvites) {
@@ -530,26 +525,42 @@ public class UserInvitationService {
             throw new IllegalStateException("Invitation token has expired. Please request a new invitation from studio administration.");
         }
 
-        if (userRepository.existsByUsername(username)) {
-            throw new IllegalArgumentException("Username is already taken: " + username);
+        // Create or update user account
+        Optional<UserEntity> existingUser = userRepository.findByEmail(invitation.getEmail());
+        UserEntity user;
+        if (existingUser.isPresent()) {
+            user = existingUser.get();
+            if (!user.getUsername().equalsIgnoreCase(username) && userRepository.existsByUsername(username)) {
+                throw new IllegalArgumentException("Username is already taken: " + username);
+            }
+            user.setUsername(username);
+            user.setPassword(passwordEncoder.encode(req.getPassword()));
+            user.setStatus("ACTIVE");
+            user.setEnabled(true);
+            if (req.getFullName() != null) user.setFullName(req.getFullName().trim());
+            if (req.getPhone() != null) user.setPhone(req.getPhone().trim());
+            if (invitation.getClientId() != null) user.setClientId(invitation.getClientId());
+            if (invitation.getVendorId() != null) user.setVendorId(invitation.getVendorId());
+        } else {
+            if (userRepository.existsByUsername(username)) {
+                throw new IllegalArgumentException("Username is already taken: " + username);
+            }
+            user = UserEntity.builder()
+                    .username(username)
+                    .password(passwordEncoder.encode(req.getPassword()))
+                    .role(invitation.getTargetRole())
+                    .email(invitation.getEmail())
+                    .fullName(req.getFullName() != null ? req.getFullName().trim() : null)
+                    .phone(req.getPhone() != null ? req.getPhone().trim() : null)
+                    .clientId(invitation.getClientId())
+                    .vendorId(invitation.getVendorId())
+                    .status("ACTIVE")
+                    .enabled(true)
+                    .tokenVersion(0L)
+                    .invitedAt(invitation.getCreatedAt())
+                    .invitedBy(invitation.getInvitedBy())
+                    .build();
         }
-
-        // Create user account
-        UserEntity user = UserEntity.builder()
-                .username(username)
-                .password(passwordEncoder.encode(req.getPassword()))
-                .role(invitation.getTargetRole())
-                .email(invitation.getEmail())
-                .fullName(req.getFullName() != null ? req.getFullName().trim() : null)
-                .phone(req.getPhone() != null ? req.getPhone().trim() : null)
-                .clientId(invitation.getClientId())
-                .vendorId(invitation.getVendorId())
-                .status("ACTIVE")
-                .enabled(true)
-                .tokenVersion(0L)
-                .invitedAt(invitation.getCreatedAt())
-                .invitedBy(invitation.getInvitedBy())
-                .build();
 
         UserEntity savedUser = userRepository.save(user);
 
