@@ -285,7 +285,7 @@ export function VillaLumiereBackground() {
     const height = container.clientHeight || 750;
 
     const isDesktop = width > 1024;
-    const shiftX = isDesktop ? 7.8 : width > 768 ? 4.5 : 0.0;
+    let shiftX = isDesktop ? 7.8 : width > 768 ? 4.5 : 0.0;
 
     const camera = new THREE.PerspectiveCamera(35, width / height, 0.2, 220);
     camera.position.set(22.0 + shiftX, 15.0, 24.0);
@@ -306,15 +306,15 @@ export function VillaLumiereBackground() {
     const controls = new OrbitControls(camera, canvas);
     controls.enableDamping = true;
     controls.dampingFactor = 0.055;
-    // Shift target to right side so villa is framed cleanly in the open right half, avoiding left editorial text
     controls.target.set(shiftX, 4.8, 0.0);
     controls.minDistance = 10.0;
     controls.maxDistance = 55.0;
     controls.maxPolarAngle = Math.PI * 0.485;
-    controls.autoRotate = true;
-    controls.autoRotateSpeed = 0.32;
-    // Allow touch scroll through canvas on mobile
+    // Disable OrbitControls auto-rotation and manual rotation so custom fast cursor kinematics have 100% full direct control
+    controls.autoRotate = false;
+    controls.enableRotate = false;
     controls.enableZoom = false;
+    controls.enablePan = false;
 
     // Ground plane
     const floorGeo = new THREE.PlaneGeometry(200, 200);
@@ -360,27 +360,111 @@ export function VillaLumiereBackground() {
     cursorHoverLight.position.set(shiftX, 6.0, 8.0);
     scene.add(cursorHoverLight);
 
-    // Mouse Tracking for Interactive 3D Villa Hover Effects
-    let targetMouseX = 0;
-    let targetMouseY = 0;
-    let currentMouseX = 0;
-    let currentMouseY = 0;
-    let isHovering = false;
+    // FAST INTERACTIVE CURSOR & DRAG KINEMATICS STATE
+    let targetRotY = 0;
+    let currentRotY = 0;
+    let targetRotX = 0;
+    let currentRotX = 0;
 
-    const handleMouseMove = (e: MouseEvent) => {
+    let targetShiftX = shiftX;
+    let currentShiftX = shiftX;
+
+    let targetShiftY = 0;
+    let currentShiftY = 0;
+
+    let targetExplode = 0;
+    let currentExplode = 0;
+
+    let isDragging = false;
+    let isHovering = false;
+    let hasInteracted = false;
+    let lastPointerX = 0;
+    let lastPointerY = 0;
+
+    const handlePointerDown = (e: PointerEvent) => {
+      isDragging = true;
+      hasInteracted = true;
+      lastPointerX = e.clientX;
+      lastPointerY = e.clientY;
+      if (canvas && typeof canvas.setPointerCapture === "function") {
+        try {
+          canvas.setPointerCapture(e.pointerId);
+        } catch {}
+      }
+    };
+
+    const handlePointerMove = (e: PointerEvent) => {
       if (!container) return;
       const rect = container.getBoundingClientRect();
       const inX = e.clientX >= rect.left && e.clientX <= rect.right;
       const inY = e.clientY >= rect.top && e.clientY <= rect.bottom;
+      
       if (inX && inY) {
-        targetMouseX = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
-        targetMouseY = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
         isHovering = true;
-      } else {
+        const relX = ((e.clientX - rect.left) / rect.width - 0.5) * 2; // -1 to 1
+        const relY = ((e.clientY - rect.top) / rect.height - 0.5) * 2; // -1 to 1
+
+        if (isDragging) {
+          hasInteracted = true;
+          const dx = e.clientX - lastPointerX;
+          const dy = e.clientY - lastPointerY;
+          lastPointerX = e.clientX;
+          lastPointerY = e.clientY;
+
+          // Drag side -> gentle, silky smooth rotation & soft glide
+          targetRotY += dx * 0.008;
+          targetRotX = THREE.MathUtils.clamp(targetRotX + dy * 0.005, -0.3, 0.45);
+          targetShiftX = THREE.MathUtils.clamp(targetShiftX + dx * 0.018, shiftX - 3.8, shiftX + 3.8);
+
+          // Drag up -> gentle, light elevation & soft exploded lift
+          targetShiftY = THREE.MathUtils.clamp(targetShiftY - dy * 0.016, -1.8, 3.5);
+          targetExplode = THREE.MathUtils.clamp(targetExplode - dy * 0.006, 0.0, 1.0);
+        } else {
+          // Calmer, silky hover tracking (gentle architectural float):
+          // Move side -> light rotation & graceful glide
+          targetRotY = relX * 0.42;
+          targetRotX = relY * 0.18;
+          targetShiftX = shiftX + relX * 1.6;
+
+          // Move cursor UP -> soft, graceful vertical lift
+          targetShiftY = -relY * 1.2;
+          targetExplode = THREE.MathUtils.clamp((-relY + 0.1) * 0.55, 0.0, 0.85);
+        }
+      } else if (!isDragging) {
         isHovering = false;
+        targetRotY = 0;
+        targetRotX = 0;
+        targetShiftX = shiftX;
+        targetShiftY = 0;
+        targetExplode = 0;
       }
     };
-    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+
+    const handlePointerUp = (e: PointerEvent) => {
+      isDragging = false;
+      if (canvas && typeof canvas.releasePointerCapture === "function") {
+        try {
+          canvas.releasePointerCapture(e.pointerId);
+        } catch {}
+      }
+    };
+
+    const handlePointerLeave = () => {
+      if (!isDragging) {
+        isHovering = false;
+        targetRotY = 0;
+        targetRotX = 0;
+        targetShiftX = shiftX;
+        targetShiftY = 0;
+        targetExplode = 0;
+      }
+    };
+
+    window.addEventListener("pointerdown", handlePointerDown, { passive: true });
+    window.addEventListener("pointermove", handlePointerMove, { passive: true });
+    window.addEventListener("pointerup", handlePointerUp, { passive: true });
+    window.addEventListener("pointercancel", handlePointerUp, { passive: true });
+    window.addEventListener("mouseleave", handlePointerLeave, { passive: true });
 
     // Subtle Architectural Drafting Grid Lines
     const gridPts: number[] = [];
@@ -861,14 +945,47 @@ export function VillaLumiereBackground() {
 
       setPhaseStatus(`${label} · 1:50`);
 
-      // Elevate floors
+      // SILKY, LIGHTWEIGHT ARCHITECTURAL KINEMATICS (Gentle, fluid, weightless float)
+      const LERP_FACTOR = isDragging ? 0.16 : 0.085;
+      currentRotY += (targetRotY - currentRotY) * LERP_FACTOR;
+      currentRotX += (targetRotX - currentRotX) * LERP_FACTOR;
+      currentShiftX += (targetShiftX - currentShiftX) * LERP_FACTOR;
+      currentShiftY += (targetShiftY - currentShiftY) * LERP_FACTOR;
+      currentExplode += (targetExplode - currentExplode) * LERP_FACTOR;
+
+      // Gentle zero-g ambient breathing float
+      const ambientFloat = Math.sin(elapsed * 0.95) * 0.06;
+
+      // SILKY ROTATION AND LATERAL / VERTICAL POSITION
+      villaMasterGroup.rotation.y = currentRotY;
+      villaMasterGroup.rotation.x = currentRotX;
+      villaMasterGroup.position.x = currentShiftX;
+      villaMasterGroup.position.y = currentShiftY + ambientFloat;
+
+      // GENTLE RESPONSIVE FLOOR ELEVATIONS (Soft, graceful lift)
+      let activeLiftFraction = currentExplode;
+      if (!hasInteracted && !isHovering && !isDragging) {
+        activeLiftFraction = overallSep;
+      }
+
       plinthGroup.position.y = 0;
-      level1Group.position.y = fractions.level1 * MAX_LIFT.level1;
-      level2Group.position.y = fractions.level2 * MAX_LIFT.level2;
-      roofGroup.position.y = fractions.roof * MAX_LIFT.roof;
+      level1Group.position.y = activeLiftFraction * MAX_LIFT.level1;
+      level2Group.position.y = activeLiftFraction * MAX_LIFT.level2;
+      roofGroup.position.y = activeLiftFraction * MAX_LIFT.roof;
+
+      // Soft ambient golden cursor light
+      if (isHovering || isDragging) {
+        cursorHoverLight.intensity = THREE.MathUtils.lerp(cursorHoverLight.intensity, 2.2, 0.12);
+        cursorHoverLight.position.x = currentShiftX;
+        cursorHoverLight.position.y = 5.5 + currentShiftY;
+        cursorHoverLight.position.z = 8.0;
+      } else {
+        cursorHoverLight.intensity = THREE.MathUtils.lerp(cursorHoverLight.intensity, 0.0, 0.06);
+      }
 
       // Guides
-      const guideAlpha = THREE.MathUtils.clamp((overallSep - 0.03) / 0.28, 0, 0.68);
+      const effectiveSep = isHovering || isDragging ? activeLiftFraction : overallSep;
+      const guideAlpha = THREE.MathUtils.clamp((effectiveSep - 0.03) / 0.28, 0, 0.68);
       guideGroup.visible = guideAlpha > 0.008;
       if (guideGroup.visible) {
         const topY = 8.4 + roofGroup.position.y;
@@ -902,7 +1019,7 @@ export function VillaLumiereBackground() {
       // Update 2D Callouts projected positions
       const w = container ? container.clientWidth : 1200;
       const h = container ? container.clientHeight : 750;
-      const showLabels = overallSep > 0.35;
+      const showLabels = effectiveSep > 0.35;
 
       const nextCallouts = calloutAnchors.map((item) => {
         tempVec3.copy(item.localPos);
@@ -939,24 +1056,6 @@ export function VillaLumiereBackground() {
 
       setCallouts(nextCallouts);
 
-      // Interactive hover parallax & dynamic golden illumination
-      if (isHovering) {
-        currentMouseX += (targetMouseX - currentMouseX) * 0.05;
-        currentMouseY += (targetMouseY - currentMouseY) * 0.05;
-        villaMasterGroup.rotation.y = currentMouseX * 0.22;
-        villaMasterGroup.rotation.x = currentMouseY * 0.10;
-        cursorHoverLight.intensity = THREE.MathUtils.lerp(cursorHoverLight.intensity, 3.8, 0.08);
-        cursorHoverLight.position.x = villaMasterGroup.position.x + currentMouseX * 9.0;
-        cursorHoverLight.position.y = 5.5 - currentMouseY * 5.0;
-        cursorHoverLight.position.z = 8.0 + currentMouseY * 3.5;
-      } else {
-        currentMouseX += (0 - currentMouseX) * 0.03;
-        currentMouseY += (0 - currentMouseY) * 0.03;
-        villaMasterGroup.rotation.y = currentMouseX * 0.22;
-        villaMasterGroup.rotation.x = currentMouseY * 0.10;
-        cursorHoverLight.intensity = THREE.MathUtils.lerp(cursorHoverLight.intensity, 0.0, 0.05);
-      }
-
       controls.update();
       renderer.render(scene, camera);
     }
@@ -974,6 +1073,9 @@ export function VillaLumiereBackground() {
 
       const isD = nw > 1024;
       const sX = isD ? 7.8 : nw > 768 ? 4.5 : 0.0;
+      shiftX = sX;
+      targetShiftX = sX;
+      currentShiftX = sX;
       villaMasterGroup.position.x = sX;
       controls.target.set(sX, 4.8, 0.0);
     });
@@ -981,7 +1083,11 @@ export function VillaLumiereBackground() {
 
     return () => {
       cancelAnimationFrame(animationFrameId);
-      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("pointerdown", handlePointerDown);
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("pointercancel", handlePointerUp);
+      window.removeEventListener("mouseleave", handlePointerLeave);
       resizeObserver.disconnect();
       controls.dispose();
       renderer.dispose();
@@ -991,10 +1097,13 @@ export function VillaLumiereBackground() {
   return (
     <div
       ref={containerRef}
-      className="absolute inset-0 z-0 overflow-hidden pointer-events-none select-none"
+      className="absolute inset-0 z-0 overflow-hidden select-none pointer-events-auto"
     >
-      {/* Three.js 3D Canvas */}
-      <canvas ref={canvasRef} className="block h-full w-full outline-none opacity-80 sm:opacity-95" />
+      {/* Three.js 3D Canvas with Fast Cursor Response & Drag Kinematics */}
+      <canvas
+        ref={canvasRef}
+        className="block h-full w-full outline-none opacity-85 sm:opacity-95 cursor-grab active:cursor-grabbing touch-none"
+      />
 
       {/* Solid/Frosted Left Architectural Backdrop for 100% Typography Contrast */}
       <div

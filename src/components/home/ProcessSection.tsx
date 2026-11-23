@@ -118,9 +118,7 @@ export function ProcessSection({
         {/* Introduction */}
         <div className="grid gap-10 lg:grid-cols-12 lg:items-end">
           <div className="lg:col-span-7">
-            <p className="editorial-eyebrow text-[#B68A4A]">
-              04 / How We Work
-            </p>
+
 
             <div className="mt-6">
               <RevealText>

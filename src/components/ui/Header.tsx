@@ -109,11 +109,10 @@ export function Header({
   return (
     <>
       <header
-        className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ease-out ${
-          scrolled
+        className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ease-out ${scrolled
             ? "h-[70px] bg-[#0A0A0C]/92 border-b border-[#B68A4A]/25 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.55)]"
             : "h-[80px] bg-gradient-to-b from-[#0A0A0A]/95 via-[#0E0E0E]/80 to-transparent border-b border-white/[0.08] backdrop-blur-md"
-        } text-[#F2F0EB]`}
+          } text-[#F2F0EB]`}
       >
         {/* Subtle top architectural ambient gold accent line */}
         <div className="absolute top-0 inset-x-0 h-[1.5px] bg-gradient-to-r from-transparent via-[#C6A779]/50 to-transparent" />
@@ -178,19 +177,17 @@ export function Header({
               <button
                 type="button"
                 onClick={() => setPortalDropdownOpen((prev) => !prev)}
-                className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border transition-all duration-300 font-['Outfit',sans-serif] text-[11.5px] font-medium tracking-[0.1em] backdrop-blur-md ${
-                  portalDropdownOpen
+                className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border transition-all duration-300 font-['Outfit',sans-serif] text-[11.5px] font-medium tracking-[0.1em] backdrop-blur-md ${portalDropdownOpen
                     ? "border-[#B68A4A] bg-[#B68A4A]/20 text-[#E0D8C3] shadow-[0_0_15px_rgba(182,138,74,0.3)]"
                     : "border-white/15 bg-white/[0.04] text-white/80 hover:border-[#B68A4A]/60 hover:bg-[#B68A4A]/10 hover:text-white"
-                }`}
+                  }`}
               >
                 <Shield size={12} className="text-[#B68A4A]" />
                 <span>Portals</span>
                 <ChevronDown
                   size={12}
-                  className={`transition-transform duration-300 text-white/60 ${
-                    portalDropdownOpen ? "rotate-180 text-[#B68A4A]" : ""
-                  }`}
+                  className={`transition-transform duration-300 text-white/60 ${portalDropdownOpen ? "rotate-180 text-[#B68A4A]" : ""
+                    }`}
                 />
               </button>
 
@@ -246,7 +243,7 @@ export function Header({
             </div>
 
             {/* Premium Gold CTA: Inquire Project */}
-            <button
+            {/* <button
               type="button"
               onClick={onOpenConsultation}
               className="group relative inline-flex items-center gap-2 overflow-hidden rounded-full border border-[#D4AF37]/80 bg-gradient-to-r from-[#B68A4A] via-[#9F742F] to-[#B68A4A] bg-[length:200%_auto] px-5 py-2 font-['Outfit',sans-serif] text-[12px] font-medium tracking-[0.12em] text-[#111111] font-semibold transition-all duration-500 hover:bg-[position:right_center] hover:shadow-[0_0_22px_rgba(182,138,74,0.5)] hover:scale-[1.02] active:scale-[0.98]"
@@ -256,7 +253,7 @@ export function Header({
                 size={13}
                 className="transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
               />
-            </button>
+            </button> */}
           </div>
 
           {/* Right Mobile Action: Hamburger Toggle */}
@@ -295,11 +292,10 @@ export function Header({
       <div
         id="mobile-navigation"
         aria-hidden={!mobileMenuOpen}
-        className={`fixed inset-0 z-40 overflow-y-auto bg-[#0A0A0A]/98 backdrop-blur-2xl text-[#F2F0EB] transition-all duration-500 lg:hidden ${
-          mobileMenuOpen
+        className={`fixed inset-0 z-40 overflow-y-auto bg-[#0A0A0A]/98 backdrop-blur-2xl text-[#F2F0EB] transition-all duration-500 lg:hidden ${mobileMenuOpen
             ? "visible translate-y-0 opacity-100"
             : "invisible -translate-y-3 opacity-0"
-        }`}
+          }`}
       >
         <div className="flex min-h-full flex-col px-6 pb-12 pt-24 sm:px-10">
           {/* Header Eyebrow */}
