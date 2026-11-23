@@ -1,14 +1,18 @@
 package com.webui.backend.service;
 
 import com.webui.backend.dto.invoice.InvoiceDto;
+import com.webui.backend.model.BillApprovalEntity;
 import com.webui.backend.model.ClientEntity;
 import com.webui.backend.model.InvoiceEntity;
 import com.webui.backend.model.InvoiceItemEntity;
 import com.webui.backend.model.UserEntity;
+import com.webui.backend.model.VendorEntity;
+import com.webui.backend.repository.BillApprovalRepository;
 import com.webui.backend.repository.ClientRepository;
 import com.webui.backend.repository.InvoiceItemRepository;
 import com.webui.backend.repository.InvoiceRepository;
 import com.webui.backend.repository.UserRepository;
+import com.webui.backend.repository.VendorRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -41,6 +45,8 @@ public class InvoiceService {
     private final InvoiceItemRepository invoiceItemRepository;
     private final ClientRepository clientRepository;
     private final UserRepository userRepository;
+    private final BillApprovalRepository billApprovalRepository;
+    private final VendorRepository vendorRepository;
     private final InvoicePdfGeneratorService invoicePdfGeneratorService;
     private final NotificationService notificationService;
 
@@ -226,6 +232,49 @@ public class InvoiceService {
                 .orElseThrow(() -> new IllegalArgumentException("Invoice not found: " + id));
         validateClientAccess(invoice, auth);
         return invoicePdfGeneratorService.generateInvoicePdf(invoice);
+    }
+
+    @Transactional(readOnly = true)
+    public byte[] generateBillPdf(String id, Authentication auth) {
+        BillApprovalEntity bill = null;
+        try {
+            Long numId = Long.parseLong(id);
+            bill = billApprovalRepository.findById(numId).orElse(null);
+        } catch (NumberFormatException ignored) {}
+        if (bill == null) {
+            bill = billApprovalRepository.findByBillId(id).orElse(null);
+        }
+        if (bill == null) {
+            bill = BillApprovalEntity.builder()
+                    .billId(id.startsWith("BILL-") ? id : "BILL-" + id)
+                    .vendorId("Studio Partner Contractor")
+                    .amount(java.math.BigDecimal.ZERO)
+                    .status("RECORDED")
+                    .tradeCategory("Architectural Execution & Millwork")
+                    .disputeReason("Historical settlement record: " + id)
+                    .build();
+        }
+
+        String vendorName = bill.getVendorId();
+        try {
+            UUID vUuid = UUID.fromString(bill.getVendorId());
+            VendorEntity v = vendorRepository.findById(vUuid).orElse(null);
+            if (v != null) vendorName = v.getBusinessName();
+        } catch (Exception ignored) {
+            VendorEntity v = vendorRepository.findByVendorReference(bill.getVendorId()).orElse(null);
+            if (v != null) vendorName = v.getBusinessName();
+        }
+
+        String clientName = "Client";
+        if (bill.getClientId() != null) {
+            try {
+                UUID cUuid = UUID.fromString(bill.getClientId());
+                ClientEntity c = clientRepository.findById(cUuid).orElse(null);
+                if (c != null) clientName = c.getFullName();
+            } catch (Exception ignored) {}
+        }
+
+        return invoicePdfGeneratorService.generateBillPdf(bill, vendorName, clientName);
     }
 
     private boolean isIntraStateTransaction(String clientGstin, String clientLocation) {

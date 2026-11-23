@@ -40,6 +40,15 @@ public class BillingExpenseController {
         return ResponseEntity.ok(billingExpenseService.getBillsForCurrentVendor(auth));
     }
 
+    // 1c. All Bills (Admin / Multi-role View with filters)
+    @GetMapping("/bills")
+    public ResponseEntity<List<BillApprovalEntity>> getAllBills(
+            @RequestParam(required = false) String clientId,
+            @RequestParam(required = false) String projectId,
+            Authentication auth) {
+        return ResponseEntity.ok(billingExpenseService.getBills(clientId, projectId, auth));
+    }
+
     // 2. Request Cash Payment (Vendor Action)
     @PostMapping("/bills/{billId}/request-cash")
     public ResponseEntity<?> requestCashPayment(@PathVariable String billId, Authentication auth) {
@@ -104,5 +113,21 @@ public class BillingExpenseController {
     @GetMapping("/vendors-directory")
     public ResponseEntity<List<VendorDirectoryItemDto>> getVendorsDirectory() {
         return ResponseEntity.ok(billingExpenseService.getVendorDirectorySummary());
+    }
+
+    // 8. Notify Clients via WhatsApp about Bills
+    @PostMapping("/notify-whatsapp")
+    public ResponseEntity<?> notifyClientsViaWhatsApp(
+            @RequestBody(required = false) Map<String, Object> req,
+            Authentication auth
+    ) {
+        try {
+            String clientId = req != null && req.get("clientId") != null ? req.get("clientId").toString() : null;
+            return ResponseEntity.ok(billingExpenseService.notifyClientsAboutBillsWhatsApp(clientId, auth));
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 }

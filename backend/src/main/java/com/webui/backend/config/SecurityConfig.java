@@ -162,8 +162,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/invoices/*/payments").hasAnyRole("ADMIN", "FINANCE_MANAGER")
                         .requestMatchers(HttpMethod.GET, "/api/invoices/**").hasAnyRole("ADMIN", "FINANCE_MANAGER", "STAFF", "CLIENT")
 
-                        // H. In-App Notifications (Phase 5.1)
+                        // H. In-App Notifications & Support Center (Phase 5.1)
                         .requestMatchers("/api/notifications/**").authenticated()
+                        .requestMatchers("/api/support/**").authenticated()
 
                         // I. Dashboards (Phase 5.1)
                         .requestMatchers("/api/dashboards/admin").hasAnyRole("ADMIN", "FINANCE_MANAGER", "STAFF")

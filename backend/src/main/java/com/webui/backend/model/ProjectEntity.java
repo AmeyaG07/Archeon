@@ -40,4 +40,18 @@ public class ProjectEntity {
     private String socialsJson; // JSON array string
 
     private String accentColor; // hex code e.g. "#4B96F3"
+
+    @Column(columnDefinition = "TEXT")
+    private String image; // URL or photo path e.g. "/projects/monolith-sanctuary.png"
+
+    private String category; // "Residential", "Interior", "Landscape", "Turnkey"
+
+    private String location; // e.g. "Khandala, Maharashtra"
+
+    private String area; // e.g. "8,500 sq.ft"
+
+    private String status; // "Completed", "Under Execution"
+
+    @Column(name = "project_year")
+    private String projectYear; // e.g. "2026"
 }
