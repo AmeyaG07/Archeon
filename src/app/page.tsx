@@ -26,6 +26,7 @@ import {
   ServiceItem,
   PortfolioProject,
 } from "@/config/siteConfig";
+import { apiFetch } from "@/lib/api";
 
 export default function Home() {
   const [selectedService, setSelectedService] =
@@ -50,7 +51,7 @@ export default function Home() {
     useState<PortfolioProject[]>(siteConfig.projects);
 
   useEffect(() => {
-    fetch("/api/projects")
+    apiFetch("/api/operational-projects")
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch");
         return res.json();
