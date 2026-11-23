@@ -350,7 +350,7 @@ export function AdminInvoiceManagement({
           </h1>
 
           <p className="mt-3 max-w-xl text-sm leading-7 text-[#77736C]">
-            Review client and vendor invoices, monitor approval
+            Review client and vendor invoices, monitor payment
             progress and track outstanding balances.
           </p>
         </div>

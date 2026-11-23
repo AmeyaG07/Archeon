@@ -33,7 +33,6 @@ export type AdminPortalSection =
   | "clients"
   | "vendors"
   | "invoices"
-  | "approvals"
   | "cash-settlements"
   | "finance-reports"
   | "audit-logs"
@@ -128,13 +127,6 @@ const NAVIGATION_GROUPS: NavigationGroup[] = [
         label: "Invoices & Bills",
         description: "Financial records",
         icon: FileText,
-      },
-      {
-        id: "approvals",
-        label: "Approvals",
-        description: "Pending decisions",
-        icon: ClipboardCheck,
-        badge: "approvals",
       },
       {
         id: "cash-settlements",
@@ -297,11 +289,7 @@ export function AdminPortalLayout({
                       key={item.id}
                       item={item}
                       active={activeSection === item.id}
-                      badgeCount={
-                        item.badge === "approvals"
-                          ? pendingApprovals
-                          : 0
-                      }
+                      badgeCount={0}
                       onClick={() => handleNavigate(item.id)}
                     />
                   ))}
@@ -374,11 +362,7 @@ export function AdminPortalLayout({
                           key={item.id}
                           item={item}
                           active={activeSection === item.id}
-                          badgeCount={
-                            item.badge === "approvals"
-                              ? pendingApprovals
-                              : 0
-                          }
+                          badgeCount={0}
                           onClick={() => handleNavigate(item.id)}
                           mobile
                         />

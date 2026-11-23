@@ -34,7 +34,7 @@ export interface AdminDashboardMetrics {
   totalClients: number;
   activeVendors: number;
   newEnquiries: number;
-  pendingApprovals: number;
+  pendingApprovals?: number;
   outstandingReceivables: number;
   overdueReceivables: number;
   pendingInvoices: number;
@@ -79,7 +79,7 @@ export interface AdminActivity {
 export interface AdminDashboardData {
   metrics: AdminDashboardMetrics;
   projects: AdminProjectSummary[];
-  approvals: AdminApprovalSummary[];
+  approvals?: AdminApprovalSummary[];
   activities: AdminActivity[];
   lastUpdatedAt?: string;
 }
@@ -90,11 +90,9 @@ interface AdminDashboardOverviewProps {
   error?: string;
   onRefresh?: () => void;
   onOpenProjects?: () => void;
-  onOpenApprovals?: () => void;
   onOpenEnquiries?: () => void;
   onOpenFinance?: () => void;
   onOpenProject?: (projectId: string) => void;
-  onOpenApproval?: (approvalId: string) => void;
   onOpenActivity?: (activityId: string) => void;
 }
 
@@ -140,17 +138,6 @@ function getProjectStatusStyle(status: AdminProjectSummary["status"]) {
   }
 }
 
-function getPriorityStyle(priority: AdminApprovalSummary["priority"]) {
-  switch (priority) {
-    case "Urgent":
-      return "bg-[#F8EAE7] text-[#9A5147]";
-    case "High":
-      return "bg-[#F4EFE2] text-[#94743F]";
-    default:
-      return "bg-[#ECEAE5] text-[#77736C]";
-  }
-}
-
 function getActivityIcon(type: AdminActivityType) {
   switch (type) {
     case "project":
@@ -176,11 +163,9 @@ export function AdminDashboardOverview({
   error,
   onRefresh,
   onOpenProjects,
-  onOpenApprovals,
   onOpenEnquiries,
   onOpenFinance,
   onOpenProject,
-  onOpenApproval,
   onOpenActivity,
 }: AdminDashboardOverviewProps) {
   if (loading && !data) {
@@ -317,11 +302,12 @@ export function AdminDashboardOverview({
 
         <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
           <AttentionCard
-            label="Pending Approvals"
-            value={metrics.pendingApprovals}
-            description="Decisions awaiting authorised review"
-            icon={<ClipboardIcon />}
-            onClick={onOpenApprovals}
+            label="Outstanding Receivables"
+            value={formatCurrency(metrics.outstandingReceivables)}
+            description="Total uncollected studio client dues"
+            icon={<IndianRupee size={19} />}
+            onClick={onOpenFinance}
+            monetary
           />
 
           <AttentionCard
@@ -504,20 +490,20 @@ export function AdminDashboardOverview({
           </div>
         </div>
 
-        {/* Approvals */}
+        {/* Recent Activity */}
         <div>
           <div className="flex items-end justify-between gap-4 border-b border-[#D8D6D0] pb-5">
             <div>
-              <SectionLabel>Decision Queue</SectionLabel>
+              <SectionLabel>System Activity</SectionLabel>
               <h2 className="mt-3 font-serif text-2xl text-[#171717]">
-                Pending Approvals
+                Recent Activity
               </h2>
             </div>
 
-            {onOpenApprovals && (
+            {onOpenActivity && (
               <button
                 type="button"
-                onClick={onOpenApprovals}
+                onClick={() => onOpenActivity?.("all")}
                 className="text-[9px] uppercase tracking-widest text-[#987543]"
               >
                 View All
@@ -526,117 +512,41 @@ export function AdminDashboardOverview({
           </div>
 
           <div className="mt-5 space-y-3">
-            {data.approvals.length === 0 ? (
-              <EmptyState message="No pending approval records available." />
+            {data.activities.length === 0 ? (
+              <EmptyState message="No activity records available." />
             ) : (
-              data.approvals.map((approval) => (
-                <button
-                  key={approval.id}
-                  type="button"
-                  onClick={() => onOpenApproval?.(approval.id)}
-                  disabled={!onOpenApproval}
-                  className="w-full border border-[#D8D6D0] bg-white p-5 text-left transition-colors hover:border-[#A58A64] disabled:cursor-default"
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <p className="font-mono text-[9px] uppercase tracking-widest text-[#A58A64]">
-                      {approval.reference}
-                    </p>
-
-                    <span
-                      className={`px-3 py-2 text-[9px] uppercase tracking-widest ${getPriorityStyle(approval.priority)}`}
-                    >
-                      {approval.priority}
-                    </span>
-                  </div>
-
-                  <h3 className="mt-4 font-serif text-xl text-[#171717]">
-                    {approval.title}
-                  </h3>
-
-                  <p className="mt-2 text-xs text-[#77736C]">
-                    {approval.category}
-                  </p>
-
-                  {typeof approval.amount === "number" && (
-                    <p className="mt-4 font-serif text-xl text-[#33312D]">
-                      {formatCurrency(
-                        approval.amount,
-                        approval.currency || "INR"
-                      )}
-                    </p>
-                  )}
-
-                  <div className="mt-5 flex flex-col gap-2 border-t border-[#E5E2DC] pt-4">
-                    <p className="text-[10px] text-[#77736C]">
-                      Submitted by: {approval.submittedBy}
-                    </p>
-
-                    <p className="font-mono text-[9px] text-[#99958D]">
-                      {formatDate(approval.submittedAt)}
-                    </p>
-                  </div>
-                </button>
-              ))
+              data.activities.slice(0, 5).map((activity) => {
+                const Icon = getActivityIcon(activity.type);
+                return (
+                  <button
+                    key={activity.id}
+                    type="button"
+                    onClick={() => onOpenActivity?.(activity.id)}
+                    disabled={!onOpenActivity}
+                    className="w-full border border-[#D8D6D0] bg-white p-4 text-left transition-colors hover:border-[#A58A64] disabled:cursor-default"
+                  >
+                    <div className="flex items-start gap-3.5">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center border border-[#E5E2DC] bg-[#FAF9F6] text-[#A58A64]">
+                        <Icon size={15} />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <span className="block text-xs font-medium text-[#33312D]">
+                          {activity.title}
+                        </span>
+                        <span className="mt-1 block text-[11px] leading-relaxed text-[#77736C] line-clamp-2">
+                          {activity.description}
+                        </span>
+                        <span className="mt-2 block font-mono text-[9px] text-[#99958D]">
+                          {activity.actorName} · {formatDate(activity.occurredAt)}
+                        </span>
+                      </div>
+                      <ArrowRight size={13} className="mt-1 shrink-0 text-[#A58A64]" />
+                    </div>
+                  </button>
+                );
+              })
             )}
           </div>
-        </div>
-      </section>
-
-      {/* Recent Activity */}
-      <section className="mt-12">
-        <div className="border-b border-[#D8D6D0] pb-5">
-          <SectionLabel>System Activity</SectionLabel>
-
-          <h2 className="mt-3 font-serif text-2xl text-[#171717]">
-            Recent Activity
-          </h2>
-        </div>
-
-        <div className="mt-5 border border-[#D8D6D0] bg-white">
-          {data.activities.length === 0 ? (
-            <EmptyState message="No activity records available." />
-          ) : (
-            data.activities.map((activity, index) => {
-              const Icon = getActivityIcon(activity.type);
-
-              return (
-                <button
-                  key={activity.id}
-                  type="button"
-                  onClick={() => onOpenActivity?.(activity.id)}
-                  disabled={!onOpenActivity}
-                  className={`flex w-full items-start gap-4 p-5 text-left hover:bg-[#FAF9F6] disabled:cursor-default md:p-6 ${
-                    index !== data.activities.length - 1
-                      ? "border-b border-[#E5E2DC]"
-                      : ""
-                  }`}
-                >
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center border border-[#E5E2DC] bg-[#FAF9F6] text-[#A58A64]">
-                    <Icon size={17} />
-                  </span>
-
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-sm text-[#33312D]">
-                      {activity.title}
-                    </span>
-
-                    <span className="mt-2 block text-xs leading-6 text-[#77736C]">
-                      {activity.description}
-                    </span>
-
-                    <span className="mt-3 block font-mono text-[9px] text-[#99958D]">
-                      {activity.actorName} · {formatDate(activity.occurredAt)}
-                    </span>
-                  </span>
-
-                  <ArrowRight
-                    size={15}
-                    className="mt-2 shrink-0 text-[#A58A64]"
-                  />
-                </button>
-              );
-            })
-          )}
         </div>
       </section>
 
@@ -653,10 +563,9 @@ export function AdminDashboardOverview({
           </h3>
 
           <p className="mt-2 text-xs leading-7 text-[#77736C]">
-            Dashboard figures are informational summaries. Financial
-            approval, payment verification, vendor settlement and
-            access-control decisions must be completed through their
-            authorised workflows and recorded by the backend.
+            Dashboard figures are live operational summaries. Invoices,
+            client billing, vendor settlements, and administrative records
+            are managed and audited in real time.
           </p>
         </div>
       </section>
@@ -778,8 +687,4 @@ function EmptyState({ message }: { message: string }) {
       <p className="mt-4 text-xs text-[#77736C]">{message}</p>
     </div>
   );
-}
-
-function ClipboardIcon() {
-  return <FileText size={19} />;
 }

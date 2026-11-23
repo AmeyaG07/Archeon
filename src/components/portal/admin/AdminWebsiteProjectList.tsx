@@ -281,97 +281,98 @@ export function AdminWebsiteProjectList() {
   };
 
   return (
-    <div className="space-y-6 pb-16">
-      {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[#D8D6D0] pb-6">
-        <div>
-          <span className="font-mono text-[9px] uppercase tracking-widest text-[#9F7947] font-semibold">
-            Public Website Content Management (CMS)
-          </span>
-          <h1 className="font-serif text-3xl sm:text-4xl text-[#111111] mt-1">
-            Website Content & Showcase Projects
-          </h1>
-          <p className="text-xs text-[#77736C] mt-1 max-w-2xl">
-            Live content management for the public ArcheOn Design Studio homepage. Any changes saved here reflect instantly on the live website.
-          </p>
-        </div>
+    <main className="min-h-screen bg-[#F2F0EB] px-5 py-8 md:px-10 md:py-10 lg:px-12">
+      <div className="mx-auto max-w-7xl space-y-6 pb-16">
+        {/* Header Bar */}
+        <header className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 border-b border-[#D8D6D0] pb-6">
+          <div>
+            <span className="font-mono text-[9px] uppercase tracking-widest text-[#9F7947] font-semibold">
+              Public Website Content Management (CMS)
+            </span>
+            <h1 className="font-serif text-2xl sm:text-3xl text-[#111111] mt-1">
+              Website Content &amp; Showcase Projects
+            </h1>
+            <p className="text-xs text-[#77736C] mt-1 max-w-2xl leading-relaxed">
+              Live content management for the public ArcheOn Design Studio homepage. Any changes saved here reflect instantly on the live website.
+            </p>
+          </div>
 
-        <div className="flex items-center gap-3">
-          <a
-            href="/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 border border-[#D8D6D0] bg-white px-4 py-2 text-[10px] font-mono uppercase tracking-wider text-[#111111] hover:bg-[#F2F0EB] transition-colors rounded-sm"
-          >
-            <Globe size={13} /> View Live Website
-          </a>
-          {activeTab === "projects" && (
+          <div className="flex flex-wrap items-center gap-2.5">
+            <a
+              href="/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 border border-[#D8D6D0] bg-white px-3 py-1.5 text-[9px] font-mono uppercase tracking-wider text-[#33312D] hover:border-[#171717] hover:bg-[#FAF9F5] transition-colors rounded-sm"
+            >
+              <Globe size={12} /> View Live Website
+            </a>
+            {activeTab === "projects" && (
+              <button
+                type="button"
+                onClick={handleOpenCreateNew}
+                className="inline-flex items-center gap-1.5 bg-[#171717] px-3.5 py-1.5 text-[9px] font-mono uppercase tracking-wider text-white hover:bg-[#A58A64] transition-colors rounded-sm shadow-xs font-medium cursor-pointer"
+              >
+                <Plus size={13} /> Add Showcase Project
+              </button>
+            )}
             <button
               type="button"
-              onClick={handleOpenCreateNew}
-              className="inline-flex items-center gap-2 bg-[#171717] px-4 py-2 text-[10px] font-mono uppercase tracking-wider text-white hover:bg-[#A58A64] transition-colors rounded-sm shadow-xs font-semibold cursor-pointer"
+              onClick={loadProjects}
+              disabled={loading}
+              className="inline-flex items-center gap-1.5 border border-[#D8D6D0] bg-white px-2.5 py-1.5 text-[9px] font-mono uppercase tracking-wider text-[#55514A] hover:border-[#A58A64] hover:bg-[#FAF9F5] transition-colors rounded-sm"
             >
-              <Plus size={14} /> Add Showcase Project
+              <RefreshCw size={12} className={loading ? "animate-spin text-[#A58A64]" : ""} /> Refresh
             </button>
-          )}
+          </div>
+        </header>
+
+        {error && (
+          <div className="flex items-start gap-2.5 p-3.5 bg-red-50 border border-red-200 text-red-700 text-xs rounded-sm">
+            <AlertCircle size={15} className="shrink-0 mt-0.5" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        {success && (
+          <div className="flex items-start gap-2.5 p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-sm">
+            <CheckCircle2 size={15} className="shrink-0 mt-0.5" />
+            <span>{success}</span>
+          </div>
+        )}
+
+        {/* Tabs */}
+        <div className="flex border-b border-[#D8D6D0] gap-1 overflow-x-auto">
           <button
-            type="button"
-            onClick={loadProjects}
-            disabled={loading}
-            className="inline-flex items-center gap-2 border border-[#D8D6D0] bg-white px-3 py-2 text-[10px] font-mono uppercase tracking-wider text-[#55514A] hover:border-[#A58A64] transition-colors rounded-sm"
+            onClick={() => setActiveTab("projects")}
+            className={`flex items-center gap-2 px-4 py-2 font-mono text-[10px] uppercase tracking-wider border-b-2 transition-all ${
+              activeTab === "projects"
+                ? "border-[#171717] text-[#171717] font-semibold"
+                : "border-transparent text-[#77736C] hover:text-[#171717]"
+            }`}
           >
-            <RefreshCw size={13} className={loading ? "animate-spin" : ""} /> Refresh
+            <FolderKanban size={13} /> Showcase Projects ({projects.length})
+          </button>
+          <button
+            onClick={() => setActiveTab("manifesto")}
+            className={`flex items-center gap-2 px-4 py-2 font-mono text-[10px] uppercase tracking-wider border-b-2 transition-all ${
+              activeTab === "manifesto"
+                ? "border-[#171717] text-[#171717] font-semibold"
+                : "border-transparent text-[#77736C] hover:text-[#171717]"
+            }`}
+          >
+            <BookOpen size={13} /> Studio Philosophy &amp; Manifesto
+          </button>
+          <button
+            onClick={() => setActiveTab("contacts")}
+            className={`flex items-center gap-2 px-4 py-2 font-mono text-[10px] uppercase tracking-wider border-b-2 transition-all ${
+              activeTab === "contacts"
+                ? "border-[#171717] text-[#171717] font-semibold"
+                : "border-transparent text-[#77736C] hover:text-[#171717]"
+            }`}
+          >
+            <Phone size={13} /> Studio Details &amp; Contacts
           </button>
         </div>
-      </div>
-
-      {error && (
-        <div className="flex items-start gap-2.5 p-4 bg-red-50 border border-red-200 text-red-700 text-xs rounded-sm">
-          <AlertCircle size={16} className="shrink-0 mt-0.5" />
-          <span>{error}</span>
-        </div>
-      )}
-
-      {success && (
-        <div className="flex items-start gap-2.5 p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-sm">
-          <CheckCircle2 size={16} className="shrink-0 mt-0.5" />
-          <span>{success}</span>
-        </div>
-      )}
-
-      {/* Tabs */}
-      <div className="flex border-b border-[#D8D6D0] gap-2">
-        <button
-          onClick={() => setActiveTab("projects")}
-          className={`flex items-center gap-2 px-5 py-2.5 font-mono text-xs uppercase tracking-wider border-b-2 transition-all ${
-            activeTab === "projects"
-              ? "border-[#171717] text-[#171717] font-semibold"
-              : "border-transparent text-[#77736C] hover:text-[#171717]"
-          }`}
-        >
-          <FolderKanban size={14} /> Showcase Projects ({projects.length})
-        </button>
-        <button
-          onClick={() => setActiveTab("manifesto")}
-          className={`flex items-center gap-2 px-5 py-2.5 font-mono text-xs uppercase tracking-wider border-b-2 transition-all ${
-            activeTab === "manifesto"
-              ? "border-[#171717] text-[#171717] font-semibold"
-              : "border-transparent text-[#77736C] hover:text-[#171717]"
-          }`}
-        >
-          <BookOpen size={14} /> Studio Philosophy & Manifesto
-        </button>
-        <button
-          onClick={() => setActiveTab("contacts")}
-          className={`flex items-center gap-2 px-5 py-2.5 font-mono text-xs uppercase tracking-wider border-b-2 transition-all ${
-            activeTab === "contacts"
-              ? "border-[#171717] text-[#171717] font-semibold"
-              : "border-transparent text-[#77736C] hover:text-[#171717]"
-          }`}
-        >
-          <Building2 size={14} /> Studio Details & Contacts
-        </button>
-      </div>
 
       {/* TAB 1: SHOWCASE PROJECTS */}
       {activeTab === "projects" && (
@@ -400,72 +401,72 @@ export function AdminWebsiteProjectList() {
                 return (
                   <div
                     key={project.id}
-                    className="bg-white border border-[#D8D6D0] rounded-sm p-5 sm:p-6 shadow-xs hover:border-[#A58A64] transition-all flex flex-col lg:flex-row gap-6 items-start justify-between"
+                    className="bg-white border border-[#D8D6D0] rounded-sm p-4 sm:p-5 shadow-xs hover:border-[#A58A64] transition-all flex flex-col md:flex-row gap-5 items-start md:items-center justify-between"
                   >
                     {/* Left: Project Image Thumbnail */}
-                    <div className="relative w-full lg:w-72 h-48 lg:h-44 shrink-0 rounded overflow-hidden bg-stone-100 border border-[#E8E6E0] group">
+                    <div className="relative w-full md:w-56 h-36 shrink-0 rounded overflow-hidden bg-stone-100 border border-[#E8E6E0] group">
                       <Image
                         src={imgSrc}
                         alt={project.title}
                         fill
-                        sizes="(max-width: 768px) 100vw, 300px"
+                        sizes="(max-width: 768px) 100vw, 240px"
                         className="object-cover transition-transform duration-500 group-hover:scale-105"
                       />
-                      <div className="absolute top-2.5 left-2.5 bg-black/70 backdrop-blur-md px-2.5 py-1 rounded text-white text-[9.5px] font-mono tracking-wider uppercase">
+                      <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-md px-2 py-0.5 rounded text-white text-[9px] font-mono tracking-wider uppercase">
                         {project.category || "Architecture"}
                       </div>
                       {project.status && (
-                        <div className="absolute bottom-2.5 right-2.5 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded text-[#111111] text-[9.5px] font-mono tracking-wider uppercase font-semibold">
+                        <div className="absolute bottom-2 right-2 bg-white/90 backdrop-blur-md px-2 py-0.5 rounded text-[#111111] text-[9px] font-mono tracking-wider uppercase font-semibold">
                           {project.status}
                         </div>
                       )}
                     </div>
 
                     {/* Middle: Details & Description */}
-                    <div className="flex-1 space-y-3 min-w-0">
-                      <div className="flex flex-wrap items-center gap-2.5">
-                        <span className="font-mono text-[10px] text-[#A58A64] bg-[#FAF8F5] px-2 py-0.5 border border-[#E8E6E0] rounded">
+                    <div className="flex-1 space-y-2.5 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-mono text-[9px] text-[#A58A64] bg-[#FAF8F5] px-2 py-0.5 border border-[#E8E6E0] rounded">
                           {project.code || project.id}
                         </span>
-                        <h3 className="font-serif text-2xl text-[#111111] font-normal truncate">
+                        <h3 className="font-serif text-xl sm:text-2xl text-[#111111] font-normal truncate">
                           {project.title}
                         </h3>
                       </div>
 
                       {/* Metadata Chips */}
-                      <div className="flex flex-wrap items-center gap-4 text-xs text-[#77736C] font-mono">
+                      <div className="flex flex-wrap items-center gap-3.5 text-xs text-[#77736C] font-mono">
                         {project.location && (
                           <span className="flex items-center gap-1.5">
-                            <MapPin size={13} className="text-[#A58A64]" />
+                            <MapPin size={12} className="text-[#A58A64]" />
                             {project.location}
                           </span>
                         )}
                         {project.area && (
                           <span className="flex items-center gap-1.5">
-                            <Layers size={13} className="text-[#A58A64]" />
+                            <Layers size={12} className="text-[#A58A64]" />
                             {project.area}
                           </span>
                         )}
                         {(project.projectYear || project.year) && (
                           <span className="flex items-center gap-1.5">
-                            <Calendar size={13} className="text-[#A58A64]" />
+                            <Calendar size={12} className="text-[#A58A64]" />
                             {project.projectYear || project.year}
                           </span>
                         )}
                       </div>
 
                       {/* Architectural Description / Summary */}
-                      <div className="text-xs text-[#44413C] leading-relaxed line-clamp-3 bg-[#FAF8F5] p-3.5 border border-[#EFECE6] rounded-sm">
+                      <div className="text-xs text-[#44413C] leading-relaxed line-clamp-2 bg-[#FAF8F5] p-2.5 border border-[#EFECE6] rounded-sm">
                         {project.summary || "No architectural description provided for this project."}
                       </div>
 
                       {/* Tags */}
                       {tags.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 pt-1">
+                        <div className="flex flex-wrap gap-1.5 pt-0.5">
                           {tags.map((tag, tIdx) => (
                             <span
                               key={tIdx}
-                              className="font-mono text-[9px] px-2 py-0.5 bg-white border border-[#D8D6D0] text-[#77736C] uppercase tracking-wider rounded"
+                              className="font-mono text-[8.5px] px-2 py-0.5 bg-white border border-[#D8D6D0] text-[#77736C] uppercase tracking-wider rounded"
                             >
                               {tag}
                             </span>
@@ -475,22 +476,22 @@ export function AdminWebsiteProjectList() {
                     </div>
 
                     {/* Right: Actions */}
-                    <div className="shrink-0 w-full lg:w-auto flex lg:flex-col gap-2.5 pt-2 lg:pt-0">
+                    <div className="shrink-0 w-full md:w-auto flex md:flex-col gap-2 pt-2 md:pt-0 justify-center">
                       <button
                         type="button"
                         onClick={() => handleOpenEdit(project)}
-                        className="flex-1 lg:flex-none inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#171717] hover:bg-[#A58A64] text-white text-xs font-mono uppercase tracking-wider transition-colors rounded-sm shadow-xs font-semibold cursor-pointer"
+                        className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-[#171717] hover:bg-[#A58A64] text-white text-[9px] font-mono uppercase tracking-wider transition-colors rounded-sm shadow-xs font-medium cursor-pointer"
                       >
-                        <Edit3 size={14} />
+                        <Edit3 size={12} />
                         Edit Details
                       </button>
                       <a
                         href={`/#${project.id}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex-1 lg:flex-none inline-flex items-center justify-center gap-2 px-4 py-2 border border-[#D8D6D0] hover:border-[#171717] text-[#55514A] hover:text-[#171717] text-xs font-mono uppercase tracking-wider transition-colors rounded-sm text-center"
+                        className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 px-3 py-1.5 border border-[#D8D6D0] hover:border-[#171717] text-[#55514A] hover:text-[#171717] text-[9px] font-mono uppercase tracking-wider transition-colors rounded-sm text-center"
                       >
-                        <ExternalLink size={13} />
+                        <ExternalLink size={12} />
                         View Live
                       </a>
                     </div>
@@ -928,6 +929,7 @@ export function AdminWebsiteProjectList() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </main>
   );
 }
