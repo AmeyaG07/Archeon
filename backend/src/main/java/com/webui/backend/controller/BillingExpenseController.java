@@ -108,6 +108,23 @@ public class BillingExpenseController {
         }
     }
 
+    // 4b-2. Attach or Update Bill Photo (Original Invoice Document)
+    @PostMapping("/bills/{billId}/photo")
+    public ResponseEntity<?> attachBillPhoto(
+            @PathVariable String billId,
+            @RequestBody(required = false) Map<String, String> body,
+            Authentication auth) {
+        try {
+            String photoUrl = body != null ? body.get("billPhotoUrl") : null;
+            BillApprovalEntity bill = billingExpenseService.attachBillPhoto(billId, photoUrl, auth);
+            return ResponseEntity.ok(bill);
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     // 4c. Direct Cash Settlement Confirmation
     @PostMapping("/bills/{billId}/direct-cash-settle")
     public ResponseEntity<?> confirmDirectCashSettlement(

@@ -186,18 +186,6 @@ export default function AdminDataGovernanceCenter({
               requests and governance activity.
             </p>
           </div>
-
-          {onRefresh && (
-            <button
-              type="button"
-              onClick={onRefresh}
-              disabled={loading}
-              className="inline-flex items-center gap-2 self-start rounded-lg border border-[#D8D6D0] bg-white px-4 py-2.5 text-xs font-medium text-[#33312E] hover:border-[#B68A4A] disabled:opacity-50 sm:self-auto"
-            >
-              <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
-              Refresh
-            </button>
-          )}
         </header>
 
         {error && (

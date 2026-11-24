@@ -231,25 +231,39 @@ export function SiteFooter({
   }, [hasBuilt]);
 
   const handleClientPortalClick = () => {
-    if (isAuthenticated && (user?.role === "ROLE_CLIENT" || user?.role === "CLIENT")) {
-      router.push("/client");
-    } else {
-      onOpenClientPortal();
-    }
+    router.push("/client");
   };
 
   const handleVendorPortalClick = () => {
-    if (isAuthenticated && (user?.role === "ROLE_VENDOR" || user?.role === "VENDOR")) {
-      router.push("/vendor");
-    } else {
-      onOpenVendorPortal();
-    }
+    router.push("/vendor");
   };
 
   const scrollToSection = (href: string) => {
-    document.querySelector(href)?.scrollIntoView({
-      behavior: "smooth",
-    });
+    if (href.startsWith("#")) {
+      const target = document.querySelector(href) as HTMLElement | null;
+      if (target) {
+        if (typeof (window as any).lenis?.start === "function") {
+          (window as any).lenis.start();
+        }
+        if (typeof (window as any).lenis?.scrollTo === "function") {
+          (window as any).lenis.scrollTo(target, { offset: -80 });
+        } else {
+          const top = target.getBoundingClientRect().top + window.scrollY - 80;
+          window.scrollTo({ top, behavior: "smooth" });
+        }
+      }
+    }
+  };
+
+  const scrollToTop = () => {
+    if (typeof (window as any).lenis?.start === "function") {
+      (window as any).lenis.start();
+    }
+    if (typeof (window as any).lenis?.scrollTo === "function") {
+      (window as any).lenis.scrollTo(0);
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   };
 
   return (
@@ -323,14 +337,17 @@ export function SiteFooter({
                   >
                     EXPLORE
                   </p>
-                  <button
-                    type="button"
-                    onClick={() => scrollToSection(exploreLinks[0].href)}
+                  <a
+                    href={exploreLinks[0].href}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      scrollToSection(exploreLinks[0].href);
+                    }}
                     className="block text-left font-outfit text-white/70 hover:text-white transition-colors duration-200 cursor-pointer mb-3"
                     style={{ fontSize: "15px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
                   >
                     {exploreLinks[0].label}
-                  </button>
+                  </a>
                 </AgenticRow>
 
                 {/* Row 2: Expertise + Projects */}
@@ -340,22 +357,28 @@ export function SiteFooter({
                   cycleKey={buildCycle}
                 >
                   <div className="flex flex-col gap-3 mb-3">
-                    <button
-                      type="button"
-                      onClick={() => scrollToSection(exploreLinks[1].href)}
+                    <a
+                      href={exploreLinks[1].href}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        scrollToSection(exploreLinks[1].href);
+                      }}
                       className="text-left font-outfit text-white/70 hover:text-white transition-colors duration-200 cursor-pointer"
                       style={{ fontSize: "15px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
                     >
                       {exploreLinks[1].label}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => scrollToSection(exploreLinks[2].href)}
+                    </a>
+                    <a
+                      href={exploreLinks[2].href}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        scrollToSection(exploreLinks[2].href);
+                      }}
                       className="text-left font-outfit text-white/70 hover:text-white transition-colors duration-200 cursor-pointer"
                       style={{ fontSize: "15px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
                     >
                       {exploreLinks[2].label}
-                    </button>
+                    </a>
                   </div>
                 </AgenticRow>
 
@@ -366,22 +389,28 @@ export function SiteFooter({
                   cycleKey={buildCycle}
                 >
                   <div className="flex flex-col gap-3">
-                    <button
-                      type="button"
-                      onClick={() => scrollToSection(exploreLinks[3].href)}
+                    <a
+                      href={exploreLinks[3].href}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        scrollToSection(exploreLinks[3].href);
+                      }}
                       className="text-left font-outfit text-white/70 hover:text-white transition-colors duration-200 cursor-pointer"
                       style={{ fontSize: "15px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
                     >
                       {exploreLinks[3].label}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => scrollToSection(exploreLinks[4].href)}
+                    </a>
+                    <a
+                      href={exploreLinks[4].href}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        scrollToSection(exploreLinks[4].href);
+                      }}
                       className="text-left font-outfit text-white/70 hover:text-white transition-colors duration-200 cursor-pointer"
                       style={{ fontSize: "15px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
                     >
                       {exploreLinks[4].label}
-                    </button>
+                    </a>
                   </div>
                 </AgenticRow>
               </div>
@@ -658,7 +687,7 @@ export function SiteFooter({
               </p>
               <button
                 type="button"
-                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                onClick={scrollToTop}
                 className="text-[#C6A779] hover:text-white uppercase tracking-widest transition-colors cursor-pointer"
               >
                 BACK TO TOP ↑

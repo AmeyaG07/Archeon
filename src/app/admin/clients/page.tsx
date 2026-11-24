@@ -51,32 +51,60 @@ export default function AdminClientsPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await apiFetch("/api/clients");
-      const list = await res.json();
+      const [cRes, pRes] = await Promise.all([
+        apiFetch("/api/clients"),
+        apiFetch("/api/operational-projects").catch(() => null),
+      ]);
+      const list = await cRes.json();
+      const allProjects = pRes && pRes.ok ? await pRes.json().catch(() => []) : [];
+
       if (Array.isArray(list)) {
-        const records: AdminClientRecord[] = list.map((c: any) => ({
-          id: c.id || "",
-          reference: c.clientReference || c.reference || "CLI",
-          fullName: c.fullName || c.name || "Client",
-          email: c.email || "",
-          phone: c.phone || "",
-          organisation: c.companyName || c.organisation,
-          location: c.city ? `${c.city}, ${c.state || ""}` : c.address || "Maharashtra",
-          status: (c.status === "ACTIVE"
-            ? "Active"
-            : c.status === "SUSPENDED"
-            ? "Suspended"
-            : "Inactive") as AdminClientStatus,
-          portalAccess: (c.invitationStatus === "ACCEPTED" || c.hasPortalAccess
-            ? "Active"
-            : c.invitationStatus === "SENT"
-            ? "Invitation Pending"
-            : "Not Invited") as any,
-          createdAt: c.createdAt || new Date().toISOString(),
-          lastUpdated: c.updatedAt || new Date().toISOString(),
-          notes: c.notes || c.clientPreferences || c.specifications || "",
-          projects: [],
-        }));
+        const records: AdminClientRecord[] = list.map((c: any) => {
+          const cId = (c.id || "").toLowerCase();
+          const cName = (c.fullName || c.name || "").trim().toLowerCase();
+          const linked = Array.isArray(allProjects)
+            ? allProjects.filter((p: any) => {
+                const pClientId = (p.clientId || "").toString().toLowerCase();
+                const pClientName = (p.clientName || "").trim().toLowerCase();
+                return (pClientId && pClientId === cId) || (pClientName && pClientName === cName);
+              })
+            : [];
+
+          return {
+            id: c.id || "",
+            reference: c.clientReference || c.reference || "CLI",
+            fullName: c.fullName || c.name || "Client",
+            email: c.email || "",
+            phone: c.phone || "",
+            organisation: c.companyName || c.organisation,
+            location: c.city ? `${c.city}, ${c.state || ""}` : c.address || "Maharashtra",
+            status: (c.status === "ACTIVE"
+              ? "Active"
+              : c.status === "SUSPENDED"
+              ? "Suspended"
+              : "Inactive") as AdminClientStatus,
+            portalAccess: (c.invitationStatus === "ACCEPTED" || c.hasPortalAccess
+              ? "Active"
+              : c.invitationStatus === "SENT"
+              ? "Invitation Pending"
+              : "Not Invited") as any,
+            createdAt: c.createdAt || new Date().toISOString(),
+            lastUpdated: c.updatedAt || new Date().toISOString(),
+            notes: c.notes || c.clientPreferences || c.specifications || "",
+            projects: linked.map((p: any) => ({
+              id: p.id || "",
+              reference: p.projectReference || p.reference || "OPR",
+              name: p.name || "Project",
+              status: (p.status === "IN_PROGRESS" || p.status === "Under Execution"
+                ? "Under Execution"
+                : p.status === "PLANNING"
+                ? "Planning"
+                : p.status === "COMPLETED"
+                ? "Completed"
+                : "Under Design") as any,
+            })),
+          };
+        });
         setClients(records);
       }
     } catch (err: unknown) {
@@ -169,7 +197,7 @@ export default function AdminClientsPage() {
   };
 
   return (
-    <div className="p-4 sm:p-8">
+    <div className="w-full">
       {actionFeedback && (
         <div
           className={`mb-6 p-4 rounded text-sm font-mono flex items-center justify-between ${
@@ -239,7 +267,7 @@ export default function AdminClientsPage() {
         onUpdateClientStatus={handleUpdateStatus}
         onUpdatePortalAccess={handleUpdatePortalAccess}
         onCreatePortalAccount={handleCreatePortalAccount}
-        onOpenProject={(projId) => router.push(`/admin/projects?id=${projId}`)}
+        onOpenProject={(projId) => router.push(`/admin/projects/${projId}`)}
         onAddClient={() => setIsCreateModalOpen(true)}
         onAddBill={(client) => {
           setSelectedBillClient(client || null);

@@ -195,16 +195,7 @@ export default function AdminConsentNotificationPreferenceCenter({
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={onRefresh}
-          disabled={!onRefresh || loading}
-          className="flex items-center justify-center gap-2 self-start rounded-lg border border-[#ded9cf] px-4 py-2.5 text-sm font-medium text-[#34322c] hover:bg-[#f8f6f1] disabled:opacity-50"
-        >
-          <RefreshCw size={15} />
-          Refresh records
-        </button>
-      </header>
+        </header>
 
       {error && (
         <div

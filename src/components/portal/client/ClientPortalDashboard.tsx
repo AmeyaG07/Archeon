@@ -36,7 +36,7 @@ export interface DashboardActivity {
   title: string;
   description: string;
   date: string;
-  category: "Project" | "Invoice" | "Payment" | "Dispute" | "Document";
+  category: "Project" | "Invoice" | "Payment" | "Document";
 }
 
 export interface ClientDashboardData {
@@ -78,9 +78,6 @@ function getActivityIcon(category: DashboardActivity["category"]) {
 
     case "Payment":
       return <IndianRupee size={17} />;
-
-    case "Dispute":
-      return <AlertCircle size={17} />;
 
     case "Document":
       return <FolderOpen size={17} />;

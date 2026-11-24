@@ -30,7 +30,7 @@ export default function ClientNotificationsPage() {
           let category: ClientNotificationCategory = "Project";
           if (cat.includes("INVOICE")) category = "Invoice";
           else if (cat.includes("PAYMENT")) category = "Payment";
-          else if (cat.includes("DISPUTE")) category = "Dispute";
+          else if (cat.includes("DISPUTE")) category = "Invoice";
           else if (cat.includes("DOC")) category = "Document";
           else if (cat.includes("ANNOUNCE")) category = "Announcement";
 

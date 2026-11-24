@@ -20,7 +20,6 @@ export type ClientNotificationCategory =
   | "Project"
   | "Invoice"
   | "Payment"
-  | "Dispute"
   | "Document"
   | "Announcement";
 
@@ -67,9 +66,6 @@ function NotificationIcon({
 
     case "Payment":
       return <CreditCard {...iconProps} />;
-
-    case "Dispute":
-      return <MessageSquare {...iconProps} />;
 
     case "Document":
       return <FileText {...iconProps} />;

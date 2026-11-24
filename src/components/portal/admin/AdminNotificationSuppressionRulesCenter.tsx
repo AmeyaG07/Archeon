@@ -175,16 +175,6 @@ export default function AdminNotificationSuppressionRulesCenter({
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
-            onClick={onRefresh}
-            disabled={!onRefresh || loading}
-            className="flex items-center gap-2 rounded-lg border border-[#ded9cf] px-4 py-2.5 text-sm font-medium text-[#34322c] hover:bg-[#f8f6f1] disabled:opacity-50"
-          >
-            <RefreshCw size={15} />
-            Refresh
-          </button>
-
-          <button
-            type="button"
             onClick={onCreate}
             disabled={!onCreate}
             className="flex items-center gap-2 rounded-lg bg-[#292821] px-4 py-2.5 text-sm font-medium text-white disabled:opacity-40"

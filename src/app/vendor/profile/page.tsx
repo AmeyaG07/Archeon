@@ -27,7 +27,6 @@ export default function VendorProfilePage() {
     projectUpdates: true,
     invoiceUpdates: true,
     paymentUpdates: true,
-    disputeUpdates: true,
     studioAnnouncements: false,
     emailNotifications: true,
     whatsappNotifications: true,

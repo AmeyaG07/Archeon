@@ -27,7 +27,6 @@ export type ClientPortalSection =
   | "documents"
   | "invoices"
   | "payments"
-  | "disputes"
   | "notifications"
   | "support"
   | "settings";
@@ -73,12 +72,6 @@ const NAVIGATION: NavigationItem[] = [
     icon: Building2,
   },
   {
-    id: "drawings",
-    label: "Drawings & Renders",
-    description: "Approved design deliverables",
-    icon: Images,
-  },
-  {
     id: "documents",
     label: "Document Library",
     description: "Your project documents",
@@ -95,12 +88,6 @@ const NAVIGATION: NavigationItem[] = [
     label: "Payment Records",
     description: "Payment submissions and status",
     icon: CreditCard,
-  },
-  {
-    id: "disputes",
-    label: "Disputes",
-    description: "Track raised disputes",
-    icon: MessageSquareWarning,
   },
   {
     id: "notifications",

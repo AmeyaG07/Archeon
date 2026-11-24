@@ -251,15 +251,6 @@ export default function AdminDataImportCenter({
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
-            onClick={onRefresh}
-            disabled={!onRefresh || loading}
-            className="rounded-lg border border-[#ded9cf] bg-white px-4 py-2.5 text-sm font-medium text-[#34322c] hover:bg-[#f8f6f1] disabled:opacity-50"
-          >
-            Refresh
-          </button>
-
-          <button
-            type="button"
             onClick={onRequestUpload}
             disabled={!onRequestUpload}
             className="inline-flex items-center gap-2 rounded-lg bg-[#292821] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#403e35] disabled:opacity-50"

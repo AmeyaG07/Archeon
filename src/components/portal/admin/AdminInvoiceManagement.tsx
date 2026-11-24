@@ -111,7 +111,6 @@ const INVOICE_STATUSES: AdminInvoiceStatus[] = [
   "Payment Processing",
   "Partially Paid",
   "Paid",
-  "Disputed",
   "Cancelled",
 ];
 

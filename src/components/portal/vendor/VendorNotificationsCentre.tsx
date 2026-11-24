@@ -23,7 +23,6 @@ export type VendorNotificationCategory =
   | "Project"
   | "Invoice"
   | "Payment"
-  | "Dispute"
   | "Announcement"
   | "System";
 
@@ -68,7 +67,6 @@ const FILTERS: NotificationFilter[] = [
   "Project",
   "Invoice",
   "Payment",
-  "Dispute",
   "Announcement",
   "System",
 ];
@@ -97,9 +95,6 @@ function renderCategoryIcon(category: VendorNotificationCategory, size: number) 
 
     case "Payment":
       return <IndianRupee size={size} />;
-
-    case "Dispute":
-      return <MessageSquare size={size} />;
 
     case "Announcement":
       return <Megaphone size={size} />;
@@ -228,7 +223,7 @@ export function VendorNotificationsCentre({
 
               <p className="mt-4 max-w-2xl text-sm leading-7 text-[#77736C]">
                 Stay informed about your assignments, invoices,
-                payments, disputes and studio updates.
+                payments and studio updates.
               </p>
             </div>
 

@@ -453,11 +453,6 @@ export function AdminCashSettlementManagement({
           label="Verified"
           value={totals.verifiedCount.toLocaleString("en-IN")}
         />
-
-        <SummaryCard
-          label="Disputed"
-          value={totals.disputedCount.toLocaleString("en-IN")}
-        />
       </section>
 
       {/* Governance Notice */}
@@ -505,7 +500,6 @@ export function AdminCashSettlementManagement({
               "Awaiting Acknowledgement",
               "Awaiting Finance Verification",
               "Verified",
-              "Disputed",
               "Rejected",
             ] as SettlementFilter[]
           ).map((item) => (

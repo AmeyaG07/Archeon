@@ -44,7 +44,7 @@ export interface ClientProjectWorkspaceData {
   updates: ClientProjectUpdate[];
 }
 
-type WorkspaceTab = "overview" | "drawings" | "renders" | "documents";
+type WorkspaceTab = "overview" | "renders" | "documents";
 
 interface ClientProjectWorkspaceProps {
   project: ClientProjectWorkspaceData;
@@ -58,7 +58,6 @@ interface ClientProjectWorkspaceProps {
 
 const tabs: { id: WorkspaceTab; label: string }[] = [
   { id: "overview", label: "Overview" },
-  { id: "drawings", label: "Drawings" },
   { id: "renders", label: "Renders" },
   { id: "documents", label: "Documents" },
 ];
@@ -74,22 +73,17 @@ export function ClientProjectWorkspace({
     useState<WorkspaceTab>("overview");
 
   const visibleDocuments =
-    activeTab === "drawings"
+    activeTab === "renders"
       ? project.documents.filter(
           (document) =>
-            document.category === "Drawing" && document.approved
+            document.category === "Render" && document.approved
         )
-      : activeTab === "renders"
+      : activeTab === "documents"
         ? project.documents.filter(
             (document) =>
-              document.category === "Render" && document.approved
+              document.category === "Document" && document.approved
           )
-        : activeTab === "documents"
-          ? project.documents.filter(
-              (document) =>
-                document.category === "Document" && document.approved
-            )
-          : [];
+        : [];
 
   if (loading) {
     return (

@@ -31,7 +31,6 @@ export type VendorPortalSection =
   | "invoices"
   | "cash-settlements"
   | "payments"
-  | "disputes"
   | "notifications"
   | "support"
   | "settings";
@@ -94,12 +93,6 @@ const NAVIGATION: NavigationItem[] = [
     label: "Payment History",
     description: "Verified payments",
     icon: ReceiptText,
-  },
-  {
-    id: "disputes",
-    label: "Disputes",
-    description: "Dispute tracking",
-    icon: MessageSquareWarning,
   },
   {
     id: "notifications",

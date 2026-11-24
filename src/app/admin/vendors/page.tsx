@@ -65,14 +65,16 @@ export default function AdminVendorsPage() {
       const billingMap = new Map<string, any>();
       if (Array.isArray(billingDirectory)) {
         billingDirectory.forEach((b) => {
-          if (b.vendorId) billingMap.set(b.vendorId, b);
-          if (b.vendorReference) billingMap.set(b.vendorReference, b);
+          if (b.vendorId) billingMap.set(b.vendorId.toString().toLowerCase(), b);
+          if (b.vendorReference) billingMap.set(b.vendorReference.toString().toLowerCase(), b);
         });
       }
 
       if (Array.isArray(list)) {
         const records: AdminVendorRecord[] = list.map((v: any) => {
-          const bInfo = billingMap.get(v.id) || billingMap.get(v.vendorReference) || {};
+          const vId = (v.id || "").toString().toLowerCase();
+          const vRef = (v.vendorReference || v.reference || "").toString().toLowerCase();
+          const bInfo = billingMap.get(vId) || billingMap.get(vRef) || {};
           return {
             id: v.id || "",
             reference: v.vendorReference || v.reference || "VEN",
@@ -98,7 +100,7 @@ export default function AdminVendorsPage() {
               name: p.name || "",
               status: (p.status || "Under Execution") as any,
             })),
-            submittedInvoiceCount: bInfo.activeBillsCount || 0,
+            submittedInvoiceCount: bInfo.totalBillsCount || bInfo.activeBillsCount || 0,
             outstandingInvoiceCount: 0,
             totalBilledAmount: bInfo.totalBilledAmount || 0,
             totalSettledAmount: bInfo.totalSettledAmount || 0,
@@ -199,7 +201,7 @@ export default function AdminVendorsPage() {
   };
 
   return (
-    <div className="p-4 sm:p-8">
+    <div className="w-full">
       {actionFeedback && (
         <div
           className={`mb-6 p-4 rounded text-sm font-mono flex items-center justify-between ${
@@ -270,7 +272,7 @@ export default function AdminVendorsPage() {
         onUpdatePortalAccess={handleUpdatePortalAccess}
         onCreatePortalAccount={handleCreatePortalAccount}
         onOpenProject={(projId) => router.push(`/admin/projects?id=${projId}`)}
-        onOpenInvoices={() => router.push("/admin/approvals")}
+        onOpenInvoices={() => router.push("/admin/invoices")}
         onAddVendor={() => setIsCreateModalOpen(true)}
         onEditVendor={(vendor) => setEditingVendor(vendor)}
         onManagePaymentSettings={(vendor) => setPaymentSettingsVendor(vendor)}

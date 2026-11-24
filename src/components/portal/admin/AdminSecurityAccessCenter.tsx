@@ -231,21 +231,6 @@ export default function AdminSecurityAccessCenter({
           </div>
 
           <div className="flex flex-wrap gap-3">
-            {onRefresh && (
-              <button
-                type="button"
-                onClick={onRefresh}
-                disabled={loading}
-                className="inline-flex items-center gap-2 rounded-lg border border-[#D8D6D0] bg-white px-4 py-2.5 text-xs font-medium text-[#33312E] hover:border-[#B68A4A] disabled:opacity-50"
-              >
-                <RefreshCw
-                  size={14}
-                  className={loading ? "animate-spin" : ""}
-                />
-                Refresh
-              </button>
-            )}
-
             {onCreateInvitation && (
               <button
                 type="button"

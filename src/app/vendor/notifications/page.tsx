@@ -31,7 +31,7 @@ export default function VendorNotificationsPage() {
           let category: VendorNotificationCategory = "Project";
           if (cat.includes("INVOICE")) category = "Invoice";
           else if (cat.includes("PAYMENT")) category = "Payment";
-          else if (cat.includes("DISPUTE")) category = "Dispute";
+          else if (cat.includes("DISPUTE")) category = "Invoice";
           else if (cat.includes("ANNOUNCE")) category = "Announcement";
 
           const priority: VendorNotificationPriority = "Normal";

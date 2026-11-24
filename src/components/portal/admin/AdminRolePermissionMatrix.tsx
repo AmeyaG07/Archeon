@@ -374,18 +374,6 @@ export function AdminRolePermissionMatrix({
             each role is authorised to perform.
           </p>
         </div>
-
-        {onRefresh && (
-          <button
-            type="button"
-            onClick={onRefresh}
-            disabled={loading || saving}
-            className="inline-flex items-center gap-2 border border-[#D8D6D0] bg-white px-5 py-3 text-[10px] uppercase tracking-widest text-[#55514A] disabled:opacity-40"
-          >
-            <RefreshCw size={14} />
-            Refresh
-          </button>
-        )}
       </header>
 
       {error && <Feedback type="error">{error}</Feedback>}

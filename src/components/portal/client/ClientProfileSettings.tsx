@@ -21,7 +21,6 @@ export interface ClientProfile {
   preferredContact: "Email" | "Phone" | "WhatsApp";
   projectUpdateNotifications: boolean;
   invoiceNotifications: boolean;
-  disputeNotifications: boolean;
   announcementNotifications: boolean;
 }
 
@@ -32,7 +31,6 @@ export interface ClientProfileUpdate {
   preferredContact: ClientProfile["preferredContact"];
   projectUpdateNotifications: boolean;
   invoiceNotifications: boolean;
-  disputeNotifications: boolean;
   announcementNotifications: boolean;
 }
 
@@ -72,7 +70,6 @@ export function ClientProfileSettings({
     projectUpdateNotifications:
       profile.projectUpdateNotifications,
     invoiceNotifications: profile.invoiceNotifications,
-    disputeNotifications: profile.disputeNotifications,
     announcementNotifications:
       profile.announcementNotifications,
   });
@@ -295,16 +292,6 @@ export function ClientProfileSettings({
                   checked={preferences.invoiceNotifications}
                   onChange={(value) =>
                     updatePreference("invoiceNotifications", value)
-                  }
-                  disabled={saving}
-                />
-
-                <PreferenceToggle
-                  label="Dispute Notifications"
-                  description="Responses and status changes for your disputes."
-                  checked={preferences.disputeNotifications}
-                  onChange={(value) =>
-                    updatePreference("disputeNotifications", value)
                   }
                   disabled={saving}
                 />

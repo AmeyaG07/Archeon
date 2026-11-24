@@ -240,16 +240,7 @@ export default function AdminComplianceEvidenceCenter({
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={onRefresh}
-            disabled={!onRefresh || loading}
-            className="inline-flex items-center justify-center gap-2 rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-sm font-medium hover:bg-stone-50 disabled:opacity-50"
-          >
-            <ClipboardCheck size={15} />
-            Refresh records
-          </button>
-        </header>
+          </header>
 
         {error && (
           <div

@@ -277,7 +277,7 @@ export function AdminClientManagement({
   }
 
   return (
-    <main className="min-h-screen bg-[#F2F0EB] px-5 py-9 md:px-10 md:py-12 lg:px-12">
+    <main className="min-h-screen bg-[#F2F0EB] px-2.5 sm:px-5 py-6 sm:py-9 md:px-10 md:py-12 lg:px-12">
 
       {/* Header */}
       <header className="flex flex-col justify-between gap-6 border-b border-[#D8D6D0] pb-8 md:flex-row md:items-end">
@@ -338,7 +338,7 @@ export function AdminClientManagement({
       )}
 
       {/* Summary */}
-      <section className="mt-9 grid grid-cols-2 gap-px border border-[#D8D6D0] bg-[#D8D6D0] lg:grid-cols-5">
+      <section className="mt-9 grid grid-cols-1 sm:grid-cols-2 gap-px border border-[#D8D6D0] bg-[#D8D6D0] lg:grid-cols-5">
         <SummaryCard label="Total Clients" value={counts.total} />
         <SummaryCard label="Active Clients" value={counts.active} />
         <SummaryCard label="Suspended" value={counts.suspended} />
@@ -1017,12 +1017,12 @@ function SummaryCard({
   value: number;
 }) {
   return (
-    <div className="bg-white p-5 md:p-6">
-      <p className="font-mono text-[9px] uppercase tracking-widest text-[#99958D]">
+    <div className="bg-white p-3.5 sm:p-5 md:p-6 min-w-0">
+      <p className="font-mono text-[9px] uppercase tracking-wider text-[#99958D] break-words">
         {label}
       </p>
 
-      <p className="mt-5 font-serif text-3xl text-[#171717]">
+      <p className="mt-3 sm:mt-5 font-serif text-2xl sm:text-3xl text-[#171717]">
         {value.toLocaleString("en-IN")}
       </p>
     </div>
@@ -1106,6 +1106,23 @@ function ClientCard({
         </div>
       ) : null}
 
+      {client.projects && client.projects.length > 0 && (
+        <div className="mt-3.5 flex flex-wrap items-center gap-1.5">
+          <span className="font-mono text-[9px] uppercase tracking-widest text-[#99958D] mr-1">
+            Projects ({client.projects.length}):
+          </span>
+          {client.projects.map((p) => (
+            <span
+              key={p.id}
+              className="inline-flex items-center gap-1 rounded-xs border border-[#D8D6D0] bg-[#FAF9F6] px-2 py-0.5 font-mono text-[9px] text-[#171717]"
+            >
+              <FolderKanban size={10} className="text-[#A58A64]" />
+              <span className="font-semibold text-[#A58A64]">{p.reference}:</span> {p.name}
+            </span>
+          ))}
+        </div>
+      )}
+
       <div className="mt-6 flex flex-col justify-between gap-4 border-t border-[#E5E2DC] pt-5 sm:flex-row sm:items-center">
         <div className="flex flex-wrap gap-x-6 gap-y-2 text-[10px] text-[#77736C]">
           <span>
@@ -1136,7 +1153,7 @@ function ClientCard({
           <button
             type="button"
             onClick={onOpen}
-            className="inline-flex items-center gap-2 text-[9px] uppercase tracking-widest text-[#987543] hover:text-[#171717]"
+            className="min-h-[44px] inline-flex items-center gap-2 border border-[#D8D6D0] bg-[#FAF9F6] px-3.5 py-2 text-[9px] uppercase tracking-widest text-[#987543] hover:border-[#171717] hover:text-[#171717] transition-colors rounded-sm"
           >
             Review Client
             <ArrowUpRight size={14} />

@@ -46,7 +46,6 @@ type CategoryFilter = "All" | ClientLibraryCategory;
 
 const categories: CategoryFilter[] = [
   "All",
-  "Drawing",
   "Render",
   "Agreement",
   "Invoice",

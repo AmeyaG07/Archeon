@@ -21,7 +21,6 @@ export default function ClientProfilePage() {
     preferredContact: "Email",
     projectUpdateNotifications: true,
     invoiceNotifications: true,
-    disputeNotifications: true,
     announcementNotifications: false,
   });
   const [loading, setLoading] = useState(true);
@@ -43,7 +42,6 @@ export default function ClientProfilePage() {
         preferredContact: "Email",
         projectUpdateNotifications: true,
         invoiceNotifications: true,
-        disputeNotifications: true,
         announcementNotifications: false,
       });
     } catch {

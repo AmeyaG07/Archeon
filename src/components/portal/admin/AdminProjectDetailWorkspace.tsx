@@ -379,17 +379,6 @@ export function AdminProjectDetailWorkspace({
                 Change Status
               </button>
             )}
-
-            {onRefresh && (
-              <button
-                type="button"
-                onClick={onRefresh}
-                disabled={loading}
-                className="border border-[#D8D6D0] bg-white px-5 py-3 text-[9px] uppercase tracking-widest text-[#55514A] disabled:opacity-50"
-              >
-                Refresh
-              </button>
-            )}
           </div>
         </div>
 

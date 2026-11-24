@@ -1408,7 +1408,7 @@ function VendorCard({
         <button
           type="button"
           onClick={onOpen}
-          className="inline-flex items-center gap-2 text-[9px] uppercase tracking-widest text-[#987543] hover:text-[#171717]"
+          className="min-h-[44px] inline-flex items-center gap-2 border border-[#D8D6D0] bg-[#FAF9F6] px-3.5 py-2 text-[9px] uppercase tracking-widest text-[#987543] hover:border-[#171717] hover:text-[#171717] transition-colors rounded-sm"
         >
           Review Vendor
           <ArrowUpRight size={14} />

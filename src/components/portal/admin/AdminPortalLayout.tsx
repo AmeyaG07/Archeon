@@ -110,12 +110,6 @@ const NAVIGATION_GROUPS: NavigationGroup[] = [
         description: "Client accounts",
         icon: UserRound,
       },
-      {
-        id: "vendors",
-        label: "Vendors",
-        description: "Vendor accounts",
-        icon: HardHat,
-      },
     ],
   },
   {

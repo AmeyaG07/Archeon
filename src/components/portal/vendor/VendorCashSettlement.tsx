@@ -460,18 +460,6 @@ export function VendorCashSettlement({
                               {directUpdatingId === settlement.id ? "Updating..." : "Directly Update: Paid in Cash"}
                             </button>
                           )}
-
-                          <button
-                            type="button"
-                            onClick={() =>
-                              openDecision(settlement, "DISPUTE")
-                            }
-                            disabled={Boolean(submittingId)}
-                            className="inline-flex items-center gap-2 border border-[#D8D6D0] px-6 py-3 text-[10px] uppercase tracking-widest text-[#9A5147] hover:border-[#9A5147] disabled:opacity-50"
-                          >
-                            <AlertCircle size={15} />
-                            Dispute Settlement
-                          </button>
                         </>
                       )}
 

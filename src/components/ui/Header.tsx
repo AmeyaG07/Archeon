@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -35,31 +35,39 @@ export function Header({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [portalDropdownOpen, setPortalDropdownOpen] = useState(false);
+  const portalDropdownRef = useRef<HTMLDivElement>(null);
 
   const handleClientPortalClick = () => {
     setPortalDropdownOpen(false);
     setMobileMenuOpen(false);
-    if (isAuthenticated && (user?.role === "ROLE_CLIENT" || user?.role === "CLIENT")) {
-      router.push("/client");
-    } else {
-      onOpenClientPortal();
-    }
+    router.push("/client");
   };
 
   const handleVendorPortalClick = () => {
     setPortalDropdownOpen(false);
     setMobileMenuOpen(false);
-    if (isAuthenticated && (user?.role === "ROLE_VENDOR" || user?.role === "VENDOR")) {
-      router.push("/vendor");
-    } else {
-      onOpenVendorPortal();
-    }
+    router.push("/vendor");
   };
 
   const closeMenu = () => {
     setMobileMenuOpen(false);
     setPortalDropdownOpen(false);
   };
+
+  // Close portal dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (portalDropdownRef.current && !portalDropdownRef.current.contains(e.target as Node)) {
+        setPortalDropdownOpen(false);
+      }
+    };
+    if (portalDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [portalDropdownOpen]);
 
   // Scroll listener for dynamic glassmorphic elevation
   useEffect(() => {
@@ -97,13 +105,22 @@ export function Header({
   const handleNavigation = (href: string) => {
     closeMenu();
 
-    if (href.startsWith("#")) {
-      const target = document.querySelector(href);
-      target?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    }
+    setTimeout(() => {
+      if (href.startsWith("#")) {
+        const target = document.querySelector(href) as HTMLElement | null;
+        if (target) {
+          if (typeof (window as any).lenis?.start === "function") {
+            (window as any).lenis.start();
+          }
+          if (typeof (window as any).lenis?.scrollTo === "function") {
+            (window as any).lenis.scrollTo(target, { offset: -80 });
+          } else {
+            const top = target.getBoundingClientRect().top + window.scrollY - 80;
+            window.scrollTo({ top, behavior: "smooth" });
+          }
+        }
+      }
+    }, 50);
   };
 
   return (
@@ -156,28 +173,36 @@ export function Header({
             className="hidden lg:flex items-center justify-center gap-5 xl:gap-8 mx-auto"
           >
             {navigation.map((item) => (
-              <button
+              <a
                 key={item.label}
-                type="button"
-                onClick={() => handleNavigation(item.href)}
-                className="group relative py-1.5 px-1 text-[13px] xl:text-[14px] font-['Outfit',sans-serif] font-normal tracking-[0.12em] text-[#D4D0C5] hover:text-white transition-colors duration-300"
+                href={item.href}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleNavigation(item.href);
+                }}
+                className="group relative py-1.5 px-1 text-[13px] xl:text-[14px] font-['Outfit',sans-serif] font-normal tracking-[0.12em] text-[#D4D0C5] hover:text-white transition-colors duration-300 cursor-pointer"
               >
                 <span className="capitalize">{item.label}</span>
 
                 {/* Refined Gold Ambient Underline Indicator */}
                 <span className="absolute bottom-0 left-1/2 h-[1.5px] w-0 -translate-x-1/2 bg-gradient-to-r from-transparent via-[#C6A779] to-transparent transition-all duration-300 group-hover:w-full shadow-[0_0_8px_rgba(198,167,121,0.8)]" />
-              </button>
+              </a>
             ))}
           </nav>
 
           {/* Column 3: Right Desktop Action Suite (Portals & Inquire Project) */}
           <div className="hidden items-center gap-3 shrink-0 lg:flex">
             {/* Portals Access Dropdown Pill */}
-            <div className="relative">
+            <div
+              className="relative"
+              ref={portalDropdownRef}
+              onMouseEnter={() => setPortalDropdownOpen(true)}
+              onMouseLeave={() => setPortalDropdownOpen(false)}
+            >
               <button
                 type="button"
                 onClick={() => setPortalDropdownOpen((prev) => !prev)}
-                className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border transition-all duration-300 font-['Outfit',sans-serif] text-[11.5px] font-medium tracking-[0.1em] backdrop-blur-md ${portalDropdownOpen
+                className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border transition-all duration-300 font-['Outfit',sans-serif] text-[11.5px] font-medium tracking-[0.1em] backdrop-blur-md cursor-pointer ${portalDropdownOpen
                     ? "border-[#B68A4A] bg-[#B68A4A]/20 text-[#E0D8C3] shadow-[0_0_15px_rgba(182,138,74,0.3)]"
                     : "border-white/15 bg-white/[0.04] text-white/80 hover:border-[#B68A4A]/60 hover:bg-[#B68A4A]/10 hover:text-white"
                   }`}
@@ -194,50 +219,51 @@ export function Header({
               {/* Dropdown Menu */}
               {portalDropdownOpen && (
                 <div
-                  className="absolute right-0 top-full mt-2 w-52 rounded-sm border border-[#B68A4A]/30 bg-[#121212]/95 backdrop-blur-2xl p-2 shadow-[0_12px_40px_rgba(0,0,0,0.8)] z-50 animate-in fade-in slide-in-from-top-1 duration-200"
-                  onMouseLeave={() => setPortalDropdownOpen(false)}
+                  className="absolute right-0 top-full pt-1.5 w-52 z-50 animate-in fade-in slide-in-from-top-1 duration-200"
                 >
-                  <div className="px-3 py-1.5 text-[9px] font-mono uppercase tracking-[0.2em] text-[#B68A4A] border-b border-white/10 mb-1">
-                    Secure Workspace
+                  <div className="rounded-sm border border-[#B68A4A]/30 bg-[#121212]/95 backdrop-blur-2xl p-2 shadow-[0_12px_40px_rgba(0,0,0,0.8)]">
+                    <div className="px-3 py-1.5 text-[9px] font-mono uppercase tracking-[0.2em] text-[#B68A4A] border-b border-white/10 mb-1">
+                      Secure Workspace
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleClientPortalClick}
+                      className="w-full text-left px-3 py-2 text-xs font-['Outfit',sans-serif] text-stone-300 hover:text-white hover:bg-white/10 rounded-xs transition-colors flex items-center justify-between group cursor-pointer"
+                    >
+                      <span>Client Portal</span>
+                      <ArrowUpRight
+                        size={12}
+                        className="text-[#B68A4A] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
+                      />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleVendorPortalClick}
+                      className="w-full text-left px-3 py-2 text-xs font-['Outfit',sans-serif] text-stone-300 hover:text-white hover:bg-white/10 rounded-xs transition-colors flex items-center justify-between group cursor-pointer"
+                    >
+                      <span>Vendor Portal</span>
+                      <ArrowUpRight
+                        size={12}
+                        className="text-[#B68A4A] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
+                      />
+                    </button>
+
+                    <div className="border-t border-white/10 my-1" />
+
+                    <Link
+                      href="/admin"
+                      onClick={() => setPortalDropdownOpen(false)}
+                      className="w-full text-left px-3 py-2 text-xs font-['Outfit',sans-serif] text-[#C6A779] hover:text-white hover:bg-[#B68A4A]/25 rounded-xs transition-colors flex items-center justify-between group cursor-pointer"
+                    >
+                      <span>Admin Portal</span>
+                      <ArrowUpRight
+                        size={12}
+                        className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
+                      />
+                    </Link>
                   </div>
-
-                  <button
-                    type="button"
-                    onClick={handleClientPortalClick}
-                    className="w-full text-left px-3 py-2 text-xs font-['Outfit',sans-serif] text-stone-300 hover:text-white hover:bg-white/10 rounded-xs transition-colors flex items-center justify-between group"
-                  >
-                    <span>Client Portal</span>
-                    <ArrowUpRight
-                      size={12}
-                      className="text-[#B68A4A] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
-                    />
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handleVendorPortalClick}
-                    className="w-full text-left px-3 py-2 text-xs font-['Outfit',sans-serif] text-stone-300 hover:text-white hover:bg-white/10 rounded-xs transition-colors flex items-center justify-between group"
-                  >
-                    <span>Vendor Portal</span>
-                    <ArrowUpRight
-                      size={12}
-                      className="text-[#B68A4A] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
-                    />
-                  </button>
-
-                  <div className="border-t border-white/10 my-1" />
-
-                  <Link
-                    href="/login"
-                    onClick={() => setPortalDropdownOpen(false)}
-                    className="w-full text-left px-3 py-2 text-xs font-['Outfit',sans-serif] text-[#C6A779] hover:text-white hover:bg-[#B68A4A]/25 rounded-xs transition-colors flex items-center justify-between group"
-                  >
-                    <span>Admin Login</span>
-                    <ArrowUpRight
-                      size={12}
-                      className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
-                    />
-                  </Link>
                 </div>
               )}
             </div>
@@ -316,18 +342,21 @@ export function Header({
           {/* Navigation Links in Clean Capitalized Font */}
           <nav aria-label="Mobile navigation" className="flex flex-col space-y-1">
             {navigation.map((item) => (
-              <button
+              <a
                 key={item.label}
-                type="button"
+                href={item.href}
                 tabIndex={mobileMenuOpen ? 0 : -1}
-                onClick={() => handleNavigation(item.href)}
-                className="group flex items-center justify-between border-b border-white/[0.08] py-4 text-left font-['Outfit',sans-serif] text-2xl font-normal tracking-[0.1em] text-white/90 hover:text-[#C6A779] transition-all"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleNavigation(item.href);
+                }}
+                className="group flex items-center justify-between border-b border-white/[0.08] py-4 text-left font-['Outfit',sans-serif] text-2xl font-normal tracking-[0.1em] text-white/90 hover:text-[#C6A779] transition-all cursor-pointer"
               >
                 <span className="capitalize group-hover:translate-x-2 transition-transform duration-300">
                   {item.label}
                 </span>
                 <ArrowUpRight size={16} className="text-[#B68A4A] opacity-50 group-hover:opacity-100 transition-opacity" />
-              </button>
+              </a>
             ))}
           </nav>
 

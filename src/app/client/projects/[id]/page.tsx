@@ -61,14 +61,19 @@ interface VendorPaymentMethod {
 }
 
 interface BillItem {
-  id: string;
-  billNumber?: string;
+  id: string | number;
+  billId?: string;
   invoiceNumber?: string;
+  billNumber?: string;
   amount: number;
+  paidAmount?: number;
   tradeCategory?: string;
   status: string; // PENDING, CASH_REQUESTED, PAID_CASH, PAID_ONLINE, APPROVED
   billPhotoUrl?: string;
+  paymentProofUrl?: string;
   createdAt?: string;
+  vendorId?: string;
+  vendorName?: string;
 }
 
 interface VendorExpenseItem {
@@ -119,6 +124,7 @@ export default function ClientProjectWorkspacePage() {
   const [project, setProject] = useState<ProjectDetail | null>(null);
   const [updates, setUpdates] = useState<SiteUpdate[]>([]);
   const [expenseSummary, setExpenseSummary] = useState<ProjectExpenseSummary | null>(null);
+  const [allProjectBills, setAllProjectBills] = useState<BillItem[]>([]);
   const [cashQueue, setCashQueue] = useState<CashApprovalItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -176,6 +182,23 @@ export default function ClientProjectWorkspacePage() {
         setCashQueue(Array.isArray(qRes) ? qRes : []);
       } catch {
         setCashQueue([]);
+      }
+
+      // 5. All Project Bills (sorted latest first)
+      try {
+        const res = await apiFetch(`/api/billing/bills?projectId=${projectId}`);
+        const bList = await res.json();
+        if (Array.isArray(bList)) {
+          const sorted = [...bList].sort((a: any, b: any) =>
+            new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+          );
+          setAllProjectBills(sorted);
+        } else {
+          setAllProjectBills([]);
+        }
+      } catch (bErr) {
+        console.warn("Could not load project bills:", bErr);
+        setAllProjectBills([]);
       }
     } catch (err: unknown) {
       console.error("Failed to load client project workspace:", err);
@@ -248,6 +271,40 @@ export default function ClientProjectWorkspacePage() {
     setCopiedUpi(true);
     setTimeout(() => setCopiedUpi(false), 2000);
   };
+
+  // Vendor name lookup map from expense summary
+  const vendorNameMap = React.useMemo(() => {
+    const map = new Map<string, string>();
+    if (expenseSummary?.vendors) {
+      expenseSummary.vendors.forEach((v) => {
+        const name = v.vendorBusinessName || v.vendorName;
+        if (v.vendorId) map.set(v.vendorId.toLowerCase(), name);
+        if (v.tradeCategory) map.set(v.tradeCategory.toLowerCase(), name);
+      });
+    }
+    return map;
+  }, [expenseSummary]);
+
+  // Derived or combined bills, ensuring latest first
+  const displayedBills: BillItem[] = React.useMemo(() => {
+    let list: BillItem[] = [];
+    if (allProjectBills && allProjectBills.length > 0) {
+      list = [...allProjectBills];
+    } else if (expenseSummary?.vendors) {
+      expenseSummary.vendors.forEach((v) => {
+        (v.bills || []).forEach((b) => {
+          list.push({
+            ...b,
+            vendorName: v.vendorBusinessName || v.vendorName,
+            tradeCategory: b.tradeCategory || v.tradeCategory,
+          });
+        });
+      });
+    }
+    return list.sort((a, b) =>
+      new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+    );
+  }, [allProjectBills, expenseSummary]);
 
   if (loading && !project) {
     return (
@@ -346,77 +403,101 @@ export default function ClientProjectWorkspacePage() {
         </div>
       </div>
 
-      {/* Cash Payment Approval Queue (Requirement Page 2 & 4) */}
+      {/* All Project Bills & Invoices (Sorted Latest First) */}
       <div className="rounded-sm border border-[#D8D6D0] bg-white p-6 md:p-8 shadow-sm">
-        <div className="flex items-center justify-between border-b border-[#D8D6D0] pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#D8D6D0] pb-4 gap-2">
           <div className="flex items-center gap-2">
-            <DollarSign className="text-[#D97724]" size={18} />
-            <h2 className="font-serif text-xl text-[#111111]">Cash Payment Approval Queue</h2>
+            <FileText className="text-[#B68A4A]" size={18} />
+            <div>
+              <h2 className="font-serif text-xl text-[#111111]">Project Bills & Invoices</h2>
+              <p className="font-mono text-[10px] text-[#777777]">
+                Chronological record of submitted trade partner bills (Latest first)
+              </p>
+            </div>
           </div>
-          <span className="font-mono text-xs px-2.5 py-1 rounded-sm bg-[#D97724]/10 text-[#D97724] border border-[#D97724]/30 font-semibold">
-            {cashQueue.length} Pending Approval
+          <span className="font-mono text-xs px-2.5 py-1 rounded-sm bg-[#B68A4A]/10 text-[#B68A4A] border border-[#B68A4A]/30 font-semibold self-start sm:self-auto">
+            {displayedBills.length} Bills Listed
           </span>
         </div>
 
-        {cashQueue.length === 0 ? (
-          <div className="py-8 text-center font-mono text-xs text-[#777777]">
-            No cash payment requests pending your review. All settled or processed via online transfer.
+        {displayedBills.length === 0 ? (
+          <div className="py-12 text-center font-mono text-xs text-[#777777]">
+            No bills or invoices submitted for this project yet.
           </div>
         ) : (
           <div className="mt-4 divide-y divide-[#E5E3DE]">
-            {cashQueue.map((item) => (
-              <div key={item.id} className="py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                <div className="flex items-start gap-4">
-                  {item.billPhotoUrl ? (
-                    <button
-                      onClick={() => setPreviewPhotoUrl(item.billPhotoUrl || null)}
-                      className="group relative w-16 h-16 rounded-sm overflow-hidden border border-[#D8D6D0] bg-black/5 shrink-0"
-                    >
-                      <img src={item.billPhotoUrl} alt="Bill" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
-                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white">
-                        <Eye size={14} />
-                      </div>
-                    </button>
-                  ) : (
-                    <div className="w-16 h-16 rounded-sm bg-[#E5E3DE] flex items-center justify-center text-[#777777] shrink-0">
-                      <FileText size={18} />
-                    </div>
-                  )}
+            {displayedBills.map((b) => {
+              const billNum = b.invoiceNumber || b.billNumber || b.billId || "BILL";
+              const vName = b.vendorName || vendorNameMap.get((b.vendorId || "").toLowerCase()) || "Trade Partner";
+              const isPaid = b.status === "PAID_ONLINE" || b.status === "PAID_CASH" || b.status === "PAID";
+              const isCashReq = b.status === "CASH_REQUESTED";
+              const isApproved = b.status === "APPROVED";
 
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-sm text-[#111111]">{item.vendorName}</span>
-                      <span className="font-mono text-[10px] text-[#777777] px-2 py-0.5 rounded-sm bg-[#E5E3DE]">
-                        {item.tradeCategory || "Contractor"}
-                      </span>
-                    </div>
-                    <p className="mt-1 font-mono text-xs text-[#777777]">
-                      Bill #{item.billNumber} • Requested on {item.requestedAt ? new Date(item.requestedAt).toLocaleDateString("en-IN") : "Today"}
-                    </p>
-                    <div className="mt-1 font-mono text-lg font-bold text-[#111111]">
-                      ₹{item.amount.toLocaleString("en-IN")}
+              return (
+                <div key={b.id || billNum} className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="flex items-start gap-4">
+                    {b.billPhotoUrl ? (
+                      <button
+                        type="button"
+                        onClick={() => setPreviewPhotoUrl(b.billPhotoUrl || null)}
+                        className="group relative w-14 h-14 rounded-sm overflow-hidden border border-[#D8D6D0] bg-black/5 shrink-0"
+                        title="View bill photo"
+                      >
+                        <img src={b.billPhotoUrl} alt="Bill" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                        <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white">
+                          <Eye size={14} />
+                        </div>
+                      </button>
+                    ) : (
+                      <div className="w-14 h-14 rounded-sm bg-[#E5E3DE] flex items-center justify-center text-[#777777] shrink-0">
+                        <FileText size={18} />
+                      </div>
+                    )}
+
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-semibold text-sm text-[#111111]">{vName}</span>
+                        {b.tradeCategory && (
+                          <span className="font-mono text-[10px] text-[#777777] px-2 py-0.5 rounded-sm bg-[#E5E3DE]">
+                            {b.tradeCategory}
+                          </span>
+                        )}
+                        <span className={`font-mono text-[10px] px-2 py-0.5 rounded-sm font-semibold uppercase ${
+                          isPaid
+                            ? "bg-[#10B981]/15 text-[#10B981] border border-[#10B981]/30"
+                            : isCashReq
+                            ? "bg-[#D97724]/15 text-[#D97724] border border-[#D97724]/30"
+                            : isApproved
+                            ? "bg-[#0284C7]/15 text-[#0284C7] border border-[#0284C7]/30"
+                            : "bg-[#777777]/10 text-[#777777] border border-[#777777]/20"
+                        }`}>
+                          {b.status.replace(/_/g, " ")}
+                        </span>
+                      </div>
+
+                      <p className="mt-1 font-mono text-xs text-[#777777]">
+                        Invoice #{billNum} • Issued on {b.createdAt ? new Date(b.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "Today"}
+                      </p>
+                      <div className="mt-1 font-mono text-lg font-bold text-[#111111]">
+                        ₹{Number(b.amount || 0).toLocaleString("en-IN")}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="flex items-center gap-3 w-full md:w-auto">
-                  <button
-                    onClick={() => handleRejectCash(item.id)}
-                    disabled={actionLoading}
-                    className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2 border border-[#EF4444] text-[#EF4444] hover:bg-[#EF4444]/10 font-mono text-xs uppercase tracking-wider transition-colors disabled:opacity-50 rounded-sm"
-                  >
-                    <X size={14} /> Reject
-                  </button>
-                  <button
-                    onClick={() => handleApproveCash(item.id)}
-                    disabled={actionLoading}
-                    className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 px-5 py-2 bg-[#10B981] text-white hover:bg-[#059669] font-mono text-xs uppercase tracking-wider transition-colors disabled:opacity-50 rounded-sm"
-                  >
-                    <Check size={14} /> Approve Cash
-                  </button>
+                  <div className="flex items-center gap-3 self-end md:self-auto">
+                    {b.billPhotoUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setPreviewPhotoUrl(b.billPhotoUrl || null)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[#B68A4A] text-[#B68A4A] hover:bg-[#B68A4A] hover:text-white font-mono text-xs uppercase tracking-wider transition-colors rounded-sm"
+                      >
+                        <Eye size={14} /> View Receipt Photo
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -586,6 +667,82 @@ export default function ClientProjectWorkspacePage() {
               </div>
               );
             })}
+          </div>
+        )}
+      </div>
+
+      {/* Cash Payment Approval Queue (Requirement: Moved to the end of the page) */}
+      <div className="rounded-sm border border-[#D8D6D0] bg-white p-6 md:p-8 shadow-sm">
+        <div className="flex items-center justify-between border-b border-[#D8D6D0] pb-4">
+          <div className="flex items-center gap-2">
+            <DollarSign className="text-[#D97724]" size={18} />
+            <h2 className="font-serif text-xl text-[#111111]">Cash Payment Approval Queue</h2>
+          </div>
+          <span className="font-mono text-xs px-2.5 py-1 rounded-sm bg-[#D97724]/10 text-[#D97724] border border-[#D97724]/30 font-semibold">
+            {cashQueue.length} Pending Approval
+          </span>
+        </div>
+
+        {cashQueue.length === 0 ? (
+          <div className="py-8 text-center font-mono text-xs text-[#777777]">
+            No cash payment requests pending your review. All settled or processed via online transfer.
+          </div>
+        ) : (
+          <div className="mt-4 divide-y divide-[#E5E3DE]">
+            {cashQueue.map((item) => (
+              <div key={item.id} className="py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div className="flex items-start gap-4">
+                  {item.billPhotoUrl ? (
+                    <button
+                      type="button"
+                      onClick={() => setPreviewPhotoUrl(item.billPhotoUrl || null)}
+                      className="group relative w-16 h-16 rounded-sm overflow-hidden border border-[#D8D6D0] bg-black/5 shrink-0"
+                    >
+                      <img src={item.billPhotoUrl} alt="Bill" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white">
+                        <Eye size={14} />
+                      </div>
+                    </button>
+                  ) : (
+                    <div className="w-16 h-16 rounded-sm bg-[#E5E3DE] flex items-center justify-center text-[#777777] shrink-0">
+                      <FileText size={18} />
+                    </div>
+                  )}
+
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-sm text-[#111111]">{item.vendorName}</span>
+                      <span className="font-mono text-[10px] text-[#777777] px-2 py-0.5 rounded-sm bg-[#E5E3DE]">
+                        {item.tradeCategory || "Contractor"}
+                      </span>
+                    </div>
+                    <p className="mt-1 font-mono text-xs text-[#777777]">
+                      Bill #{item.billNumber} • Requested on {item.requestedAt ? new Date(item.requestedAt).toLocaleDateString("en-IN") : "Today"}
+                    </p>
+                    <div className="mt-1 font-mono text-lg font-bold text-[#111111]">
+                      ₹{item.amount.toLocaleString("en-IN")}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 w-full md:w-auto">
+                  <button
+                    onClick={() => handleRejectCash(item.id)}
+                    disabled={actionLoading}
+                    className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2 border border-[#EF4444] text-[#EF4444] hover:bg-[#EF4444]/10 font-mono text-xs uppercase tracking-wider transition-colors disabled:opacity-50 rounded-sm"
+                  >
+                    <X size={14} /> Reject
+                  </button>
+                  <button
+                    onClick={() => handleApproveCash(item.id)}
+                    disabled={actionLoading}
+                    className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 px-5 py-2 bg-[#10B981] text-white hover:bg-[#059669] font-mono text-xs uppercase tracking-wider transition-colors disabled:opacity-50 rounded-sm"
+                  >
+                    <Check size={14} /> Approve Cash
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>

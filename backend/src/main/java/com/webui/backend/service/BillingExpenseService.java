@@ -318,6 +318,19 @@ public class BillingExpenseService {
     }
 
     @Transactional
+    public BillApprovalEntity attachBillPhoto(String billId, String billPhotoUrl, Authentication auth) {
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new AccessDeniedException("Authentication required");
+        }
+        BillApprovalEntity bill = findBillByIdOrBillId(billId);
+        if (billPhotoUrl != null && !billPhotoUrl.isBlank()) {
+            bill.setBillPhotoUrl(billPhotoUrl);
+        }
+        bill.setUpdatedAt(LocalDateTime.now());
+        return billRepository.save(bill);
+    }
+
+    @Transactional
     public BillApprovalEntity confirmDirectCashSettlement(String billId, Authentication auth) {
         if (auth == null || !auth.isAuthenticated()) {
             throw new AccessDeniedException("Authentication required");

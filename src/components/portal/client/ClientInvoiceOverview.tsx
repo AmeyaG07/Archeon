@@ -39,6 +39,9 @@ export interface ClientInvoice {
   status: ClientInvoiceStatus;
   disputeStatus?: ClientDisputeStatus;
   currency?: "INR";
+  billPhotoUrl?: string;
+  paymentProofUrl?: string;
+  fileUrl?: string;
 }
 
 interface ClientInvoiceOverviewProps {
@@ -47,7 +50,6 @@ interface ClientInvoiceOverviewProps {
   error?: string;
   onViewInvoice: (invoice: ClientInvoice) => void;
   onSubmitPaymentProof: (invoice: ClientInvoice) => void;
-  onRaiseDispute: (invoice: ClientInvoice) => void;
   onRetry?: () => void;
 }
 
@@ -101,7 +103,6 @@ export function ClientInvoiceOverview({
   error,
   onViewInvoice,
   onSubmitPaymentProof,
-  onRaiseDispute,
   onRetry,
 }: ClientInvoiceOverviewProps) {
   if (loading) {
@@ -151,7 +152,7 @@ export function ClientInvoiceOverview({
   );
 
   return (
-    <main className="min-h-screen bg-[#F2F0EB] px-5 py-10 md:px-10 md:py-14">
+    <div className="bg-[#F2F0EB] px-3 sm:px-5 py-6 md:px-10 md:py-14">
       <div className="mx-auto max-w-7xl">
 
         {/* Page Heading */}
@@ -165,8 +166,8 @@ export function ClientInvoiceOverview({
           </h1>
 
           <p className="mt-4 max-w-2xl text-sm leading-7 text-[#77736C]">
-            Review project invoices, track recorded payments and
-            access the status of any payment disputes.
+            Review project invoices, track recorded payments and settlement
+            statuses across all studio projects.
           </p>
         </header>
 
@@ -288,7 +289,7 @@ export function ClientInvoiceOverview({
                     </div>
 
                     {/* Amount Information */}
-                    <div className="grid grid-cols-2 gap-x-7 gap-y-4 sm:min-w-72">
+                    <div className="grid grid-cols-2 gap-x-4 sm:gap-x-7 gap-y-4 w-full sm:w-auto sm:min-w-72">
                       <AmountItem
                         label="Invoice Total"
                         amount={formatCurrency(invoice.totalAmount)}
@@ -310,60 +311,29 @@ export function ClientInvoiceOverview({
                   </div>
 
                   {/* Dispute Status */}
-                  {invoice.disputeStatus && (
-                    <div className="mt-6 flex items-start gap-3 border border-[#E8DFCE] bg-[#F8F4EB] p-4">
-                      <AlertCircle
-                        size={17}
-                        className="mt-0.5 shrink-0 text-[#94743F]"
-                      />
-
-                      <div>
-                        <p className="text-xs text-[#6F5C39]">
-                          Payment dispute: {invoice.disputeStatus}
-                        </p>
-
-                        <p className="mt-1 text-[10px] leading-5 text-[#8B7958]">
-                          Refer to the dispute details for the latest
-                          information from the finance team.
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
                   {/* Actions */}
                   <div className="mt-6 flex flex-wrap items-center gap-5">
-                    <button
-                      type="button"
-                      onClick={() => onViewInvoice(invoice)}
-                      className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-[#33312D] hover:text-[#A58A64]"
-                    >
-                      View Invoice
-                      <ArrowUpRight size={15} />
-                    </button>
+                    {Boolean(invoice.billPhotoUrl || invoice.fileUrl) && (
+                      <button
+                        type="button"
+                        onClick={() => onViewInvoice(invoice)}
+                        className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-[#33312D] hover:text-[#A58A64] transition-colors cursor-pointer"
+                      >
+                        View Invoice
+                        <ArrowUpRight size={15} />
+                      </button>
+                    )}
 
-                    {invoice.outstandingAmount > 0 &&
-                      invoice.status !== "Disputed" && (
-                        <button
-                          type="button"
-                          onClick={() => onSubmitPaymentProof(invoice)}
-                          className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-[#A58A64] hover:text-[#171717]"
-                        >
-                          Submit Payment Proof
-                          <IndianRupee size={14} />
-                        </button>
-                      )}
-
-                    {invoice.outstandingAmount > 0 &&
-                      !invoice.disputeStatus && (
-                        <button
-                          type="button"
-                          onClick={() => onRaiseDispute(invoice)}
-                          className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-[#77736C] hover:text-[#9A5147]"
-                        >
-                          Raise Dispute
-                          <AlertCircle size={14} />
-                        </button>
-                      )}
+                    {invoice.outstandingAmount > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => onSubmitPaymentProof(invoice)}
+                        className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-[#A58A64] hover:text-[#171717] transition-colors cursor-pointer"
+                      >
+                        Submit Payment Proof
+                        <IndianRupee size={14} />
+                      </button>
+                    )}
                   </div>
                 </article>
               ))}
@@ -378,7 +348,7 @@ export function ClientInvoiceOverview({
           </p>
         </footer>
       </div>
-    </main>
+    </div>
   );
 }
 

@@ -224,19 +224,7 @@ export default function AdminIntegrationManagementCenter({
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={onRefresh}
-            disabled={!onRefresh || loading}
-            className="inline-flex items-center justify-center gap-2 rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-sm font-medium hover:bg-stone-50 disabled:opacity-50"
-          >
-            <RefreshCw
-              size={15}
-              className={loading ? "animate-spin" : ""}
-            />
-            Refresh
-          </button>
-        </header>
+          </header>
 
         {error && (
           <div

@@ -37,7 +37,6 @@ export interface VendorNotificationPreferences {
   projectUpdates: boolean;
   invoiceUpdates: boolean;
   paymentUpdates: boolean;
-  disputeUpdates: boolean;
   studioAnnouncements: boolean;
   emailNotifications: boolean;
   whatsappNotifications: boolean;
@@ -638,16 +637,6 @@ export function VendorProfileSettings({
                   disabled={saving}
                   onChange={(value) =>
                     updatePreference("paymentUpdates", value)
-                  }
-                />
-
-                <PreferenceRow
-                  label="Dispute Updates"
-                  description="Finance responses and dispute resolution progress."
-                  checked={notificationPreferences.disputeUpdates}
-                  disabled={saving}
-                  onChange={(value) =>
-                    updatePreference("disputeUpdates", value)
                   }
                 />
 

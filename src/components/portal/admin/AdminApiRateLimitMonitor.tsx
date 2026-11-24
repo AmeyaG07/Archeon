@@ -226,19 +226,7 @@ export default function AdminApiRateLimitMonitor({
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={onRefresh}
-          disabled={!onRefresh || loading}
-          className="inline-flex items-center justify-center gap-2 rounded-lg border border-[#ded9cf] bg-white px-4 py-2.5 text-sm font-medium text-[#34322c] hover:bg-[#f8f6f1] disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <Activity
-            size={15}
-            className={loading ? "animate-pulse" : ""}
-          />
-          Refresh usage
-        </button>
-      </header>
+        </header>
 
       {error && (
         <div

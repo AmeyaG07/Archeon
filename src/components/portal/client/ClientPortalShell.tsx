@@ -15,7 +15,6 @@ const routes: Record<ClientPortalSection, string> = {
   documents: "/client/documents",
   invoices: "/client/invoices?tab=invoices",
   payments: "/client/invoices?tab=payments",
-  disputes: "/client/invoices?tab=disputes",
   notifications: "/client/notifications",
   support: "/client/support",
   settings: "/client/profile",
@@ -26,7 +25,6 @@ function getActiveSection(pathname: string, tab?: string | null): ClientPortalSe
   if (pathname.includes("/documents")) return "documents";
   if (pathname.includes("/invoices")) {
     if (tab === "payments") return "payments";
-    if (tab === "disputes") return "disputes";
     return "invoices";
   }
   if (pathname.includes("/notifications")) return "notifications";

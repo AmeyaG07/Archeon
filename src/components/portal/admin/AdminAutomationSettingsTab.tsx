@@ -224,13 +224,6 @@ export function AdminAutomationSettingsTab() {
           </div>
           <div className="flex items-center gap-3">
             <button
-              type="button"
-              onClick={loadSettings}
-              className="inline-flex items-center gap-2 border border-[#D8D6D0] bg-white px-4 py-3 text-[10px] font-mono uppercase tracking-widest text-[#55514A] hover:border-[#A58A64]"
-            >
-              <RefreshCw size={13} /> Reload
-            </button>
-            <button
               type="submit"
               disabled={saving}
               className="inline-flex items-center gap-2 bg-[#171717] px-6 py-3 text-[10px] font-mono uppercase tracking-widest text-white hover:bg-[#A58A64] disabled:opacity-50 transition-colors shadow-sm"

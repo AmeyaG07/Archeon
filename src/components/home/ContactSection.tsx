@@ -27,7 +27,7 @@ export function ContactSection({
         <div className="grid gap-12 lg:gap-14 xl:gap-16 lg:grid-cols-12 items-center">
           
           {/* Left Column: Heading, CTA, Studio Location & Principal Architect */}
-          <div className="lg:col-span-7 xl:col-span-7 flex flex-col justify-center">
+          <div className="lg:col-span-7 xl:col-span-7 flex flex-col justify-center relative z-20">
             <div className="max-w-2xl">
               <RevealText>
                 <h2 className="font-serif text-5xl sm:text-7xl xl:text-8xl font-light leading-[0.92] tracking-tight">
@@ -98,9 +98,12 @@ export function ContactSection({
                   href="https://maps.app.goo.gl/wLidaC62gQLccoNY8"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group mt-4 inline-flex items-center gap-2 border-b border-[#C6A779]/40 pb-1 font-mono text-[10px] uppercase tracking-[0.16em] text-[#C6A779] transition-colors hover:text-white hover:border-white"
+                  onClick={() => {
+                    window.open("https://maps.app.goo.gl/wLidaC62gQLccoNY8", "_blank", "noopener,noreferrer");
+                  }}
+                  className="group mt-4 inline-flex items-center gap-2 border border-[#C6A779]/60 bg-[#C6A779]/10 hover:bg-[#C6A779] hover:text-[#111111] hover:border-[#C6A779] px-4 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[#E0D8C3] transition-all shadow-sm rounded-xs cursor-pointer z-30 relative font-medium"
                 >
-                  <span>Get Directions</span>
+                  <span>GET DIRECTIONS</span>
                   <MoveUpRight
                     size={12}
                     className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"

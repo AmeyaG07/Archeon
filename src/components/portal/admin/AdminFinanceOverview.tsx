@@ -202,7 +202,7 @@ export function AdminFinanceOverview({
     : 1;
 
   return (
-    <main className="min-h-screen bg-[#F2F0EB] px-5 py-9 md:px-10 md:py-12 lg:px-12">
+    <main className="min-h-screen bg-[#F2F0EB] px-2.5 sm:px-5 py-6 sm:py-9 md:px-10 md:py-12 lg:px-12">
 
       {/* Header */}
       <header className="flex flex-col justify-between gap-6 border-b border-[#D8D6D0] pb-8 md:flex-row md:items-end">
@@ -361,18 +361,10 @@ export function AdminFinanceOverview({
 
             <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
               <SettlementMetric
-                label="Verified Settlements"
+                label="Active Settlements"
                 value={formatNumber(data.verifiedCashSettlements)}
                 description="Finance-verified settlement records"
                 icon={<ShieldCheck size={19} />}
-                onClick={onOpenCashSettlements}
-              />
-
-              <SettlementMetric
-                label="Disputed Settlements"
-                value={formatNumber(data.disputedCashSettlements)}
-                description="Records requiring dispute resolution"
-                icon={<AlertCircle size={19} />}
                 onClick={onOpenCashSettlements}
               />
             </div>
@@ -429,7 +421,7 @@ export function AdminFinanceOverview({
               </p>
             </div>
 
-            <div className="mt-5 border border-[#D8D6D0] bg-white p-5 md:p-7">
+            <div className="mt-5 border border-[#D8D6D0] bg-white p-3.5 sm:p-5 md:p-7">
               <div className="flex flex-wrap gap-x-5 gap-y-3">
                 <LegendItem label="Receivables" marker="bg-[#A58A64]" />
                 <LegendItem label="Payables" marker="bg-[#343434]" />
@@ -502,7 +494,7 @@ export function AdminFinanceOverview({
                 </h2>
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-1.5 sm:gap-2">
                 {(
                   ["All", "Receivable", "Payable"] as TransactionFilter[]
                 ).map((filter) => (
@@ -601,7 +593,7 @@ function FinancialPositionCard({
   onClick?: () => void;
 }) {
   return (
-    <div className="bg-white p-6 md:p-8">
+    <div className="bg-white p-4 sm:p-6 md:p-8">
       <div className="flex items-center justify-between">
         <p className="font-mono text-[9px] uppercase tracking-widest text-[#99958D]">
           {title}
@@ -686,7 +678,7 @@ function SettlementMetric({
       type="button"
       disabled={!onClick}
       onClick={onClick}
-      className="border border-[#D8D6D0] bg-white p-6 text-left transition-colors hover:border-[#A58A64] disabled:cursor-default"
+      className="border border-[#D8D6D0] bg-white p-4 sm:p-6 text-left transition-colors hover:border-[#A58A64] disabled:cursor-default"
     >
       <div className="flex items-center justify-between">
         <p className="font-mono text-[9px] uppercase tracking-widest text-[#99958D]">
@@ -826,19 +818,20 @@ function TrendBar({
       : 0;
 
   return (
-    <div className="grid grid-cols-[88px_minmax(0,1fr)_auto] items-center gap-3">
-      <p className="text-[9px] text-[#77736C]">{label}</p>
+    <div className="flex flex-col gap-1 sm:grid sm:grid-cols-[88px_minmax(0,1fr)_auto] sm:items-center sm:gap-3">
+      <div className="flex items-center justify-between sm:contents">
+        <p className="text-[9px] text-[#77736C]">{label}</p>
+        <p className="text-right text-[9px] tabular-nums text-[#55514A] sm:order-last">
+          {formatCurrency(value)}
+        </p>
+      </div>
 
-      <div className="h-2 overflow-hidden bg-[#EAE7E0]">
+      <div className="h-2 overflow-hidden bg-[#EAE7E0] w-full">
         <div
           className={`h-full ${marker}`}
           style={{ width: `${percentage}%` }}
         />
       </div>
-
-      <p className="text-right text-[9px] tabular-nums text-[#55514A]">
-        {formatCurrency(value)}
-      </p>
     </div>
   );
 }
@@ -868,7 +861,7 @@ function TransactionCard({
   const receivable = transaction.direction === "Receivable";
 
   return (
-    <article className="flex flex-col justify-between gap-5 border border-[#D8D6D0] bg-white p-5 md:flex-row md:items-center md:p-6">
+    <article className="flex flex-col justify-between gap-5 border border-[#D8D6D0] bg-white p-4 sm:p-5 md:flex-row md:items-center md:p-6">
       <div className="flex min-w-0 items-start gap-4">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center border border-[#E5E2DC] bg-[#FAF9F6] text-[#A58A64]">
           {receivable ? (

@@ -244,7 +244,7 @@ function VendorInvoicesContent() {
   };
 
   return (
-    <div className="p-4 sm:p-8 space-y-8">
+    <div className="p-3 sm:p-8 space-y-6 sm:space-y-8 max-w-full">
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 max-w-7xl mx-auto border-b border-[#D8D6D0] pb-6">
         <div>
@@ -274,7 +274,7 @@ function VendorInvoicesContent() {
       </div>
 
       {/* Top Tab Bar connecting Invoices, Payments, Disputes */}
-      <div className="flex border-b border-[#D8D6D0] bg-white px-6 pt-4 gap-6 max-w-7xl mx-auto shadow-sm">
+      <div className="flex overflow-x-auto scrollbar-none border-b border-[#D8D6D0] bg-white px-4 sm:px-6 pt-4 gap-4 sm:gap-6 max-w-7xl mx-auto shadow-sm whitespace-nowrap">
         <button
           type="button"
           onClick={() => router.push("/vendor/invoices?tab=invoices")}
@@ -297,18 +297,6 @@ function VendorInvoicesContent() {
           }`}
         >
           <Banknote size={15} /> Payment History &amp; Settlements
-        </button>
-
-        <button
-          type="button"
-          onClick={() => router.push("/vendor/invoices?tab=disputes")}
-          className={`pb-3 font-mono text-xs uppercase tracking-wider transition-colors flex items-center gap-2 border-b-2 ${
-            activeTab === "disputes"
-              ? "border-[#B68A4A] text-[#111111] font-semibold"
-              : "border-transparent text-[#77736C] hover:text-[#111111]"
-          }`}
-        >
-          <Clock size={15} /> Dispute Tracking
         </button>
       </div>
 
@@ -375,7 +363,7 @@ function VendorInvoicesContent() {
               </div>
             ) : (
               <div className="mt-4 overflow-x-auto">
-                <table className="w-full text-left font-mono text-xs">
+                <table className="w-full min-w-[560px] text-left font-mono text-xs">
                   <thead>
                     <tr className="border-b border-[#D8D6D0] text-[#777777] uppercase text-[10px] tracking-wider">
                       <th className="py-3 px-4">Receipt</th>
@@ -523,40 +511,6 @@ function VendorInvoicesContent() {
                   )}
                 </tbody>
               </table>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Tab 3: Dispute Tracking */}
-      {activeTab === "disputes" && (
-        <div className="max-w-7xl mx-auto space-y-6">
-          <div className="rounded-sm border border-[#D8D6D0] bg-white p-6 shadow-sm">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E5E2DC] pb-4">
-              <div>
-                <h2 className="font-serif text-2xl text-[#111111]">Contractor Dispute Management</h2>
-                <p className="text-xs text-[#777777] mt-1">
-                  Track discrepancies regarding site measurements, material deduction, or withholding claims.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => alert("To lodge a measurement or rate discrepancy, please send an architect update or contact Studio Operations.")}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#D97724] text-white font-mono text-xs uppercase tracking-wider hover:bg-[#B45309] rounded-sm transition-colors"
-              >
-                <Clock size={14} /> Raise Measurement Dispute
-              </button>
-            </div>
-
-            <div className="mt-6 p-4 rounded border border-[#B68A4A]/30 bg-[#FAF9F5] text-xs font-mono space-y-2">
-              <div className="font-semibold text-[#B68A4A] uppercase tracking-wider">Dispute Protocol (Section 4.4):</div>
-              <p className="text-[#555] leading-relaxed">
-                When a dispute is raised by client or trade contractor, the associated invoice enters an immutable freeze status. No cash collection or automated reminders are permitted until resolved by Ar. Mandar Bhalekar or the nominated site supervisor.
-              </p>
-            </div>
-
-            <div className="mt-4 p-8 text-center text-xs font-mono text-[#777777] border border-dashed border-[#D8D6D0]">
-              No active disputes raised against your trade bills. All contractor accounts in good standing.
             </div>
           </div>
         </div>

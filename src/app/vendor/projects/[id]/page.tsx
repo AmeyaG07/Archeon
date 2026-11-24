@@ -285,7 +285,7 @@ export default function VendorProjectDetailPage() {
   return (
     <div className="min-h-screen bg-[#F7F5F0] pb-24 text-[#111111]">
       {/* Top Header Bar */}
-      <div className="border-b border-[#D8D6D0] bg-white px-6 py-6 shadow-sm">
+      <div className="border-b border-[#D8D6D0] bg-white px-4 sm:px-6 py-5 sm:py-6 shadow-sm">
         <div className="mx-auto max-w-7xl">
           <button
             type="button"
@@ -297,17 +297,17 @@ export default function VendorProjectDetailPage() {
 
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <div className="flex items-center gap-3">
-                <h1 className="font-serif text-3xl font-medium text-[#111111]">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                <h1 className="font-serif text-2xl sm:text-3xl font-medium text-[#111111]">
                   {project?.name || "Assigned Site Project"}
                 </h1>
                 <span className="rounded-full bg-[#10B981]/10 px-3 py-1 font-mono text-[10px] font-semibold uppercase tracking-wider text-[#10B981] border border-[#10B981]/30">
                   {project?.status || "IN PROGRESS"}
                 </span>
               </div>
-              <p className="mt-1 flex items-center gap-2 font-mono text-xs text-[#77736C]">
-                <MapPin size={13} className="text-[#B68A4A]" />
-                {project?.siteAddress || "Site Location: Maharashtra"} · Ref: {project?.projectReference || "PRJ-2026-SITE"}
+              <p className="mt-1 flex flex-wrap items-center gap-2 font-mono text-xs text-[#77736C]">
+                <MapPin size={13} className="text-[#B68A4A] shrink-0" />
+                <span>{project?.siteAddress || "Site Location: Maharashtra"} · Ref: {project?.projectReference || "PRJ-2026-SITE"}</span>
               </p>
             </div>
 
@@ -333,7 +333,7 @@ export default function VendorProjectDetailPage() {
           </div>
 
           {/* Navigation Tabs */}
-          <div className="mt-8 flex gap-8 border-b border-[#E5E2DC]">
+          <div className="mt-8 flex gap-4 sm:gap-8 border-b border-[#E5E2DC] overflow-x-auto scrollbar-none whitespace-nowrap">
             <button
               type="button"
               onClick={() => setActiveTab("overview")}
@@ -392,7 +392,7 @@ export default function VendorProjectDetailPage() {
       </div>
 
       {/* Main Content Area */}
-      <div className="mx-auto max-w-7xl px-6 pt-8 space-y-6">
+      <div className="mx-auto max-w-7xl px-3 sm:px-6 pt-6 sm:pt-8 space-y-6">
         {feedback && (
           <div
             className={`p-4 rounded-sm font-mono text-xs flex items-center gap-2 ${
@@ -610,8 +610,8 @@ export default function VendorProjectDetailPage() {
                 No trade bills submitted for this project yet. Click &quot;Submit Bill&quot; to upload your bill.
               </div>
             ) : (
-              <div className="rounded-sm border border-[#D8D6D0] bg-white overflow-hidden shadow-sm">
-                <table className="w-full text-left text-xs font-mono">
+              <div className="rounded-sm border border-[#D8D6D0] bg-white overflow-x-auto shadow-sm">
+                <table className="w-full min-w-[540px] text-left text-xs font-mono">
                   <thead className="bg-[#FAF9F5] border-b border-[#E5E2DC] text-[#777] uppercase text-[10px] tracking-wider">
                     <tr>
                       <th className="py-3 px-4">Bill Reference</th>
