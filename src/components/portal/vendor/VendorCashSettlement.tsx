@@ -12,6 +12,10 @@ import {
   FileText,
   MessageSquare,
   ArrowUpRight,
+  Plus,
+  X,
+  Upload,
+  Camera,
 } from "lucide-react";
 
 export type VendorSettlementStatus =
@@ -51,6 +55,13 @@ interface VendorCashSettlementProps {
   onSubmitDecision: (
     decision: VendorSettlementAcknowledgement
   ) => void | Promise<void>;
+  onRaiseCashBill?: (
+    photoUrl: string,
+    amount: number,
+    cashRequest: string,
+    markPaidInCash: boolean
+  ) => void | Promise<void>;
+  onDirectMarkPaidInCash?: (settlementId: string) => void | Promise<void>;
   onOpenDetails?: (settlement: VendorCashSettlementRecord) => void;
   onRefresh?: () => void;
 }
@@ -99,6 +110,8 @@ export function VendorCashSettlement({
   submittingId,
   error,
   onSubmitDecision,
+  onRaiseCashBill,
+  onDirectMarkPaidInCash,
   onOpenDetails,
   onRefresh,
 }: VendorCashSettlementProps) {
@@ -111,6 +124,39 @@ export function VendorCashSettlement({
 
   const [disputeReason, setDisputeReason] = useState("");
   const [validationError, setValidationError] = useState("");
+
+  // Raise Cash Bill Modal State
+  const [showRaiseModal, setShowRaiseModal] = useState(false);
+  const [raisePhotoUrl, setRaisePhotoUrl] = useState("");
+  const [raiseAmount, setRaiseAmount] = useState("");
+  const [raiseRequestNotes, setRaiseRequestNotes] = useState("");
+  const [markPaidInCash, setMarkPaidInCash] = useState(false);
+  const [isRaising, setIsRaising] = useState(false);
+  const [directUpdatingId, setDirectUpdatingId] = useState<string | null>(null);
+
+  const handleRaiseSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!raiseAmount || !raiseRequestNotes || !onRaiseCashBill) return;
+    setIsRaising(true);
+    try {
+      await onRaiseCashBill(
+        raisePhotoUrl,
+        parseFloat(raiseAmount),
+        raiseRequestNotes,
+        markPaidInCash
+      );
+      setShowRaiseModal(false);
+      setRaisePhotoUrl("");
+      setRaiseAmount("");
+      setRaiseRequestNotes("");
+      setMarkPaidInCash(false);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to raise cash bill: " + (err instanceof Error ? err.message : String(err)));
+    } finally {
+      setIsRaising(false);
+    }
+  };
 
   function openDecision(
     settlement: VendorCashSettlementRecord,
@@ -169,28 +215,31 @@ export function VendorCashSettlement({
 
         {/* Header */}
         <header className="border-b border-[#D8D6D0] pb-9">
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#A58A64]">
-            Vendor Portal / Finance
-          </p>
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
+            <div>
+              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#A58A64]">
+                Vendor Portal / Finance
+              </p>
 
-          <h1 className="mt-5 font-serif text-4xl text-[#171717] md:text-5xl">
-            Cash Settlements
-          </h1>
+              <h1 className="mt-4 font-serif text-4xl text-[#171717] md:text-5xl">
+                Cash Settlements
+              </h1>
 
-          <p className="mt-4 max-w-2xl text-sm leading-7 text-[#77736C]">
-            Review cash settlements recorded against your work.
-            Confirm the amount only when you have actually received it.
-          </p>
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-[#77736C]">
+                Review cash settlements recorded against your work. Confirm received cash or raise a new cash bill voucher directly.
+              </p>
+            </div>
 
-          {onRefresh && (
-            <button
-              type="button"
-              onClick={onRefresh}
-              className="mt-6 text-[10px] uppercase tracking-widest text-[#987543] hover:text-[#171717]"
-            >
-              Refresh Records
-            </button>
-          )}
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setShowRaiseModal(true)}
+                className="inline-flex items-center gap-2 bg-[#171717] px-4 py-2 font-mono text-[10px] uppercase tracking-wider text-white hover:bg-[#A58A64] transition-colors shadow-sm"
+              >
+                <Plus size={14} /> Raise a Cash Bill
+              </button>
+            </div>
+          </div>
         </header>
 
         {/* Important Notice */}
@@ -393,6 +442,25 @@ export function VendorCashSettlement({
                             Acknowledge Receipt
                           </button>
 
+                          {onDirectMarkPaidInCash && (
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                setDirectUpdatingId(settlement.id);
+                                try {
+                                  await onDirectMarkPaidInCash(settlement.id);
+                                } finally {
+                                  setDirectUpdatingId(null);
+                                }
+                              }}
+                              disabled={Boolean(submittingId) || directUpdatingId === settlement.id}
+                              className="inline-flex items-center gap-1.5 bg-[#2D6A4F] px-5 py-3 text-[10px] font-mono uppercase tracking-wider text-white hover:bg-[#1B4332] transition-colors disabled:opacity-50"
+                            >
+                              <CheckCircle2 size={14} />
+                              {directUpdatingId === settlement.id ? "Updating..." : "Directly Update: Paid in Cash"}
+                            </button>
+                          )}
+
                           <button
                             type="button"
                             onClick={() =>
@@ -538,6 +606,129 @@ export function VendorCashSettlement({
                 <button type="submit">Submit</button>
               </form>
             </section>
+          </div>
+        )}
+
+        {/* Raise a Cash Bill Modal */}
+        {showRaiseModal && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4"
+            onClick={() => setShowRaiseModal(false)}
+            data-lenis-prevent
+          >
+            <div
+              className="relative w-full max-w-lg border border-[#D8D6D0] bg-[#F2F0EB] p-6 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between border-b border-[#D8D6D0] pb-4">
+                <div>
+                  <p className="font-mono text-[10px] uppercase tracking-widest text-[#A58A64]">
+                    Physical Site Settlement
+                  </p>
+                  <h3 className="font-serif text-xl text-[#171717]">
+                    Raise a Cash Bill
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowRaiseModal(false)}
+                  className="flex h-8 w-8 items-center justify-center border border-[#D8D6D0] bg-white text-[#777] hover:text-[#111]"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              <form onSubmit={handleRaiseSubmit} className="mt-4 space-y-4 font-mono text-xs">
+                <div>
+                  <label className="block text-[10px] uppercase tracking-wider text-[#555] mb-1">
+                    Cash Bill Amount (₹ INR) *
+                  </label>
+                  <input
+                    type="number"
+                    step="any"
+                    required
+                    placeholder="e.g. 35000"
+                    value={raiseAmount}
+                    onChange={(e) => setRaiseAmount(e.target.value)}
+                    className="w-full border border-[#D8D6D0] bg-white p-2.5 text-[#111] focus:border-[#A58A64] focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase tracking-wider text-[#555] mb-1">
+                    Cash Request &amp; Purpose Notes *
+                  </label>
+                  <textarea
+                    required
+                    rows={3}
+                    placeholder="Specify cash purpose: e.g. Site emergency procurement, daily wage labour cash payout, site diesel delivery..."
+                    value={raiseRequestNotes}
+                    onChange={(e) => setRaiseRequestNotes(e.target.value)}
+                    className="w-full border border-[#D8D6D0] bg-white p-2.5 text-[#111] focus:border-[#A58A64] focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase tracking-wider text-[#555] mb-1">
+                    Bill Photograph / Physical Cash Voucher Receipt
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*,.pdf"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const reader = new FileReader();
+                      reader.onload = (ev) => {
+                        setRaisePhotoUrl(ev.target?.result as string);
+                      };
+                      reader.readAsDataURL(file);
+                    }}
+                    className="w-full border border-[#D8D6D0] bg-white p-2 text-[#333] file:mr-3 file:border-0 file:bg-[#171717] file:px-3 file:py-1 file:font-mono file:text-[10px] file:uppercase file:text-white hover:file:bg-[#A58A64]"
+                  />
+                </div>
+
+                {raisePhotoUrl && (
+                  <div className="border border-[#D8D6D0] bg-white p-2 text-center">
+                    <img src={raisePhotoUrl} alt="Bill Preview" className="max-h-32 mx-auto object-contain" />
+                  </div>
+                )}
+
+                {/* Option to directly update to show bill paid in cash */}
+                <div className="flex items-start gap-3 rounded bg-[#FAF9F5] border border-[#EAE8E3] p-3">
+                  <input
+                    type="checkbox"
+                    id="markPaidInCashToggle"
+                    checked={markPaidInCash}
+                    onChange={(e) => setMarkPaidInCash(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#2D6A4F] focus:ring-[#2D6A4F]"
+                  />
+                  <label htmlFor="markPaidInCashToggle" className="cursor-pointer text-[11px] text-[#333]">
+                    <strong>Directly update to show bill paid in cash</strong>
+                    <span className="block text-[10px] text-[#777] mt-0.5">
+                      Check this if physical cash handover has already been received on site.
+                    </span>
+                  </label>
+                </div>
+
+                <div className="mt-6 flex justify-end gap-3 pt-2 border-t border-[#D8D6D0]">
+                  <button
+                    type="button"
+                    onClick={() => setShowRaiseModal(false)}
+                    className="border border-[#D8D6D0] bg-white px-4 py-2 uppercase tracking-wider text-[#555] hover:bg-[#e8e6e1]"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isRaising}
+                    className="bg-[#171717] px-5 py-2 uppercase tracking-wider text-white hover:bg-[#A58A64] disabled:opacity-50"
+                  >
+                    {isRaising ? "Submitting..." : markPaidInCash ? "Raise & Mark Paid in Cash" : "Raise Cash Request"}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         )}
 

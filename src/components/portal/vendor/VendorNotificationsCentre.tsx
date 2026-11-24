@@ -246,17 +246,6 @@ export function VendorNotificationsCentre({
           </div>
 
           <div className="mt-7 flex flex-wrap gap-4">
-            {onRefresh && (
-              <button
-                type="button"
-                onClick={onRefresh}
-                className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-[#77736C] hover:text-[#A58A64]"
-              >
-                <RefreshCw size={14} />
-                Refresh
-              </button>
-            )}
-
             {unreadCount > 0 && (
               <button
                 type="button"

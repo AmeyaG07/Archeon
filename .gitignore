@@ -44,4 +44,9 @@ next-env.d.ts
 target/
 **/target/
 *.class
+backend/storage/
+backend/target/
+frontend/
+*.log
+
 

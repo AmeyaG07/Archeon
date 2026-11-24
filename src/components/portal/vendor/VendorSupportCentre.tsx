@@ -516,16 +516,6 @@ export function VendorSupportCentre({
                 Your Support Tickets
               </h2>
             </div>
-
-            {onRefresh && (
-              <button
-                type="button"
-                onClick={onRefresh}
-                className="font-mono text-[10px] uppercase tracking-widest text-[#77736C] hover:text-[#A58A64]"
-              >
-                Refresh Tickets
-              </button>
-            )}
           </div>
 
           {/* Search */}

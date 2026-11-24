@@ -225,18 +225,6 @@ export function AdminProjectManagement({
         </div>
 
         <div className="flex flex-wrap gap-3">
-          {onRefresh && (
-            <button
-              type="button"
-              onClick={onRefresh}
-              disabled={loading}
-              className="inline-flex items-center gap-2 border border-[#D8D6D0] bg-white px-5 py-3 text-[10px] uppercase tracking-widest text-[#55514A] hover:border-[#A58A64] disabled:opacity-50"
-            >
-              <RefreshCw size={14} />
-              Refresh
-            </button>
-          )}
-
           {onCreateProject && (
             <button
               type="button"

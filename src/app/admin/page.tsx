@@ -6,7 +6,6 @@ import {
   AdminDashboardOverview,
   type AdminDashboardData,
   type AdminProjectSummary,
-  type AdminApprovalSummary,
   type AdminActivity,
 } from "@/components/portal/admin/AdminDashboardOverview";
 import { apiFetch } from "@/lib/api";
@@ -57,32 +56,7 @@ export default function AdminDashboardPage() {
         // Tolerant fallback
       }
 
-      // 3. Fetch pending approvals summary
-      let approvals: AdminApprovalSummary[] = [];
-      try {
-        const appRes = await apiFetch("/api/approvals");
-        const appList = await appRes.json();
-        if (Array.isArray(appList)) {
-          approvals = appList
-            .filter((a: any) => a.status === "PENDING" || a.status === "PENDING_SECOND_APPROVAL")
-            .slice(0, 5)
-            .map((a: any) => ({
-              id: a.id || "",
-              reference: a.billReference || a.id || "BILL",
-              title: `${a.vendorName || "Vendor"} - Bill Approval`,
-              category: "Contractor Bill",
-              amount: a.amount ? Number(a.amount) : 0,
-              currency: "INR",
-              submittedBy: a.vendorName || a.submittedBy || "Trade Contractor",
-              submittedAt: a.submittedAt || new Date().toISOString(),
-              priority: (a.amount > 500000 ? "Urgent" : a.amount > 100000 ? "High" : "Normal") as any,
-            }));
-        }
-      } catch {
-        // Tolerant fallback
-      }
-
-      // 4. Map recent activities
+      // 3. Map recent activities
       const activities: AdminActivity[] = Array.isArray(dashData.recentActivities)
         ? dashData.recentActivities.map((act: any) => ({
             id: act.eventId || String(Math.random()),
@@ -117,7 +91,6 @@ export default function AdminDashboardPage() {
           pendingInvoices: Number(dashData.pendingCashSettlementsCount || 0),
         },
         projects,
-        approvals,
         activities,
         lastUpdatedAt: new Date().toISOString(),
       });
@@ -179,12 +152,9 @@ export default function AdminDashboardPage() {
       error={error ?? undefined}
       onRefresh={loadDashboard}
       onOpenProjects={() => router.push("/admin/projects")}
-      onOpenApprovals={() => router.push("/admin/approvals")}
       onOpenEnquiries={() => router.push("/admin/leads")}
       onOpenFinance={() => router.push("/admin/finance-reports")}
       onOpenProject={(id) => router.push(`/admin/projects?id=${id}`)}
-      onOpenApproval={(id) => router.push(`/admin/approvals?id=${id}`)}
-      onOpenActivity={() => router.push("/admin/audit-logs")}
     />
   );
 }

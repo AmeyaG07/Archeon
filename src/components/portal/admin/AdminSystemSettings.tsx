@@ -506,18 +506,6 @@ export function AdminSystemSettings({
               Change History
             </button>
           )}
-
-          {onRefresh && (
-            <button
-              type="button"
-              onClick={onRefresh}
-              disabled={loading || saving}
-              className="inline-flex items-center gap-2 bg-[#171717] px-5 py-3 text-[10px] uppercase tracking-widest text-white disabled:opacity-40"
-            >
-              <RefreshCw size={14} />
-              Refresh
-            </button>
-          )}
         </div>
       </header>
 

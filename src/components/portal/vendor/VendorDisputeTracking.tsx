@@ -257,16 +257,6 @@ export function VendorDisputeTracking({
             Track invoice and cash-settlement disputes, review
             finance responses and follow the progress of each case.
           </p>
-
-          {onRefresh && (
-            <button
-              type="button"
-              onClick={onRefresh}
-              className="mt-6 font-mono text-[10px] uppercase tracking-widest text-[#77736C] hover:text-[#A58A64]"
-            >
-              Refresh Records
-            </button>
-          )}
         </header>
 
         {/* Summary */}
