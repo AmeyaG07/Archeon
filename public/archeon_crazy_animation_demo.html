@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ArcheOn — Crazy Architectural Motion & Spatial Computing</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600;700;900&family=JetBrains+Mono:wght@300;400;500;700&display=swap');
+
+    * {
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #060708;
+    }
+
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .cad-scanlines {
+      background: linear-gradient(
+        to bottom,
+        rgba(255,255,255,0),
+        rgba(255,255,255,0) 50%,
+        rgba(0, 0, 0, 0.4) 50%,
+        rgba(0, 0, 0, 0.4)
+      );
+      background-size: 100% 4px;
+    }
+
+    .perspective-stage {
+      perspective: 1600px;
+      transform-style: preserve-3d;
+    }
+
+    .preserve-3d {
+      transform-style: preserve-3d;
+    }
+
+    /* Travertine High Res Spec */
+    .stone-slab {
+      background: linear-gradient(135deg, #d3c7b3 0%, #aa9980 40%, #7d6e56 100%);
+      box-shadow: 0 35px 60px -15px rgba(0, 0, 0, 0.9), inset 0 2px 4px rgba(255,255,255,0.6);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+    }
+
+    /* Fluted Basalt Concrete */
+    .concrete-slab {
+      background: repeating-linear-gradient(90deg, #18191b 0px, #26282b 8px, #121314 16px);
+      box-shadow: 0 35px 60px -15px rgba(0, 0, 0, 0.95), inset 0 2px 2px rgba(255,255,255,0.2);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    /* Liquid Gold Ingot */
+    .gold-slab {
+      background: linear-gradient(135deg, #fce38a 0%, #f38181 0%, #f5af19 50%, #e17055 100%);
+      box-shadow: 0 0 50px rgba(245, 175, 25, 0.4), inset 0 2px 4px rgba(255,255,255,0.8);
+      border: 1px solid rgba(255, 240, 180, 0.5);
+    }
+
+    /* Holographic Prismatic Glass */
+    .holo-slab {
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(244, 63, 94, 0.15));
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 0 40px rgba(56, 189, 248, 0.25), inset 0 1px 3px rgba(255,255,255,0.5);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+    }
+
+    /* Range slider custom */
+    input[type=range] {
+      accent-color: #f59e0b;
+    }
+  </style>
+</head>
+<body class="text-stone-100 min-h-screen flex flex-col p-4 md:p-6 overflow-x-hidden">
+
+  <!-- Top Spatial Navigation Bar -->
+  <div class="max-w-7xl w-full mx-auto flex flex-col md:flex-row items-start md:items-center justify-between pb-4 mb-4 border-b border-stone-800 gap-4">
+    <div>
+      <div class="flex items-center gap-2 mb-1">
+        <span class="inline-block w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span>
+        <span class="text-xs font-mono uppercase tracking-widest text-amber-400 font-bold">ARCHEON HYPER-SPATIAL LAB</span>
+        <span class="text-stone-600 font-mono text-xs">///</span>
+        <span class="text-xs font-mono text-cyan-400">NEXT-GEN INTERACTIVE COMPUTING</span>
+      </div>
+      <h1 class="text-2xl md:text-3xl font-black tracking-tight text-white flex items-center gap-3">
+        Crazy Architectural Animations Demo
+        <span class="text-xs font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-normal">
+          EXPERIMENTAL
+        </span>
+      </h1>
+      <p class="text-xs md:text-sm text-stone-400 max-w-2xl font-light">
+        Physics-driven zero-gravity levitation, 3D LiDAR point clouds, magnetic gravitational implosions, and throw-and-fling kinematics.
+      </p>
+    </div>
+
+    <!-- Crazy Mode Switcher -->
+    <div class="flex flex-wrap items-center gap-1.5 p-1 bg-stone-900/90 rounded-xl border border-stone-800 shadow-2xl">
+      <button onclick="setCrazyMode('lidar')" id="btn-lidar" class="mode-pill px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all bg-amber-500 text-stone-950 shadow-lg shadow-amber-500/20">
+        📡 1. 3D LiDAR SCANNER
+      </button>
+      <button onclick="setCrazyMode('detonate')" id="btn-detonate" class="mode-pill px-3 py-1.5 rounded-lg text-xs font-mono text-stone-400 hover:text-stone-100 transition-all">
+        💥 2. ZERO-G EXPLODE & ASSEMBLE
+      </button>
+      <button onclick="setCrazyMode('fling')" id="btn-fling" class="mode-pill px-3 py-1.5 rounded-lg text-xs font-mono text-stone-400 hover:text-stone-100 transition-all">
+        🧲 3. TECTONIC THROW & TOSS
+      </button>
+      <button onclick="setCrazyMode('vortex')" id="btn-vortex" class="mode-pill px-3 py-1.5 rounded-lg text-xs font-mono text-stone-400 hover:text-stone-100 transition-all">
+        🌀 4. GRAVITATIONAL VORTEX
+      </button>
+    </div>
+  </div>
+
+  <!-- Interactive Viewport Stage -->
+  <div class="max-w-7xl w-full mx-auto flex-1 flex flex-col relative">
+    
+    <div id="crazy-stage" class="relative flex-1 min-h-[580px] md:min-h-[640px] rounded-2xl border border-stone-800 bg-[#090a0c] overflow-hidden cad-scanlines perspective-stage cursor-crosshair shadow-2xl">
+      
+      <!-- Live HUD Overlays -->
+      <div class="absolute top-4 left-4 z-40 font-mono text-[11px] text-stone-400 flex flex-col gap-1 pointer-events-none bg-black/60 backdrop-blur-md p-3 rounded-lg border border-stone-800">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="text-stone-200 font-bold" id="mode-title-hud">MODE: 3D LiDAR VILLA POINT CLOUD</span>
+        </div>
+        <div class="text-amber-400" id="telemetry-hud">PARTICLES: 1,600 DUAL-VECTOR NODES</div>
+        <div class="text-stone-500 text-[10px]" id="interaction-hint">INTERACTION: MOVE CURSOR TO SCAN · DRAG TO ROTATE IN 3D</div>
+      </div>
+
+      <div class="absolute top-4 right-4 z-40 font-mono text-[11px] text-stone-400 text-right pointer-events-none bg-black/60 backdrop-blur-md p-3 rounded-lg border border-stone-800">
+        <div class="text-cyan-400 font-bold" id="fps-hud">VELOCITY: 60.0 FPS</div>
+        <div class="text-stone-500 text-[10px]" id="grav-hud">GRAVITY: -0.15G (LEVITATION ACTIVE)</div>
+        <div class="text-stone-400 text-[10px]">COORDINATES: <span class="text-amber-300" id="coords-hud">[0.00, 0.00]</span></div>
+      </div>
+
+      <!-- Laser Scanner Sweep Line -->
+      <div id="laser-sweep" class="absolute top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-amber-400 to-transparent pointer-events-none shadow-[0_0_20px_#f59e0b] z-20 opacity-0 transition-opacity duration-300">
+        <div class="absolute top-1/2 -left-12 -translate-y-1/2 font-mono text-[9px] text-amber-300 bg-black/80 px-1 py-0.5 border border-amber-400/50 whitespace-nowrap">
+          LIDAR 635nm PULSE
+        </div>
+      </div>
+
+      <!-- Shockwave Ripple Effect Container -->
+      <div id="shockwave-ring" class="absolute pointer-events-none rounded-full border-2 border-amber-400 opacity-0 transform -translate-x-1/2 -translate-y-1/2 z-30 transition-all duration-700 ease-out"></div>
+
+      <!-- Main High-Performance Particle Canvas -->
+      <canvas id="particle-canvas" class="absolute inset-0 w-full h-full z-10"></canvas>
+
+      <!-- 3D Zero-G Slabs Floating Layer (Fling / Throw / Explode) -->
+      <div id="slabs-3d-layer" class="absolute inset-0 pointer-events-none preserve-3d z-20">
+        
+        <!-- Slab A: Roman Travertine -->
+        <div id="box-travertine" class="absolute w-52 h-36 rounded-2xl stone-slab p-4 flex flex-col justify-between pointer-events-auto cursor-grab active:cursor-grabbing transition-shadow duration-300">
+          <div class="flex justify-between items-center text-stone-900 font-mono text-[10px] font-bold">
+            <span class="px-2 py-0.5 rounded bg-black/20">MASS: 840 KG</span>
+            <span>✦ TRAVERTINE</span>
+          </div>
+          <div>
+            <div class="text-stone-950 font-black text-base">HONED PAVILION SLAB</div>
+            <div class="text-stone-800 text-[10px] font-mono mt-0.5">COMPRESSION: 110 MPA</div>
+          </div>
+          <div class="flex justify-between items-center text-[9px] font-mono text-stone-900 border-t border-black/20 pt-1 font-semibold">
+            <span>ZERO-G SUSPENSION</span>
+            <span class="text-stone-950">GRAB & FLING</span>
+          </div>
+        </div>
+
+        <!-- Slab B: Fluted Concrete Column -->
+        <div id="box-concrete" class="absolute w-48 h-44 rounded-2xl concrete-slab p-4 flex flex-col justify-between pointer-events-auto cursor-grab active:cursor-grabbing transition-shadow duration-300">
+          <div class="flex justify-between items-center text-stone-400 font-mono text-[10px] font-bold">
+            <span class="px-2 py-0.5 rounded bg-white/10">MASS: 1,420 KG</span>
+            <span>✦ BASALT</span>
+          </div>
+          <div>
+            <div class="text-stone-100 font-black text-base">FLUTED MONOLITH</div>
+            <div class="text-stone-400 text-[10px] font-mono mt-0.5">CAST STRUCTURAL CORE</div>
+          </div>
+          <div class="flex justify-between items-center text-[9px] font-mono text-stone-400 border-t border-stone-700/60 pt-1">
+            <span>DRAG ANYWHERE</span>
+            <span class="text-amber-400 font-bold">KINETIC</span>
+          </div>
+        </div>
+
+        <!-- Slab C: Solid Gold Ingot -->
+        <div id="box-gold" class="absolute w-44 h-28 rounded-2xl gold-slab p-3.5 flex flex-col justify-between pointer-events-auto cursor-grab active:cursor-grabbing transition-shadow duration-300">
+          <div class="flex justify-between items-center text-stone-950 font-mono text-[10px] font-bold">
+            <span class="px-2 py-0.5 rounded bg-black/30 text-white">METALLURGY</span>
+            <span>✦ BRASS</span>
+          </div>
+          <div>
+            <div class="text-stone-950 font-black text-sm">PATINATED BRASS</div>
+            <div class="text-stone-900 text-[10px] font-mono">MIRROR POLISHED EDGES</div>
+          </div>
+          <div class="flex justify-between items-center text-[9px] font-mono text-stone-950 border-t border-black/30 pt-0.5 font-bold">
+            <span>REFLECTIVE</span>
+            <span>TILT 3D</span>
+          </div>
+        </div>
+
+        <!-- Slab D: Holographic Smoked Glass -->
+        <div id="box-glass" class="absolute w-56 h-36 rounded-2xl holo-slab p-4 flex flex-col justify-between pointer-events-auto cursor-grab active:cursor-grabbing transition-shadow duration-300">
+          <div class="flex justify-between items-center text-cyan-300 font-mono text-[10px] font-bold">
+            <span class="px-2 py-0.5 rounded bg-cyan-500/20">REFRACTIVE</span>
+            <span>✦ PRISM</span>
+          </div>
+          <div>
+            <div class="text-white font-black text-base">SMOKED RIBBED GLASS</div>
+            <div class="text-stone-300 text-[10px] font-mono mt-0.5">CIRCADIAN LIGHT LENS</div>
+          </div>
+          <div class="flex justify-between items-center text-[9px] font-mono text-stone-300 border-t border-white/20 pt-1">
+            <span>DIFFUSION: 94%</span>
+            <span class="text-cyan-300 font-bold">LIGHT PRISM</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Central Floating Spatial Action Trigger HUD -->
+      <div id="crazy-action-overlay" class="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 bg-black/80 backdrop-blur-xl border border-stone-700/80 p-2 rounded-2xl shadow-2xl">
+        <button onclick="triggerDetonation()" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-bold text-xs font-mono transition-all shadow-lg shadow-amber-500/20 active:scale-95 flex items-center gap-2">
+          <span>💥</span>
+          <span id="btn-detonate-label">DETONATE / EXPLODE MODEL</span>
+        </button>
+        <button onclick="reAssembleModel()" class="px-4 py-2.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-200 font-mono text-xs font-semibold transition-all border border-stone-700 active:scale-95 flex items-center gap-2">
+          <span>🧲</span>
+          <span>MAGNETIC SNAP ASSEMBLE</span>
+        </button>
+        <button onclick="zeroGravitySupercharge()" class="px-4 py-2.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-amber-300 font-mono text-xs font-semibold transition-all border border-stone-700 active:scale-95">
+          🚀 ZERO-G BURST
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Live Performance Controls & Toggles -->
+    <div class="mt-4 p-4 rounded-xl border border-stone-800 bg-stone-900/60 backdrop-blur-md grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-center text-xs">
+      
+      <div>
+        <div class="flex justify-between text-stone-400 font-mono mb-1.5">
+          <span>GRAVITATIONAL PULL</span>
+          <span id="val-gravity" class="text-amber-400 font-bold">0.65G</span>
+        </div>
+        <input id="slider-gravity" type="range" min="0.1" max="2.0" step="0.05" value="0.65" class="w-full" oninput="updatePhysicsParams()" />
+      </div>
+
+      <div>
+        <div class="flex justify-between text-stone-400 font-mono mb-1.5">
+          <span>PARTICLE DENSITY</span>
+          <span id="val-density" class="text-amber-400 font-bold">1,600 PTS</span>
+        </div>
+        <input id="slider-density" type="range" min="600" max="2800" step="100" value="1600" class="w-full" oninput="updatePhysicsParams()" />
+      </div>
+
+      <div>
+        <div class="flex justify-between text-stone-400 font-mono mb-1.5">
+          <span>EXPLOSION FORCE</span>
+          <span id="val-force" class="text-amber-400 font-bold">14.0 MPa</span>
+        </div>
+        <input id="slider-force" type="range" min="5" max="30" step="1" value="14" class="w-full" oninput="updatePhysicsParams()" />
+      </div>
+
+      <div class="flex items-center justify-between border-t sm:border-t-0 md:border-l border-stone-800 pt-2 sm:pt-0 md:pl-4">
+        <div>
+          <div class="font-mono text-stone-200 font-semibold">LASER SCANNER</div>
+          <div class="text-[10px] text-stone-500 font-mono">CONTINUOUS SWEEP</div>
+        </div>
+        <button id="toggle-laser" onclick="toggleLaserSweep()" class="px-3 py-1.5 rounded-lg bg-stone-800 border border-stone-700 text-amber-400 font-mono text-[11px] font-bold">
+          ACTIVE
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    // State Machine
+    const state = {
+      mode: 'lidar', // lidar | detonate | fling | vortex
+      gravity: 0.65,
+      explosionForce: 14.0,
+      particleCount: 1600,
+      laserActive: true,
+      time: 0,
+      isExploded: false,
+      mouseX: 0.5,
+      mouseY: 0.5,
+      cursorAbsX: 0,
+      cursorAbsY: 0,
+      isMouseDown: false,
+      stageWidth: 1200,
+      stageHeight: 600,
+      rotX: 0.3,
+      rotY: 0.6
+    };
+
+    // DOM Elements
+    const stage = document.getElementById('crazy-stage');
+    const canvas = document.getElementById('particle-canvas');
+    const ctx = canvas.getContext('2d');
+    const laserSweep = document.getElementById('laser-sweep');
+    const shockwave = document.getElementById('shockwave-ring');
+    const slabsLayer = document.getElementById('slabs-3d-layer');
+    const coordsHud = document.getElementById('coords-hud');
+    const modeTitleHud = document.getElementById('mode-title-hud');
+    const telemetryHud = document.getElementById('telemetry-hud');
+    const interactionHint = document.getElementById('interaction-hint');
+
+    // Slabs
+    const slabs = [
+      { el: document.getElementById('box-travertine'), x: 120, y: 140, z: 0, vx: 0, vy: 0, vz: 0, rx: 5, ry: -10, rz: 2, vrx: 0.05, vry: 0.08, dragging: false, homeX: 120, homeY: 140 },
+      { el: document.getElementById('box-concrete'), x: 740, y: 110, z: 20, vx: 0, vy: 0, vz: 0, rx: -8, ry: 12, rz: -3, vrx: -0.06, vry: 0.04, dragging: false, homeX: 740, homeY: 110 },
+      { el: document.getElementById('box-gold'), x: 180, y: 380, z: 40, vx: 0, vy: 0, vz: 0, rx: 12, ry: -15, rz: 4, vrx: 0.08, vry: -0.05, dragging: false, homeX: 180, homeY: 380 },
+      { el: document.getElementById('box-glass'), x: 680, y: 360, z: 10, vx: 0, vy: 0, vz: 0, rx: -6, ry: 8, rz: -2, vrx: -0.04, vry: 0.07, dragging: false, homeX: 680, homeY: 360 }
+    ];
+
+    // Canvas Resize
+    function resize() {
+      const rect = stage.getBoundingClientRect();
+      state.stageWidth = rect.width;
+      state.stageHeight = rect.height;
+      canvas.width = rect.width * window.devicePixelRatio;
+      canvas.height = rect.height * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // Generate 3D Architectural Villa Model Point Cloud
+    // Points represent: Cantilever Roof, Glass Floor Plates, Internal Spiral Staircase, Columns, Perimeter Walls
+    let points = [];
+    function generateVillaPointCloud(count) {
+      points = [];
+      for (let i = 0; i < count; i++) {
+        let x, y, z, category;
+        const r = Math.random();
+
+        if (r < 0.25) {
+          // Roof Cantilever Slab Plate
+          x = (Math.random() - 0.4) * 3.4;
+          y = -1.2 + (Math.random() - 0.5) * 0.15;
+          z = (Math.random() - 0.5) * 2.2;
+          category = 'roof';
+        } else if (r < 0.5) {
+          // Ground & Mezzanine Floor Plates
+          x = (Math.random() - 0.5) * 2.8;
+          y = Math.random() > 0.5 ? 0.8 : -0.2;
+          z = (Math.random() - 0.5) * 2.0;
+          category = 'floor';
+        } else if (r < 0.75) {
+          // Columns & Structural Axial Grid
+          const pillarIdx = Math.floor(Math.random() * 6);
+          const px = [-1.0, 0, 1.0, -1.0, 0, 1.0][pillarIdx];
+          const pz = [-0.8, -0.8, -0.8, 0.8, 0.8, 0.8][pillarIdx];
+          x = px + (Math.random() - 0.5) * 0.12;
+          y = (Math.random() - 0.5) * 2.2;
+          z = pz + (Math.random() - 0.5) * 0.12;
+          category = 'pillar';
+        } else {
+          // Internal Floating Helical Staircase
+          const angle = Math.random() * Math.PI * 4;
+          const radius = 0.65 * (angle / (Math.PI * 4));
+          x = Math.cos(angle) * radius;
+          y = 0.8 - (angle / (Math.PI * 4)) * 1.8;
+          z = Math.sin(angle) * radius;
+          category = 'stairs';
+        }
+
+        points.push({
+          homeX: x, homeY: y, homeZ: z,
+          x: x, y: y, z: z,
+          vx: 0, vy: 0, vz: 0,
+          category: category,
+          color: category === 'stairs' ? '#f59e0b' : (category === 'roof' ? '#e2e8f0' : (category === 'floor' ? '#38bdf8' : '#cbd5e1')),
+          size: Math.random() * 1.8 + 0.8,
+          alpha: Math.random() * 0.7 + 0.3
+        });
+      }
+    }
+    generateVillaPointCloud(state.particleCount);
+
+    // Mouse & Pointer Tracking
+    let lastMouseX = 0, lastMouseY = 0;
+    let isDragging3D = false;
+
+    stage.addEventListener('mousedown', (e) => {
+      // Don't trigger 3D rotate if clicking a slab
+      if (e.target.closest('.stone-slab, .concrete-slab, .gold-slab, .holo-slab, button')) return;
+      isDragging3D = true;
+      lastMouseX = e.clientX;
+      lastMouseY = e.clientY;
+    });
+
+    window.addEventListener('mouseup', () => {
+      isDragging3D = false;
+      slabs.forEach(s => s.dragging = false);
+    });
+
+    stage.addEventListener('mousemove', (e) => {
+      const rect = stage.getBoundingClientRect();
+      state.cursorAbsX = e.clientX - rect.left;
+      state.cursorAbsY = e.clientY - rect.top;
+      state.mouseX = state.cursorAbsX / rect.width;
+      state.mouseY = state.cursorAbsY / rect.height;
+
+      coordsHud.textContent = `[X ${(state.mouseX * 100).toFixed(1)}%, Y ${(state.mouseY * 100).toFixed(1)}%]`;
+
+      if (isDragging3D) {
+        const dx = e.clientX - lastMouseX;
+        const dy = e.clientY - lastMouseY;
+        state.rotY += dx * 0.008;
+        state.rotX -= dy * 0.008;
+        lastMouseX = e.clientX;
+        lastMouseY = e.clientY;
+      }
+    });
+
+    // Setup Slab Dragging & Fling Kinematics
+    slabs.forEach((slab, index) => {
+      let startX, startY, prevX, prevY, lastTime;
+
+      slab.el.addEventListener('mousedown', (e) => {
+        e.stopPropagation();
+        slab.dragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        prevX = e.clientX;
+        prevY = e.clientY;
+        lastTime = performance.now();
+        slab.vx = 0;
+        slab.vy = 0;
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!slab.dragging) return;
+        const now = performance.now();
+        const dt = Math.max(1, now - lastTime);
+        const dx = e.clientX - prevX;
+        const dy = e.clientY - prevY;
+
+        slab.x += dx;
+        slab.y += dy;
+        slab.vx = (dx / dt) * 16;
+        slab.vy = (dy / dt) * 16;
+
+        prevX = e.clientX;
+        prevY = e.clientY;
+        lastTime = now;
+      });
+    });
+
+    // Trigger Laser Sweep
+    let laserPos = 0;
+    function updateLaser(dt) {
+      if (!state.laserActive) {
+        laserSweep.style.opacity = '0';
+        return;
+      }
+      laserSweep.style.opacity = '0.85';
+      laserPos = (laserPos + dt * 0.35) % 1.0;
+      laserSweep.style.left = `${laserPos * state.stageWidth}px`;
+    }
+
+    // Shockwave Ring Animation
+    function triggerShockwave(x, y) {
+      shockwave.style.left = `${x}px`;
+      shockwave.style.top = `${y}px`;
+      shockwave.style.width = '0px';
+      shockwave.style.height = '0px';
+      shockwave.style.opacity = '0.9';
+      
+      requestAnimationFrame(() => {
+        shockwave.style.width = '600px';
+        shockwave.style.height = '600px';
+        shockwave.style.opacity = '0';
+      });
+    }
+
+    // Detonate / Explode Model
+    function triggerDetonation() {
+      state.isExploded = true;
+      const force = state.explosionForce;
+      triggerShockwave(state.stageWidth * 0.5, state.stageHeight * 0.48);
+
+      // Scatter 3D Particles violently outward
+      points.forEach(p => {
+        const dx = p.x;
+        const dy = p.y;
+        const dz = p.z;
+        const dist = Math.sqrt(dx*dx + dy*dy + dz*dz) || 1;
+        p.vx = (dx / dist) * (Math.random() * force * 0.08 + force * 0.04);
+        p.vy = (dy / dist) * (Math.random() * force * 0.08 + force * 0.04);
+        p.vz = (dz / dist) * (Math.random() * force * 0.08 + force * 0.04);
+      });
+
+      // Scatter Slabs
+      slabs.forEach(s => {
+        s.vx = (Math.random() - 0.5) * force * 2.2;
+        s.vy = (Math.random() - 0.5) * force * 2.2;
+        s.vz = (Math.random() - 0.5) * 60;
+        s.vrx = (Math.random() - 0.5) * 1.2;
+        s.vry = (Math.random() - 0.5) * 1.2;
+      });
+
+      document.getElementById('btn-detonate-label').textContent = 'EXPLODED · RE-DETONATE';
+    }
+
+    // Re-Assemble Model Magnetically
+    function reAssembleModel() {
+      state.isExploded = false;
+      triggerShockwave(state.stageWidth * 0.5, state.stageHeight * 0.48);
+
+      points.forEach(p => {
+        p.vx = (p.homeX - p.x) * 0.12;
+        p.vy = (p.homeY - p.y) * 0.12;
+        p.vz = (p.homeZ - p.z) * 0.12;
+      });
+
+      slabs.forEach(s => {
+        s.vx = (s.homeX - s.x) * 0.08;
+        s.vy = (s.homeY - s.y) * 0.08;
+      });
+
+      document.getElementById('btn-detonate-label').textContent = 'DETONATE / EXPLODE MODEL';
+    }
+
+    // Zero-G Burst
+    function zeroGravitySupercharge() {
+      slabs.forEach(s => {
+        s.vy -= 18;
+        s.vx += (Math.random() - 0.5) * 16;
+        s.vrx += (Math.random() - 0.5) * 0.6;
+      });
+      triggerShockwave(state.cursorAbsX || state.stageWidth * 0.5, state.cursorAbsY || state.stageHeight * 0.5);
+    }
+
+    // Main 60 FPS Engine Loop
+    function loop() {
+      state.time += 0.016;
+
+      // Update Laser
+      updateLaser(0.016);
+
+      // Auto-drift 3D rotation if not actively dragging
+      if (!isDragging3D) {
+        state.rotY += 0.003;
+      }
+
+      // Clear Canvas
+      ctx.clearRect(0, 0, state.stageWidth, state.stageHeight);
+
+      // 3D Matrix Projection Setup
+      const fov = 480;
+      const cx = state.stageWidth * 0.5;
+      const cy = state.stageHeight * 0.48;
+      const scale = Math.min(state.stageWidth, state.stageHeight) * 0.28;
+
+      const cosY = Math.cos(state.rotY);
+      const sinY = Math.sin(state.rotY);
+      const cosX = Math.cos(state.rotX);
+      const sinX = Math.sin(state.rotX);
+
+      // Update and Draw Particles
+      const cursor3DX = (state.mouseX - 0.5) * 4.0;
+      const cursor3DY = (state.mouseY - 0.5) * 3.0;
+
+      for (let p of points) {
+        // Mode Specific Physics
+        if (state.mode === 'vortex') {
+          // Gravitational Black-Hole Vortex around Cursor
+          const dx = cursor3DX - p.x;
+          const dy = cursor3DY - p.y;
+          const dist = Math.sqrt(dx*dx + dy*dy) || 0.1;
+          const angle = Math.atan2(dy, dx) + Math.PI * 0.5; // Orbit
+          p.vx += Math.cos(angle) * (1.2 / dist) * 0.02;
+          p.vy += Math.sin(angle) * (1.2 / dist) * 0.02;
+          p.vx += (dx / dist) * 0.01;
+          p.vy += (dy / dist) * 0.01;
+        } else if (!state.isExploded) {
+          // Magnetic Spring to Home Coordinates
+          const k = 0.04 * state.gravity;
+          p.vx += (p.homeX - p.x) * k;
+          p.vy += (p.homeY - p.y) * k;
+          p.vz += (p.homeZ - p.z) * k;
+        }
+
+        // Friction Damping
+        p.vx *= 0.92;
+        p.vy *= 0.92;
+        p.vz *= 0.92;
+
+        p.x += p.vx;
+        p.y += p.vy;
+        p.z += p.vz;
+
+        // 3D Rotate
+        let x1 = p.x * cosY - p.z * sinY;
+        let z1 = p.x * sinY + p.z * cosY;
+        let y2 = p.y * cosX - z1 * sinX;
+        let z2 = p.y * sinX + z1 * cosX;
+
+        const depth = z2 + 5.2;
+        if (depth > 0.2) {
+          const pScale = fov / (fov + depth * 75);
+          const px = cx + x1 * scale * pScale;
+          const py = cy + y2 * scale * pScale;
+
+          // Render Particle
+          ctx.beginPath();
+          ctx.arc(px, py, Math.max(0.6, p.size * pScale * 1.4), 0, Math.PI * 2);
+
+          // If scanned by laser, brighten node
+          const distFromLaser = Math.abs(px - (laserPos * state.stageWidth));
+          const laserGlow = (state.laserActive && distFromLaser < 45) ? 1.0 : 0.0;
+
+          if (laserGlow > 0) {
+            ctx.fillStyle = '#f59e0b';
+            ctx.shadowColor = '#f59e0b';
+            ctx.shadowBlur = 8;
+          } else {
+            ctx.fillStyle = p.color;
+            ctx.shadowBlur = 0;
+          }
+          ctx.fill();
+        }
+      }
+
+      // Update Slabs Physics & Throw Kinematics
+      slabs.forEach(s => {
+        if (!s.dragging) {
+          if (!state.isExploded) {
+            // Magnetic return to home with subtle floating levitation
+            const floatOffset = Math.sin(state.time * 1.5 + s.homeX) * 12;
+            s.vx += (s.homeX - s.x) * 0.02 * state.gravity;
+            s.vy += ((s.homeY + floatOffset) - s.y) * 0.02 * state.gravity;
+          }
+
+          // Wall Collisions
+          if (s.x < 20) { s.x = 20; s.vx *= -0.7; }
+          if (s.x > state.stageWidth - 240) { s.x = state.stageWidth - 240; s.vx *= -0.7; }
+          if (s.y < 20) { s.y = 20; s.vy *= -0.7; }
+          if (s.y > state.stageHeight - 200) { s.y = state.stageHeight - 200; s.vy *= -0.7; }
+
+          s.vx *= 0.94;
+          s.vy *= 0.94;
+          s.x += s.vx;
+          s.y += s.vy;
+
+          s.rx += s.vrx;
+          s.ry += s.vry;
+          s.vrx *= 0.98;
+          s.vry *= 0.98;
+        }
+
+        // Apply Transform
+        s.el.style.transform = `translate3d(${s.x}px, ${s.y}px, ${s.z}px) rotateX(${s.rx}deg) rotateY(${s.ry}deg) rotateZ(${s.rz}deg)`;
+      });
+
+      requestAnimationFrame(loop);
+    }
+
+    // Set Crazy Mode
+    function setCrazyMode(mode) {
+      state.mode = mode;
+
+      document.querySelectorAll('.mode-pill').forEach(b => {
+        b.className = 'mode-pill px-3 py-1.5 rounded-lg text-xs font-mono text-stone-400 hover:text-stone-100 transition-all';
+      });
+      document.getElementById('btn-' + mode).className = 'mode-pill px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all bg-amber-500 text-stone-950 shadow-lg shadow-amber-500/20';
+
+      if (mode === 'lidar') {
+        modeTitleHud.textContent = 'MODE: 3D LiDAR VILLA POINT CLOUD';
+        telemetryHud.textContent = 'PARTICLES: 1,600 DUAL-VECTOR NODES';
+        interactionHint.textContent = 'INTERACTION: MOVE CURSOR TO SCAN · DRAG TO ROTATE IN 3D';
+        slabsLayer.style.opacity = '0.35';
+        reAssembleModel();
+      } else if (mode === 'detonate') {
+        modeTitleHud.textContent = 'MODE: ZERO-G DETONATION & ASSEMBLE';
+        telemetryHud.textContent = 'EXPLOSION IMPULSE: 14.0 MPA';
+        interactionHint.textContent = 'INTERACTION: CLICK DETONATE TO EXPLODE · CLICK ASSEMBLE TO SNAP BACK';
+        slabsLayer.style.opacity = '1';
+        triggerDetonation();
+      } else if (mode === 'fling') {
+        modeTitleHud.textContent = 'MODE: TECTONIC THROW & FLING KINEMATICS';
+        telemetryHud.textContent = 'ZERO-G REBOUND: 70% COEFFICIENT';
+        interactionHint.textContent = 'INTERACTION: GRAB ANY SLAB AND FLING IT ACROSS THE SCREEN!';
+        slabsLayer.style.opacity = '1';
+        reAssembleModel();
+      } else if (mode === 'vortex') {
+        modeTitleHud.textContent = 'MODE: GRAVITATIONAL PARTICLE VORTEX';
+        telemetryHud.textContent = 'SINGULARITY: DYNAMIC CURSOR ORBIT';
+        interactionHint.textContent = 'INTERACTION: MOVE CURSOR AROUND TO CREATE AN ARCHITECTURAL TORNADO';
+        slabsLayer.style.opacity = '0.2';
+      }
+    }
+
+    function updatePhysicsParams() {
+      state.gravity = parseFloat(document.getElementById('slider-gravity').value);
+      document.getElementById('val-gravity').textContent = state.gravity.toFixed(2) + 'G';
+
+      state.explosionForce = parseFloat(document.getElementById('slider-force').value);
+      document.getElementById('val-force').textContent = state.explosionForce.toFixed(1) + ' MPa';
+
+      const newDensity = parseInt(document.getElementById('slider-density').value);
+      document.getElementById('val-density').textContent = newDensity.toLocaleString() + ' PTS';
+      if (newDensity !== state.particleCount) {
+        state.particleCount = newDensity;
+        generateVillaPointCloud(state.particleCount);
+      }
+    }
+
+    function toggleLaserSweep() {
+      state.laserActive = !state.laserActive;
+      const btn = document.getElementById('toggle-laser');
+      if (state.laserActive) {
+        btn.textContent = 'ACTIVE';
+        btn.className = 'px-3 py-1.5 rounded-lg bg-stone-800 border border-stone-700 text-amber-400 font-mono text-[11px] font-bold';
+      } else {
+        btn.textContent = 'OFF';
+        btn.className = 'px-3 py-1.5 rounded-lg bg-stone-900 border border-stone-800 text-stone-500 font-mono text-[11px]';
+      }
+    }
+
+    // Launch loop
+    loop();
+  </script>
+</body>
+</html>
