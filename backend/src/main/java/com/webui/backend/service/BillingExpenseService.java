@@ -301,6 +301,35 @@ public class BillingExpenseService {
         return billRepository.save(bill);
     }
 
+    @Transactional
+    public BillApprovalEntity submitPaymentProof(String billId, String paymentProofUrl, Authentication auth) {
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new AccessDeniedException("Authentication required");
+        }
+        BillApprovalEntity bill = findBillByIdOrBillId(billId);
+        if (paymentProofUrl != null && !paymentProofUrl.isBlank()) {
+            bill.setPaymentProofUrl(paymentProofUrl);
+        }
+        bill.setStatus("PAID_ONLINE");
+        bill.setPaidAmount(bill.getAmount());
+        bill.setPaidAt(LocalDateTime.now());
+        bill.setUpdatedAt(LocalDateTime.now());
+        return billRepository.save(bill);
+    }
+
+    @Transactional
+    public BillApprovalEntity confirmDirectCashSettlement(String billId, Authentication auth) {
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new AccessDeniedException("Authentication required");
+        }
+        BillApprovalEntity bill = findBillByIdOrBillId(billId);
+        bill.setStatus("PAID_CASH");
+        bill.setPaidAmount(bill.getAmount());
+        bill.setPaidAt(LocalDateTime.now());
+        bill.setUpdatedAt(LocalDateTime.now());
+        return billRepository.save(bill);
+    }
+
     // ==========================================
     // 3. Client Project Expenses Breakdown
     // ==========================================

@@ -91,6 +91,38 @@ public class BillingExpenseController {
         }
     }
 
+    // 4b. Submit Payment Proof (Online settlement with receipt screenshot)
+    @PostMapping("/bills/{billId}/payment-proof")
+    public ResponseEntity<?> submitPaymentProof(
+            @PathVariable String billId,
+            @RequestBody(required = false) Map<String, String> body,
+            Authentication auth) {
+        try {
+            String proofUrl = body != null ? body.get("paymentProofUrl") : null;
+            BillApprovalEntity bill = billingExpenseService.submitPaymentProof(billId, proofUrl, auth);
+            return ResponseEntity.ok(bill);
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // 4c. Direct Cash Settlement Confirmation
+    @PostMapping("/bills/{billId}/direct-cash-settle")
+    public ResponseEntity<?> confirmDirectCashSettlement(
+            @PathVariable String billId,
+            Authentication auth) {
+        try {
+            BillApprovalEntity bill = billingExpenseService.confirmDirectCashSettlement(billId, auth);
+            return ResponseEntity.ok(bill);
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     // 5. Client Project Expense Breakdown
     @GetMapping("/project/{projectId}/expenses")
     public ResponseEntity<?> getProjectExpenses(@PathVariable UUID projectId) {
