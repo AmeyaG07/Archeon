@@ -106,7 +106,7 @@ async def run_audit():
             await client_tab.first.click()
             await client_page.wait_for_timeout(500)
 
-        await client_page.fill('input[type="text"]', "client_user@studioarcheon.com")
+        await client_page.fill('input[type="text"]', "client_user")
         await client_page.fill('input[type="password"]', "Password123!")
         await client_page.click('button[type="submit"]')
         await client_page.wait_for_url("**/client**", timeout=10000)
