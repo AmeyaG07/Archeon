@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ArcheOn Footer - 3D Bubble & Space Environments Demo</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @keyframes pulse-subtle {
+      0%, 100% { opacity: 0.35; transform: scale(1); }
+      50% { opacity: 0.55; transform: scale(1.04); }
+    }
+    .ambient-glow {
+      animation: pulse-subtle 8s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body class="bg-[#0b0b0e] text-[#F2F0EB] antialiased m-0 p-0 font-sans select-none overflow-x-hidden">
+  <div class="w-full flex flex-col min-h-[580px] border border-white/10 rounded-xl overflow-hidden shadow-2xl bg-[#09090c]">
+    
+    <!-- TOP TOOLBAR & DEMO SWITCHER -->
+    <div class="px-4 py-3 bg-[#111116] border-b border-white/10 flex flex-wrap items-center justify-between gap-3 z-30">
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-[#B68A4A] animate-ping"></span>
+        <span class="text-xs font-mono uppercase tracking-[0.2em] text-[#C6A779] font-medium">Footer Environment Explorer</span>
+      </div>
+
+      <!-- Environment Mode Selector -->
+      <div class="flex items-center p-1 bg-black/60 rounded-lg border border-white/10 text-xs font-mono">
+        <button id="mode-bubbles" onclick="setMode('bubbles')" class="px-3 py-1.5 rounded-md transition-all font-medium bg-[#B68A4A] text-black shadow-sm">
+          🔮 3D Glass Bubbles
+        </button>
+        <button id="mode-space" onclick="setMode('space')" class="px-3 py-1.5 rounded-md transition-all font-medium text-stone-400 hover:text-white">
+          🌌 Space & Nebula
+        </button>
+        <button id="mode-hybrid" onclick="setMode('hybrid')" class="px-3 py-1.5 rounded-md transition-all font-medium text-stone-400 hover:text-white">
+          ✨ Cosmic + 3D Orbs (Hybrid)
+        </button>
+      </div>
+
+      <!-- Interaction Controls -->
+      <div class="hidden sm:flex items-center gap-4 text-xs font-mono text-stone-400">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <span>Speed:</span>
+          <input id="speedControl" type="range" min="0.3" max="2.5" step="0.1" value="1" class="w-20 accent-[#B68A4A] cursor-pointer" oninput="updateSpeed(this.value)">
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer">
+          <span>Glow:</span>
+          <input id="glowControl" type="range" min="0.4" max="1.8" step="0.1" value="1" class="w-20 accent-[#B68A4A] cursor-pointer" oninput="updateGlow(this.value)">
+        </label>
+      </div>
+    </div>
+
+    <!-- CANVAS & FOOTER CONTAINER -->
+    <div class="relative w-full h-[520px] flex flex-col justify-between overflow-hidden" id="canvas-container">
+      
+      <!-- Interactive WebGL / 2D Canvas -->
+      <canvas id="ambientCanvas" class="absolute inset-0 w-full h-full z-0 block cursor-crosshair"></canvas>
+
+      <!-- Ambient Background Color Gradients -->
+      <div class="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+        <div id="ambient-core" class="absolute -top-16 left-1/4 h-[420px] w-[700px] -translate-x-1/2 rounded-full blur-[130px] opacity-35 ambient-glow"
+             style="background: radial-gradient(ellipse at center, rgba(200, 98, 30, 0.45) 0%, rgba(217, 119, 36, 0.25) 45%, rgba(245, 158, 11, 0.12) 70%, transparent 100%);">
+        </div>
+        <div id="ambient-secondary" class="absolute -top-10 right-[10%] h-[350px] w-[500px] rounded-full blur-[120px] opacity-30"
+             style="background: radial-gradient(ellipse at center, rgba(184, 137, 74, 0.35) 0%, rgba(217, 119, 36, 0.15) 50%, transparent 80%);">
+        </div>
+        <div class="absolute inset-0 opacity-[0.05]"
+             style="background-size: 32px 32px; background-image: linear-gradient(to right, rgba(245, 158, 11, 0.25) 1px, transparent 1px), linear-gradient(to bottom, rgba(245, 158, 11, 0.25) 1px, transparent 1px);">
+        </div>
+      </div>
+
+      <!-- OVERLAID ARCHEON FOOTER CONTENT (Previewing Real Website Integration) -->
+      <div class="relative z-10 w-full px-6 sm:px-12 pt-10 flex flex-col justify-between h-full pointer-events-none">
+        
+        <!-- Main Footer Columns Mockup -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 py-4 border-t border-white/15 backdrop-blur-[2px]">
+          
+          <!-- Column 1: Brand & Clock Emblem -->
+          <div class="flex flex-col items-start">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full border border-[#B68A4A]/50 bg-black/60 flex items-center justify-center shadow-[0_0_15px_rgba(182,138,74,0.3)]">
+                <span class="text-[#B68A4A] text-xs font-serif font-bold">A</span>
+              </div>
+              <span class="font-serif tracking-widest text-sm text-[#F2F0EB] uppercase">ArcheOn</span>
+            </div>
+            <p class="mt-3 text-[11px] leading-relaxed text-white/50 max-w-[210px]">
+              Sculpting timeless spatial environments and monolithic residences in Nagpur, India.
+            </p>
+            <div class="mt-4 px-2.5 py-1 rounded-full border border-[#B68A4A]/30 bg-black/50 text-[9px] font-mono text-[#C6A779] uppercase tracking-wider">
+              LAT 21.1458° N · LON 79.0882° E
+            </div>
+          </div>
+
+          <!-- Column 2: Explore Links -->
+          <div>
+            <p class="text-[10px] font-mono uppercase tracking-[0.22em] text-[#B68A4A] mb-3">Explore</p>
+            <div class="flex flex-col gap-2 text-xs text-white/70">
+              <span class="hover:text-white">Studio</span>
+              <span class="hover:text-white">Expertise</span>
+              <span class="hover:text-white">Projects</span>
+              <span class="hover:text-white">Process</span>
+              <span class="hover:text-white">Contact</span>
+            </div>
+          </div>
+
+          <!-- Column 3: Disciplines -->
+          <div>
+            <p class="text-[10px] font-mono uppercase tracking-[0.22em] text-[#B68A4A] mb-3">Disciplines</p>
+            <div class="flex flex-col gap-2 text-xs text-white/70">
+              <span>Bespoke Architecture</span>
+              <span>Interior Environments</span>
+              <span>Landscape & Monolith</span>
+              <span>Full Turnkey Execution</span>
+            </div>
+          </div>
+
+          <!-- Column 4: Private Access -->
+          <div>
+            <p class="text-[10px] font-mono uppercase tracking-[0.22em] text-[#B68A4A] mb-3">Private Access</p>
+            <div class="flex flex-col gap-2 text-xs">
+              <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/20 bg-white/5 text-stone-200">
+                <span>Client Portal ↗</span>
+              </div>
+              <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/20 bg-white/5 text-stone-200">
+                <span>Vendor Portal ↗</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Copyright Row -->
+        <div class="border-t border-white/10 py-4 flex flex-col sm:flex-row items-center justify-between text-[10px] text-white/40 font-mono tracking-widest gap-2">
+          <span>© 2026 ARCHEON DESIGN STUDIO.</span>
+          <span class="text-[#B68A4A]/80">[ HOVER MOUSE TO INTERACT WITH 3D PARTICLES ]</span>
+          <span class="text-[#C6A779]">BACK TO TOP ↑</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('ambientCanvas');
+    const ctx = canvas.getContext('2d');
+    const container = document.getElementById('canvas-container');
+
+    let currentMode = 'bubbles'; // 'bubbles' | 'space' | 'hybrid'
+    let speedMult = 1.0;
+    let glowMult = 1.0;
+
+    let width = 0;
+    let height = 0;
+    let mouseX = -1000;
+    let mouseY = -1000;
+    let isMouseOver = false;
+
+    function resize() {
+      width = canvas.width = container.clientWidth;
+      height = canvas.height = container.clientHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    container.addEventListener('mousemove', (e) => {
+      const rect = container.getBoundingClientRect();
+      mouseX = e.clientX - rect.left;
+      mouseY = e.clientY - rect.top;
+      isMouseOver = true;
+    });
+
+    container.addEventListener('mouseleave', () => {
+      isMouseOver = false;
+      mouseX = -1000;
+      mouseY = -1000;
+    });
+
+    // -------------------------------------------------------------
+    // PARTICLE & BUBBLE SIMULATION SYSTEM
+    // -------------------------------------------------------------
+    class Bubble3D {
+      constructor() {
+        this.reset();
+      }
+      reset() {
+        this.x = Math.random() * width;
+        this.y = height + Math.random() * 80;
+        this.radius = 12 + Math.random() * 42; // Size
+        this.depth = 0.3 + Math.random() * 0.7; // 3D depth layer
+        this.vy = -(0.4 + Math.random() * 0.9) * this.depth;
+        this.vx = (Math.random() - 0.5) * 0.35 * this.depth;
+        this.wobbleSpeed = 0.02 + Math.random() * 0.04;
+        this.wobbleAmp = 2 + Math.random() * 6;
+        this.angle = Math.random() * Math.PI * 2;
+        this.hueShift = Math.random() * 30; // warm gold to copper
+        this.opacity = 0.25 + Math.random() * 0.45;
+        this.refractionOffset = Math.random() * 0.3;
+      }
+      update() {
+        this.angle += this.wobbleSpeed * speedMult;
+        this.y += this.vy * speedMult;
+        this.x += (this.vx + Math.sin(this.angle) * 0.4) * speedMult;
+
+        // Mouse repelling physics (gentle floating fluid)
+        if (isMouseOver) {
+          const dx = this.x - mouseX;
+          const dy = this.y - mouseY;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          const maxDist = 140;
+          if (dist < maxDist && dist > 1) {
+            const force = (1 - dist / maxDist) * 3;
+            this.x += (dx / dist) * force;
+            this.y += (dy / dist) * force;
+          }
+        }
+
+        // Loop to bottom
+        if (this.y + this.radius < -20) {
+          this.reset();
+          this.y = height + this.radius + 10;
+        }
+      }
+      draw() {
+        const r = this.radius * (0.8 + 0.2 * this.depth);
+        ctx.save();
+        ctx.translate(this.x, this.y);
+
+        // Ambient outer glow
+        const glowRad = r * (1.6 * glowMult);
+        const glowGrad = ctx.createRadialGradient(0, 0, r * 0.4, 0, 0, glowRad);
+        glowGrad.addColorStop(0, `rgba(217, 119, 36, ${0.18 * this.opacity * glowMult})`);
+        glowGrad.addColorStop(0.5, `rgba(182, 138, 74, ${0.08 * this.opacity * glowMult})`);
+        glowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = glowGrad;
+        ctx.beginPath();
+        ctx.arc(0, 0, glowRad, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 3D Glass Bubble Body (Refractive Translucency)
+        const bodyGrad = ctx.createRadialGradient(
+          -r * 0.25, -r * 0.25, r * 0.1,
+          0, 0, r
+        );
+        bodyGrad.addColorStop(0, `rgba(255, 245, 230, ${0.05 * this.opacity})`);
+        bodyGrad.addColorStop(0.7, `rgba(184, 137, 74, ${0.08 * this.opacity})`);
+        bodyGrad.addColorStop(0.92, `rgba(217, 119, 36, ${0.28 * this.opacity})`);
+        bodyGrad.addColorStop(1, `rgba(255, 255, 255, ${0.65 * this.opacity})`);
+
+        ctx.fillStyle = bodyGrad;
+        ctx.beginPath();
+        ctx.arc(0, 0, r, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 3D Glass Rim Stroke (Thin Luxury Iridescent Highlight)
+        ctx.strokeStyle = `rgba(245, 215, 160, ${0.45 * this.opacity})`;
+        ctx.lineWidth = 1.2 * this.depth;
+        ctx.stroke();
+
+        // Primary 3D Specular Curved Highlight (Top Left Light Source)
+        ctx.beginPath();
+        ctx.ellipse(-r * 0.35, -r * 0.35, r * 0.35, r * 0.18, -Math.PI / 4, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${0.75 * this.opacity * glowMult})`;
+        ctx.fill();
+
+        // Secondary bottom soft rim reflection
+        ctx.beginPath();
+        ctx.ellipse(r * 0.3, r * 0.35, r * 0.22, r * 0.09, -Math.PI / 4, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(245, 158, 11, ${0.4 * this.opacity})`;
+        ctx.fill();
+
+        ctx.restore();
+      }
+    }
+
+    class SpaceStar {
+      constructor() {
+        this.reset();
+      }
+      reset() {
+        this.x = Math.random() * width;
+        this.y = Math.random() * height;
+        this.z = 0.2 + Math.random() * 0.8; // 3D depth parallax
+        this.size = (0.7 + Math.random() * 1.8) * this.z;
+        this.alpha = 0.2 + Math.random() * 0.8;
+        this.twinkleSpeed = 0.015 + Math.random() * 0.04;
+        this.twinklePhase = Math.random() * Math.PI * 2;
+        this.vx = (Math.random() - 0.5) * 0.15 * this.z;
+        this.vy = -(0.1 + Math.random() * 0.3) * this.z;
+      }
+      update() {
+        this.twinklePhase += this.twinkleSpeed * speedMult;
+        this.x += this.vx * speedMult;
+        this.y += this.vy * speedMult;
+
+        // Mouse Parallax
+        if (isMouseOver) {
+          const dx = (mouseX - width / 2) * 0.0003 * this.z;
+          const dy = (mouseY - height / 2) * 0.0003 * this.z;
+          this.x -= dx;
+          this.y -= dy;
+        }
+
+        if (this.y < -10) this.y = height + 10;
+        if (this.x < -10) this.x = width + 10;
+        if (this.x > width + 10) this.x = -10;
+      }
+      draw() {
+        const curAlpha = Math.max(0.1, (Math.sin(this.twinklePhase) * 0.5 + 0.5) * this.alpha * glowMult);
+        ctx.save();
+        ctx.fillStyle = `rgba(250, 240, 220, ${curAlpha})`;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 4-Point Starlight Flare for prominent stars
+        if (this.size > 1.3 && curAlpha > 0.6) {
+          ctx.strokeStyle = `rgba(245, 180, 80, ${curAlpha * 0.4})`;
+          ctx.lineWidth = 0.7;
+          ctx.beginPath();
+          ctx.moveTo(this.x - this.size * 3, this.y);
+          ctx.lineTo(this.x + this.size * 3, this.y);
+          ctx.moveTo(this.x, this.y - this.size * 3);
+          ctx.lineTo(this.x, this.y + this.size * 3);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+    }
+
+    class CosmicNebulaCloud {
+      constructor() {
+        this.reset();
+      }
+      reset() {
+        this.x = Math.random() * width;
+        this.y = Math.random() * height;
+        this.radius = 80 + Math.random() * 160;
+        this.vx = (Math.random() - 0.5) * 0.12;
+        this.vy = (Math.random() - 0.5) * 0.08;
+        this.alpha = 0.04 + Math.random() * 0.08;
+        this.isGold = Math.random() > 0.5;
+      }
+      update() {
+        this.x += this.vx * speedMult;
+        this.y += this.vy * speedMult;
+        if (this.x < -this.radius) this.x = width + this.radius;
+        if (this.x > width + this.radius) this.x = -this.radius;
+        if (this.y < -this.radius) this.y = height + this.radius;
+        if (this.y > height + this.radius) this.y = -this.radius;
+      }
+      draw() {
+        ctx.save();
+        const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius);
+        if (this.isGold) {
+          grad.addColorStop(0, `rgba(182, 138, 74, ${this.alpha * glowMult})`);
+          grad.addColorStop(0.6, `rgba(200, 98, 30, ${this.alpha * 0.4 * glowMult})`);
+          grad.addColorStop(1, 'rgba(0,0,0,0)');
+        } else {
+          grad.addColorStop(0, `rgba(217, 119, 36, ${this.alpha * glowMult})`);
+          grad.addColorStop(0.7, `rgba(140, 45, 15, ${this.alpha * 0.3 * glowMult})`);
+          grad.addColorStop(1, 'rgba(0,0,0,0)');
+        }
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    // Initialize pools
+    const bubbles = Array.from({ length: 32 }, () => new Bubble3D());
+    const stars = Array.from({ length: 85 }, () => new SpaceStar());
+    const clouds = Array.from({ length: 7 }, () => new CosmicNebulaCloud());
+
+    // -------------------------------------------------------------
+    // MAIN ANIMATION LOOP
+    // -------------------------------------------------------------
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+
+      if (currentMode === 'bubbles') {
+        // Render 3D Bubbles exclusively
+        bubbles.forEach(b => {
+          b.update();
+          b.draw();
+        });
+      } else if (currentMode === 'space') {
+        // Render Deep Space & Stars & Nebula Clouds
+        clouds.forEach(c => {
+          c.update();
+          c.draw();
+        });
+        stars.forEach(s => {
+          s.update();
+          s.draw();
+        });
+      } else if (currentMode === 'hybrid') {
+        // Render Stars + Nebula + 3D Bubbles
+        clouds.forEach(c => {
+          c.update();
+          c.draw();
+        });
+        stars.forEach(s => {
+          s.update();
+          s.draw();
+        });
+        bubbles.slice(0, 20).forEach(b => {
+          b.update();
+          b.draw();
+        });
+      }
+
+      requestAnimationFrame(animate);
+    }
+    animate();
+
+    // -------------------------------------------------------------
+    // INTERACTION HANDLERS
+    // -------------------------------------------------------------
+    window.setMode = function(mode) {
+      currentMode = mode;
+      
+      const btnBubbles = document.getElementById('mode-bubbles');
+      const btnSpace = document.getElementById('mode-space');
+      const btnHybrid = document.getElementById('mode-hybrid');
+
+      [btnBubbles, btnSpace, btnHybrid].forEach(b => {
+        b.className = "px-3 py-1.5 rounded-md transition-all font-medium text-stone-400 hover:text-white";
+      });
+
+      if (mode === 'bubbles') {
+        btnBubbles.className = "px-3 py-1.5 rounded-md transition-all font-medium bg-[#B68A4A] text-black shadow-sm";
+      } else if (mode === 'space') {
+        btnSpace.className = "px-3 py-1.5 rounded-md transition-all font-medium bg-[#B68A4A] text-black shadow-sm";
+      } else if (mode === 'hybrid') {
+        btnHybrid.className = "px-3 py-1.5 rounded-md transition-all font-medium bg-[#B68A4A] text-black shadow-sm";
+      }
+    };
+
+    window.updateSpeed = function(val) {
+      speedMult = parseFloat(val);
+    };
+
+    window.updateGlow = function(val) {
+      glowMult = parseFloat(val);
+    };
+  </script>
+</body>
+</html>
