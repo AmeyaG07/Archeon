@@ -152,9 +152,9 @@ export function ServicesSection({
                   onMouseEnter={() => handleSelectDiscipline(service.id)}
                   className={`group relative flex min-h-[225px] sm:min-h-[240px] lg:min-h-[250px] w-full flex-col justify-between overflow-hidden p-5 sm:p-6 lg:p-6 text-left backdrop-blur-md transition-all duration-400 cursor-pointer ${
                     activeDiscipline === service.id
-                      ? "bg-[#181818]/92 border-t-2 border-t-[#D97724] shadow-xl shadow-black/70 -translate-y-1"
-                      : "bg-[#101010]/60 hover:bg-[#181818]/85 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/60"
-                  } ${isMatch ? "opacity-100" : "opacity-55"}`}
+                      ? "bg-[#181818]/95 border-t-2 border-t-[#D97724] shadow-xl shadow-black/70 -translate-y-1"
+                      : "bg-[#101010]/63 hover:bg-[#181818]/88 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/60"
+                  } ${isMatch ? "opacity-100" : "opacity-[0.58]"}`}
                 >
                   {/* Chromatic Edge Sweep Line on Hover / Active */}
                   <div

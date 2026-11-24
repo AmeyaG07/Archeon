@@ -319,7 +319,7 @@ export function SiteFooter({
                 >
                   <p
                     className="font-mono uppercase tracking-[0.22em] text-[#C6A779] font-medium mb-5"
-                    style={{ fontSize: "11px", letterSpacing: "0.22em" }}
+                    style={{ fontSize: "13px", letterSpacing: "0.22em" }}
                   >
                     EXPLORE
                   </p>
@@ -327,7 +327,7 @@ export function SiteFooter({
                     type="button"
                     onClick={() => scrollToSection(exploreLinks[0].href)}
                     className="block text-left font-outfit text-white/70 hover:text-white transition-colors duration-200 cursor-pointer mb-3"
-                    style={{ fontSize: "13px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
+                    style={{ fontSize: "15px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
                   >
                     {exploreLinks[0].label}
                   </button>
@@ -344,7 +344,7 @@ export function SiteFooter({
                       type="button"
                       onClick={() => scrollToSection(exploreLinks[1].href)}
                       className="text-left font-outfit text-white/70 hover:text-white transition-colors duration-200 cursor-pointer"
-                      style={{ fontSize: "13px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
+                      style={{ fontSize: "15px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
                     >
                       {exploreLinks[1].label}
                     </button>
@@ -352,7 +352,7 @@ export function SiteFooter({
                       type="button"
                       onClick={() => scrollToSection(exploreLinks[2].href)}
                       className="text-left font-outfit text-white/70 hover:text-white transition-colors duration-200 cursor-pointer"
-                      style={{ fontSize: "13px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
+                      style={{ fontSize: "15px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
                     >
                       {exploreLinks[2].label}
                     </button>
@@ -370,7 +370,7 @@ export function SiteFooter({
                       type="button"
                       onClick={() => scrollToSection(exploreLinks[3].href)}
                       className="text-left font-outfit text-white/70 hover:text-white transition-colors duration-200 cursor-pointer"
-                      style={{ fontSize: "13px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
+                      style={{ fontSize: "15px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
                     >
                       {exploreLinks[3].label}
                     </button>
@@ -378,7 +378,7 @@ export function SiteFooter({
                       type="button"
                       onClick={() => scrollToSection(exploreLinks[4].href)}
                       className="text-left font-outfit text-white/70 hover:text-white transition-colors duration-200 cursor-pointer"
-                      style={{ fontSize: "13px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
+                      style={{ fontSize: "15px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
                     >
                       {exploreLinks[4].label}
                     </button>
@@ -405,13 +405,13 @@ export function SiteFooter({
                 >
                   <p
                     className="font-mono uppercase tracking-[0.22em] text-[#C6A779] font-medium mb-5"
-                    style={{ fontSize: "11px", letterSpacing: "0.22em" }}
+                    style={{ fontSize: "13px", letterSpacing: "0.22em" }}
                   >
                     DISCIPLINES
                   </p>
                   <span
                     className="block font-outfit text-white/70 mb-3"
-                    style={{ fontSize: "13px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
+                    style={{ fontSize: "15px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
                   >
                     {disciplines[0]}
                   </span>
@@ -426,13 +426,13 @@ export function SiteFooter({
                   <div className="flex flex-col gap-3 mb-3">
                     <span
                       className="font-outfit text-white/70"
-                      style={{ fontSize: "13px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
+                      style={{ fontSize: "15px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
                     >
                       {disciplines[1]}
                     </span>
                     <span
                       className="font-outfit text-white/70"
-                      style={{ fontSize: "13px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
+                      style={{ fontSize: "15px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
                     >
                       {disciplines[2]}
                     </span>
@@ -448,13 +448,13 @@ export function SiteFooter({
                   <div className="flex flex-col gap-3">
                     <span
                       className="font-outfit text-white/70"
-                      style={{ fontSize: "13px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
+                      style={{ fontSize: "15px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
                     >
                       {disciplines[3]}
                     </span>
                     <span
                       className="font-outfit text-white/70"
-                      style={{ fontSize: "13px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
+                      style={{ fontSize: "15px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
                     >
                       {disciplines[4]}
                     </span>
@@ -481,7 +481,7 @@ export function SiteFooter({
                 >
                   <p
                     className="font-mono uppercase tracking-[0.22em] text-[#C6A779] font-medium mb-5"
-                    style={{ fontSize: "11px", letterSpacing: "0.22em" }}
+                    style={{ fontSize: "13px", letterSpacing: "0.22em" }}
                   >
                     PRIVATE ACCESS
                   </p>
@@ -492,12 +492,12 @@ export function SiteFooter({
                   >
                     <span
                       className="font-outfit"
-                      style={{ fontSize: "13px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
+                      style={{ fontSize: "15px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
                     >
                       Client Portal
                     </span>
                     <ArrowUpRight
-                      size={13}
+                      size={14}
                       className="text-white/60 group-hover:text-white transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
                     />
                   </button>
@@ -516,12 +516,12 @@ export function SiteFooter({
                   >
                     <span
                       className="font-outfit"
-                      style={{ fontSize: "13px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
+                      style={{ fontSize: "15px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
                     >
                       Vendor Portal
                     </span>
                     <ArrowUpRight
-                      size={13}
+                      size={14}
                       className="text-white/60 group-hover:text-white transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
                     />
                   </button>
@@ -547,7 +547,7 @@ export function SiteFooter({
                 >
                   <p
                     className="font-mono uppercase tracking-[0.22em] text-[#C6A779] font-medium mb-5"
-                    style={{ fontSize: "11px", letterSpacing: "0.22em" }}
+                    style={{ fontSize: "13px", letterSpacing: "0.22em" }}
                   >
                     STUDIO INQUIRIES
                   </p>
@@ -556,14 +556,14 @@ export function SiteFooter({
                       href="mailto:dsarcheon@gmail.com"
                       className="hover:text-white transition-colors truncate"
                       title="dsarcheon@gmail.com"
-                      style={{ fontSize: "13px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
+                      style={{ fontSize: "15px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
                     >
                       dsarcheon@gmail.com
                     </a>
                     <a
                       href="tel:+919834653481"
                       className="hover:text-white transition-colors tracking-wide"
-                      style={{ fontSize: "13px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
+                      style={{ fontSize: "15px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
                     >
                       +91 9834653481
                     </a>
@@ -581,11 +581,11 @@ export function SiteFooter({
                       type="button"
                       onClick={onOpenConsultation || (() => scrollToSection("#contact"))}
                       className="inline-flex items-center gap-1.5 font-outfit font-medium text-[#C6A779] hover:text-[#E0D8C3] transition-colors cursor-pointer group"
-                      style={{ fontSize: "13px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif' }}
+                      style={{ fontSize: "15px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif' }}
                     >
                       <span>Schedule a Consultation</span>
                       <ArrowUpRight
-                        size={12}
+                        size={14}
                         className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
                       />
                     </button>
@@ -601,7 +601,7 @@ export function SiteFooter({
                   <div className="pt-4 border-t border-white/10">
                     <p
                       className="font-mono uppercase tracking-[0.22em] text-[#C6A779] font-medium mb-3"
-                      style={{ fontSize: "11px", letterSpacing: "0.22em" }}
+                      style={{ fontSize: "13px", letterSpacing: "0.22em" }}
                     >
                       FOLLOW US
                     </p>
