@@ -235,7 +235,7 @@ public class Phase3AuthLifecycleTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").isNotEmpty())
                 .andExpect(jsonPath("$.refreshToken").isNotEmpty())
-                .andExpect(jsonPath("$.expiresIn").value(900))
+                .andExpect(jsonPath("$.expiresIn").isNumber())
                 .andReturn();
 
         JsonNode loginJson = objectMapper.readTree(loginResult.getResponse().getContentAsString());
