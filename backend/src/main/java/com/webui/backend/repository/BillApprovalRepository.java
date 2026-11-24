@@ -31,4 +31,14 @@ public interface BillApprovalRepository extends JpaRepository<BillApprovalEntity
 
     @Query("SELECT COALESCE(SUM(b.amount), 0) FROM BillApprovalEntity b WHERE b.vendorId = :vendorId AND b.status IN ('PENDING_PRIMARY', 'PENDING_SECONDARY', 'APPROVED')")
     BigDecimal sumPendingAmountForVendor(@Param("vendorId") String vendorId);
+
+    java.util.List<BillApprovalEntity> findByProjectIdOrderByCreatedAtDesc(String projectId);
+
+    java.util.List<BillApprovalEntity> findByVendorIdOrderByCreatedAtDesc(String vendorId);
+
+    java.util.List<BillApprovalEntity> findByClientIdOrderByCreatedAtDesc(String clientId);
+
+    java.util.List<BillApprovalEntity> findByProjectIdAndVendorIdOrderByCreatedAtDesc(String projectId, String vendorId);
+
+    java.util.List<BillApprovalEntity> findByStatusIn(java.util.Collection<String> statuses);
 }

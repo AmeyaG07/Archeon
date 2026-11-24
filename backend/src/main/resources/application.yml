@@ -29,6 +29,18 @@ spring:
     multipart:
       max-file-size: 25MB
       max-request-size: 30MB
+  mail:
+    host: ${SPRING_MAIL_HOST:smtp.gmail.com}
+    port: ${SPRING_MAIL_PORT:587}
+    username: ${SPRING_MAIL_USERNAME:dsarcheon@gmail.com}
+    password: ${SPRING_MAIL_PASSWORD:odrmmsjotehuihyq}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
 
 app:
   legal:
@@ -61,8 +73,8 @@ app:
 
   jwt:
     secret: ${APP_JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
-    expiration-ms: 900000 # 15 minutes
-    refresh-expiration-ms: 604800000 # 7 days
+    expiration-ms: 31536000000 # 365 days persistent login for Admin, Client & Vendor
+    refresh-expiration-ms: 31536000000 # 365 days persistent refresh
     issuer: "archeon-api"
     audience: "archeon-web"
 
@@ -79,18 +91,18 @@ app:
 
   mail:
     enabled: ${APP_MAIL_ENABLED:true}
-    provider: ${APP_MAIL_PROVIDER:mock} # 'smtp' for live authenticated SMTP, 'mock' for in-memory deterministic test capture
-    from-address: ${APP_MAIL_FROM_ADDRESS:invitations@archeon.design}
+    provider: ${APP_MAIL_PROVIDER:smtp} # 'smtp' for live authenticated SMTP, 'mock' for in-memory deterministic test capture
+    from-address: ${APP_MAIL_FROM_ADDRESS:dsarcheon@gmail.com}
     from-name: ${APP_MAIL_FROM_NAME:ArcheOn Design Studio}
-    reply-to: ${APP_MAIL_REPLY_TO:support@archeon.design}
-    host: ${SPRING_MAIL_HOST:localhost}
+    reply-to: ${APP_MAIL_REPLY_TO:dsarcheon@gmail.com}
+    host: ${SPRING_MAIL_HOST:smtp.gmail.com}
     port: ${SPRING_MAIL_PORT:587}
-    username: ${SPRING_MAIL_USERNAME:}
-    password: ${SPRING_MAIL_PASSWORD:}
+    username: ${SPRING_MAIL_USERNAME:dsarcheon@gmail.com}
+    password: ${SPRING_MAIL_PASSWORD:odrmmsjotehuihyq}
     auth: ${SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH:true}
     starttls: ${SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE:true}
-    connection-timeout-ms: ${APP_MAIL_CONNECTION_TIMEOUT_MS:5000}
-    read-timeout-ms: ${APP_MAIL_READ_TIMEOUT_MS:10000}
+    connection-timeout-ms: ${APP_MAIL_CONNECTION_TIMEOUT_MS:10000}
+    read-timeout-ms: ${APP_MAIL_READ_TIMEOUT_MS:15000}
 
   storage:
     provider: ${APP_STORAGE_PROVIDER:LOCAL_PRIVATE}

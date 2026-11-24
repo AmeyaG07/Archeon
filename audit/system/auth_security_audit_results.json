@@ -1,0 +1,32 @@
+{
+  "invalid_credentials": {
+    "bad_password_status": 401,
+    "bad_user_status": 401,
+    "securely_rejected": true
+  },
+  "token_family_security": {
+    "initial_login": true,
+    "refresh_success": true,
+    "replay_attack_status": 409,
+    "replay_rejected": false
+  },
+  "tampered_jwt": {
+    "tampered_status": 401,
+    "securely_rejected": true
+  },
+  "privilege_escalation": {
+    "users_api_status": 403,
+    "audit_api_status": 403,
+    "reports_api_status": 403,
+    "escalation_prevented": true
+  },
+  "idor_isolation": {
+    "client_unowned_bill_status": 404,
+    "vendor_clients_access_status": 403,
+    "idor_prevented": true
+  },
+  "sql_injection_protection": {
+    "status": 200,
+    "safe_handling": true
+  }
+}

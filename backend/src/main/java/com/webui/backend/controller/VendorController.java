@@ -55,6 +55,20 @@ public class VendorController {
         }
     }
 
+    @PutMapping("/me")
+    public ResponseEntity<?> updateCurrentVendor(
+            @RequestBody UpdateVendorRequest req,
+            Authentication auth) {
+        try {
+            VendorResponse updated = vendorService.updateCurrentVendorProfile(req, auth);
+            return ResponseEntity.ok(updated);
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getVendorById(@PathVariable UUID id, Authentication auth) {
         try {
@@ -124,6 +138,33 @@ public class VendorController {
         try {
             InvitationResponse invitation = vendorService.inviteVendor(id, auth);
             return ResponseEntity.ok(invitation);
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteVendor(@PathVariable UUID id, Authentication auth) {
+        try {
+            vendorService.deleteVendor(id, auth);
+            return ResponseEntity.ok(Map.of("success", true, "message", "Vendor deleted successfully"));
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/{id}/portal-account")
+    public ResponseEntity<?> createPortalAccount(
+            @PathVariable UUID id,
+            @RequestBody CreatePortalAccountRequest req,
+            Authentication auth) {
+        try {
+            Map<String, Object> res = vendorService.createPortalAccount(id, req, auth);
+            return ResponseEntity.ok(res);
         } catch (AccessDeniedException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {

@@ -1,0 +1,8 @@
+{
+  "bill_id": "CONCUR-BILL-1795163978",
+  "initialization_status": 200,
+  "first_approval_status": 200,
+  "double_approval_status": 400,
+  "double_approval_blocked": true,
+  "block_message": "Bill is not in PENDING_PRIMARY status: PENDING_SECONDARY"
+}

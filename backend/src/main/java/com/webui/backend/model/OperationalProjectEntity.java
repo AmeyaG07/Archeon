@@ -59,6 +59,9 @@ public class OperationalProjectEntity {
     @Column(name = "start_date")
     private LocalDate startDate;
 
+    @Column(name = "last_visit_date")
+    private LocalDate lastVisitDate;
+
     @Column(name = "expected_completion_date")
     private LocalDate expectedCompletionDate;
 

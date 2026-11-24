@@ -49,6 +49,9 @@ public class ClientService {
     @Autowired
     private UserInvitationService userInvitationService;
 
+    @Autowired
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
     private boolean isInternalStaff(Collection<? extends GrantedAuthority> authorities) {
         if (authorities == null) return false;
         return authorities.stream().anyMatch(a ->
@@ -204,6 +207,43 @@ public class ClientService {
         return toResponse(client);
     }
 
+    @Transactional
+    public ClientResponse updateCurrentClientProfile(UpdateClientRequest req, Authentication auth) {
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new AccessDeniedException("Unauthenticated");
+        }
+        String username = auth.getName();
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new AccessDeniedException("User account not found"));
+
+        ClientEntity client = null;
+        if (user.getClientId() != null) {
+            client = clientRepository.findById(user.getClientId()).orElse(null);
+        }
+        if (client == null) {
+            client = clientRepository.findByClientReference(username)
+                    .or(() -> clientRepository.findByEmail(username))
+                    .orElseThrow(() -> new AccessDeniedException("Principal is not mapped to an active client organization"));
+        }
+
+        if (req.getFullName() != null && !req.getFullName().isBlank()) {
+            client.setFullName(req.getFullName().trim());
+        }
+        if (req.getPhone() != null) {
+            client.setPhone(req.getPhone().trim());
+        }
+        String org = req.getCompanyName() != null ? req.getCompanyName() : req.getOrganization();
+        if (org != null) {
+            client.setOrganization(org.trim());
+        }
+        if (req.getLocation() != null) {
+            client.setLocation(req.getLocation().trim());
+        }
+        client.setUpdatedAt(LocalDateTime.now());
+        ClientEntity saved = clientRepository.save(client);
+        return toResponse(saved);
+    }
+
     @Transactional(readOnly = true)
     public List<ClientResponse> listClients(Authentication auth) {
         if (!isInternalStaff(auth.getAuthorities())) {
@@ -328,5 +368,86 @@ public class ClientService {
             c.setUpdatedAt(LocalDateTime.now());
             clientRepository.save(c);
         });
+    }
+
+    @Transactional
+    public void deleteClient(UUID clientId, Authentication auth) {
+        if (!isInternalStaff(auth.getAuthorities())) {
+            throw new AccessDeniedException("Only studio administrators and staff can delete clients");
+        }
+        ClientEntity client = clientRepository.findById(clientId)
+                .orElseThrow(() -> new IllegalArgumentException("Client not found: " + clientId));
+
+        List<UserEntity> linkedUsers = userRepository.findByClientId(clientId);
+        for (UserEntity user : linkedUsers) {
+            user.setEnabled(false);
+            user.setStatus("DELETED");
+            refreshTokenRepository.revokeAllForUser(user.getUsername());
+            tokenRevocationService.revokeAllForUser(user.getUsername());
+            userRepository.delete(user);
+        }
+
+        clientRepository.delete(client);
+
+        auditEventRepository.save(AuditEventEntity.builder()
+                .actorId(auth.getName())
+                .actorRole("STAFF")
+                .action("CLIENT_DELETED")
+                .entityName("Client")
+                .entityId(clientId.toString())
+                .detailsJson(String.format("{\"reference\": \"%s\", \"email\": \"%s\"}", client.getClientReference(), client.getEmail()))
+                .build());
+    }
+
+    @Transactional
+    public java.util.Map<String, Object> createPortalAccount(UUID clientId, CreatePortalAccountRequest req, Authentication auth) {
+        if (!isInternalStaff(auth.getAuthorities())) {
+            throw new AccessDeniedException("Only studio administrators and staff can create portal accounts");
+        }
+        ClientEntity client = clientRepository.findById(clientId)
+                .orElseThrow(() -> new IllegalArgumentException("Client not found: " + clientId));
+
+        String username = org.springframework.util.StringUtils.hasText(req.getUsername())
+                ? req.getUsername().trim()
+                : client.getEmail();
+        String rawPassword = org.springframework.util.StringUtils.hasText(req.getPassword())
+                ? req.getPassword().trim()
+                : "Password123!";
+
+        java.util.Optional<UserEntity> existingOpt = userRepository.findByUsername(username);
+        UserEntity user;
+        if (existingOpt.isPresent()) {
+            user = existingOpt.get();
+            user.setPassword(passwordEncoder.encode(rawPassword));
+            user.setClientId(clientId);
+            user.setRole("ROLE_CLIENT");
+            user.setEnabled(true);
+            user.setStatus("ACTIVE");
+        } else {
+            user = UserEntity.builder()
+                    .username(username)
+                    .password(passwordEncoder.encode(rawPassword))
+                    .role("ROLE_CLIENT")
+                    .email(client.getEmail())
+                    .fullName(client.getFullName())
+                    .phone(client.getPhone())
+                    .clientId(clientId)
+                    .status("ACTIVE")
+                    .enabled(true)
+                    .tokenVersion(0L)
+                    .build();
+        }
+        userRepository.save(user);
+
+        client.setPortalAccess("ACTIVE");
+        client.setUpdatedAt(LocalDateTime.now());
+        clientRepository.save(client);
+
+        return java.util.Map.of(
+                "success", true,
+                "username", username,
+                "role", "ROLE_CLIENT",
+                "message", "Portal account created successfully. The client can now log in at /login."
+        );
     }
 }

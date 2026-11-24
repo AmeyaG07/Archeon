@@ -22,11 +22,12 @@ public class CompositeEmailDeliveryService implements EmailDeliveryService {
             @Qualifier("smtpEmailDeliveryService") EmailDeliveryService smtpService,
             @Qualifier("mockEmailDeliveryService") EmailDeliveryService mockService,
             @Value("${app.mail.enabled:true}") boolean mailEnabled,
-            @Value("${app.mail.provider:mock}") String configuredProvider) {
+            @Value("${app.mail.provider:smtp}") String configuredProvider) {
         this.smtpService = smtpService;
         this.mockService = mockService;
         this.mailEnabled = mailEnabled;
-        this.configuredProvider = configuredProvider != null ? configuredProvider.trim().toLowerCase() : "mock";
+        String resolved = configuredProvider != null ? configuredProvider.trim().toLowerCase() : "";
+        this.configuredProvider = (resolved.isBlank() || "smtp".equalsIgnoreCase(resolved)) ? "smtp" : resolved;
         log.info("Initialized CompositeEmailDeliveryService (enabled={}, configuredProvider={})",
                 this.mailEnabled, this.configuredProvider);
     }

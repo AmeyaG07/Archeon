@@ -91,6 +91,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/manifesto/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/approvals/config").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/leads").permitAll()
+                        .requestMatchers("/api/webhooks/**").permitAll()
+                        .requestMatchers("/api/site-updates/**").authenticated()
+                        .requestMatchers("/api/vendor-payment-methods/**").authenticated()
+                        .requestMatchers("/api/billing/**").authenticated()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
 
                         // 2. Protected Identity Domain (Users, Clients, Vendors, Invitations)
@@ -158,8 +162,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/invoices/*/payments").hasAnyRole("ADMIN", "FINANCE_MANAGER")
                         .requestMatchers(HttpMethod.GET, "/api/invoices/**").hasAnyRole("ADMIN", "FINANCE_MANAGER", "STAFF", "CLIENT")
 
-                        // H. In-App Notifications (Phase 5.1)
+                        // H. In-App Notifications & Support Center (Phase 5.1)
                         .requestMatchers("/api/notifications/**").authenticated()
+                        .requestMatchers("/api/support/**").authenticated()
 
                         // I. Dashboards (Phase 5.1)
                         .requestMatchers("/api/dashboards/admin").hasAnyRole("ADMIN", "FINANCE_MANAGER", "STAFF")
@@ -169,6 +174,7 @@ public class SecurityConfig {
 
                         // J. Global Administrative Audit Center (Phase 5.1)
                         .requestMatchers("/api/admin/audit/**").hasAnyRole("ADMIN", "FINANCE_MANAGER")
+                        .requestMatchers("/api/settings/**").hasAnyRole("ADMIN", "STAFF")
 
                         // 3. Protected Leads (Studio Staff / Admin only)
                         .requestMatchers(HttpMethod.GET, "/api/leads").hasAnyRole("ADMIN", "STAFF")

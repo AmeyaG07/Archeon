@@ -31,7 +31,7 @@ public class VendorService {
 
     private static final Set<String> ALLOWED_CATEGORIES = Set.of(
             "CARPENTRY", "ELECTRICAL", "CIVIL_WORK", "HVAC", "PLUMBING",
-            "FABRICATION", "MASONRY", "PAINTING", "LANDSCAPING", "LIGHTING", "OTHER"
+            "FABRICATION", "MASONRY", "PAINTING", "LANDSCAPING", "LIGHTING", "FINISHING", "OTHER"
     );
 
     @Autowired
@@ -54,6 +54,9 @@ public class VendorService {
 
     @Autowired
     private SensitiveDataMasker sensitiveDataMasker;
+
+    @Autowired
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
     private boolean isInternalStaff(Collection<? extends GrantedAuthority> authorities) {
         if (authorities == null) return false;
@@ -269,6 +272,48 @@ public class VendorService {
         return toResponse(vendor, auth);
     }
 
+    @Transactional
+    public VendorResponse updateCurrentVendorProfile(UpdateVendorRequest req, Authentication auth) {
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new AccessDeniedException("Unauthenticated");
+        }
+        String username = auth.getName();
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new AccessDeniedException("User account not found"));
+
+        VendorEntity vendor = null;
+        if (user.getVendorId() != null) {
+            vendor = vendorRepository.findById(user.getVendorId()).orElse(null);
+        }
+        if (vendor == null) {
+            vendor = vendorRepository.findByVendorReference(username)
+                    .or(() -> vendorRepository.findByEmail(username))
+                    .orElseThrow(() -> new AccessDeniedException("Principal is not mapped to an active vendor organization"));
+        }
+
+        if (StringUtils.hasText(req.getBusinessName())) {
+            vendor.setBusinessName(req.getBusinessName().trim());
+        }
+        if (StringUtils.hasText(req.getContactPerson())) {
+            vendor.setContactPerson(req.getContactPerson().trim());
+        }
+        if (StringUtils.hasText(req.getPhone())) {
+            vendor.setPhone(req.getPhone().trim());
+        }
+        if (req.getLocation() != null) {
+            vendor.setLocation(req.getLocation().trim());
+        }
+        if (req.getGstin() != null) {
+            vendor.setGstin(req.getGstin().trim().toUpperCase());
+        }
+        if (req.getBankDetailsJson() != null) {
+            vendor.setBankDetailsJson(req.getBankDetailsJson().trim());
+        }
+        vendor.setUpdatedAt(LocalDateTime.now());
+        VendorEntity saved = vendorRepository.save(vendor);
+        return toResponse(saved, auth);
+    }
+
     @Transactional(readOnly = true)
     public List<VendorResponse> listVendors(Authentication auth) {
         if (!isInternalStaff(auth.getAuthorities())) {
@@ -407,5 +452,86 @@ public class VendorService {
             v.setUpdatedAt(LocalDateTime.now());
             vendorRepository.save(v);
         });
+    }
+
+    @Transactional
+    public void deleteVendor(UUID vendorId, Authentication auth) {
+        if (!isInternalStaff(auth.getAuthorities())) {
+            throw new AccessDeniedException("Only studio administrators and staff can delete vendors");
+        }
+        VendorEntity vendor = vendorRepository.findById(vendorId)
+                .orElseThrow(() -> new IllegalArgumentException("Vendor not found: " + vendorId));
+
+        List<UserEntity> linkedUsers = userRepository.findByVendorId(vendorId);
+        for (UserEntity user : linkedUsers) {
+            user.setEnabled(false);
+            user.setStatus("DELETED");
+            refreshTokenRepository.revokeAllForUser(user.getUsername());
+            tokenRevocationService.revokeAllForUser(user.getUsername());
+            userRepository.delete(user);
+        }
+
+        vendorRepository.delete(vendor);
+
+        auditEventRepository.save(AuditEventEntity.builder()
+                .actorId(auth.getName())
+                .actorRole("STAFF")
+                .action("VENDOR_DELETED")
+                .entityName("Vendor")
+                .entityId(vendorId.toString())
+                .detailsJson(String.format("{\"reference\": \"%s\", \"email\": \"%s\"}", vendor.getVendorReference(), vendor.getEmail()))
+                .build());
+    }
+
+    @Transactional
+    public java.util.Map<String, Object> createPortalAccount(UUID vendorId, CreatePortalAccountRequest req, Authentication auth) {
+        if (!isInternalStaff(auth.getAuthorities())) {
+            throw new AccessDeniedException("Only studio administrators and staff can create portal accounts");
+        }
+        VendorEntity vendor = vendorRepository.findById(vendorId)
+                .orElseThrow(() -> new IllegalArgumentException("Vendor not found: " + vendorId));
+
+        String username = org.springframework.util.StringUtils.hasText(req.getUsername())
+                ? req.getUsername().trim()
+                : vendor.getEmail();
+        String rawPassword = org.springframework.util.StringUtils.hasText(req.getPassword())
+                ? req.getPassword().trim()
+                : "Password123!";
+
+        java.util.Optional<UserEntity> existingOpt = userRepository.findByUsername(username);
+        UserEntity user;
+        if (existingOpt.isPresent()) {
+            user = existingOpt.get();
+            user.setPassword(passwordEncoder.encode(rawPassword));
+            user.setVendorId(vendorId);
+            user.setRole("ROLE_VENDOR");
+            user.setEnabled(true);
+            user.setStatus("ACTIVE");
+        } else {
+            user = UserEntity.builder()
+                    .username(username)
+                    .password(passwordEncoder.encode(rawPassword))
+                    .role("ROLE_VENDOR")
+                    .email(vendor.getEmail())
+                    .fullName(vendor.getContactPerson())
+                    .phone(vendor.getPhone())
+                    .vendorId(vendorId)
+                    .status("ACTIVE")
+                    .enabled(true)
+                    .tokenVersion(0L)
+                    .build();
+        }
+        userRepository.save(user);
+
+        vendor.setPortalAccess("ACTIVE");
+        vendor.setUpdatedAt(LocalDateTime.now());
+        vendorRepository.save(vendor);
+
+        return java.util.Map.of(
+                "success", true,
+                "username", username,
+                "role", "ROLE_VENDOR",
+                "message", "Portal account created successfully. The vendor can now log in at /login."
+        );
     }
 }

@@ -1,0 +1,4 @@
+app:
+  mail:
+    enabled: true
+    provider: mock

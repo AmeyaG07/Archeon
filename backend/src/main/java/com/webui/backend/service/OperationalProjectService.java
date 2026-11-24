@@ -219,6 +219,7 @@ public class OperationalProjectService {
                 .progressPercentage(p.getProgressPercentage())
                 .startDate(p.getStartDate())
                 .expectedCompletionDate(p.getExpectedCompletionDate())
+                .lastVisitDate(p.getLastVisitDate())
                 .contractValue(summaryContractValue)
                 .version(p.getVersion())
                 .build();
@@ -367,6 +368,7 @@ public class OperationalProjectService {
                 .progressPercentage(0)
                 .startDate(req.getStartDate())
                 .expectedCompletionDate(req.getExpectedCompletionDate())
+                .lastVisitDate(req.getLastVisitDate())
                 .notes(req.getNotes())
                 .createdAt(LocalDateTime.now())
                 .build();
@@ -449,6 +451,7 @@ public class OperationalProjectService {
                 .startDate(p.getStartDate())
                 .expectedCompletionDate(p.getExpectedCompletionDate())
                 .actualCompletionDate(p.getActualCompletionDate())
+                .lastVisitDate(p.getLastVisitDate())
                 .notes(p.getNotes())
                 .createdAt(p.getCreatedAt())
                 .updatedAt(p.getUpdatedAt())
@@ -563,6 +566,9 @@ public class OperationalProjectService {
         }
         if (req.getActualCompletionDate() != null) {
             p.setActualCompletionDate(req.getActualCompletionDate());
+        }
+        if (req.getLastVisitDate() != null) {
+            p.setLastVisitDate(req.getLastVisitDate());
         }
         if (req.getNotes() != null) {
             p.setNotes(req.getNotes().trim());

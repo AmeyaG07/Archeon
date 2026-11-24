@@ -32,6 +32,7 @@ public class OperationalProjectDto {
         private BigDecimal budgetAllocated;
         private LocalDate startDate;
         private LocalDate expectedCompletionDate;
+        private LocalDate lastVisitDate;
         private String notes;
     }
 
@@ -51,6 +52,7 @@ public class OperationalProjectDto {
         private LocalDate startDate;
         private LocalDate expectedCompletionDate;
         private LocalDate actualCompletionDate;
+        private LocalDate lastVisitDate;
         private String notes;
     }
 
@@ -85,6 +87,7 @@ public class OperationalProjectDto {
         private LocalDate startDate;
         private LocalDate expectedCompletionDate;
         private LocalDate actualCompletionDate;
+        private LocalDate lastVisitDate;
         private String notes;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
@@ -114,6 +117,7 @@ public class OperationalProjectDto {
         private Integer progressPercentage;
         private LocalDate startDate;
         private LocalDate expectedCompletionDate;
+        private LocalDate lastVisitDate;
         private BigDecimal contractValue;
         private Long version;
     }

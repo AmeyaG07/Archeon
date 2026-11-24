@@ -55,6 +55,20 @@ public class ClientController {
         }
     }
 
+    @PutMapping("/me")
+    public ResponseEntity<?> updateCurrentClient(
+            @RequestBody UpdateClientRequest req,
+            Authentication auth) {
+        try {
+            ClientResponse updated = clientService.updateCurrentClientProfile(req, auth);
+            return ResponseEntity.ok(updated);
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getClientById(@PathVariable UUID id, Authentication auth) {
         try {
@@ -124,6 +138,33 @@ public class ClientController {
         try {
             InvitationResponse invitation = clientService.inviteClient(id, auth);
             return ResponseEntity.ok(invitation);
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteClient(@PathVariable UUID id, Authentication auth) {
+        try {
+            clientService.deleteClient(id, auth);
+            return ResponseEntity.ok(Map.of("success", true, "message", "Client deleted successfully"));
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/{id}/portal-account")
+    public ResponseEntity<?> createPortalAccount(
+            @PathVariable UUID id,
+            @RequestBody CreatePortalAccountRequest req,
+            Authentication auth) {
+        try {
+            Map<String, Object> res = clientService.createPortalAccount(id, req, auth);
+            return ResponseEntity.ok(res);
         } catch (AccessDeniedException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
