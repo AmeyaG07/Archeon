@@ -203,17 +203,6 @@ export function VendorPaymentHistory({
             Review payments verified by the studio&apos;s finance team.
             Access transaction references and available remittance records.
           </p>
-
-          {onRefresh && (
-            <button
-              type="button"
-              onClick={onRefresh}
-              className="mt-6 inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-[#77736C] hover:text-[#A58A64]"
-            >
-              <RefreshCw size={14} />
-              Refresh Records
-            </button>
-          )}
         </header>
 
         {/* Summary */}

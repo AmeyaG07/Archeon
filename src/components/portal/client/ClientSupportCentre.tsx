@@ -195,15 +195,6 @@ export function ClientSupportCentre({
         </div>
 
         <div className="flex items-center gap-3">
-          {onRefresh && (
-            <button
-              onClick={onRefresh}
-              disabled={loading}
-              className="inline-flex items-center gap-2 rounded-sm border border-[#D8D6D0] bg-white px-4 py-2 font-mono text-[10px] uppercase tracking-wider text-[#171717] hover:bg-[#F7F6F2] transition-colors"
-            >
-              <RefreshCw size={13} className={loading ? "animate-spin text-[#A58A64]" : ""} /> Refresh
-            </button>
-          )}
           <button
             onClick={() => setShowCreateModal(true)}
             className="inline-flex items-center gap-2 rounded-sm bg-[#171717] px-5 py-2 font-mono text-[10px] uppercase tracking-wider text-white hover:bg-[#A58A64] transition-colors shadow-sm"

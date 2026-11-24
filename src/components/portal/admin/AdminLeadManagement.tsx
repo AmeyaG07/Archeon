@@ -321,18 +321,6 @@ export function AdminLeadManagement({
             follow-ups and potential client conversions.
           </p>
         </div>
-
-        {onRefresh && (
-          <button
-            type="button"
-            onClick={onRefresh}
-            disabled={loading}
-            className="inline-flex w-fit items-center gap-2 border border-[#D8D6D0] bg-white px-5 py-3 text-[10px] uppercase tracking-widest text-[#55514A] hover:border-[#A58A64] disabled:opacity-50"
-          >
-            <RefreshCw size={14} />
-            Refresh Leads
-          </button>
-        )}
       </header>
 
       {/* Error */}

@@ -155,7 +155,6 @@ export default function AdminDashboardPage() {
       onOpenEnquiries={() => router.push("/admin/leads")}
       onOpenFinance={() => router.push("/admin/finance-reports")}
       onOpenProject={(id) => router.push(`/admin/projects?id=${id}`)}
-      onOpenActivity={() => router.push("/admin/audit-logs")}
     />
   );
 }

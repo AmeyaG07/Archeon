@@ -231,15 +231,6 @@ export function VendorCashSettlement({
             </div>
 
             <div className="flex items-center gap-3">
-              {onRefresh && (
-                <button
-                  type="button"
-                  onClick={onRefresh}
-                  className="border border-[#D8D6D0] bg-white px-3.5 py-2 font-mono text-[10px] uppercase tracking-wider text-[#77736C] hover:text-[#171717]"
-                >
-                  Refresh
-                </button>
-              )}
               <button
                 type="button"
                 onClick={() => setShowRaiseModal(true)}

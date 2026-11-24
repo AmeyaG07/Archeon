@@ -239,17 +239,6 @@ export function AdminDashboardOverview({
               Updated: {formatDate(data.lastUpdatedAt)}
             </p>
           )}
-
-          {onRefresh && (
-            <button
-              type="button"
-              onClick={onRefresh}
-              disabled={loading}
-              className="border border-[#D8D6D0] bg-white px-5 py-3 text-[10px] uppercase tracking-widest text-[#55514A] hover:border-[#A58A64] disabled:opacity-50"
-            >
-              {loading ? "Refreshing..." : "Refresh Data"}
-            </button>
-          )}
         </div>
       </header>
 

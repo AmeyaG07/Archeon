@@ -35,7 +35,6 @@ export type AdminPortalSection =
   | "invoices"
   | "cash-settlements"
   | "finance-reports"
-  | "audit-logs"
   | "settings";
 
 interface AdminPortalLayoutProps {
@@ -145,12 +144,6 @@ const NAVIGATION_GROUPS: NavigationGroup[] = [
   {
     title: "Governance",
     items: [
-      {
-        id: "audit-logs",
-        label: "Audit Records",
-        description: "Recorded system actions",
-        icon: ScrollText,
-      },
       {
         id: "settings",
         label: "System Settings",

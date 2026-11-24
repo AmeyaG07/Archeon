@@ -315,14 +315,6 @@ export function AdminWebsiteProjectList() {
                 <Plus size={13} /> Add Showcase Project
               </button>
             )}
-            <button
-              type="button"
-              onClick={loadProjects}
-              disabled={loading}
-              className="inline-flex items-center gap-1.5 border border-[#D8D6D0] bg-white px-2.5 py-1.5 text-[9px] font-mono uppercase tracking-wider text-[#55514A] hover:border-[#A58A64] hover:bg-[#FAF9F5] transition-colors rounded-sm"
-            >
-              <RefreshCw size={12} className={loading ? "animate-spin text-[#A58A64]" : ""} /> Refresh
-            </button>
           </div>
         </header>
 
