@@ -112,11 +112,13 @@ export function ProjectDetailModal({ project, onClose, onEnquire }: ProjectDetai
                 </span>
               </div>
               <button
+                type="button"
+                aria-label="Close modal"
                 onClick={() => {
                   playSfx("leave-project");
                   onClose();
                 }}
-                className="p-1.5 rounded-full hover:bg-white/10 text-stone-400 hover:text-white transition-colors"
+                className="p-1.5 rounded-full hover:bg-white/10 text-stone-400 hover:text-white transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>

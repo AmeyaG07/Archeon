@@ -242,27 +242,23 @@ export function SiteFooter({
     if (href.startsWith("#")) {
       const target = document.querySelector(href) as HTMLElement | null;
       if (target) {
-        if (typeof (window as any).lenis?.start === "function") {
-          (window as any).lenis.start();
-        }
+        const top = Math.max(0, target.getBoundingClientRect().top + window.scrollY - 75);
+        window.scrollTo({ top, behavior: "smooth" });
         if (typeof (window as any).lenis?.scrollTo === "function") {
-          (window as any).lenis.scrollTo(target, { offset: -80 });
-        } else {
-          const top = target.getBoundingClientRect().top + window.scrollY - 80;
-          window.scrollTo({ top, behavior: "smooth" });
+          try {
+            (window as any).lenis.scrollTo(top);
+          } catch {}
         }
       }
     }
   };
 
   const scrollToTop = () => {
-    if (typeof (window as any).lenis?.start === "function") {
-      (window as any).lenis.start();
-    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
     if (typeof (window as any).lenis?.scrollTo === "function") {
-      (window as any).lenis.scrollTo(0);
-    } else {
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      try {
+        (window as any).lenis.scrollTo(0);
+      } catch {}
     }
   };
 
@@ -514,9 +510,8 @@ export function SiteFooter({
                   >
                     PRIVATE ACCESS
                   </p>
-                  <button
-                    type="button"
-                    onClick={handleClientPortalClick}
+                  <Link
+                    href="/client"
                     className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg bg-[#141414] hover:bg-[#1C1C1C] border border-white/10 hover:border-white/30 text-white/90 hover:text-white transition-all group shadow-sm cursor-pointer mb-3"
                   >
                     <span
@@ -529,7 +524,7 @@ export function SiteFooter({
                       size={14}
                       className="text-white/60 group-hover:text-white transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
                     />
-                  </button>
+                  </Link>
                 </AgenticRow>
 
                 {/* Row 2: Vendor Portal Card */}
@@ -538,9 +533,8 @@ export function SiteFooter({
                   isRevealed={hasBuilt || buildStep >= 2}
                   cycleKey={buildCycle}
                 >
-                  <button
-                    type="button"
-                    onClick={handleVendorPortalClick}
+                  <Link
+                    href="/vendor"
                     className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg bg-[#141414] hover:bg-[#1C1C1C] border border-white/10 hover:border-white/30 text-white/90 hover:text-white transition-all group shadow-sm cursor-pointer"
                   >
                     <span
@@ -553,7 +547,7 @@ export function SiteFooter({
                       size={14}
                       className="text-white/60 group-hover:text-white transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
                     />
-                  </button>
+                  </Link>
                 </AgenticRow>
               </div>
 
