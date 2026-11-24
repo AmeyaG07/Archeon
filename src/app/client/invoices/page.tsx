@@ -31,7 +31,7 @@ function ClientInvoicesContent() {
   const searchParams = useSearchParams();
   const activeTab = searchParams.get("tab") || "invoices";
 
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
 
   const [invoices, setInvoices] = useState<ClientInvoice[]>([]);
   const [loading, setLoading] = useState(true);
@@ -74,19 +74,21 @@ function ClientInvoicesContent() {
         fileUrl: inv.billPhotoUrl || inv.fileUrl || "",
       }));
 
-      // Fetch vendors map to display human-readable business names instead of raw UUIDs
+      // Fetch vendors map only for studio staff roles (clients don't have directory access)
       const vendorMap: Record<string, string> = {};
-      try {
-        const vRes = await apiFetch("/api/vendors");
-        const vPage = await vRes.json();
-        const vList = Array.isArray(vPage) ? vPage : vPage.content || [];
-        vList.forEach((v: any) => {
-          const name = v.businessName || v.contactPerson || v.vendorReference;
-          if (v.id) vendorMap[String(v.id)] = name;
-          if (v.vendorReference) vendorMap[v.vendorReference] = name;
-        });
-      } catch (err) {
-        console.warn("Could not load vendors map:", err);
+      if (user?.role && user.role !== "ROLE_CLIENT" && user.role !== "CLIENT") {
+        try {
+          const vRes = await apiFetch("/api/vendors");
+          const vPage = await vRes.json();
+          const vList = Array.isArray(vPage) ? vPage : vPage.content || [];
+          vList.forEach((v: any) => {
+            const name = v.businessName || v.contactPerson || v.vendorReference;
+            if (v.id) vendorMap[String(v.id)] = name;
+            if (v.vendorReference) vendorMap[v.vendorReference] = name;
+          });
+        } catch (err) {
+          console.warn("Could not load vendors map:", err);
+        }
       }
 
       // 2. Also load trade partner bills uploaded for this client's projects
@@ -132,7 +134,7 @@ function ClientInvoicesContent() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user?.role]);
 
   useEffect(() => {
     if (!authLoading) {

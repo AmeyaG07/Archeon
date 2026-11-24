@@ -64,7 +64,8 @@ export default function VendorProfilePage() {
       // Load vendor payment methods
       try {
         const pmRes = await apiFetch("/api/vendor-payment-methods/me");
-        const pmData = await pmRes.json();
+        const pmText = await pmRes.text();
+        const pmData = pmText ? JSON.parse(pmText) : null;
         if (pmData) {
           setPaymentDetails({
             accountHolderName: pmData.accountHolderName || "",
