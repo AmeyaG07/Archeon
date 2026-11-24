@@ -66,7 +66,7 @@ export function ProcessSection({
   return (
     <section
       id="process"
-      className="relative overflow-hidden bg-[#F2F0EB] py-24 sm:py-32"
+      className="relative overflow-hidden bg-[#F2F0EB] pt-8 pb-24 sm:pt-10 sm:pb-32"
     >
       {/* Thematic Background: Sequential Construction Blueprint Conduit & Stage Nodes */}
       <div className="pointer-events-none absolute inset-0 -z-0 overflow-hidden select-none">
@@ -119,8 +119,7 @@ export function ProcessSection({
         <div className="grid gap-10 lg:grid-cols-12 lg:items-end">
           <div className="lg:col-span-7">
 
-
-            <div className="mt-6">
+            <div className="mt-1">
               <RevealText>
                 <h2 className="font-serif text-5xl font-light leading-[0.95] tracking-tight sm:text-7xl">
                   From first thought

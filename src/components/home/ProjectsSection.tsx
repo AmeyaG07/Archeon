@@ -23,7 +23,7 @@ export function ProjectsSection({
   return (
     <section
       id="projects"
-      className="relative overflow-hidden bg-white py-24 sm:py-32"
+      className="relative overflow-hidden bg-white pt-6 pb-20 sm:pt-8 sm:pb-28"
     >
       {/* Thematic Background: Architectural Elevation Datums, Dimension Strings & Gallery Aperture */}
       <div className="pointer-events-none absolute inset-0 -z-0 overflow-hidden select-none">
@@ -95,7 +95,7 @@ export function ProjectsSection({
       <div className="editorial-container relative z-10">
 
         {/* Section Header */}
-        <div className="mb-16 flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+        <div className="mb-10 flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <div>
               <RevealText>
@@ -120,7 +120,7 @@ export function ProjectsSection({
           </RevealText>
         </div>
 
-        <HairlineRule color="bg-[#D8D6D0]" className="mb-14" />
+        <HairlineRule color="bg-[#D8D6D0]" className="mb-12" />
 
         {/* Project Cards with Stagger */}
         <StaggerGrid
@@ -187,7 +187,7 @@ export function ProjectsSection({
         </StaggerGrid>
 
         {/* Closing Line */}
-        <HairlineRule color="bg-[#D8D6D0]" className="mt-20 mb-8" />
+        <HairlineRule color="bg-[#D8D6D0]" className="mt-12 mb-6" />
         <div>
           <p className="font-serif text-2xl italic text-[#777777]">
             Every project begins with understanding its context.

@@ -1,12 +1,20 @@
 "use client";
 
-import React from "react";
+import React, { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { ArrowUpRight } from "lucide-react";
+import { motion } from "framer-motion";
 import { siteConfig } from "@/config/siteConfig";
 import { useAuth } from "@/providers/AuthProvider";
+import {
+  SwarmCursorArrow,
+  AgenticRow,
+  AgenticLaunchStreams,
+  COLUMN_SWARM_ARROWS,
+  BOTTOM_BAR_ARROW,
+} from "./FooterAgenticBuild";
 
 const FooterClockEmblem = dynamic(
   () => import("@/components/home/FooterClockEmblem").then((m) => m.FooterClockEmblem),
@@ -111,6 +119,120 @@ export function SiteFooter({
 }: SiteFooterProps) {
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
+  const footerRef = useRef<HTMLDivElement>(null);
+
+  // Agentic Build States: 0 = idle/waiting, 1 = launch streams, 2 = wireframe tracing, 3 = detail reveal, 4 = complete
+  const [buildStep, setBuildStep] = useState<number>(0);
+  const [hasBuilt, setHasBuilt] = useState<boolean>(false);
+  const [buildCycle, setBuildCycle] = useState<number>(0);
+
+  const isBuildingRef = useRef<boolean>(false);
+  const timersRef = useRef<NodeJS.Timeout[]>([]);
+  const lastHoverTime = useRef<number>(0);
+
+  const clearAllTimers = () => {
+    timersRef.current.forEach((t) => clearTimeout(t));
+    timersRef.current = [];
+  };
+
+  // Slower, majestic multi-stage agentic swarm sequence:
+  // 1. Launch outward streams (0ms)
+  // 2. Multi-directional cursor swarm sweeps across rows revealing content (300ms)
+  // 3. Content 100% displayed; cursors dwell at row ends and turn around (2600ms)
+  // 4. Cursors fly back across layout and merge into the round clock emblem (3400ms)
+  // 5. Complete / idle; all cursors merged, content remains fully active (4800ms)
+  const startBuildSequence = () => {
+    // Step 1: Photons launch outward
+    setBuildStep(1);
+
+    // Step 2: Cursors glide across distinct rows
+    timersRef.current.push(
+      setTimeout(() => {
+        setBuildStep(2);
+      }, 300)
+    );
+
+    // Step 3: Content fully displayed; cursors dwell and turn around
+    timersRef.current.push(
+      setTimeout(() => {
+        setBuildStep(3);
+      }, 2600)
+    );
+
+    // Step 4: Cursors return back & merge into the round timepiece emblem
+    timersRef.current.push(
+      setTimeout(() => {
+        setBuildStep(4);
+      }, 3400)
+    );
+
+    // Step 5: Merge completed; settled back into eternal orbit, ready for next hover/click
+    timersRef.current.push(
+      setTimeout(() => {
+        setBuildStep(5);
+        isBuildingRef.current = false;
+      }, 4800)
+    );
+  };
+
+  const triggerBuild = (force = false) => {
+    if (isBuildingRef.current && !force) return;
+
+    clearAllTimers();
+    isBuildingRef.current = true;
+    setHasBuilt(true);
+
+    // If forcing restart while already active, perform a clean 25ms keyframe reset
+    if (force && buildStep > 0) {
+      setBuildStep(0);
+      const resetTimer = setTimeout(() => {
+        setBuildCycle((c) => c + 1);
+        startBuildSequence();
+      }, 25);
+      timersRef.current.push(resetTimer);
+      return;
+    }
+
+    setBuildCycle((c) => c + 1);
+    startBuildSequence();
+  };
+
+  // Hover trigger for the round element:
+  // Replays animation smoothly if idle or completed
+  const handleEmblemHover = () => {
+    const now = Date.now();
+    if (!isBuildingRef.current && now - lastHoverTime.current > 600) {
+      lastHoverTime.current = now;
+      triggerBuild(false);
+    }
+  };
+
+  // Click trigger: always forces an immediate replay
+  const handleClockClick = () => {
+    lastHoverTime.current = Date.now();
+    triggerBuild(true);
+  };
+
+  // Automatic Trigger on Initial Scroll into Viewport
+  useEffect(() => {
+    const el = footerRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !hasBuilt) {
+          triggerBuild(true);
+        }
+      },
+      { threshold: 0.15 }
+    );
+
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+      clearAllTimers();
+    };
+  }, [hasBuilt]);
 
   const handleClientPortalClick = () => {
     if (isAuthenticated && (user?.role === "ROLE_CLIENT" || user?.role === "CLIENT")) {
@@ -135,174 +257,418 @@ export function SiteFooter({
   };
 
   return (
-    <footer className="relative overflow-hidden bg-[#000000] text-[#F2F0EB] border-t border-white/10">
+    <footer
+      ref={footerRef}
+      className="relative overflow-hidden bg-[#000000] text-[#F2F0EB] border-t border-white/10"
+    >
+      {/* Dynamic Agentic Launch Streams connecting Emblem to Columns & Return Suction */}
+      <AgenticLaunchStreams
+        step={buildStep}
+        isMerging={buildStep === 4}
+        cycleKey={buildCycle}
+      />
+
       <div className="editorial-container relative z-10 pt-10 lg:pt-12 pb-6 lg:pb-8">
         
         {/* Main Section: Left (Clock Animation) & Right (4 Columns) */}
         <div className="flex flex-col lg:flex-row gap-10 xl:gap-14 items-start">
           
-          {/* Left Side: Clock Animation Logo (Background seamlessly matching pure black #000) */}
+          {/* Left Side: Clock Animation Logo & Interactive Replay / Hover Trigger */}
           <div className="w-full lg:w-[260px] shrink-0 flex flex-col items-center lg:items-start">
-            <Link
-              href="/"
-              aria-label="ArcheOn Design Studio home"
-              className="inline-block transition-transform duration-300 hover:scale-[1.02]"
+            <div
+              role="button"
+              tabIndex={0}
+              onClick={handleClockClick}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  handleClockClick();
+                }
+              }}
+              onMouseEnter={handleEmblemHover}
+              aria-label="Click or hover to replay architectural agentic build"
+              className="inline-block transition-transform duration-300 hover:scale-[1.03] cursor-pointer text-left group outline-none focus:outline-none focus-visible:outline-none ring-0 border-0"
+              style={{ outline: "none", border: "none", boxShadow: "none" }}
+              title="Hover or click timepiece emblem to replay agentic build animation"
             >
-              <FooterClockEmblem />
-            </Link>
+              <FooterClockEmblem
+                isBuilding={buildStep >= 1 && buildStep < 5}
+                isMerging={buildStep === 4}
+                onClick={handleClockClick}
+                onHover={handleEmblemHover}
+              />
+            </div>
           </div>
 
-          {/* Right Side: 4-Column Content with Left Vertical Divider & Compact Spacing */}
+          {/* Right Side: 4-Column Content with Multi-Arrow Swarm & Row Reveals */}
           <div className="flex-1 min-w-0 w-full lg:border-l lg:border-white/15 lg:pl-10 xl:pl-12">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 lg:gap-6 xl:gap-8">
               
-              {/* Column 1: EXPLORE */}
-              <div className="flex flex-col">
-                <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#C6A779] font-medium mb-5">
-                  EXPLORE
-                </p>
-                <nav className="flex flex-col gap-3">
-                  {exploreLinks.map((link) => (
+              {/* Column 1: EXPLORE (3 Arrows in 3 Rows: Top, Bottom-Left, Below) */}
+              <div className="relative flex flex-col">
+                {COLUMN_SWARM_ARROWS.explore.map((arrow) => (
+                  <SwarmCursorArrow
+                    key={arrow.id}
+                    arrow={arrow}
+                    isActive={buildStep >= 1 && buildStep < 5}
+                    cycleKey={buildCycle}
+                  />
+                ))}
+
+                {/* Row 1: Header + Studio */}
+                <AgenticRow
+                  delay={0.5}
+                  isRevealed={hasBuilt || buildStep >= 2}
+                  cycleKey={buildCycle}
+                >
+                  <p
+                    className="font-mono uppercase tracking-[0.22em] text-[#C6A779] font-medium mb-5"
+                    style={{ fontSize: "11px", letterSpacing: "0.22em" }}
+                  >
+                    EXPLORE
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => scrollToSection(exploreLinks[0].href)}
+                    className="block text-left font-outfit text-white/70 hover:text-white transition-colors duration-200 cursor-pointer mb-3"
+                    style={{ fontSize: "13px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
+                  >
+                    {exploreLinks[0].label}
+                  </button>
+                </AgenticRow>
+
+                {/* Row 2: Expertise + Projects */}
+                <AgenticRow
+                  delay={0.9}
+                  isRevealed={hasBuilt || buildStep >= 2}
+                  cycleKey={buildCycle}
+                >
+                  <div className="flex flex-col gap-3 mb-3">
                     <button
-                      key={link.label}
                       type="button"
-                      onClick={() => scrollToSection(link.href)}
-                      className="text-left font-['Outfit',sans-serif] text-[13.5px] text-white/70 hover:text-white transition-colors duration-200 cursor-pointer"
+                      onClick={() => scrollToSection(exploreLinks[1].href)}
+                      className="text-left font-outfit text-white/70 hover:text-white transition-colors duration-200 cursor-pointer"
+                      style={{ fontSize: "13px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
                     >
-                      {link.label}
+                      {exploreLinks[1].label}
                     </button>
-                  ))}
-                </nav>
-              </div>
-
-              {/* Column 2: DISCIPLINES */}
-              <div className="flex flex-col">
-                <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#C6A779] font-medium mb-5">
-                  DISCIPLINES
-                </p>
-                <div className="flex flex-col gap-3">
-                  {disciplines.map((item) => (
-                    <span
-                      key={item}
-                      className="font-['Outfit',sans-serif] text-[13.5px] text-white/70"
+                    <button
+                      type="button"
+                      onClick={() => scrollToSection(exploreLinks[2].href)}
+                      className="text-left font-outfit text-white/70 hover:text-white transition-colors duration-200 cursor-pointer"
+                      style={{ fontSize: "13px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
                     >
-                      {item}
-                    </span>
-                  ))}
-                </div>
+                      {exploreLinks[2].label}
+                    </button>
+                  </div>
+                </AgenticRow>
+
+                {/* Row 3: Process + Contact */}
+                <AgenticRow
+                  delay={1.3}
+                  isRevealed={hasBuilt || buildStep >= 2}
+                  cycleKey={buildCycle}
+                >
+                  <div className="flex flex-col gap-3">
+                    <button
+                      type="button"
+                      onClick={() => scrollToSection(exploreLinks[3].href)}
+                      className="text-left font-outfit text-white/70 hover:text-white transition-colors duration-200 cursor-pointer"
+                      style={{ fontSize: "13px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
+                    >
+                      {exploreLinks[3].label}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => scrollToSection(exploreLinks[4].href)}
+                      className="text-left font-outfit text-white/70 hover:text-white transition-colors duration-200 cursor-pointer"
+                      style={{ fontSize: "13px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
+                    >
+                      {exploreLinks[4].label}
+                    </button>
+                  </div>
+                </AgenticRow>
               </div>
 
-              {/* Column 3: PRIVATE ACCESS */}
-              <div className="flex flex-col">
-                <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#C6A779] font-medium mb-5">
-                  PRIVATE ACCESS
-                </p>
-                
-                {/* Portal Cards */}
-                <div className="flex flex-col gap-3">
+              {/* Column 2: DISCIPLINES (3 Arrows in 3 Rows: High-Above, Mid-Left, Down-Below) */}
+              <div className="relative flex flex-col">
+                {COLUMN_SWARM_ARROWS.disciplines.map((arrow) => (
+                  <SwarmCursorArrow
+                    key={arrow.id}
+                    arrow={arrow}
+                    isActive={buildStep >= 1 && buildStep < 5}
+                    cycleKey={buildCycle}
+                  />
+                ))}
+
+                {/* Row 1: Header + Architecture */}
+                <AgenticRow
+                  delay={0.6}
+                  isRevealed={hasBuilt || buildStep >= 2}
+                  cycleKey={buildCycle}
+                >
+                  <p
+                    className="font-mono uppercase tracking-[0.22em] text-[#C6A779] font-medium mb-5"
+                    style={{ fontSize: "11px", letterSpacing: "0.22em" }}
+                  >
+                    DISCIPLINES
+                  </p>
+                  <span
+                    className="block font-outfit text-white/70 mb-3"
+                    style={{ fontSize: "13px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
+                  >
+                    {disciplines[0]}
+                  </span>
+                </AgenticRow>
+
+                {/* Row 2: Interior Design + Landscape Architecture */}
+                <AgenticRow
+                  delay={1.0}
+                  isRevealed={hasBuilt || buildStep >= 2}
+                  cycleKey={buildCycle}
+                >
+                  <div className="flex flex-col gap-3 mb-3">
+                    <span
+                      className="font-outfit text-white/70"
+                      style={{ fontSize: "13px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
+                    >
+                      {disciplines[1]}
+                    </span>
+                    <span
+                      className="font-outfit text-white/70"
+                      style={{ fontSize: "13px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
+                    >
+                      {disciplines[2]}
+                    </span>
+                  </div>
+                </AgenticRow>
+
+                {/* Row 3: 3D Visualisation + Turnkey Execution */}
+                <AgenticRow
+                  delay={1.4}
+                  isRevealed={hasBuilt || buildStep >= 2}
+                  cycleKey={buildCycle}
+                >
+                  <div className="flex flex-col gap-3">
+                    <span
+                      className="font-outfit text-white/70"
+                      style={{ fontSize: "13px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
+                    >
+                      {disciplines[3]}
+                    </span>
+                    <span
+                      className="font-outfit text-white/70"
+                      style={{ fontSize: "13px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
+                    >
+                      {disciplines[4]}
+                    </span>
+                  </div>
+                </AgenticRow>
+              </div>
+
+              {/* Column 3: PRIVATE ACCESS (2 Arrows: Top-Right & Down-Below) */}
+              <div className="relative flex flex-col">
+                {COLUMN_SWARM_ARROWS.portals.map((arrow) => (
+                  <SwarmCursorArrow
+                    key={arrow.id}
+                    arrow={arrow}
+                    isActive={buildStep >= 1 && buildStep < 5}
+                    cycleKey={buildCycle}
+                  />
+                ))}
+
+                {/* Row 1: Header + Client Portal Card */}
+                <AgenticRow
+                  delay={0.8}
+                  isRevealed={hasBuilt || buildStep >= 2}
+                  cycleKey={buildCycle}
+                >
+                  <p
+                    className="font-mono uppercase tracking-[0.22em] text-[#C6A779] font-medium mb-5"
+                    style={{ fontSize: "11px", letterSpacing: "0.22em" }}
+                  >
+                    PRIVATE ACCESS
+                  </p>
                   <button
                     type="button"
                     onClick={handleClientPortalClick}
-                    className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg bg-[#141414] hover:bg-[#1C1C1C] border border-white/10 hover:border-white/30 text-[13px] font-['Outfit',sans-serif] text-white/90 hover:text-white transition-all group shadow-sm cursor-pointer"
+                    className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg bg-[#141414] hover:bg-[#1C1C1C] border border-white/10 hover:border-white/30 text-white/90 hover:text-white transition-all group shadow-sm cursor-pointer mb-3"
                   >
-                    <span>Client Portal</span>
+                    <span
+                      className="font-outfit"
+                      style={{ fontSize: "13px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
+                    >
+                      Client Portal
+                    </span>
                     <ArrowUpRight
                       size={13}
                       className="text-white/60 group-hover:text-white transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
                     />
                   </button>
+                </AgenticRow>
 
+                {/* Row 2: Vendor Portal Card */}
+                <AgenticRow
+                  delay={1.2}
+                  isRevealed={hasBuilt || buildStep >= 2}
+                  cycleKey={buildCycle}
+                >
                   <button
                     type="button"
                     onClick={handleVendorPortalClick}
-                    className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg bg-[#141414] hover:bg-[#1C1C1C] border border-white/10 hover:border-white/30 text-[13px] font-['Outfit',sans-serif] text-white/90 hover:text-white transition-all group shadow-sm cursor-pointer"
+                    className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg bg-[#141414] hover:bg-[#1C1C1C] border border-white/10 hover:border-white/30 text-white/90 hover:text-white transition-all group shadow-sm cursor-pointer"
                   >
-                    <span>Vendor Portal</span>
+                    <span
+                      className="font-outfit"
+                      style={{ fontSize: "13px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
+                    >
+                      Vendor Portal
+                    </span>
                     <ArrowUpRight
                       size={13}
                       className="text-white/60 group-hover:text-white transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
                     />
                   </button>
-                </div>
+                </AgenticRow>
               </div>
 
-              {/* Column 4: STUDIO INQUIRIES & FOLLOW US (Only Logos) */}
-              <div className="flex flex-col">
-                <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#C6A779] font-medium mb-5">
-                  STUDIO INQUIRIES
-                </p>
-                <div className="flex flex-col gap-2 font-['Outfit',sans-serif] text-[13px] text-white/80">
-                  <a
-                    href="mailto:dsarcheon@gmail.com"
-                    className="hover:text-white transition-colors truncate"
-                    title="dsarcheon@gmail.com"
-                  >
-                    dsarcheon@gmail.com
-                  </a>
-                  <a
-                    href="tel:+919834653481"
-                    className="hover:text-white transition-colors tracking-wide"
-                  >
-                    +91 9834653481
-                  </a>
-                </div>
+              {/* Column 4: STUDIO INQUIRIES & FOLLOW US (3 Arrows: Top, Mid-Right, Down-Below) */}
+              <div className="relative flex flex-col">
+                {COLUMN_SWARM_ARROWS.inquiries.map((arrow) => (
+                  <SwarmCursorArrow
+                    key={arrow.id}
+                    arrow={arrow}
+                    isActive={buildStep >= 1 && buildStep < 5}
+                    cycleKey={buildCycle}
+                  />
+                ))}
 
-                <div className="mt-3">
-                  <button
-                    type="button"
-                    onClick={onOpenConsultation || (() => scrollToSection("#contact"))}
-                    className="inline-flex items-center gap-1.5 font-['Outfit',sans-serif] text-[12.5px] font-medium text-[#C6A779] hover:text-[#E0D8C3] transition-colors cursor-pointer group"
+                {/* Row 1: Header + Email & Phone */}
+                <AgenticRow
+                  delay={0.7}
+                  isRevealed={hasBuilt || buildStep >= 2}
+                  cycleKey={buildCycle}
+                >
+                  <p
+                    className="font-mono uppercase tracking-[0.22em] text-[#C6A779] font-medium mb-5"
+                    style={{ fontSize: "11px", letterSpacing: "0.22em" }}
                   >
-                    <span>Schedule a Consultation</span>
-                    <ArrowUpRight
-                      size={12}
-                      className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                    />
-                  </button>
-                </div>
-
-                {/* Follow Us - Only Logos */}
-                <div className="mt-5 pt-4 border-t border-white/10">
-                  <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#C6A779] font-medium mb-3">
-                    FOLLOW US
+                    STUDIO INQUIRIES
                   </p>
-                  <div className="flex items-center gap-2">
-                    {socialLinks.map((s) => (
-                      <a
-                        key={s.name}
-                        href={s.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label={s.name}
-                        title={s.name}
-                        className="w-8 h-8 rounded-lg bg-[#141414] hover:bg-[#1E1E1E] border border-white/10 hover:border-[#C6A779]/60 text-white/70 hover:text-[#C6A779] flex items-center justify-center transition-all shadow-sm group"
-                      >
-                        <span className="transition-transform duration-200 group-hover:scale-110">
-                          {s.icon}
-                        </span>
-                      </a>
-                    ))}
+                  <div className="flex flex-col gap-2 font-outfit text-white/70 mb-3">
+                    <a
+                      href="mailto:dsarcheon@gmail.com"
+                      className="hover:text-white transition-colors truncate"
+                      title="dsarcheon@gmail.com"
+                      style={{ fontSize: "13px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
+                    >
+                      dsarcheon@gmail.com
+                    </a>
+                    <a
+                      href="tel:+919834653481"
+                      className="hover:text-white transition-colors tracking-wide"
+                      style={{ fontSize: "13px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
+                    >
+                      +91 9834653481
+                    </a>
                   </div>
-                </div>
+                </AgenticRow>
 
+                {/* Row 2: Schedule a Consultation Button */}
+                <AgenticRow
+                  delay={1.1}
+                  isRevealed={hasBuilt || buildStep >= 2}
+                  cycleKey={buildCycle}
+                >
+                  <div className="mb-5">
+                    <button
+                      type="button"
+                      onClick={onOpenConsultation || (() => scrollToSection("#contact"))}
+                      className="inline-flex items-center gap-1.5 font-outfit font-medium text-[#C6A779] hover:text-[#E0D8C3] transition-colors cursor-pointer group"
+                      style={{ fontSize: "13px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif' }}
+                    >
+                      <span>Schedule a Consultation</span>
+                      <ArrowUpRight
+                        size={12}
+                        className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                      />
+                    </button>
+                  </div>
+                </AgenticRow>
+
+                {/* Row 3: Follow Us & Logos */}
+                <AgenticRow
+                  delay={1.5}
+                  isRevealed={hasBuilt || buildStep >= 2}
+                  cycleKey={buildCycle}
+                >
+                  <div className="pt-4 border-t border-white/10">
+                    <p
+                      className="font-mono uppercase tracking-[0.22em] text-[#C6A779] font-medium mb-3"
+                      style={{ fontSize: "11px", letterSpacing: "0.22em" }}
+                    >
+                      FOLLOW US
+                    </p>
+                    <div className="flex items-center gap-2">
+                      {socialLinks.map((s) => (
+                        <a
+                          key={s.name}
+                          href={s.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label={s.name}
+                          title={s.name}
+                          className="w-8 h-8 rounded-lg bg-[#141414] hover:bg-[#1E1E1E] border border-white/10 hover:border-[#C6A779]/60 text-white/70 hover:text-[#C6A779] flex items-center justify-center transition-all shadow-sm group"
+                        >
+                          <span className="transition-transform duration-200 group-hover:scale-110">
+                            {s.icon}
+                          </span>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                </AgenticRow>
               </div>
+
             </div>
           </div>
         </div>
 
-        {/* Bottom Copyright Bar */}
-        <div className="mt-8 lg:mt-10 border-t border-white/10 pt-5 flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-[10px] text-white/40 tracking-wider">
-          <p>© 2026 ARCHEON DESIGN STUDIO</p>
-          <p className="text-center sm:text-left text-[9.5px]">
-            All Rights Reserved. Architecture · Interior · Landscape · Turnkey.
-          </p>
-          <button
-            type="button"
-            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className="text-[#C6A779] hover:text-white uppercase tracking-widest transition-colors cursor-pointer"
+        {/* Bottom Copyright Bar with Horizontal Swarm Beam */}
+        <div className="relative mt-8 lg:mt-10 border-t border-white/10 pt-5">
+          <SwarmCursorArrow
+            arrow={BOTTOM_BAR_ARROW}
+            isActive={buildStep >= 1 && buildStep < 5}
+            cycleKey={buildCycle}
+          />
+          {buildStep >= 2 && (
+            <motion.div
+              key={`bar_${buildCycle}`}
+              initial={{ scaleX: 0 }}
+              animate={{ scaleX: 1 }}
+              transition={{ duration: 1.2, ease: "easeOut" }}
+              className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-[#F59E0B] via-[#06B6D4] to-[#C6A779] origin-left shadow-[0_0_8px_#06B6D4]"
+            />
+          )}
+          <AgenticRow
+            delay={1.2}
+            isRevealed={hasBuilt || buildStep >= 2}
+            cycleKey={buildCycle}
           >
-            BACK TO TOP ↑
-          </button>
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-[10px] text-white/40 tracking-wider">
+              <p>© 2026 ARCHEON DESIGN STUDIO</p>
+              <p className="text-center sm:text-left text-[9.5px]">
+                All Rights Reserved. Architecture · Interior · Landscape · Turnkey.
+              </p>
+              <button
+                type="button"
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                className="text-[#C6A779] hover:text-white uppercase tracking-widest transition-colors cursor-pointer"
+              >
+                BACK TO TOP ↑
+              </button>
+            </div>
+          </AgenticRow>
         </div>
       </div>
     </footer>

@@ -81,7 +81,7 @@ export function ArchitecturalRevealHero({
           />
         </video>
 
-        {/* Refined Architectural Scrim: High clarity and brightness with soft directional typography legibility */}
+        {/* Refined Architectural Scrim: Rich left-to-right gradient fade ensuring supreme typography legibility */}
         <div
           className="pointer-events-none absolute inset-0 z-[2]"
           style={{
@@ -95,17 +95,19 @@ export function ArchitecturalRevealHero({
               ),
               linear-gradient(
                 90deg,
-                rgba(8, 8, 8, 0.65) 0%,
-                rgba(8, 8, 8, 0.42) 28%,
-                rgba(8, 8, 8, 0.12) 55%,
-                rgba(8, 8, 8, 0.0) 80%
+                rgba(5, 5, 5, 0.92) 0%,
+                rgba(6, 6, 6, 0.85) 20%,
+                rgba(6, 6, 6, 0.68) 36%,
+                rgba(7, 7, 7, 0.38) 52%,
+                rgba(8, 8, 8, 0.14) 68%,
+                rgba(8, 8, 8, 0.0) 82%
               ),
               linear-gradient(
                 180deg,
-                rgba(8, 8, 8, 0.45) 0%,
-                transparent 15%,
-                transparent 80%,
-                rgba(8, 8, 8, 0.55) 100%
+                rgba(8, 8, 8, 0.5) 0%,
+                transparent 18%,
+                transparent 78%,
+                rgba(8, 8, 8, 0.65) 100%
               )
             `,
           }}
@@ -181,7 +183,16 @@ export function ArchitecturalRevealHero({
       {/* 3. MAIN LEFT HERO CONTENT                                           */}
       {/* =================================================================== */}
       <div className="relative z-10 w-full px-4 sm:px-10 lg:px-14 my-auto py-8 lg:py-12">
-        <div className="max-w-[720px]">
+        <div className="relative max-w-[720px]">
+          {/* Subtle localized atmospheric backdrop ensuring text visibility over background bokeh */}
+          <div
+            className="pointer-events-none absolute -inset-y-12 -inset-x-8 sm:-inset-x-12 rounded-3xl -z-10 blur-3xl"
+            style={{
+              background:
+                "radial-gradient(ellipse 95% 85% at 20% 50%, rgba(5, 5, 5, 0.75) 0%, rgba(5, 5, 5, 0.42) 55%, transparent 95%)",
+            }}
+          />
+
           {/* Eyebrow */}
           {/* <p className="font-mono text-[10px] sm:text-[11px] tracking-[0.24em] sm:tracking-[0.28em] uppercase text-[#B8894A] mb-4 sm:mb-6">
             ARCHITECTURE &nbsp;·&nbsp; INTERIOR ENVIRONMENTS &nbsp;·&nbsp; LANDSCAPE

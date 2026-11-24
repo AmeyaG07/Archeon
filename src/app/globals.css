@@ -159,6 +159,10 @@ pre,
   font-family: var(--font-inter);
 }
 
+.font-outfit {
+  font-family: var(--font-outfit), "Outfit", sans-serif;
+}
+
 /* =========================================
    ACCESSIBILITY
    ========================================= */

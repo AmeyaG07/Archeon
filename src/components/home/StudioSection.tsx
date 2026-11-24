@@ -19,15 +19,31 @@ const VillaLumiereBackground = dynamic(
 );
 
 export function StudioSection() {
-  const [activeTab, setActiveTab] = useState<"philosophy" | "approach" | "principles">("philosophy");
+  const [activeTab, setActiveTab] = useState<"philosophy" | "approach" | "principles" | null>(null);
+  const [hoveredTab, setHoveredTab] = useState<"philosophy" | "approach" | "principles" | null>(null);
+
+  const timelineTabs = [
+    {
+      id: "philosophy" as const,
+      title: "Philosophy",
+    },
+    {
+      id: "approach" as const,
+      title: "Approach",
+    },
+    {
+      id: "principles" as const,
+      title: "Principles",
+    },
+  ];
 
   return (
     <section
       id="studio"
       className="relative overflow-hidden bg-[#F2F0EB] py-20 sm:py-28 md:py-36 scroll-mt-24 sm:scroll-mt-32"
     >
-      {/* 3D Villa Lumière 4-Part Staggered Assembly Background */}
-      <VillaLumiereBackground />
+      {/* 3D Villa Lumière Layer-Responsive Assembly Background */}
+      <VillaLumiereBackground activeTab={activeTab} hoveredTab={hoveredTab} />
 
       <div className="editorial-container relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
@@ -36,7 +52,10 @@ export function StudioSection() {
               LEFT COLUMN: 100% VISIBLE FROSTED ARCHITECTURAL EDITORIAL PANEL
               ========================================================================= */}
           <div className="lg:col-span-6 xl:col-span-5 relative">
-            <div className="rounded-3xl bg-[#F2F0EB]/92 backdrop-blur-xl p-4 xs:p-6 sm:p-9 md:p-11 border border-[#23211E]/10 shadow-[0_24px_50px_-16px_rgba(35,33,30,0.08)] transition-all duration-300">
+            <div
+              id="studio-editorial-panel"
+              className="rounded-3xl bg-[#F2F0EB]/92 backdrop-blur-xl p-4 xs:p-6 sm:p-9 md:p-11 border border-[#23211E]/10 shadow-[0_24px_50px_-16px_rgba(35,33,30,0.08)] transition-all duration-300"
+            >
               
               {/* Main Architectural Statement Headline */}
               <div className="mb-8">
@@ -52,51 +71,57 @@ export function StudioSection() {
                 </RevealText>
               </div>
 
-              {/* Interactive Motion Tab Bar */}
-              <div className="mb-7 flex flex-wrap items-center gap-1.5 p-1 rounded-xl bg-stone-200/60 border border-stone-300/60">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("philosophy")}
-                  className={`flex items-center gap-2 px-2.5 sm:px-3.5 py-2 rounded-lg font-mono text-[9.5px] sm:text-[10.5px] tracking-wider uppercase transition-all duration-300 ${
-                    activeTab === "philosophy"
-                      ? "bg-white text-[#111111] font-semibold shadow-sm"
-                      : "text-stone-600 hover:text-[#111111] hover:bg-white/40"
-                  }`}
-                >
-                  <Sparkles size={12} className={activeTab === "philosophy" ? "text-[#9F7947]" : "text-stone-400"} />
-                  <span>01 · Philosophy</span>
-                </button>
+              {/* Architectural Vertical Timeline Tiles: Minimalist & Sleek */}
+              <div className="relative mb-7 pl-6 sm:pl-7 max-w-[210px] sm:max-w-[230px]">
+                {/* Continuous Timeline Track Line */}
+                <div className="absolute left-[9px] sm:left-[11px] top-3 bottom-3 w-[1.5px] bg-gradient-to-b from-[#B68A4A]/70 via-stone-300 to-stone-200/50" />
 
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("approach")}
-                  className={`flex items-center gap-2 px-2.5 sm:px-3.5 py-2 rounded-lg font-mono text-[9.5px] sm:text-[10.5px] tracking-wider uppercase transition-all duration-300 ${
-                    activeTab === "approach"
-                      ? "bg-white text-[#111111] font-semibold shadow-sm"
-                      : "text-stone-600 hover:text-[#111111] hover:bg-white/40"
-                  }`}
-                >
-                  <Layers size={12} className={activeTab === "approach" ? "text-[#9F7947]" : "text-stone-400"} />
-                  <span>02 · Approach</span>
-                </button>
+                <div className="flex flex-col gap-2">
+                  {timelineTabs.map((tab) => {
+                    const isActive = activeTab === tab.id;
+                    const isHovered = hoveredTab === tab.id;
+                    const isHighlighted = isActive || isHovered;
+                    return (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        onClick={() => setActiveTab(activeTab === tab.id ? null : tab.id)}
+                        onMouseEnter={() => setHoveredTab(tab.id)}
+                        onMouseLeave={() => setHoveredTab(null)}
+                        className={`group relative flex items-center w-full px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border text-left transition-all duration-300 cursor-pointer ${
+                          isHighlighted
+                            ? "bg-white/95 border-[#B68A4A]/50 shadow-[0_4px_16px_-4px_rgba(182,138,74,0.18)] translate-x-1"
+                            : "bg-white/40 hover:bg-white/75 border-stone-300/50 hover:border-stone-400/70 text-stone-600 hover:text-[#111111]"
+                        }`}
+                      >
+                        {/* Timeline Node Dot on the Vertical Line */}
+                        <span
+                          className={`absolute -left-6 sm:-left-7 top-1/2 -translate-y-1/2 transition-all duration-300 ${
+                            isHighlighted
+                              ? "w-3 h-3 rounded-full bg-[#B68A4A] ring-4 ring-[#B68A4A]/25 shadow-xs"
+                              : "w-2 h-2 rounded-full border border-stone-400 bg-[#F2F0EB] group-hover:border-[#B68A4A]"
+                          }`}
+                        />
 
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("principles")}
-                  className={`flex items-center gap-2 px-2.5 sm:px-3.5 py-2 rounded-lg font-mono text-[9.5px] sm:text-[10.5px] tracking-wider uppercase transition-all duration-300 ${
-                    activeTab === "principles"
-                      ? "bg-white text-[#111111] font-semibold shadow-sm"
-                      : "text-stone-600 hover:text-[#111111] hover:bg-white/40"
-                  }`}
-                >
-                  <Box size={12} className={activeTab === "principles" ? "text-[#9F7947]" : "text-stone-400"} />
-                  <span>03 · Principles</span>
-                </button>
+                        {/* Title only - clean typography */}
+                        <span
+                          className={`font-mono text-[10.5px] sm:text-[11px] tracking-[0.14em] uppercase transition-colors ${
+                            isHighlighted
+                              ? "font-bold text-[#111111]"
+                              : "font-medium text-stone-600 group-hover:text-[#111111]"
+                          }`}
+                        >
+                          {tab.title}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
-              {/* Dynamic Content Panel Based on Active Tab */}
+              {/* Dynamic Content Panel Based on Active / Hovered Tab */}
               <div className="min-h-[170px] relative transition-all duration-300">
-                {activeTab === "philosophy" && (
+                {((hoveredTab || activeTab || "philosophy") === "philosophy") && (
                   <div className="animate-in fade-in duration-300">
                     <p className="font-serif text-lg sm:text-xl leading-relaxed text-[#2D2A26] italic font-normal">
                       &ldquo;{siteConfig.philosophy}&rdquo;
@@ -117,7 +142,7 @@ export function StudioSection() {
                   </div>
                 )}
 
-                {activeTab === "approach" && (
+                {((hoveredTab || activeTab) === "approach") && (
                   <div className="animate-in fade-in duration-300">
                     <p className="text-[14.5px] sm:text-[15.5px] leading-relaxed text-[#3C3833] font-light">
                       {siteConfig.about.story}
@@ -146,7 +171,7 @@ export function StudioSection() {
                   </div>
                 )}
 
-                {activeTab === "principles" && (
+                {((hoveredTab || activeTab) === "principles") && (
                   <div className="animate-in fade-in duration-300 space-y-3">
                     {siteConfig.about.approach.map((principle, index) => (
                       <div

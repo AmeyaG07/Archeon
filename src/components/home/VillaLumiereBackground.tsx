@@ -12,19 +12,39 @@ interface CalloutState {
   x: number;
   y: number;
   visible: boolean;
+  highlight?: boolean;
 }
 
-export function VillaLumiereBackground() {
+export interface VillaLumiereBackgroundProps {
+  activeTab?: "philosophy" | "approach" | "principles" | null;
+  hoveredTab?: "philosophy" | "approach" | "principles" | null;
+}
+
+export function VillaLumiereBackground({
+  activeTab = null,
+  hoveredTab = null,
+}: VillaLumiereBackgroundProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [phaseStatus, setPhaseStatus] = useState<string>("ASSEMBLED · 1:50");
+  const [phaseStatus, setPhaseStatus] = useState<string>("MONOLITHIC TECTONIC STUDY · INTACT 1:50");
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
   const [callouts, setCallouts] = useState<CalloutState[]>([
-    { id: "plinth", num: "01", name: "PLINTH & POOL", x: 0, y: 0, visible: false },
+    { id: "plinth", num: "01", name: "POOL TERRACE & PLINTH", x: 0, y: 0, visible: false },
     { id: "level1", num: "02", name: "LIVING PAVILION", x: 0, y: 0, visible: false },
-    { id: "level2", num: "03", name: "CANTILEVER STUDIO", x: 0, y: 0, visible: false },
-    { id: "roof", num: "04", name: "ROOF CANOPY", x: 0, y: 0, visible: false },
+    { id: "level2", num: "03", name: "CANTILEVER SKY TERRACE", x: 0, y: 0, visible: false },
+    { id: "roof", num: "04", name: "ROOFTOP SUNSET LOUNGE", x: 0, y: 0, visible: false },
   ]);
+
+  const activeTabRef = useRef<"philosophy" | "approach" | "principles" | null>(activeTab);
+  const hoveredTabRef = useRef<"philosophy" | "approach" | "principles" | null>(hoveredTab);
+
+  useEffect(() => {
+    activeTabRef.current = activeTab;
+  }, [activeTab]);
+
+  useEffect(() => {
+    hoveredTabRef.current = hoveredTab;
+  }, [hoveredTab]);
 
   const isPlayingRef = useRef<boolean>(true);
   isPlayingRef.current = isPlaying;
@@ -285,10 +305,11 @@ export function VillaLumiereBackground() {
     const height = container.clientHeight || 750;
 
     const isDesktop = width > 1024;
-    let shiftX = isDesktop ? 7.8 : width > 768 ? 4.5 : 0.0;
+    let shiftX = isDesktop ? 6.8 : width > 768 ? 3.8 : 0.0;
 
-    const camera = new THREE.PerspectiveCamera(35, width / height, 0.2, 220);
-    camera.position.set(22.0 + shiftX, 15.0, 24.0);
+    // Architectural Perspective Camera: Expansive Frustum ensuring complete visibility of rooftop terrace & pool plinth
+    const camera = new THREE.PerspectiveCamera(40, width / height, 0.2, 250);
+    camera.position.set(23.5 + shiftX, 16.0, 26.5);
 
     const renderer = new THREE.WebGLRenderer({
       canvas: canvas,
@@ -299,14 +320,14 @@ export function VillaLumiereBackground() {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.setSize(width, height);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.05;
+    renderer.toneMappingExposure = 1.08;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFShadowMap;
 
     const controls = new OrbitControls(camera, canvas);
     controls.enableDamping = true;
     controls.dampingFactor = 0.055;
-    controls.target.set(shiftX, 4.8, 0.0);
+    controls.target.set(shiftX, 5.0, 0.0);
     controls.minDistance = 10.0;
     controls.maxDistance = 55.0;
     controls.maxPolarAngle = Math.PI * 0.485;
@@ -377,11 +398,30 @@ export function VillaLumiereBackground() {
 
     let isDragging = false;
     let isHovering = false;
+    let isHoveringHouse = false;
     let hasInteracted = false;
     let lastPointerX = 0;
     let lastPointerY = 0;
 
+    // Continuous 360-degree slow rotation state
+    let baseRotY = 0;
+    let currentAutoSpeed = 0.11; // rad/sec (~57 seconds for full 360° rotation)
+
     const handlePointerDown = (e: PointerEvent) => {
+      // Do not initiate 3D drag from inside the left detail panel
+      const detailPanel = document.getElementById("studio-editorial-panel");
+      if (detailPanel) {
+        const dRect = detailPanel.getBoundingClientRect();
+        if (
+          e.clientX >= dRect.left &&
+          e.clientX <= dRect.right &&
+          e.clientY >= dRect.top &&
+          e.clientY <= dRect.bottom
+        ) {
+          return;
+        }
+      }
+
       isDragging = true;
       hasInteracted = true;
       lastPointerX = e.clientX;
@@ -399,44 +439,77 @@ export function VillaLumiereBackground() {
       const inX = e.clientX >= rect.left && e.clientX <= rect.right;
       const inY = e.clientY >= rect.top && e.clientY <= rect.bottom;
       
-      if (inX && inY) {
-        isHovering = true;
-        const relX = ((e.clientX - rect.left) / rect.width - 0.5) * 2; // -1 to 1
-        const relY = ((e.clientY - rect.top) / rect.height - 0.5) * 2; // -1 to 1
-
-        if (isDragging) {
-          hasInteracted = true;
-          const dx = e.clientX - lastPointerX;
-          const dy = e.clientY - lastPointerY;
-          lastPointerX = e.clientX;
-          lastPointerY = e.clientY;
-
-          // Drag side -> gentle, silky smooth rotation & soft glide
-          targetRotY += dx * 0.008;
-          targetRotX = THREE.MathUtils.clamp(targetRotX + dy * 0.005, -0.3, 0.45);
-          targetShiftX = THREE.MathUtils.clamp(targetShiftX + dx * 0.018, shiftX - 3.8, shiftX + 3.8);
-
-          // Drag up -> gentle, light elevation & soft exploded lift
-          targetShiftY = THREE.MathUtils.clamp(targetShiftY - dy * 0.016, -1.8, 3.5);
-          targetExplode = THREE.MathUtils.clamp(targetExplode - dy * 0.006, 0.0, 1.0);
-        } else {
-          // Calmer, silky hover tracking (gentle architectural float):
-          // Move side -> light rotation & graceful glide
-          targetRotY = relX * 0.42;
-          targetRotX = relY * 0.18;
-          targetShiftX = shiftX + relX * 1.6;
-
-          // Move cursor UP -> soft, graceful vertical lift
-          targetShiftY = -relY * 1.2;
-          targetExplode = THREE.MathUtils.clamp((-relY + 0.1) * 0.55, 0.0, 0.85);
+      if (!inX || !inY) {
+        if (!isDragging) {
+          isHovering = false;
+          isHoveringHouse = false;
+          targetRotY = 0;
+          targetRotX = 0;
+          targetShiftX = shiftX;
+          targetShiftY = 0;
+          targetExplode = 0;
         }
-      } else if (!isDragging) {
-        isHovering = false;
-        targetRotY = 0;
-        targetRotX = 0;
-        targetShiftX = shiftX;
-        targetShiftY = 0;
-        targetExplode = 0;
+        return;
+      }
+
+      // Check if cursor is over the left detail tile (first photo)
+      // The house animation MUST NOT be affected if hover is on the detail tile
+      const detailPanel = document.getElementById("studio-editorial-panel");
+      let isOverDetailPanel = false;
+      if (detailPanel) {
+        const dRect = detailPanel.getBoundingClientRect();
+        if (
+          e.clientX >= dRect.left &&
+          e.clientX <= dRect.right &&
+          e.clientY >= dRect.top &&
+          e.clientY <= dRect.bottom
+        ) {
+          isOverDetailPanel = true;
+        }
+      }
+
+      if (isOverDetailPanel) {
+        if (!isDragging) {
+          isHovering = false;
+          isHoveringHouse = false;
+          targetRotY = 0;
+          targetRotX = 0;
+          targetShiftX = shiftX;
+          targetShiftY = 0;
+          targetExplode = 0;
+        }
+        return;
+      }
+
+      // Cursor is directly over the 3D villa area!
+      isHovering = true;
+      isHoveringHouse = true;
+
+      const relX = ((e.clientX - rect.left) / rect.width - 0.5) * 2; // -1 to 1
+      const relY = ((e.clientY - rect.top) / rect.height - 0.5) * 2; // -1 to 1
+
+      if (isDragging) {
+        hasInteracted = true;
+        const dx = e.clientX - lastPointerX;
+        const dy = e.clientY - lastPointerY;
+        lastPointerX = e.clientX;
+        lastPointerY = e.clientY;
+
+        // Drag side -> gentle, silky smooth rotation & soft glide
+        targetRotY += dx * 0.008;
+        targetRotX = THREE.MathUtils.clamp(targetRotX + dy * 0.005, -0.3, 0.45);
+        targetShiftX = THREE.MathUtils.clamp(targetShiftX + dx * 0.018, shiftX - 3.8, shiftX + 3.8);
+
+        // Drag up -> gentle, light elevation & soft exploded lift
+        targetShiftY = THREE.MathUtils.clamp(targetShiftY - dy * 0.016, -1.8, 3.5);
+        targetExplode = THREE.MathUtils.clamp(targetExplode - dy * 0.006, 0.0, 1.0);
+      } else {
+        // Calmer, silky hover tracking over the 3D house:
+        targetRotY = relX * 0.42;
+        targetRotX = relY * 0.18;
+        targetShiftX = shiftX + relX * 1.6;
+        targetShiftY = -relY * 1.2;
+        targetExplode = THREE.MathUtils.clamp((-relY + 0.1) * 0.55, 0.0, 0.85);
       }
     };
 
@@ -452,6 +525,7 @@ export function VillaLumiereBackground() {
     const handlePointerLeave = () => {
       if (!isDragging) {
         isHovering = false;
+        isHoveringHouse = false;
         targetRotY = 0;
         targetRotX = 0;
         targetShiftX = shiftX;
@@ -676,7 +750,23 @@ export function VillaLumiereBackground() {
       }
     }
 
-    // --- PART 1: PLINTH GROUP ---
+    // Architectural Modernist Sun Lounger with Ivory Bouclé Cushion & Marble Drinks Block
+    function addLounger(parent: THREE.Group, x: number, y: number, z: number, rotY = 0) {
+      const g = new THREE.Group();
+      g.position.set(x, y, z);
+      g.rotation.y = rotY;
+      // Slender teak wood frame
+      addBox(g, 0.85, 0.08, 2.05, 0, 0.04, 0, M.oak);
+      // Reclined ivory bouclé cushion
+      addBox(g, 0.78, 0.08, 1.25, 0, 0.12, -0.32, M.boucle);
+      const back = addBox(g, 0.78, 0.08, 0.75, 0, 0.28, 0.58, M.boucle);
+      back.rotation.x = -0.32;
+      // Minimalist honed marble side drinks table
+      addBox(g, 0.38, 0.22, 0.38, 0.65, 0.11, -0.2, M.marble);
+      parent.add(g);
+    }
+
+    // --- PART 1: PLINTH GROUP (TRAVERTINE POOL TERRACE) ---
     const plinthGroup = new THREE.Group();
     villaRoot.add(plinthGroup);
 
@@ -687,11 +777,25 @@ export function VillaLumiereBackground() {
       addBox(plinthGroup, 3.4, 0.14, 0.56, -1.6, 0.11 + i * 0.15, 7.9 - i * 0.5, M.concrete);
     }
 
+    // Infinity Swimming Pool Basin
     addBox(plinthGroup, 7.2, 0.08, 5.0, 5.6, 0.67, 4.3, M.poolBasin, false, true);
     addBox(plinthGroup, 7.4, 0.16, 0.22, 5.6, 0.72, 1.8, M.travertine);
     addBox(plinthGroup, 0.22, 0.16, 5.0, 2.0, 0.72, 4.3, M.travertine);
     addBox(plinthGroup, 7.4, 0.12, 0.14, 5.6, 0.7, 6.8, M.bronze);
     addBox(plinthGroup, 0.14, 0.12, 5.0, 9.2, 0.7, 4.3, M.bronze);
+
+    // Architectural Floating Travertine Stepping Stones across the Pool
+    for (let i = 0; i < 3; i++) {
+      addBox(plinthGroup, 1.1, 0.1, 0.7, 5.6, 0.78, 2.7 + i * 1.3, M.travertine);
+    }
+
+    // Sunken Conversation Fire Pit Lounge on the Travertine Terrace
+    addBox(plinthGroup, 3.2, 0.26, 2.4, 1.2, 0.78, 4.3, M.boucle);
+    addBox(plinthGroup, 0.8, 0.22, 0.8, 1.2, 0.82, 4.3, M.marble);
+
+    // Poolside Sun Loungers
+    addLounger(plinthGroup, -2.4, 0.72, 4.8, 0.12);
+    addLounger(plinthGroup, -3.6, 0.72, 4.8, 0.12);
 
     const waterGeo = new THREE.PlaneGeometry(6.95, 4.75, 24, 16);
     waterGeo.rotateX(-Math.PI / 2);
@@ -803,12 +907,31 @@ export function VillaLumiereBackground() {
     addGlassRailing(level2Group, 8.25, 4.45, 8.25, -5.45, yTopL2 + 0.05, 1.06);
     addGlassRailing(level2Group, 8.25, -5.45, 3.9, -5.45, yTopL2 + 0.05, 1.06);
 
+    // Architectural Cantilever Terrace Sun Loungers overlooking pool below
+    addLounger(level2Group, 6.2, yTopL2 + 0.05, 2.2, 0.0);
+    addLounger(level2Group, 6.2, yTopL2 + 0.05, 0.1, 0.0);
+
+    // Architectural Terrace Planter with Mediterranean Olive Shrub Row
+    addBox(level2Group, 0.75, 0.55, 3.8, 4.05, yTopL2 + 0.28, -3.2, M.concrete);
+    addBox(level2Group, 0.62, 0.06, 3.6, 4.05, yTopL2 + 0.55, -3.2, M.soil, false, true);
+    addShrubRow(level2Group, 4.05, yTopL2 + 0.55, -3.2, 4, 0.2, 3.0);
+
+    // Architectural Rear Privacy Brise-Soleil Slats
+    for (let i = 0; i < 7; i++) {
+      const slat = addBox(level2Group, 0.08, 3.2, 0.22, 4.2 + i * 0.55, yTopL2 + 1.6, -5.35, M.oakDark);
+      slat.rotation.y = 0.22;
+    }
+
+    // Modernist Cantilever Under-Slab Ambient LED Cove Lighting
+    addBox(level2Group, 4.4, 0.04, 0.04, 5.9, yBaseL2 - 0.02, 4.4, M.warmGlow, false, false);
+    addBox(level2Group, 0.04, 0.04, 9.4, 8.2, yBaseL2 - 0.02, -0.5, M.warmGlow, false, false);
+
     const yInL2 = yTopL2 + 0.05;
     addBox(level2Group, 3.6, 0.08, 1.25, 0.55, yInL2 + 0.76, 0.4, M.oak);
     addBox(level2Group, 0.12, 0.74, 0.95, -0.85, yInL2 + 0.37, 0.4, M.bronze);
     addBox(level2Group, 0.12, 0.74, 0.95, 1.95, yInL2 + 0.37, 0.4, M.bronze);
 
-    // --- PART 4: ROOF GROUP ---
+    // --- PART 4: ROOF GROUP (ROOFTOP SUNSET LOUNGE & SKY DECK) ---
     const roofGroup = new THREE.Group();
     villaRoot.add(roofGroup);
 
@@ -825,7 +948,25 @@ export function VillaLumiereBackground() {
     addBox(roofGroup, 16.48, 0.12, 0.14, 0.5, yBaseRoof + slabHRoof - 0.06, 4.9, M.bronze);
     addBox(roofGroup, 16.48, 0.12, 0.14, 0.5, yBaseRoof + slabHRoof - 0.06, -5.9, M.bronze);
 
-    // Skylight pane
+    // Inset Warm Teak Decking across Rooftop Sky Terrace
+    addBox(roofGroup, 8.8, 0.03, 9.4, 3.15, yDeckRoof + 0.015, 0.15, M.oakDeck, false, true);
+
+    // Full Perimeter Glass Balustrades with Bronze Posts around Rooftop Deck
+    addGlassRailing(roofGroup, -1.2, 4.85, 7.5, 4.85, yDeckRoof + 0.05, 1.05);
+    addGlassRailing(roofGroup, 7.5, 4.85, 7.5, -4.5, yDeckRoof + 0.05, 1.05);
+    addGlassRailing(roofGroup, 7.5, -4.5, -1.2, -4.5, yDeckRoof + 0.05, 1.05);
+    addGlassRailing(roofGroup, -1.2, -4.5, -1.2, 4.85, yDeckRoof + 0.05, 1.05);
+
+    // Rooftop Sky Terrace Sun Loungers
+    addLounger(roofGroup, 5.4, yDeckRoof + 0.04, 2.6, 0.0);
+    addLounger(roofGroup, 5.4, yDeckRoof + 0.04, 0.6, 0.0);
+
+    // Rooftop Architectural Planter Box
+    addBox(roofGroup, 4.2, 0.45, 0.65, 3.15, yDeckRoof + 0.225, 4.45, M.concrete);
+    addBox(roofGroup, 4.0, 0.06, 0.52, 3.15, yDeckRoof + 0.45, 4.45, M.soil, false, true);
+    addShrubRow(roofGroup, 3.15, yDeckRoof + 0.45, 4.45, 5, 3.4, 0.25);
+
+    // Skylight pane looking down into living pavilion
     const skylightPane = new THREE.Mesh(new THREE.PlaneGeometry(3.0, 3.0), M.glass);
     skylightPane.rotation.x = -Math.PI / 2;
     skylightPane.position.set(-3.7, yDeckRoof + 0.12, -0.9);
@@ -849,9 +990,15 @@ export function VillaLumiereBackground() {
       addBox(roofGroup, 0.09, 0.16, pD - 0.16, sx, pY + pH, pCZ, M.oak);
     }
 
+    // Curved Bouclé Sunset Lounge & Sculpted Travertine Fire Bowl
     addBox(roofGroup, 3.6, 0.34, 0.95, pCX, pY + 0.22, -2.5, M.boucle);
     addCyl(roofGroup, 0.68, 0.56, 0.36, 24, pCX, pY + 0.18, -0.5, M.concrete);
     addCyl(roofGroup, 0.48, 0.44, 0.08, 20, pCX, pY + 0.34, -0.5, M.ember, false, false);
+
+    // Dedicated Rooftop Fire Bowl Golden-Amber Point Light
+    const fireLight = new THREE.PointLight(0xff7722, 1.4, 7.0, 1.8);
+    fireLight.position.set(pCX, yDeckRoof + 0.65, -0.5);
+    roofGroup.add(fireLight);
 
     // --- ALIGNMENT GUIDES ---
     const guideGroup = new THREE.Group();
@@ -889,12 +1036,18 @@ export function VillaLumiereBackground() {
 
     // 2D Callout projection anchors
     const calloutAnchors = [
-      { id: "plinth", group: plinthGroup, localPos: new THREE.Vector3(9.4, 0.9, 5.2) },
-      { id: "level1", group: level1Group, localPos: new THREE.Vector3(5.6, 2.7, 3.2) },
-      { id: "level2", group: level2Group, localPos: new THREE.Vector3(8.3, 6.4, 3.8) },
-      { id: "roof", group: roofGroup, localPos: new THREE.Vector3(8.5, 9.6, 4.5) },
+      { id: "plinth", group: plinthGroup, localPos: new THREE.Vector3(8.8, 1.0, 4.6) },
+      { id: "level1", group: level1Group, localPos: new THREE.Vector3(5.4, 2.7, 3.2) },
+      { id: "level2", group: level2Group, localPos: new THREE.Vector3(7.8, 5.0, 2.6) },
+      { id: "roof", group: roofGroup, localPos: new THREE.Vector3(6.5, 9.4, 2.2) },
     ];
     const tempVec3 = new THREE.Vector3();
+
+    // 3D ARCHITECTURAL LAYER ELEVATION STATE (Default: 100% INTACT MONOLITH)
+    let currentRoofY = 0.0;
+    let currentL2Y = 0.0;
+    let currentL1Y = 0.0;
+    let currentFocusShiftY = 0.0;
 
     // --- ANIMATION LOOP ---
     let animationFrameId: number;
@@ -910,94 +1063,131 @@ export function VillaLumiereBackground() {
       lastTime = now;
       const elapsed = (now - startTime) / 1000;
 
-      if (isPlayingRef.current) {
-        cycleTime = (cycleTime + dt) % TOTAL_CYCLE;
-      }
+      // CONTINUOUS SLOW 360° ROTATION:
+      // When dragging, pause auto-rotation
+      // When hovering over house, slow auto-rotation so user can inspect with cursor tilt
+      // When idle, continually rotate 360° to showcase all architectural facades
+      const targetAutoSpeed = isDragging ? 0.0 : isHoveringHouse ? 0.02 : 0.11;
+      currentAutoSpeed += (targetAutoSpeed - currentAutoSpeed) * 0.04;
+      baseRotY += dt * currentAutoSpeed;
 
-      const t = cycleTime;
-      const t1 = CYCLE.HOLD_ASSEMBLED;
-      const t2 = t1 + CYCLE.SEPARATE;
-      const t3 = t2 + CYCLE.HOLD_SEPARATED;
+      const currentFocus = hoveredTabRef.current || activeTabRef.current;
 
-      let fractions = { level1: 0, level2: 0, roof: 0 };
-      let overallSep = 0;
-      let label = "ASSEMBLED";
+      // DISTINCT ARCHITECTURAL LAYERS:
+      // Default: House is 100% INTACT monolithic structure
+      // Hover house: Gently separates floors in exploded axonometric
+      // Hover Philosophy tile: Top layer lifts in full view
+      // Hover Approach tile: Middle layer floats apart
+      // Hover Principles tile: Superstructure elevates to reveal Pool Plinth
+      let targetRoofY = 0;
+      let targetL2Y = 0;
+      let targetL1Y = 0;
+      let focusShiftY = 0;
+      let focusRotX = 0;
+      let statusLabel = "";
 
-      if (t < t1) {
-        fractions = { level1: 0, level2: 0, roof: 0 };
-        overallSep = 0;
-        label = "ASSEMBLED";
-      } else if (t < t2) {
-        const p = (t - t1) / CYCLE.SEPARATE;
-        fractions = computeFloorFractions(p, false);
-        overallSep = (fractions.level1 + fractions.level2 + fractions.roof) / 3;
-        label = "SEPARATING";
-      } else if (t < t3) {
-        fractions = { level1: 1, level2: 1, roof: 1 };
-        overallSep = 1;
-        label = "EXPLODED VIEW";
+      if (currentFocus === "philosophy") {
+        // TOP LAYER LIFT: Rooftop Sunset Lounge & Sky Deck
+        targetRoofY = 3.8;
+        targetL2Y = 0.4;
+        targetL1Y = 0.0;
+        focusShiftY = -0.7; // Centers floating rooftop terrace in viewport
+        focusRotX = 0.06;
+        statusLabel = "TOP LAYER · ROOFTOP SUNSET LOUNGE";
+      } else if (currentFocus === "approach") {
+        // MIDDLE LAYER LIFT: Cantilever Sky Terrace & Living Pavilion
+        targetRoofY = 5.6;
+        targetL2Y = 2.8;
+        targetL1Y = 0.9;
+        focusShiftY = -0.3; // Centers cantilever terrace
+        focusRotX = 0.02;
+        statusLabel = "MIDDLE LAYER · CANTILEVER SKY TERRACE";
+      } else if (currentFocus === "principles") {
+        // BOTTOM LAYER REVEAL: Pool Terrace & Travertine Plinth
+        targetRoofY = 6.4;
+        targetL2Y = 4.8;
+        targetL1Y = 2.8;
+        focusShiftY = 0.6; // Raises plinth prominently
+        focusRotX = 0.09;
+        statusLabel = "BOTTOM LAYER · TRAVERTINE POOL TERRACE";
+      } else if (isHoveringHouse) {
+        // HOVERING DIRECTLY UPON THE 3D HOUSE: Exploded axonometric
+        targetRoofY = 3.2;
+        targetL2Y = 1.8;
+        targetL1Y = 0.7;
+        focusShiftY = 0.0;
+        focusRotX = 0.04;
+        statusLabel = "EXPLODED AXONOMETRIC · SCALE 1:50";
       } else {
-        const p = (t - t3) / CYCLE.JOIN;
-        fractions = computeFloorFractions(p, true);
-        overallSep = (fractions.level1 + fractions.level2 + fractions.roof) / 3;
-        label = "JOINING";
+        // DEFAULT INTACT MONOLITH: Completely joined & flush
+        targetRoofY = 0.0;
+        targetL2Y = 0.0;
+        targetL1Y = 0.0;
+        focusShiftY = 0.0;
+        focusRotX = 0.0;
+        statusLabel = "MONOLITHIC TECTONIC STUDY · INTACT 1:50";
       }
 
-      setPhaseStatus(`${label} · 1:50`);
+      setPhaseStatus(`${statusLabel} · 1:50`);
 
-      // SILKY, LIGHTWEIGHT ARCHITECTURAL KINEMATICS (Gentle, fluid, weightless float)
-      const LERP_FACTOR = isDragging ? 0.16 : 0.085;
+      // SILKY, ULTRA-SMOOTH ARCHITECTURAL KINEMATICS (Gentle, fluid, weightless float)
+      const LERP_FACTOR = isDragging ? 0.16 : 0.065;
       currentRotY += (targetRotY - currentRotY) * LERP_FACTOR;
       currentRotX += (targetRotX - currentRotX) * LERP_FACTOR;
       currentShiftX += (targetShiftX - currentShiftX) * LERP_FACTOR;
       currentShiftY += (targetShiftY - currentShiftY) * LERP_FACTOR;
       currentExplode += (targetExplode - currentExplode) * LERP_FACTOR;
 
+      // Manual drag lift addition
+      const manualLift = currentExplode * 3.0;
+      targetRoofY += manualLift * 1.4;
+      targetL2Y += manualLift * 0.9;
+      targetL1Y += manualLift * 0.4;
+
       // Gentle zero-g ambient breathing float
       const ambientFloat = Math.sin(elapsed * 0.95) * 0.06;
 
-      // SILKY ROTATION AND LATERAL / VERTICAL POSITION
-      villaMasterGroup.rotation.y = currentRotY;
-      villaMasterGroup.rotation.x = currentRotX;
-      villaMasterGroup.position.x = currentShiftX;
-      villaMasterGroup.position.y = currentShiftY + ambientFloat;
+      // Silky responsive lerping for layer lifting
+      const LAYER_LERP = 0.06;
+      currentRoofY += (targetRoofY - currentRoofY) * LAYER_LERP;
+      currentL2Y += (targetL2Y - currentL2Y) * LAYER_LERP;
+      currentL1Y += (targetL1Y - currentL1Y) * LAYER_LERP;
+      currentFocusShiftY += (focusShiftY - currentFocusShiftY) * LAYER_LERP;
 
-      // GENTLE RESPONSIVE FLOOR ELEVATIONS (Soft, graceful lift)
-      let activeLiftFraction = currentExplode;
-      if (!hasInteracted && !isHovering && !isDragging) {
-        activeLiftFraction = overallSep;
-      }
+      // SILKY ROTATION: Base continuous 360° spin + interactive tilt + focus angle
+      villaMasterGroup.rotation.y = baseRotY + currentRotY;
+      villaMasterGroup.rotation.x = currentRotX + focusRotX;
+      villaMasterGroup.position.x = currentShiftX;
+      villaMasterGroup.position.y = currentShiftY + currentFocusShiftY + ambientFloat;
 
       plinthGroup.position.y = 0;
-      level1Group.position.y = activeLiftFraction * MAX_LIFT.level1;
-      level2Group.position.y = activeLiftFraction * MAX_LIFT.level2;
-      roofGroup.position.y = activeLiftFraction * MAX_LIFT.roof;
+      level1Group.position.y = currentL1Y;
+      level2Group.position.y = currentL2Y;
+      roofGroup.position.y = currentRoofY;
 
       // Soft ambient golden cursor light
       if (isHovering || isDragging) {
         cursorHoverLight.intensity = THREE.MathUtils.lerp(cursorHoverLight.intensity, 2.2, 0.12);
         cursorHoverLight.position.x = currentShiftX;
-        cursorHoverLight.position.y = 5.5 + currentShiftY;
+        cursorHoverLight.position.y = 5.5 + currentShiftY + currentFocusShiftY;
         cursorHoverLight.position.z = 8.0;
       } else {
         cursorHoverLight.intensity = THREE.MathUtils.lerp(cursorHoverLight.intensity, 0.0, 0.06);
       }
 
       // Guides
-      const effectiveSep = isHovering || isDragging ? activeLiftFraction : overallSep;
-      const guideAlpha = THREE.MathUtils.clamp((effectiveSep - 0.03) / 0.28, 0, 0.68);
-      guideGroup.visible = guideAlpha > 0.008;
-      if (guideGroup.visible) {
-        const topY = 8.4 + roofGroup.position.y;
-        for (let i = 0; i < guideLines.length; i++) {
-          const g = guideLines[i];
-          const posAttr = g.line.geometry.attributes.position as THREE.BufferAttribute;
-          posAttr.setXYZ(0, g.x, 0.68, g.z);
-          posAttr.setXYZ(1, g.x, topY, g.z);
-          posAttr.needsUpdate = true;
-          g.line.computeLineDistances();
-          (g.line.material as THREE.LineDashedMaterial).opacity = guideAlpha;
-        }
+      const effectiveSep = (currentRoofY + currentL2Y + currentL1Y) / 12.0;
+      const guideAlpha = THREE.MathUtils.clamp(effectiveSep * 0.5, 0.12, 0.65);
+      guideGroup.visible = true;
+      const topY = 8.4 + roofGroup.position.y;
+      for (let i = 0; i < guideLines.length; i++) {
+        const g = guideLines[i];
+        const posAttr = g.line.geometry.attributes.position as THREE.BufferAttribute;
+        posAttr.setXYZ(0, g.x, 0.68, g.z);
+        posAttr.setXYZ(1, g.x, topY, g.z);
+        posAttr.needsUpdate = true;
+        g.line.computeLineDistances();
+        (g.line.material as THREE.LineDashedMaterial).opacity = guideAlpha;
       }
 
       // Water ripples
@@ -1019,7 +1209,6 @@ export function VillaLumiereBackground() {
       // Update 2D Callouts projected positions
       const w = container ? container.clientWidth : 1200;
       const h = container ? container.clientHeight : 750;
-      const showLabels = effectiveSep > 0.35;
 
       const nextCallouts = calloutAnchors.map((item) => {
         tempVec3.copy(item.localPos);
@@ -1029,6 +1218,11 @@ export function VillaLumiereBackground() {
         const isBehind = tempVec3.z > 1;
         const sx = (tempVec3.x * 0.5 + 0.5) * w;
         const sy = (-tempVec3.y * 0.5 + 0.5) * h;
+
+        const isTargetCallout =
+          (currentFocus === "philosophy" && item.id === "roof") ||
+          (currentFocus === "approach" && (item.id === "level2" || item.id === "level1")) ||
+          (currentFocus === "principles" && item.id === "plinth");
 
         return {
           id: item.id,
@@ -1042,15 +1236,16 @@ export function VillaLumiereBackground() {
               : "04",
           name:
             item.id === "plinth"
-              ? "PLINTH & POOL"
+              ? "POOL TERRACE & PLINTH"
               : item.id === "level1"
               ? "LIVING PAVILION"
               : item.id === "level2"
-              ? "CANTILEVER STUDIO"
-              : "ROOF CANOPY",
+              ? "CANTILEVER SKY TERRACE"
+              : "ROOF SUNSET LOUNGE",
           x: sx,
           y: sy,
-          visible: showLabels && !isBehind,
+          visible: !isBehind,
+          highlight: isTargetCallout,
         };
       });
 
@@ -1072,12 +1267,12 @@ export function VillaLumiereBackground() {
       renderer.setSize(nw, nh);
 
       const isD = nw > 1024;
-      const sX = isD ? 7.8 : nw > 768 ? 4.5 : 0.0;
+      const sX = isD ? 6.8 : nw > 768 ? 3.8 : 0.0;
       shiftX = sX;
       targetShiftX = sX;
       currentShiftX = sX;
       villaMasterGroup.position.x = sX;
-      controls.target.set(sX, 4.8, 0.0);
+      controls.target.set(sX, 5.0, 0.0);
     });
     resizeObserver.observe(container);
 
@@ -1138,12 +1333,36 @@ export function VillaLumiereBackground() {
               transform: `translate3d(${c.x}px, ${c.y - 12}px, 0)`,
               opacity: c.visible ? 1 : 0,
             }}
-            className="absolute top-0 left-0 flex items-center transition-opacity duration-300 will-change-transform pointer-events-auto cursor-pointer group"
+            className={`absolute top-0 left-0 flex items-center transition-all duration-300 will-change-transform pointer-events-auto cursor-pointer group ${
+              c.highlight ? "scale-105 z-30" : "opacity-75 scale-95"
+            }`}
           >
-            <span className="h-2 w-2 rounded-full bg-[#B68A4A] shadow-[0_0_0_3px_rgba(182,138,74,0.25)] group-hover:scale-125 group-hover:bg-[#D97724] transition-transform duration-300" />
-            <span className="h-[1px] w-6 bg-[#B68A4A]/70 group-hover:bg-[#D97724] transition-colors duration-300" />
-            <div className="flex items-center gap-1.5 rounded-full border border-stone-800/10 bg-[#FCFBF8]/90 px-2.5 py-1 font-mono text-[9px] font-medium tracking-widest text-[#23211E] uppercase shadow-lg backdrop-blur-md group-hover:border-[#D97724]/40 group-hover:shadow-xl group-hover:scale-105 transition-all duration-300">
-              <span className="font-bold text-[#B68A4A] group-hover:text-[#D97724]">{c.num}</span>
+            <span
+              className={`rounded-full transition-all duration-300 ${
+                c.highlight
+                  ? "h-2.5 w-2.5 bg-[#D97724] ring-4 ring-[#D97724]/30 shadow-md"
+                  : "h-2 w-2 bg-[#B68A4A] ring-2 ring-[#B68A4A]/20"
+              }`}
+            />
+            <span
+              className={`h-[1px] w-6 transition-colors duration-300 ${
+                c.highlight ? "bg-[#D97724]" : "bg-[#B68A4A]/60"
+              }`}
+            />
+            <div
+              className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-[9px] font-medium tracking-widest text-[#23211E] uppercase backdrop-blur-md transition-all duration-300 ${
+                c.highlight
+                  ? "border-[#D97724]/50 bg-white/95 text-[#111111] shadow-xl ring-1 ring-[#D97724]/20 scale-105"
+                  : "border-stone-800/10 bg-[#FCFBF8]/85 text-stone-600 shadow-sm"
+              }`}
+            >
+              <span
+                className={`font-bold transition-colors ${
+                  c.highlight ? "text-[#D97724]" : "text-[#B68A4A]"
+                }`}
+              >
+                {c.num}
+              </span>
               <span>— {c.name}</span>
             </div>
           </div>

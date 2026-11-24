@@ -5,30 +5,48 @@ import React, { useRef, useState, useCallback } from "react";
 interface FooterClockEmblemProps {
   compact?: boolean;
   className?: string;
+  isBuilding?: boolean;
+  isMerging?: boolean;
+  onClick?: () => void;
+  onHover?: () => void;
 }
 
 export function FooterClockEmblem({
   compact = false,
   className = "",
+  isBuilding = false,
+  isMerging = false,
+  onClick,
+  onHover,
 }: FooterClockEmblemProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
 
   // Interactive 3D tilt tracking on mouse hover
-  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5;
-    const y = (e.clientY - rect.top) / rect.height - 0.5;
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width - 0.5;
+      const y = (e.clientY - rect.top) / rect.height - 0.5;
 
-    setTilt({
-      x: -y * 14,
-      y: x * 14,
-    });
-  }, []);
+      setTilt({
+        x: -y * 14,
+        y: x * 14,
+      });
 
-  const handleMouseEnter = useCallback(() => setIsHovered(true), []);
+      // Forward hover signal for replaying if idle
+      onHover?.();
+    },
+    [onHover]
+  );
+
+  const handleMouseEnter = useCallback(() => {
+    setIsHovered(true);
+    onHover?.();
+  }, [onHover]);
+
   const handleMouseLeave = useCallback(() => {
     setIsHovered(false);
     setTilt({ x: 0, y: 0 });
@@ -79,10 +97,11 @@ export function FooterClockEmblem({
       {/* ================================================================= */}
       <div
         ref={containerRef}
+        onClick={onClick}
         onMouseMove={handleMouseMove}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        className={`relative transition-transform duration-200 ease-out cursor-pointer ${
+        className={`relative transition-transform duration-200 ease-out cursor-pointer outline-none focus:outline-none focus-visible:outline-none ring-0 ${
           compact
             ? "w-[220px] h-[220px] sm:w-[240px] sm:h-[240px]"
             : "w-[240px] h-[240px] sm:w-[260px] sm:h-[260px]"
@@ -92,6 +111,9 @@ export function FooterClockEmblem({
             isHovered ? 1.04 : 1
           }, ${isHovered ? 1.04 : 1}, 1)`,
           transformStyle: "preserve-3d",
+          outline: "none",
+          border: "none",
+          boxShadow: "none",
         }}
       >
         <svg
@@ -452,6 +474,58 @@ export function FooterClockEmblem({
           {/* CENTER CIRCULAR POD HOUSING THE ORIGINAL ARCHEON LOGO (CLEAN) */}
           {/* ============================================================= */}
           <g className="filter drop-shadow-[0_8px_30px_rgba(0,0,0,0.95)]">
+            {/* Dynamic Swarm Absorption Pulse when Cursors Return & Merge */}
+            {isMerging && (
+              <>
+                <circle
+                  cx="180"
+                  cy="180"
+                  r="78"
+                  fill="none"
+                  stroke="#F59E0B"
+                  strokeWidth="2.5"
+                  opacity="0.85"
+                  filter="url(#amber-glow)"
+                >
+                  <animate
+                    attributeName="r"
+                    values="74;120;155"
+                    dur="1.2s"
+                    repeatCount="indefinite"
+                  />
+                  <animate
+                    attributeName="opacity"
+                    values="0.9;0.4;0"
+                    dur="1.2s"
+                    repeatCount="indefinite"
+                  />
+                </circle>
+                <circle
+                  cx="180"
+                  cy="180"
+                  r="74"
+                  fill="none"
+                  stroke="#06B6D4"
+                  strokeWidth="1.8"
+                  opacity="0.75"
+                  filter="url(#cyan-glow)"
+                >
+                  <animate
+                    attributeName="r"
+                    values="74;105;135"
+                    dur="0.9s"
+                    repeatCount="indefinite"
+                  />
+                  <animate
+                    attributeName="opacity"
+                    values="0.8;0.3;0"
+                    dur="0.9s"
+                    repeatCount="indefinite"
+                  />
+                </circle>
+              </>
+            )}
+
             {/* Concentric Rotating Chromatic Ring */}
             <circle
               cx="180"
