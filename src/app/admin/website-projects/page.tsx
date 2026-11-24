@@ -2,7 +2,6 @@
 
 import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { AdminPortalShell } from "@/components/portal/admin/AdminPortalShell";
 import { AdminWebsiteProjectList } from "@/components/portal/admin/AdminWebsiteProjectList";
 import { useAuth } from "@/providers/AuthProvider";
 
@@ -16,9 +15,5 @@ export default function AdminWebsiteProjectsPage() {
     }
   }, [authLoading, isAuthenticated, router]);
 
-  return (
-    <AdminPortalShell>
-      <AdminWebsiteProjectList />
-    </AdminPortalShell>
-  );
+  return <AdminWebsiteProjectList />;
 }

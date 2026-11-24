@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { ClientPortalShell } from "@/components/portal/client/ClientPortalShell";
 import {
   ClientSupportCentre,
   type ClientSupportTicket,
@@ -89,16 +88,14 @@ export default function ClientSupportPage() {
   };
 
   return (
-    <ClientPortalShell>
-      <ClientSupportCentre
-        tickets={tickets}
-        loading={loading}
-        submitting={submitting}
-        error={error || undefined}
-        onCreateTicket={handleCreateTicket}
-        onReplyTicket={handleReplyTicket}
-        onRefresh={loadTickets}
-      />
-    </ClientPortalShell>
+    <ClientSupportCentre
+      tickets={tickets}
+      loading={loading}
+      submitting={submitting}
+      error={error || undefined}
+      onCreateTicket={handleCreateTicket}
+      onReplyTicket={handleReplyTicket}
+      onRefresh={loadTickets}
+    />
   );
 }

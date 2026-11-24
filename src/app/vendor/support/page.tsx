@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { VendorPortalShell } from "@/components/portal/vendor/VendorPortalShell";
 import {
   VendorSupportCentre,
   type VendorSupportTicket,
@@ -72,15 +71,13 @@ export default function VendorSupportPage() {
   };
 
   return (
-    <VendorPortalShell>
-      <VendorSupportCentre
-        tickets={tickets}
-        loading={loading}
-        submitting={submitting}
-        error={error || undefined}
-        onCreateTicket={handleCreateTicket}
-        onRefresh={loadTickets}
-      />
-    </VendorPortalShell>
+    <VendorSupportCentre
+      tickets={tickets}
+      loading={loading}
+      submitting={submitting}
+      error={error || undefined}
+      onCreateTicket={handleCreateTicket}
+      onRefresh={loadTickets}
+    />
   );
 }
