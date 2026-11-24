@@ -295,9 +295,11 @@ export function AdminCreateProjectModal({
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block font-mono text-[9px] uppercase tracking-widest text-[#77736C] mb-1">
-                Project Start Date
-              </label>
+              <div className="flex items-center h-5 mb-1.5">
+                <label className="block font-mono text-[9px] uppercase tracking-widest text-[#77736C]">
+                  Project Start Date
+                </label>
+              </div>
               <input
                 type="date"
                 value={startDate}
@@ -307,18 +309,32 @@ export function AdminCreateProjectModal({
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center h-5 mb-1.5">
+                <label className="block font-mono text-[9px] uppercase tracking-widest text-[#77736C]">
+                  Initial Site Visit Date
+                </label>
+              </div>
+              <input
+                type="date"
+                value={lastVisitDate}
+                onChange={(e) => setLastVisitDate(e.target.value)}
+                className="w-full border border-[#D8D6D0] bg-white px-3 py-2 text-xs outline-none focus:border-[#A58A64]"
+              />
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between h-5 mb-1.5">
                 <label className="block font-mono text-[9px] uppercase tracking-widest text-[#77736C]">
                   Expected Completion
                 </label>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 shrink-0">
                   <button
                     type="button"
                     onClick={() => handleSetDuration(3)}
                     className="rounded border border-[#D8D6D0] bg-[#FAF8F5] px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-wider text-[#77736C] hover:border-[#A58A64] hover:bg-[#A58A64] hover:text-white transition-all cursor-pointer"
                     title="Set to 3 months"
                   >
-                    3 Mo
+                    3M
                   </button>
                   <button
                     type="button"
@@ -326,7 +342,7 @@ export function AdminCreateProjectModal({
                     className="rounded border border-[#D8D6D0] bg-[#FAF8F5] px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-wider text-[#77736C] hover:border-[#A58A64] hover:bg-[#A58A64] hover:text-white transition-all cursor-pointer"
                     title="Set to 6 months"
                   >
-                    6 Mo
+                    6M
                   </button>
                   <button
                     type="button"
@@ -334,7 +350,7 @@ export function AdminCreateProjectModal({
                     className="rounded border border-[#D8D6D0] bg-[#FAF8F5] px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-wider text-[#77736C] hover:border-[#A58A64] hover:bg-[#A58A64] hover:text-white transition-all cursor-pointer"
                     title="Set to 1 year"
                   >
-                    1 Yr
+                    1Y
                   </button>
                 </div>
               </div>
@@ -343,18 +359,6 @@ export function AdminCreateProjectModal({
                 value={expectedCompletionDate}
                 onChange={(e) => setExpectedCompletionDate(e.target.value)}
                 className="w-full border border-[#D8D6D0] bg-white px-3 py-2 text-xs outline-none focus:border-[#A58A64]"
-              />
-            </div>
-
-            <div>
-              <label className="block font-mono text-[9px] uppercase tracking-widest text-[#A58A64] font-semibold mb-1">
-                Initial Site Visit Date
-              </label>
-              <input
-                type="date"
-                value={lastVisitDate}
-                onChange={(e) => setLastVisitDate(e.target.value)}
-                className="w-full border border-[#A58A64] bg-white px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-[#A58A64]"
               />
             </div>
           </div>

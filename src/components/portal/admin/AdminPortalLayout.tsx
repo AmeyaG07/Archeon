@@ -89,16 +89,16 @@ const NAVIGATION_GROUPS: NavigationGroup[] = [
         icon: FolderKanban,
       },
       {
-        id: "website-projects",
-        label: "Website Content",
-        description: "Showcase & Philosophy CMS",
-        icon: Globe,
-      },
-      {
         id: "leads",
         label: "Enquiries & Leads",
         description: "Incoming enquiries",
         icon: Users,
+      },
+      {
+        id: "website-projects",
+        label: "Website Content",
+        description: "Showcase & Philosophy CMS",
+        icon: Globe,
       },
     ],
   },

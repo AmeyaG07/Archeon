@@ -9,16 +9,13 @@ import {
   type AdminProjectCategory,
 } from "@/components/portal/admin/AdminProjectManagement";
 import { AdminCreateProjectModal } from "@/components/portal/admin/AdminCreateProjectModal";
-import { AdminWebsiteProjectList } from "@/components/portal/admin/AdminWebsiteProjectList";
 import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/providers/AuthProvider";
-import { Building2, Globe } from "lucide-react";
 
 export default function AdminProjectsPage() {
   const router = useRouter();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
 
-  const [activeTab, setActiveTab] = useState<"operational" | "showcase">("operational");
   const [projects, setProjects] = useState<AdminProjectRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -88,54 +85,20 @@ export default function AdminProjectsPage() {
 
   return (
     <div className="p-4 sm:p-8 space-y-6">
-      {/* Top Section Segmented Tab Switcher */}
-      <div className="flex border-b border-[#D8D6D0] gap-2 pb-1">
-        <button
-          type="button"
-          onClick={() => setActiveTab("operational")}
-          className={`flex items-center gap-2 px-5 py-3 font-mono text-xs uppercase tracking-wider border-b-2 transition-all cursor-pointer ${
-            activeTab === "operational"
-              ? "border-[#111111] text-[#111111] font-semibold"
-              : "border-transparent text-[#77736C] hover:text-[#111111]"
-          }`}
-        >
-          <Building2 size={15} />
-          Operational Site Projects
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab("showcase")}
-          className={`flex items-center gap-2 px-5 py-3 font-mono text-xs uppercase tracking-wider border-b-2 transition-all cursor-pointer ${
-            activeTab === "showcase"
-              ? "border-[#A58A64] text-[#A58A64] font-semibold bg-[#FAF8F5]/60"
-              : "border-transparent text-[#77736C] hover:text-[#111111]"
-          }`}
-        >
-          <Globe size={15} />
-          Website Portfolio Showcase (Photos & Descriptions)
-        </button>
-      </div>
+      <AdminProjectManagement
+        projects={projects}
+        loading={loading}
+        error={error ?? undefined}
+        onRefresh={loadProjects}
+        onCreateProject={() => setShowCreateModal(true)}
+        onOpenProject={(projId) => router.push(`/admin/projects/${projId}`)}
+      />
 
-      {activeTab === "operational" ? (
-        <>
-          <AdminProjectManagement
-            projects={projects}
-            loading={loading}
-            error={error ?? undefined}
-            onRefresh={loadProjects}
-            onCreateProject={() => setShowCreateModal(true)}
-            onOpenProject={(projId) => router.push(`/admin/projects/${projId}`)}
-          />
-
-          <AdminCreateProjectModal
-            isOpen={showCreateModal}
-            onClose={() => setShowCreateModal(false)}
-            onProjectCreated={loadProjects}
-          />
-        </>
-      ) : (
-        <AdminWebsiteProjectList />
-      )}
+      <AdminCreateProjectModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onProjectCreated={loadProjects}
+      />
     </div>
   );
 }
