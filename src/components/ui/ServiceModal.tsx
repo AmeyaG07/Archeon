@@ -43,7 +43,7 @@ export function ServiceModal({ service, onClose, onEnquire }: ServiceModalProps)
       {service && (
         <div
           data-lenis-prevent
-          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 md:p-8 pointer-events-auto"
+          className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-5 md:p-8 pointer-events-auto"
         >
           {/* Backdrop Blur */}
           <motion.div

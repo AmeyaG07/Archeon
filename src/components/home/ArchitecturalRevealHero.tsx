@@ -231,8 +231,8 @@ export function ArchitecturalRevealHero({
             {/* Shimmer light reflection effect */}
             <span className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/25 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-[300%] transition-transform duration-1000 ease-out pointer-events-none" />
 
-            <span className="relative z-10">Discuss Your Project</span>
-            <span className="relative z-10 w-7 h-7 rounded-full bg-white/10 border border-white/25 flex items-center justify-center text-[#E0D8C3] group-hover:bg-[#C6A779] group-hover:text-black transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5">
+            <span className="relative z-10 pointer-events-none">Discuss Your Project</span>
+            <span className="relative z-10 w-7 h-7 rounded-full bg-white/10 border border-white/25 flex items-center justify-center text-[#E0D8C3] group-hover:bg-[#C6A779] group-hover:text-black transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 pointer-events-none">
               <ArrowUpRight size={14} strokeWidth={2.2} />
             </span>
           </button>

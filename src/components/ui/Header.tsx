@@ -104,23 +104,20 @@ export function Header({
 
   const handleNavigation = (href: string) => {
     closeMenu();
-
-    setTimeout(() => {
-      if (href.startsWith("#")) {
-        const target = document.querySelector(href) as HTMLElement | null;
-        if (target) {
-          if (typeof (window as any).lenis?.start === "function") {
-            (window as any).lenis.start();
-          }
-          if (typeof (window as any).lenis?.scrollTo === "function") {
-            (window as any).lenis.scrollTo(target, { offset: -80 });
-          } else {
-            const top = target.getBoundingClientRect().top + window.scrollY - 80;
-            window.scrollTo({ top, behavior: "smooth" });
-          }
+    if (href.startsWith("#")) {
+      const target = document.querySelector(href) as HTMLElement | null;
+      if (target) {
+        const top = Math.max(0, target.getBoundingClientRect().top + window.scrollY - 75);
+        window.scrollTo({ top, behavior: "smooth" });
+        if (typeof (window as any).lenis?.scrollTo === "function") {
+          try {
+            (window as any).lenis.scrollTo(top);
+          } catch {}
         }
       }
-    }, 50);
+    } else {
+      router.push(href);
+    }
   };
 
   return (
@@ -176,16 +173,15 @@ export function Header({
               <a
                 key={item.label}
                 href={item.href}
-                onClick={(e) => {
-                  e.preventDefault();
+                onClick={() => {
                   handleNavigation(item.href);
                 }}
                 className="group relative py-1.5 px-1 text-[13px] xl:text-[14px] font-['Outfit',sans-serif] font-normal tracking-[0.12em] text-[#D4D0C5] hover:text-white transition-colors duration-300 cursor-pointer"
               >
-                <span className="capitalize">{item.label}</span>
+                <span className="capitalize pointer-events-none">{item.label}</span>
 
                 {/* Refined Gold Ambient Underline Indicator */}
-                <span className="absolute bottom-0 left-1/2 h-[1.5px] w-0 -translate-x-1/2 bg-gradient-to-r from-transparent via-[#C6A779] to-transparent transition-all duration-300 group-hover:w-full shadow-[0_0_8px_rgba(198,167,121,0.8)]" />
+                <span className="absolute bottom-0 left-1/2 h-[1.5px] w-0 -translate-x-1/2 bg-gradient-to-r from-transparent via-[#C6A779] to-transparent transition-all duration-300 group-hover:w-full shadow-[0_0_8px_rgba(198,167,121,0.8)] pointer-events-none" />
               </a>
             ))}
           </nav>
@@ -196,23 +192,23 @@ export function Header({
             <div
               className="relative"
               ref={portalDropdownRef}
-              onMouseEnter={() => setPortalDropdownOpen(true)}
-              onMouseLeave={() => setPortalDropdownOpen(false)}
             >
               <button
                 type="button"
                 onClick={() => setPortalDropdownOpen((prev) => !prev)}
-                className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border transition-all duration-300 font-['Outfit',sans-serif] text-[11.5px] font-medium tracking-[0.1em] backdrop-blur-md cursor-pointer ${portalDropdownOpen
+                className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border transition-all duration-300 font-['Outfit',sans-serif] text-[11.5px] font-medium tracking-[0.1em] backdrop-blur-md cursor-pointer ${
+                  portalDropdownOpen
                     ? "border-[#B68A4A] bg-[#B68A4A]/20 text-[#E0D8C3] shadow-[0_0_15px_rgba(182,138,74,0.3)]"
                     : "border-white/15 bg-white/[0.04] text-white/80 hover:border-[#B68A4A]/60 hover:bg-[#B68A4A]/10 hover:text-white"
-                  }`}
+                }`}
               >
-                <Shield size={12} className="text-[#B68A4A]" />
-                <span>Portals</span>
+                <Shield size={12} className="text-[#B68A4A] pointer-events-none" />
+                <span className="pointer-events-none">Portals</span>
                 <ChevronDown
                   size={12}
-                  className={`transition-transform duration-300 text-white/60 ${portalDropdownOpen ? "rotate-180 text-[#B68A4A]" : ""
-                    }`}
+                  className={`transition-transform duration-300 text-white/60 pointer-events-none ${
+                    portalDropdownOpen ? "rotate-180 text-[#B68A4A]" : ""
+                  }`}
                 />
               </button>
 
@@ -226,9 +222,9 @@ export function Header({
                       Secure Workspace
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={handleClientPortalClick}
+                    <Link
+                      href="/client"
+                      onClick={() => setPortalDropdownOpen(false)}
                       className="w-full text-left px-3 py-2 text-xs font-['Outfit',sans-serif] text-stone-300 hover:text-white hover:bg-white/10 rounded-xs transition-colors flex items-center justify-between group cursor-pointer"
                     >
                       <span>Client Portal</span>
@@ -236,11 +232,11 @@ export function Header({
                         size={12}
                         className="text-[#B68A4A] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
                       />
-                    </button>
+                    </Link>
 
-                    <button
-                      type="button"
-                      onClick={handleVendorPortalClick}
+                    <Link
+                      href="/vendor"
+                      onClick={() => setPortalDropdownOpen(false)}
                       className="w-full text-left px-3 py-2 text-xs font-['Outfit',sans-serif] text-stone-300 hover:text-white hover:bg-white/10 rounded-xs transition-colors flex items-center justify-between group cursor-pointer"
                     >
                       <span>Vendor Portal</span>
@@ -248,7 +244,7 @@ export function Header({
                         size={12}
                         className="text-[#B68A4A] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
                       />
-                    </button>
+                    </Link>
 
                     <div className="border-t border-white/10 my-1" />
 
@@ -318,10 +314,11 @@ export function Header({
       <div
         id="mobile-navigation"
         aria-hidden={!mobileMenuOpen}
-        className={`fixed inset-0 z-40 overflow-y-auto bg-[#0A0A0A]/98 backdrop-blur-2xl text-[#F2F0EB] transition-all duration-500 lg:hidden ${mobileMenuOpen
-            ? "visible translate-y-0 opacity-100"
-            : "invisible -translate-y-3 opacity-0"
-          }`}
+        className={`fixed inset-0 z-40 overflow-y-auto bg-[#0A0A0A]/98 backdrop-blur-2xl text-[#F2F0EB] transition-all duration-500 lg:hidden ${
+          mobileMenuOpen
+            ? "visible translate-y-0 opacity-100 pointer-events-auto"
+            : "invisible -translate-y-3 opacity-0 pointer-events-none"
+        }`}
       >
         <div className="flex min-h-full flex-col px-6 pb-12 pt-24 sm:px-10">
           {/* Header Eyebrow */}
@@ -346,16 +343,15 @@ export function Header({
                 key={item.label}
                 href={item.href}
                 tabIndex={mobileMenuOpen ? 0 : -1}
-                onClick={(e) => {
-                  e.preventDefault();
+                onClick={() => {
                   handleNavigation(item.href);
                 }}
                 className="group flex items-center justify-between border-b border-white/[0.08] py-4 text-left font-['Outfit',sans-serif] text-2xl font-normal tracking-[0.1em] text-white/90 hover:text-[#C6A779] transition-all cursor-pointer"
               >
-                <span className="capitalize group-hover:translate-x-2 transition-transform duration-300">
+                <span className="capitalize group-hover:translate-x-2 transition-transform duration-300 pointer-events-none">
                   {item.label}
                 </span>
-                <ArrowUpRight size={16} className="text-[#B68A4A] opacity-50 group-hover:opacity-100 transition-opacity" />
+                <ArrowUpRight size={16} className="text-[#B68A4A] opacity-50 group-hover:opacity-100 transition-opacity pointer-events-none" />
               </a>
             ))}
           </nav>
@@ -367,33 +363,34 @@ export function Header({
             </p>
 
             <div className="grid grid-cols-2 gap-2.5">
-              <button
-                type="button"
+              <Link
+                href="/client"
                 tabIndex={mobileMenuOpen ? 0 : -1}
-                onClick={handleClientPortalClick}
-                className="border border-white/15 bg-white/[0.03] px-4 py-3 text-left font-['Outfit',sans-serif] text-[12px] tracking-wider text-white/80 hover:border-[#B68A4A] hover:text-[#C6A779] transition-all rounded-xs flex items-center justify-between"
+                onClick={closeMenu}
+                className="border border-white/15 bg-white/[0.03] px-4 py-3 text-left font-['Outfit',sans-serif] text-[12px] tracking-wider text-white/80 hover:border-[#B68A4A] hover:text-[#C6A779] transition-all rounded-xs flex items-center justify-between cursor-pointer"
               >
                 <span>Client Portal</span>
                 <ArrowUpRight size={13} className="text-[#B68A4A]" />
-              </button>
+              </Link>
 
-              <button
-                type="button"
+              <Link
+                href="/vendor"
                 tabIndex={mobileMenuOpen ? 0 : -1}
-                onClick={handleVendorPortalClick}
-                className="border border-white/15 bg-white/[0.03] px-4 py-3 text-left font-['Outfit',sans-serif] text-[12px] tracking-wider text-white/80 hover:border-[#B68A4A] hover:text-[#C6A779] transition-all rounded-xs flex items-center justify-between"
+                onClick={closeMenu}
+                className="border border-white/15 bg-white/[0.03] px-4 py-3 text-left font-['Outfit',sans-serif] text-[12px] tracking-wider text-white/80 hover:border-[#B68A4A] hover:text-[#C6A779] transition-all rounded-xs flex items-center justify-between cursor-pointer"
               >
                 <span>Vendor Portal</span>
                 <ArrowUpRight size={13} className="text-[#B68A4A]" />
-              </button>
+              </Link>
             </div>
 
             <Link
-              href="/login"
+              href="/admin"
+              tabIndex={mobileMenuOpen ? 0 : -1}
               onClick={closeMenu}
-              className="block w-full border border-white/15 bg-white/[0.03] px-4 py-2.5 text-center font-['Outfit',sans-serif] text-[12px] tracking-wider text-stone-300 hover:text-white hover:border-[#B68A4A] transition-all rounded-xs"
+              className="block w-full border border-white/15 bg-white/[0.03] px-4 py-2.5 text-center font-['Outfit',sans-serif] text-[12px] tracking-wider text-[#C6A779] hover:text-white hover:border-[#B68A4A] transition-all rounded-xs cursor-pointer"
             >
-              Studio Staff &amp; Admin Login
+              Admin Portal
             </Link>
 
             <button

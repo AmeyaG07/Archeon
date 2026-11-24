@@ -408,19 +408,8 @@ export function VillaLumiereBackground({
     let currentAutoSpeed = 0.11; // rad/sec (~57 seconds for full 360° rotation)
 
     const handlePointerDown = (e: PointerEvent) => {
-      // Do not initiate 3D drag from inside the left detail panel
-      const detailPanel = document.getElementById("studio-editorial-panel");
-      if (detailPanel) {
-        const dRect = detailPanel.getBoundingClientRect();
-        if (
-          e.clientX >= dRect.left &&
-          e.clientX <= dRect.right &&
-          e.clientY >= dRect.top &&
-          e.clientY <= dRect.bottom
-        ) {
-          return;
-        }
-      }
+      // Only initiate 3D drag when clicking directly on the model canvas
+      if (e.target !== canvas) return;
 
       isDragging = true;
       hasInteracted = true;
@@ -534,7 +523,7 @@ export function VillaLumiereBackground({
       }
     };
 
-    window.addEventListener("pointerdown", handlePointerDown, { passive: true });
+    canvas.addEventListener("pointerdown", handlePointerDown, { passive: true });
     window.addEventListener("pointermove", handlePointerMove, { passive: true });
     window.addEventListener("pointerup", handlePointerUp, { passive: true });
     window.addEventListener("pointercancel", handlePointerUp, { passive: true });
@@ -1278,7 +1267,7 @@ export function VillaLumiereBackground({
 
     return () => {
       cancelAnimationFrame(animationFrameId);
-      window.removeEventListener("pointerdown", handlePointerDown);
+      canvas.removeEventListener("pointerdown", handlePointerDown);
       window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("pointerup", handlePointerUp);
       window.removeEventListener("pointercancel", handlePointerUp);
