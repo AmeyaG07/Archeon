@@ -471,7 +471,7 @@ function SubmitPaymentProofTileModal({
 
     try {
       // 1. Submit payment proof to backend API
-      const res = await apiFetch(`/api/billing/bills/${invoice.invoiceNumber || invoice.id}/payment-proof`, {
+      const res = await apiFetch(`/api/billing/bills/${encodeURIComponent(invoice.id || invoice.invoiceNumber)}/payment-proof`, {
         method: "POST",
         body: {
           paymentProofUrl: proofPreviewUrl,

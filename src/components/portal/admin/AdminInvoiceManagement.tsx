@@ -1009,12 +1009,15 @@ function SummaryCard({
   description: string;
 }) {
   return (
-    <div className="bg-white p-5 md:p-6">
+    <div className="min-w-0 bg-white p-5 md:p-6">
       <p className="font-mono text-[9px] uppercase tracking-widest text-[#99958D]">
         {label}
       </p>
 
-      <p className="mt-5 break-words font-serif text-2xl text-[#171717] md:text-3xl">
+      <p
+        title={value}
+        className="mt-5 whitespace-nowrap font-serif text-xl tabular-nums text-[#171717] md:text-2xl xl:text-[22px] 2xl:text-2xl"
+      >
         {value}
       </p>
 

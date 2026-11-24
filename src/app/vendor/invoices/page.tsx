@@ -42,6 +42,7 @@ interface BillItem {
 interface AssignedProject {
   id: string;
   name: string;
+  clientId?: string;
   clientName?: string;
   projectReference?: string;
 }
@@ -102,6 +103,7 @@ function VendorInvoicesContent() {
           const pList: AssignedProject[] = pRes.map((p) => ({
             id: p.id,
             name: p.name || "Studio Project",
+            clientId: p.clientId ? String(p.clientId) : undefined,
             clientName: p.clientName || "Studio Client",
             projectReference: p.projectReference,
           }));
@@ -143,7 +145,7 @@ function VendorInvoicesContent() {
         method: "POST",
         body: JSON.stringify({
           projectId: selectedProjectId,
-          clientId: proj?.clientName || "Direct Client",
+          clientId: proj?.clientId || undefined,
           amount: parseFloat(billAmount),
           tradeCategory: billTradeCategory,
           billPhotoUrl: billPhotoUrl || undefined,
