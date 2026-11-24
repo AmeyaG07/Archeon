@@ -35,17 +35,22 @@ export function FooterClockEmblem({
         x: -y * 14,
         y: x * 14,
       });
-
-      // Forward hover signal for replaying if idle
-      onHover?.();
     },
-    [onHover]
+    []
   );
 
   const handleMouseEnter = useCallback(() => {
     setIsHovered(true);
     onHover?.();
   }, [onHover]);
+
+  const handleClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      e.stopPropagation();
+      onClick?.();
+    },
+    [onClick]
+  );
 
   const handleMouseLeave = useCallback(() => {
     setIsHovered(false);
@@ -97,7 +102,7 @@ export function FooterClockEmblem({
       {/* ================================================================= */}
       <div
         ref={containerRef}
-        onClick={onClick}
+        onClick={handleClick}
         onMouseMove={handleMouseMove}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}

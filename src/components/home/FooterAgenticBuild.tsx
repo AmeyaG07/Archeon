@@ -293,6 +293,7 @@ export function SwarmCursorArrow({
             times: times,
             ease: [0.25, 1, 0.35, 1],
           }}
+          exit={{ opacity: 0, transition: { duration: 0.1 } }}
           className="absolute pointer-events-none z-30"
           style={{ willChange: "transform, opacity" }}
         >

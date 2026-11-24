@@ -128,19 +128,19 @@ export function SiteFooter({
 
   const isBuildingRef = useRef<boolean>(false);
   const timersRef = useRef<NodeJS.Timeout[]>([]);
-  const lastHoverTime = useRef<number>(0);
+  const lastReplayTime = useRef<number>(0);
 
   const clearAllTimers = () => {
     timersRef.current.forEach((t) => clearTimeout(t));
     timersRef.current = [];
   };
 
-  // Slower, majestic multi-stage agentic swarm sequence:
+  // Dynamic multi-stage agentic swarm sequence:
   // 1. Launch outward streams (0ms)
-  // 2. Multi-directional cursor swarm sweeps across rows revealing content (300ms)
-  // 3. Content 100% displayed; cursors dwell at row ends and turn around (2600ms)
-  // 4. Cursors fly back across layout and merge into the round clock emblem (3400ms)
-  // 5. Complete / idle; all cursors merged, content remains fully active (4800ms)
+  // 2. Multi-directional cursor swarm sweeps across rows revealing content (250ms)
+  // 3. Content 100% displayed; cursors dwell at row ends and turn around (2000ms)
+  // 4. Cursors fly back across layout and merge into the round clock emblem (2800ms)
+  // 5. Complete / idle; all cursors merged, ready for next hover/click (4600ms)
   const startBuildSequence = () => {
     // Step 1: Photons launch outward
     setBuildStep(1);
@@ -149,21 +149,21 @@ export function SiteFooter({
     timersRef.current.push(
       setTimeout(() => {
         setBuildStep(2);
-      }, 300)
+      }, 250)
     );
 
     // Step 3: Content fully displayed; cursors dwell and turn around
     timersRef.current.push(
       setTimeout(() => {
         setBuildStep(3);
-      }, 2600)
+      }, 2000)
     );
 
     // Step 4: Cursors return back & merge into the round timepiece emblem
     timersRef.current.push(
       setTimeout(() => {
         setBuildStep(4);
-      }, 3400)
+      }, 2800)
     );
 
     // Step 5: Merge completed; settled back into eternal orbit, ready for next hover/click
@@ -171,46 +171,42 @@ export function SiteFooter({
       setTimeout(() => {
         setBuildStep(5);
         isBuildingRef.current = false;
-      }, 4800)
+      }, 4600)
     );
   };
 
-  const triggerBuild = (force = false) => {
-    if (isBuildingRef.current && !force) return;
-
+  // Clean, deterministic replay function for both click and hover
+  const replaySwarmAnimation = () => {
     clearAllTimers();
+    // Temporarily unmount any currently active cursors
+    setBuildStep(0);
     isBuildingRef.current = true;
     setHasBuilt(true);
 
-    // If forcing restart while already active, perform a clean 25ms keyframe reset
-    if (force && buildStep > 0) {
-      setBuildStep(0);
-      const resetTimer = setTimeout(() => {
-        setBuildCycle((c) => c + 1);
-        startBuildSequence();
-      }, 25);
-      timersRef.current.push(resetTimer);
-      return;
-    }
-
-    setBuildCycle((c) => c + 1);
-    startBuildSequence();
+    // 35ms reset frame ensures React & Framer Motion cleanly unmount previous cycle and remount at t=0
+    const resetTimer = setTimeout(() => {
+      setBuildCycle((c) => c + 1);
+      startBuildSequence();
+    }, 35);
+    timersRef.current.push(resetTimer);
   };
 
-  // Hover trigger for the round element:
-  // Replays animation smoothly if idle or completed
+  // Hover trigger for the clock element:
+  // Replays animation smoothly whenever the mouse hovers over the clock
   const handleEmblemHover = () => {
     const now = Date.now();
-    if (!isBuildingRef.current && now - lastHoverTime.current > 600) {
-      lastHoverTime.current = now;
-      triggerBuild(false);
+    // Allow replay on hover (debounced by 350ms so slight tremor doesn't spam, but hovering always replays)
+    if (now - lastReplayTime.current > 350) {
+      lastReplayTime.current = now;
+      replaySwarmAnimation();
     }
   };
 
-  // Click trigger: always forces an immediate replay
-  const handleClockClick = () => {
-    lastHoverTime.current = Date.now();
-    triggerBuild(true);
+  // Click trigger: always immediately forces a replay
+  const handleClockClick = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    lastReplayTime.current = Date.now();
+    replaySwarmAnimation();
   };
 
   // Automatic Trigger on Initial Scroll into Viewport
@@ -221,7 +217,7 @@ export function SiteFooter({
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && !hasBuilt) {
-          triggerBuild(true);
+          replaySwarmAnimation();
         }
       },
       { threshold: 0.15 }

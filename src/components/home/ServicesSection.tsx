@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { ArrowUpRight, RotateCw, Volume2, VolumeX } from "lucide-react";
+import { ArrowUpRight, RotateCw, Volume2, VolumeX, Sparkles } from "lucide-react";
 import type { ServiceItem } from "@/config/siteConfig";
 import {
   RevealText,
@@ -9,6 +9,7 @@ import {
   StaggerGrid,
   StaggerItem,
 } from "@/components/motion/EditorialMotion";
+import { DisciplineCursorSwarm } from "./DisciplineCursorSwarm";
 
 interface ServicesSectionProps {
   services: ServiceItem[];
@@ -45,6 +46,15 @@ const CAD_NODES: CADNode[] = [
     pulseColor: "bg-orange-500",
   },
   {
+    id: "node-landscape",
+    disciplineId: "landscape",
+    tag: "EXT · LANDSCAPE ECOLOGY",
+    elevation: "-0.450m SUNKEN PATIO",
+    title: "Xeriscape Water Mirror",
+    spec: "Nagpur endemic flora · Reflection pond",
+    pulseColor: "bg-emerald-500",
+  },
+  {
     id: "node-sky",
     disciplineId: "visualization",
     tag: "LVL 03 · 3D VISUALISATION",
@@ -54,13 +64,13 @@ const CAD_NODES: CADNode[] = [
     pulseColor: "bg-yellow-400",
   },
   {
-    id: "node-landscape",
-    disciplineId: "landscape",
-    tag: "EXT · LANDSCAPE ECOLOGY",
-    elevation: "-0.450m SUNKEN PATIO",
-    title: "Xeriscape Water Mirror",
-    spec: "Nagpur endemic flora · Reflection pond",
-    pulseColor: "bg-emerald-500",
+    id: "node-turnkey",
+    disciplineId: "turnkey",
+    tag: "SITE · TURNKEY EXECUTION",
+    elevation: "1:1 DIRECT BUILD",
+    title: "Single-Window Handover",
+    spec: "Turnkey delivery · Zero defect warranty",
+    pulseColor: "bg-rose-500",
   },
 ];
 
@@ -69,6 +79,7 @@ export function ServicesSection({
   onSelectService,
 }: ServicesSectionProps) {
   const [activeDiscipline, setActiveDiscipline] = useState<string>("all");
+  const [cursorCycle, setCursorCycle] = useState<number>(0);
   const [isMuted, setIsMuted] = useState<boolean>(true);
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -80,12 +91,17 @@ export function ServicesSection({
 
   const handleSelectDiscipline = (discId: string) => {
     setActiveDiscipline(discId);
+    setCursorCycle((prev) => prev + 1);
+  };
+
+  const handleReplayCursors = () => {
+    setCursorCycle((prev) => prev + 1);
   };
 
   return (
     <section
       id="expertise"
-      className="relative overflow-hidden bg-[#0A0A0A] py-24 sm:py-32 scroll-mt-24 sm:scroll-mt-32 text-white"
+      className="relative overflow-hidden bg-[#0A0A0A] py-14 sm:py-16 md:py-20 scroll-mt-24 sm:scroll-mt-32 text-white"
     >
       {/* =========================================================================
           CONTINUOUS 360° ROTATING 3D VILLA BACKGROUND ANIMATION
@@ -151,110 +167,149 @@ export function ServicesSection({
       </div>
 
       {/* =========================================================================
-          FOREGROUND EDITORIAL CONTENT
+          FOREGROUND EDITORIAL CONTENT (OPTIMIZED PROPORTIONS & CURSOR SWARM)
           ========================================================================= */}
       <div className="editorial-container relative z-10">
         {/* Section Introduction */}
-        <div className="mb-14">
-          <RevealText>
-            <h2 className="max-w-4xl font-serif text-5xl font-light leading-[0.98] tracking-tight text-[#F2F0EB] sm:text-6xl lg:text-7xl">
-              A considered approach
-            </h2>
-          </RevealText>
-          <RevealText delay={0.12}>
-            <h2 className="max-w-4xl font-serif text-5xl font-light leading-[0.98] tracking-tight text-[#F2F0EB] sm:text-6xl lg:text-7xl mt-2">
-              to <span className="italic text-[#C6A779]">every space.</span>
-            </h2>
-          </RevealText>
+        <div className="mb-6 sm:mb-8 flex flex-col md:flex-row md:items-end justify-between gap-3">
+          <div>
+            <div className="font-mono text-[9px] sm:text-[10px] tracking-[0.24em] uppercase text-[#B68A4A] mb-1.5 flex items-center gap-2">
+              <span>STUDIO EXPERTISE · 5 DISCIPLINES</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#D97724] animate-ping" />
+            </div>
+            <RevealText>
+              <h2 className="max-w-3xl font-serif text-3xl sm:text-4xl lg:text-[44px] font-light leading-[1.08] tracking-tight text-[#F2F0EB]">
+                A considered approach <span className="italic text-[#C6A779]">to every space.</span>
+              </h2>
+            </RevealText>
+          </div>
+
+          <div className="flex items-center gap-2 text-right">
+            <button
+              type="button"
+              onClick={handleReplayCursors}
+              className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.04] px-3 py-1 font-mono text-[9px] tracking-widest uppercase text-white/70 hover:border-[#B68A4A] hover:text-[#B68A4A] transition-colors cursor-pointer"
+              title="Click to replay autonomous discipline cursor animations"
+            >
+              <Sparkles size={11} className="text-[#B68A4A]" />
+              <span>AUTONOMOUS AGENT CURSORS</span>
+            </button>
+          </div>
         </div>
 
         <HairlineRule color="bg-white/15" className="mb-0" />
 
-        {/* Services Staggered Interactive Grid Over Video Background */}
-        <StaggerGrid
-          staggerDelay={0.08}
-          className="grid border-l border-white/10 sm:grid-cols-2 lg:grid-cols-3"
-        >
-          {services.map((service, index) => {
-            const isMatch =
-              activeDiscipline === "all" || activeDiscipline === service.id;
+        {/* Services Staggered Interactive Grid with Overlaid Autonomous Cursors */}
+        <div className="relative">
+          {/* Overlaid Autonomous Cursor Swarm Animation */}
+          <DisciplineCursorSwarm
+            activeDiscipline={activeDiscipline}
+            cycleKey={cursorCycle}
+          />
 
-            return (
-              <StaggerItem
-                key={service.id}
-                className={`border-b border-r border-white/10 ${
-                  index === 0 || index === 4 ? "lg:col-span-1" : ""
-                }`}
-              >
-                <button
-                  type="button"
-                  onClick={() => onSelectService(service)}
-                  onMouseEnter={() => setActiveDiscipline(service.id)}
-                  className={`group relative flex min-h-[310px] w-full flex-col justify-between overflow-hidden p-7 text-left backdrop-blur-md transition-all duration-500 sm:p-9 ${
-                    activeDiscipline === service.id
-                      ? "bg-[#181818]/90 border-t-2 border-t-[#D97724] shadow-2xl shadow-black/70 -translate-y-1.5"
-                      : "bg-[#101010]/60 hover:bg-[#181818]/85 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-black/60"
-                  } ${isMatch ? "opacity-100" : "opacity-45"}`}
+          <StaggerGrid
+            staggerDelay={0.06}
+            className="grid border-l border-white/10 sm:grid-cols-2 lg:grid-cols-3"
+          >
+            {services.map((service, index) => {
+              const isMatch =
+                activeDiscipline === "all" || activeDiscipline === service.id;
+              const cadNode = CAD_NODES.find((n) => n.disciplineId === service.id);
+
+              return (
+                <StaggerItem
+                  key={service.id}
+                  className={`border-b border-r border-white/10 ${
+                    index === 0 || index === 4 ? "lg:col-span-1" : ""
+                  }`}
                 >
-                  {/* Chromatic Edge Sweep Line on Hover / Active */}
-                  <div
-                    className={`absolute left-0 top-0 h-[2px] bg-gradient-to-r from-[#D97724] via-[#C6A779] to-[#F59E0B] transition-all duration-500 ease-out ${
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleSelectDiscipline(service.id);
+                      onSelectService(service);
+                    }}
+                    onMouseEnter={() => handleSelectDiscipline(service.id)}
+                    className={`group relative flex min-h-[225px] sm:min-h-[240px] lg:min-h-[250px] w-full flex-col justify-between overflow-hidden p-5 sm:p-6 lg:p-6 text-left backdrop-blur-md transition-all duration-400 cursor-pointer ${
                       activeDiscipline === service.id
-                        ? "w-full"
-                        : "w-0 group-hover:w-full"
-                    }`}
-                  />
+                        ? "bg-[#181818]/92 border-t-2 border-t-[#D97724] shadow-xl shadow-black/70 -translate-y-1"
+                        : "bg-[#101010]/60 hover:bg-[#181818]/85 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/60"
+                    } ${isMatch ? "opacity-100" : "opacity-55"}`}
+                  >
+                    {/* Chromatic Edge Sweep Line on Hover / Active */}
+                    <div
+                      className={`absolute left-0 top-0 h-[2px] bg-gradient-to-r from-[#D97724] via-[#C6A779] to-[#F59E0B] transition-all duration-500 ease-out ${
+                        activeDiscipline === service.id
+                          ? "w-full"
+                          : "w-0 group-hover:w-full"
+                      }`}
+                    />
 
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <span className="editorial-eyebrow text-[#B68A4A]">
-                        {service.code}
-                      </span>
+                    <div>
+                      {/* Top Header inside Card */}
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-[9px] sm:text-[9.5px] tracking-widest uppercase text-[#B68A4A]">
+                          {service.code}
+                        </span>
 
-                      <span className="font-mono text-xs text-white/40">
-                        0{index + 1}
-                      </span>
+                        <div className="flex items-center gap-2">
+                          {cadNode && activeDiscipline === service.id && (
+                            <span className="hidden sm:inline-block font-mono text-[8px] text-[#D97724] tracking-wider uppercase bg-[#D97724]/10 border border-[#D97724]/30 px-1.5 py-0.5 rounded">
+                              {cadNode.elevation}
+                            </span>
+                          )}
+                          <span className="font-mono text-[10px] text-white/40">
+                            0{index + 1}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Discipline Title */}
+                      <h3 className="mt-4 sm:mt-5 max-w-xs font-serif text-xl sm:text-2xl lg:text-[24px] font-normal leading-[1.1] text-[#F2F0EB] transition-transform duration-300 group-hover:translate-x-0.5">
+                        {service.title}
+                      </h3>
+
+                      {/* Discipline Tagline */}
+                      <p className="mt-2 text-xs sm:text-[13px] leading-relaxed text-[#A8A59E] line-clamp-2 sm:line-clamp-3">
+                        {service.tagline}
+                      </p>
                     </div>
 
-                    <h3 className="mt-10 max-w-xs font-serif text-3xl font-normal leading-[1.05] text-[#F2F0EB] transition-transform duration-500 group-hover:translate-x-1 sm:text-4xl">
-                      {service.title}
-                    </h3>
+                    {/* Bottom Action Footer */}
+                    <div className="mt-4 pt-3 flex items-center justify-between border-t border-white/10">
+                      <span className="text-[9px] font-medium uppercase tracking-[0.14em] text-white/60 transition-colors group-hover:text-[#B68A4A]">
+                        Explore Discipline
+                      </span>
 
-                    <p className="mt-4 max-w-sm text-sm leading-relaxed text-[#A8A59E]">
-                      {service.tagline}
-                    </p>
-                  </div>
-
-                  <div className="mt-10 flex items-center justify-between border-t border-white/10 pt-4">
-                    <span className="text-[10px] font-medium uppercase tracking-[0.15em] text-white/60 transition-colors group-hover:text-[#B68A4A]">
-                      Explore Discipline
-                    </span>
-
-                    <span
-                      className={`flex h-9 w-9 items-center justify-center rounded-full border transition-all duration-300 ${
-                        activeDiscipline === service.id
-                          ? "border-[#B68A4A] bg-[#B68A4A] text-white"
-                          : "border-white/20 text-white group-hover:border-[#B68A4A] group-hover:bg-[#B68A4A] group-hover:text-white"
-                      }`}
-                    >
-                      <ArrowUpRight
-                        size={16}
-                        className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                      />
-                    </span>
-                  </div>
-                </button>
-              </StaggerItem>
-            );
-          })}
-        </StaggerGrid>
+                      <span
+                        className={`flex h-7.5 w-7.5 sm:h-8 sm:w-8 items-center justify-center rounded-full border transition-all duration-300 ${
+                          activeDiscipline === service.id
+                            ? "border-[#B68A4A] bg-[#B68A4A] text-white shadow-md shadow-[#B68A4A]/30"
+                            : "border-white/20 text-white group-hover:border-[#B68A4A] group-hover:bg-[#B68A4A] group-hover:text-white"
+                        }`}
+                      >
+                        <ArrowUpRight
+                          size={14}
+                          className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                        />
+                      </span>
+                    </div>
+                  </button>
+                </StaggerItem>
+              );
+            })}
+          </StaggerGrid>
+        </div>
 
         {/* Closing Statement */}
-        <HairlineRule color="bg-white/15" className="mt-12" />
-        <div className="py-8 text-white/70">
-          <p className="font-serif text-2xl italic text-[#B8B5AD]">
+        <HairlineRule color="bg-white/15" className="mt-8 sm:mt-10" />
+        <div className="py-4 sm:py-5 flex flex-col sm:flex-row items-center justify-between gap-2 text-white/70 text-xs sm:text-[13px]">
+          <p className="font-serif text-lg sm:text-xl italic text-[#B8B5AD]">
             One vision. Multiple disciplines. A cohesive result.
           </p>
+          <span className="font-mono text-[9px] tracking-widest uppercase text-[#B68A4A]">
+            INTEGRATED PRACTICE · 1:1 TECTONIC EXECUTION
+          </span>
         </div>
       </div>
     </section>
