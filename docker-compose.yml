@@ -1,0 +1,68 @@
+version: '3.8'
+
+# ==============================================================================
+# ARCHÉON Design Studio — Full Stack Container Orchestration
+# Services: PostgreSQL 16 + Spring Boot Backend + Next.js Frontend
+# ==============================================================================
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: archeon-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-archeon_db}
+      POSTGRES_USER: ${POSTGRES_USER:-archeon_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-archeon_secure_password_2026}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-archeon_user} -d ${POSTGRES_DB:-archeon_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: archeon-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-archeon_db}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-archeon_user}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-archeon_secure_password_2026}
+      SPRING_DATASOURCE_DRIVER: org.postgresql.Driver
+      JWT_SECRET: ${JWT_SECRET:-404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+      PORT: 8080
+    ports:
+      - "8080:8080"
+    volumes:
+      - backend_uploads:/app/uploads
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: archeon-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      NODE_ENV: production
+      INTERNAL_BACKEND_URL: http://backend:8080
+      NEXT_PUBLIC_API_URL: /api
+      PORT: 3000
+    ports:
+      - "3000:3000"
+
+volumes:
+  postgres_data:
+    driver: local
+  backend_uploads:
+    driver: local

@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
+const backendUrl = process.env.INTERNAL_BACKEND_URL || "http://localhost:8080";
+
 const nextConfig: NextConfig = {
+  output: "standalone",
   reactStrictMode: false,
   experimental: {
     cpus: 2,
@@ -9,7 +12,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination: "http://localhost:8080/api/:path*",
+        destination: `${backendUrl}/api/:path*`,
       },
     ];
   },
