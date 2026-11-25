@@ -518,90 +518,170 @@ export function AdminWebsiteProjectList() {
       {/* TAB 2: STUDIO MANIFESTO & PHILOSOPHY */}
       {activeTab === "manifesto" && (
         <div className="rounded-sm border border-[#D8D6D0] bg-white p-6 sm:p-8 space-y-6">
-          <div>
-            <span className="font-mono text-[9px] uppercase tracking-widest text-[#9F7947] font-semibold">
-              Live Homepage Section: 01 / The Studio
-            </span>
-            <h2 className="font-serif text-2xl text-[#111111] mt-1">
-              Studio Philosophy & Architectural Manifesto
-            </h2>
-            <p className="text-xs text-[#77736C] mt-1">
-              Edit the mission statement, headline, and philosophy paragraphs showcased in the interactive Studio 3D section on the website.
-            </p>
+          <div className="border-b border-[#EFECE6] pb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+            <div>
+              <span className="font-mono text-[9px] uppercase tracking-widest text-[#9F7947] font-semibold">
+                Live Homepage Section: 01 / The Studio
+              </span>
+              <h2 className="font-serif text-2xl text-[#111111] mt-1">
+                Studio Philosophy &amp; Architectural Manifesto
+              </h2>
+              <p className="text-xs text-[#77736C] mt-1">
+                Edit the mission statement, headline, and philosophy paragraphs showcased in the interactive Studio 3D section on the website.
+              </p>
+            </div>
+            <a
+              href="/#studio"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 border border-[#D8D6D0] bg-[#FAF9F6] px-3 py-1.5 font-mono text-[9px] uppercase tracking-wider text-[#33312D] hover:border-[#171717] transition-colors rounded-sm shrink-0"
+            >
+              <ExternalLink size={11} /> View Studio Section Live
+            </a>
           </div>
 
-          <form onSubmit={handleSaveManifesto} className="space-y-5">
-            <div>
-              <label className="block font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
-                Manifesto Section Title
-              </label>
-              <input
-                type="text"
-                value={manifesto.title}
-                onChange={(e) => setManifesto({ ...manifesto, title: e.target.value })}
-                className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
-              />
-            </div>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            {/* LEFT: Manifesto Edit Form */}
+            <form onSubmit={handleSaveManifesto} className="lg:col-span-7 space-y-5">
+              <div>
+                <label className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-[#171717] font-semibold">
+                  <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#171717] text-[10px] text-white">
+                    1
+                  </span>
+                  Manifesto Section Title
+                </label>
+                <p className="ml-7 text-[11px] text-[#77736C]">
+                  Top label for the Studio Philosophy &amp; Manifesto popup
+                </p>
+                <input
+                  type="text"
+                  value={manifesto.title}
+                  onChange={(e) => setManifesto({ ...manifesto, title: e.target.value })}
+                  className="mt-1.5 w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:bg-white focus:outline-none"
+                />
+              </div>
 
-            <div>
-              <label className="block font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
-                Primary Headline / Architectural Creed
-              </label>
-              <textarea
-                rows={2}
-                value={manifesto.headline}
-                onChange={(e) => setManifesto({ ...manifesto, headline: e.target.value })}
-                className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
-              />
-            </div>
+              <div>
+                <label className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-[#171717] font-semibold">
+                  <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#171717] text-[10px] text-white">
+                    2
+                  </span>
+                  Primary Headline / Architectural Creed
+                </label>
+                <p className="ml-7 text-[11px] text-[#77736C]">
+                  Quoted statement displayed inside the &ldquo;Philosophy&rdquo; tab on the Studio card
+                </p>
+                <textarea
+                  rows={2}
+                  value={manifesto.headline}
+                  onChange={(e) => setManifesto({ ...manifesto, headline: e.target.value })}
+                  className="mt-1.5 w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:bg-white focus:outline-none"
+                />
+              </div>
 
-            <div className="space-y-3">
-              <label className="block font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
-                Philosophy Paragraphs (Showcased under Approach & Principles)
-              </label>
-              {manifestoParagraphs.map((para, idx) => (
-                <div key={idx} className="flex gap-2 items-start">
-                  <span className="font-mono text-xs text-[#A58A64] pt-2">0{idx + 1}.</span>
-                  <textarea
-                    rows={2}
-                    value={para}
-                    onChange={(e) => {
-                      const updated = [...manifestoParagraphs];
-                      updated[idx] = e.target.value;
-                      setManifestoParagraphs(updated);
-                    }}
-                    className="w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setManifestoParagraphs(manifestoParagraphs.filter((_, i) => i !== idx));
-                    }}
-                    className="p-2 text-[#77736C] hover:text-red-600"
-                  >
-                    <Trash2 size={16} />
-                  </button>
+              <div className="space-y-3">
+                <div>
+                  <label className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-[#171717] font-semibold">
+                    <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#171717] text-[10px] text-white">
+                      3
+                    </span>
+                    Philosophy Paragraphs (Approach &amp; Principles)
+                  </label>
+                  <p className="ml-7 text-[11px] text-[#77736C]">
+                    Numbered paragraphs shown under &ldquo;Approach&rdquo; and &ldquo;Principles&rdquo; in the Studio section
+                  </p>
                 </div>
-              ))}
-              <button
-                type="button"
-                onClick={() => setManifestoParagraphs([...manifestoParagraphs, "New architectural philosophy paragraph."])}
-                className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase text-[#A58A64] hover:underline"
-              >
-                <Plus size={12} /> Add Paragraph
-              </button>
-            </div>
+                {manifestoParagraphs.map((para, idx) => (
+                  <div key={idx} className="flex gap-2 items-start">
+                    <span className="font-mono text-xs text-[#A58A64] pt-2">0{idx + 1}.</span>
+                    <textarea
+                      rows={2}
+                      value={para}
+                      onChange={(e) => {
+                        const updated = [...manifestoParagraphs];
+                        updated[idx] = e.target.value;
+                        setManifestoParagraphs(updated);
+                      }}
+                      className="w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:bg-white focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setManifestoParagraphs(manifestoParagraphs.filter((_, i) => i !== idx));
+                      }}
+                      className="p-2 text-[#77736C] hover:text-red-600 cursor-pointer"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setManifestoParagraphs([...manifestoParagraphs, "New architectural philosophy paragraph."])}
+                  className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase text-[#A58A64] hover:underline cursor-pointer"
+                >
+                  <Plus size={12} /> Add Paragraph
+                </button>
+              </div>
 
-            <div className="pt-4 border-t border-[#D8D6D0]">
-              <button
-                type="submit"
-                disabled={savingManifesto}
-                className="inline-flex items-center gap-2 bg-[#171717] px-6 py-2.5 font-mono text-xs uppercase tracking-wider text-white hover:bg-[#A58A64] transition-colors rounded-sm shadow-xs"
-              >
-                <Save size={14} /> {savingManifesto ? "Saving..." : "Save Manifesto to Website"}
-              </button>
+              <div className="pt-4 border-t border-[#D8D6D0]">
+                <button
+                  type="submit"
+                  disabled={savingManifesto}
+                  className="inline-flex items-center gap-2 bg-[#171717] px-6 py-2.5 font-mono text-xs uppercase tracking-wider text-white hover:bg-[#A58A64] transition-colors rounded-sm shadow-xs cursor-pointer"
+                >
+                  <Save size={14} /> {savingManifesto ? "Saving..." : "Save Manifesto to Website"}
+                </button>
+              </div>
+            </form>
+
+            {/* RIGHT: Visual Reference Screenshot of Live Studio Section */}
+            <div className="lg:col-span-5 lg:sticky lg:top-6">
+              <div className="rounded-sm border border-[#D8D6D0] bg-[#F2F0EB] p-4 space-y-3">
+                <div className="flex items-center justify-between border-b border-[#D8D6D0] pb-2">
+                  <span className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-[#9F7947] font-semibold">
+                    <Eye size={12} /> Reference: 01 / The Studio
+                  </span>
+                  <span className="font-mono text-[9px] text-[#77736C]">
+                    Live Homepage Section
+                  </span>
+                </div>
+
+                <a
+                  href="/#studio"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Click to open this section on the live website"
+                  className="group relative block aspect-[4/3] w-full overflow-hidden rounded-xs border border-[#C6A779]/50 bg-[#FAF9F6]"
+                >
+                  <Image
+                    src="/references/studio-philosophy-reference.png"
+                    alt="Reference screenshot of the 01 / The Studio Philosophy section on the live website"
+                    fill
+                    className="object-cover object-left transition-transform duration-500 group-hover:scale-[1.02]"
+                  />
+                  <span className="absolute bottom-2 right-2 rounded-xs bg-black/75 px-2 py-1 font-mono text-[9px] uppercase tracking-wider text-white group-hover:bg-[#A58A64] transition-colors">
+                    Open Section Live ↗
+                  </span>
+                </a>
+
+                <div className="space-y-1.5 rounded-xs border border-[#E4E1DA] bg-white/85 p-3 text-[11px] text-[#55514A]">
+                  <p className="font-mono text-[9px] uppercase tracking-wider text-[#9F7947] font-semibold">
+                    Where each field appears:
+                  </p>
+                  <p>
+                    <span className="font-mono font-semibold text-[#171717]">1 · Title:</span> Top eyebrow of the Philosophy &amp; Manifesto modal.
+                  </p>
+                  <p>
+                    <span className="font-mono font-semibold text-[#171717]">2 · Headline:</span> The quoted statement shown on the left card under <em>Philosophy</em>.
+                  </p>
+                  <p>
+                    <span className="font-mono font-semibold text-[#171717]">3 · Paragraphs:</span> The copy shown when visitors switch to <em>Approach</em> &amp; <em>Principles</em> beside the 3D Villa model.
+                  </p>
+                </div>
+              </div>
             </div>
-          </form>
+          </div>
         </div>
       )}
 
