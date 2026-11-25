@@ -1392,12 +1392,21 @@ function VendorCard({
       </div>
 
       <div className="mt-4 rounded-sm bg-[#FAF9F6] p-3 text-xs">
-        <span className="font-mono text-[9px] uppercase tracking-widest text-[#99958D]">Associated Clients: </span>
-        <span className="font-medium text-[#171717]">
-          {vendor.associatedClients && vendor.associatedClients.length > 0
-            ? vendor.associatedClients.join(", ")
-            : "No active clients linked yet"}
-        </span>
+        <p className="font-mono text-[9px] uppercase tracking-widest text-[#99958D]">
+          Associated Clients:
+        </p>
+        {vendor.associatedClients && vendor.associatedClients.length > 0 ? (
+          <ul className="mt-1.5 space-y-1 font-medium text-[#171717]">
+            {vendor.associatedClients.map((clientName, idx) => (
+              <li key={`${clientName}-${idx}`} className="flex items-center gap-2">
+                <span className="h-1 w-1 rounded-full bg-[#A58A64] shrink-0" />
+                <span>{clientName}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-1 font-medium text-[#77736C]">No active clients linked yet</p>
+        )}
       </div>
 
       <div className="mt-6 flex flex-col justify-between gap-4 border-t border-[#E5E2DC] pt-5 sm:flex-row sm:items-center">
