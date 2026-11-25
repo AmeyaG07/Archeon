@@ -354,8 +354,8 @@ export function VendorPortalDashboard({
         </section>
 
         {/* Invoices */}
-        <section className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-12">
-          <div className="lg:col-span-8">
+        <section className="mt-10">
+          <div>
             <div className="flex items-end justify-between gap-4 border-b border-[#D8D6D0] pb-5">
               <div>
                 <p className="font-mono text-[10px] uppercase tracking-widest text-[#A58A64]">
@@ -418,44 +418,6 @@ export function VendorPortalDashboard({
               </div>
             )}
           </div>
-
-          {/* Quick Access */}
-          <aside className="lg:col-span-3 lg:col-start-10">
-            <p className="font-mono text-[10px] uppercase tracking-widest text-[#A58A64]">
-              Vendor Workspace
-            </p>
-
-            <h2 className="mt-3 font-serif text-3xl text-[#171717]">
-              Quick Access
-            </h2>
-
-            <div className="mt-7 space-y-3">
-              <QuickAccessItem
-                icon={<Building2 size={19} />}
-                title="My Projects"
-                description="View assigned work"
-                onClick={onOpenProjects}
-              />
-
-              <QuickAccessItem
-                icon={<Receipt size={19} />}
-                title="My Invoices"
-                description="Review submitted invoices"
-                onClick={onOpenInvoices}
-              />
-
-              <QuickAccessItem
-                icon={<FolderOpen size={19} />}
-                title="Project Documents"
-                description="Access authorised files"
-                onClick={onOpenDocuments}
-              />
-            </div>
-
-            <div className="mt-7 border border-[#D8D6D0] bg-white p-6">
-              <ShieldNotice />
-            </div>
-          </aside>
         </section>
 
         {/* Recent Activity */}
@@ -542,60 +504,6 @@ function OverviewCard({
         {value}
       </p>
     </div>
-  );
-}
-
-function QuickAccessItem({
-  icon,
-  title,
-  description,
-  onClick,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex w-full items-center gap-4 border border-[#D8D6D0] bg-white p-5 text-left transition-colors hover:border-[#A58A64]"
-    >
-      <span className="shrink-0 text-[#A58A64]">{icon}</span>
-
-      <span className="min-w-0 flex-1">
-        <span className="block text-sm text-[#171717]">
-          {title}
-        </span>
-
-        <span className="mt-1 block text-[10px] leading-5 text-[#99958D]">
-          {description}
-        </span>
-      </span>
-
-      <ArrowUpRight
-        size={16}
-        className="shrink-0 text-[#99958D]"
-      />
-    </button>
-  );
-}
-
-function ShieldNotice() {
-  return (
-    <>
-      <CheckCircle2 size={21} className="text-[#A58A64]" />
-
-      <h3 className="mt-4 font-serif text-xl text-[#171717]">
-        Secure Vendor Access
-      </h3>
-
-      <p className="mt-3 text-xs leading-6 text-[#77736C]">
-        Your account provides access only to projects, documents
-        and financial records authorised for your organisation.
-      </p>
-    </>
   );
 }
 

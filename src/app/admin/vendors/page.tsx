@@ -53,11 +53,16 @@ export default function AdminVendorsPage() {
       const res = await apiFetch("/api/vendors");
       const list = await res.json();
 
-      // Fetch vendors directory with billing totals & associated clients
+      // Fetch vendors directory with billing totals & associated clients, plus direct bills list
       let billingDirectory: any[] = [];
+      let allBills: any[] = [];
       try {
-        const bRes = await apiFetch("/api/billing/vendors-directory");
+        const [bRes, billsRes] = await Promise.all([
+          apiFetch("/api/billing/vendors-directory"),
+          apiFetch("/api/billing/bills").catch(() => null),
+        ]);
         billingDirectory = await bRes.json();
+        allBills = billsRes && billsRes.ok ? await billsRes.json().catch(() => []) : [];
       } catch (bErr) {
         console.warn("Could not load billing directory:", bErr);
       }
@@ -75,6 +80,30 @@ export default function AdminVendorsPage() {
           const vId = (v.id || "").toString().toLowerCase();
           const vRef = (v.vendorReference || v.reference || "").toString().toLowerCase();
           const bInfo = billingMap.get(vId) || billingMap.get(vRef) || {};
+          const directBills = Array.isArray(allBills)
+            ? allBills
+                .filter((b: any) => {
+                  const bVendorId = (b.vendorId || "").toString().toLowerCase();
+                  return bVendorId && (bVendorId === vId || (vRef && bVendorId === vRef));
+                })
+                .map((b: any) => ({
+                  id: String(b.id || b.billId || ""),
+                  billId: b.billId || "",
+                  invoiceNumber: b.invoiceNumber || b.billId || "BILL",
+                  projectName: b.projectId || "Studio Project",
+                  amount: Number(b.amount || 0),
+                  paidAmount: Number(b.paidAmount || 0),
+                  outstandingAmount: Math.max(0, Number(b.amount || 0) - Number(b.paidAmount || 0)),
+                  status: b.status || "PENDING_PRIMARY",
+                  createdAt: b.createdAt || new Date().toISOString(),
+                  billPhotoUrl: b.billPhotoUrl || undefined,
+                  tradeCategory: b.tradeCategory || v.category || "",
+                }))
+            : [];
+          const resolvedBills =
+            Array.isArray(bInfo.bills) && bInfo.bills.length > 0 ? bInfo.bills : directBills;
+          const computedBilled = resolvedBills.reduce((sum: number, b: any) => sum + Number(b.amount || 0), 0);
+          const computedSettled = resolvedBills.reduce((sum: number, b: any) => sum + Number(b.paidAmount || 0), 0);
           return {
             id: v.id || "",
             reference: v.vendorReference || v.reference || "VEN",
@@ -100,13 +129,14 @@ export default function AdminVendorsPage() {
               name: p.name || "",
               status: (p.status || "Under Execution") as any,
             })),
-            submittedInvoiceCount: bInfo.totalBillsCount || bInfo.activeBillsCount || 0,
-            outstandingInvoiceCount: 0,
-            totalBilledAmount: bInfo.totalBilledAmount || 0,
-            totalSettledAmount: bInfo.totalSettledAmount || 0,
+            submittedInvoiceCount: bInfo.totalBillsCount || bInfo.activeBillsCount || resolvedBills.length || 0,
+            outstandingInvoiceCount: resolvedBills.filter((b: any) => Number(b.amount || 0) > Number(b.paidAmount || 0)).length,
+            totalBilledAmount: bInfo.totalBilledAmount || computedBilled,
+            totalSettledAmount: bInfo.totalSettledAmount || computedSettled,
             associatedClients: bInfo.associatedClientNames || bInfo.associatedClients || v.associatedClientNames || [],
             createdAt: v.createdAt || new Date().toISOString(),
             lastUpdated: v.updatedAt || new Date().toISOString(),
+            bills: resolvedBills,
           };
         });
         setVendors(records);

@@ -1312,51 +1312,6 @@ export function VillaLumiereBackground({
           `,
         }}
       />
-
-      {/* 2D Projected Floating Architectural Floor Callouts */}
-      <div className="pointer-events-none absolute inset-0 z-20 overflow-hidden">
-        {callouts.map((c) => (
-          <div
-            key={c.id}
-            style={{
-              transform: `translate3d(${c.x}px, ${c.y - 12}px, 0)`,
-              opacity: c.visible ? 1 : 0,
-            }}
-            className={`absolute top-0 left-0 flex items-center transition-all duration-300 will-change-transform pointer-events-auto cursor-pointer group ${
-              c.highlight ? "scale-105 z-30" : "opacity-75 scale-95"
-            }`}
-          >
-            <span
-              className={`rounded-full transition-all duration-300 ${
-                c.highlight
-                  ? "h-2.5 w-2.5 bg-[#D97724] ring-4 ring-[#D97724]/30 shadow-md"
-                  : "h-2 w-2 bg-[#B68A4A] ring-2 ring-[#B68A4A]/20"
-              }`}
-            />
-            <span
-              className={`h-[1px] w-6 transition-colors duration-300 ${
-                c.highlight ? "bg-[#D97724]" : "bg-[#B68A4A]/60"
-              }`}
-            />
-            <div
-              className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-[9px] font-medium tracking-widest text-[#23211E] uppercase backdrop-blur-md transition-all duration-300 ${
-                c.highlight
-                  ? "border-[#D97724]/50 bg-white/95 text-[#111111] shadow-xl ring-1 ring-[#D97724]/20 scale-105"
-                  : "border-stone-800/10 bg-[#FCFBF8]/85 text-stone-600 shadow-sm"
-              }`}
-            >
-              <span
-                className={`font-bold transition-colors ${
-                  c.highlight ? "text-[#D97724]" : "text-[#B68A4A]"
-                }`}
-              >
-                {c.num}
-              </span>
-              <span>— {c.name}</span>
-            </div>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }

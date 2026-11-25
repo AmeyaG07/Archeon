@@ -39,6 +39,9 @@ public class BillingExpenseService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired(required = false)
+    private InvoiceRepository invoiceRepository;
+
     @Autowired
     private WhatsAppAutomationService whatsAppService;
 
@@ -306,15 +309,52 @@ public class BillingExpenseService {
         if (auth == null || !auth.isAuthenticated()) {
             throw new AccessDeniedException("Authentication required");
         }
-        BillApprovalEntity bill = findBillByIdOrBillId(billId);
-        if (paymentProofUrl != null && !paymentProofUrl.isBlank()) {
-            bill.setPaymentProofUrl(paymentProofUrl);
+        try {
+            BillApprovalEntity bill = findBillByIdOrBillId(billId);
+            if (paymentProofUrl != null && !paymentProofUrl.isBlank()) {
+                bill.setPaymentProofUrl(paymentProofUrl);
+            }
+            bill.setStatus("PAID_ONLINE");
+            bill.setPaidAmount(bill.getAmount());
+            bill.setPaidAt(LocalDateTime.now());
+            bill.setUpdatedAt(LocalDateTime.now());
+            return billRepository.save(bill);
+        } catch (IllegalArgumentException notFoundInBills) {
+            if (invoiceRepository != null) {
+                Optional<InvoiceEntity> invOpt = Optional.empty();
+                try {
+                    invOpt = invoiceRepository.findById(UUID.fromString(billId));
+                } catch (IllegalArgumentException ignored) {
+                    // Not a UUID; try invoice number lookup below
+                }
+                if (invOpt.isEmpty()) {
+                    invOpt = invoiceRepository.findByInvoiceNumber(billId);
+                }
+                if (invOpt.isPresent()) {
+                    InvoiceEntity inv = invOpt.get();
+                    inv.setPaidAmount(inv.getTotalAmount());
+                    inv.setStatus("PAID");
+                    inv.setUpdatedAt(LocalDateTime.now());
+                    invoiceRepository.save(inv);
+
+                    return BillApprovalEntity.builder()
+                            .billId(inv.getInvoiceNumber())
+                            .invoiceNumber(inv.getInvoiceNumber())
+                            .amount(inv.getTotalAmount())
+                            .paidAmount(inv.getTotalAmount())
+                            .currency("INR")
+                            .vendorId("STUDIO")
+                            .clientId(inv.getClient() != null && inv.getClient().getId() != null ? inv.getClient().getId().toString() : null)
+                            .projectId(inv.getProjectId() != null ? inv.getProjectId() : "STUDIO")
+                            .initiatorId(auth.getName())
+                            .status("PAID_ONLINE")
+                            .paymentProofUrl(paymentProofUrl)
+                            .paidAt(LocalDateTime.now())
+                            .build();
+                }
+            }
+            throw notFoundInBills;
         }
-        bill.setStatus("PAID_ONLINE");
-        bill.setPaidAmount(bill.getAmount());
-        bill.setPaidAt(LocalDateTime.now());
-        bill.setUpdatedAt(LocalDateTime.now());
-        return billRepository.save(bill);
     }
 
     @Transactional

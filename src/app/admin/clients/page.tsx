@@ -51,16 +51,27 @@ export default function AdminClientsPage() {
     setLoading(true);
     setError(null);
     try {
-      const [cRes, pRes] = await Promise.all([
+      const [cRes, pRes, bRes] = await Promise.all([
         apiFetch("/api/clients"),
         apiFetch("/api/operational-projects").catch(() => null),
+        apiFetch("/api/billing/bills").catch(() => null),
       ]);
       const list = await cRes.json();
       const allProjects = pRes && pRes.ok ? await pRes.json().catch(() => []) : [];
+      const allBills = bRes && bRes.ok ? await bRes.json().catch(() => []) : [];
+
+      const projectNameMap = new Map<string, string>();
+      if (Array.isArray(allProjects)) {
+        allProjects.forEach((p: any) => {
+          if (p.id) projectNameMap.set(String(p.id).toLowerCase(), p.name || "Project");
+          if (p.projectReference) projectNameMap.set(String(p.projectReference).toLowerCase(), p.name || "Project");
+        });
+      }
 
       if (Array.isArray(list)) {
         const records: AdminClientRecord[] = list.map((c: any) => {
           const cId = (c.id || "").toLowerCase();
+          const cRef = (c.clientReference || c.reference || "").toLowerCase();
           const cName = (c.fullName || c.name || "").trim().toLowerCase();
           const linked = Array.isArray(allProjects)
             ? allProjects.filter((p: any) => {
@@ -68,6 +79,39 @@ export default function AdminClientsPage() {
                 const pClientName = (p.clientName || "").trim().toLowerCase();
                 return (pClientId && pClientId === cId) || (pClientName && pClientName === cName);
               })
+            : [];
+
+          const linkedProjectKeys = new Set(
+            linked.flatMap((p: any) => [
+              (p.id || "").toString().toLowerCase(),
+              (p.projectReference || p.reference || "").toString().toLowerCase(),
+            ]).filter(Boolean)
+          );
+
+          const clientBills = Array.isArray(allBills)
+            ? allBills
+                .filter((b: any) => {
+                  const bClientId = (b.clientId || "").toString().toLowerCase();
+                  const bProjectId = (b.projectId || "").toString().toLowerCase();
+                  return (
+                    (bClientId && (bClientId === cId || (cRef && bClientId === cRef))) ||
+                    (bProjectId && linkedProjectKeys.has(bProjectId))
+                  );
+                })
+                .map((b: any) => ({
+                  id: String(b.id || b.billId || ""),
+                  billId: b.billId || "",
+                  invoiceNumber: b.invoiceNumber || b.billId || "BILL",
+                  projectId: b.projectId || "",
+                  projectName: projectNameMap.get((b.projectId || "").toString().toLowerCase()) || b.projectId || "Studio Project",
+                  vendorId: b.vendorId || "",
+                  tradeCategory: b.tradeCategory || "",
+                  amount: Number(b.amount || 0),
+                  paidAmount: Number(b.paidAmount || 0),
+                  status: b.status || "PENDING_PRIMARY",
+                  createdAt: b.createdAt || new Date().toISOString(),
+                  billPhotoUrl: b.billPhotoUrl || undefined,
+                }))
             : [];
 
           return {
@@ -103,6 +147,7 @@ export default function AdminClientsPage() {
                 ? "Completed"
                 : "Under Design") as any,
             })),
+            bills: clientBills,
           };
         });
         setClients(records);

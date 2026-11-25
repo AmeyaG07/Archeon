@@ -28,6 +28,7 @@ import {
   ExternalLink,
   Receipt,
 } from "lucide-react";
+import { BillPhotoModal, type BillPhotoTarget } from "@/components/portal/admin/BillPhotoModal";
 
 export type AdminVendorStatus =
   | "Active"
@@ -306,6 +307,7 @@ export function AdminVendorManagement({
 
   const [selectedVendor, setSelectedVendor] =
     useState<AdminVendorRecord | null>(null);
+  const [previewBill, setPreviewBill] = useState<BillPhotoTarget | null>(null);
 
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState("");
@@ -391,6 +393,10 @@ export function AdminVendorManagement({
   }
 
   function openVendor(vendor: AdminVendorRecord) {
+    if (selectedVendor?.id === vendor.id) {
+      setSelectedVendor(null);
+      return;
+    }
     setSelectedVendor(vendor);
     setActionError("");
     const defaultUsername = vendor.email
@@ -557,732 +563,291 @@ export function AdminVendorManagement({
           </div>
         ) : (
           <div className="mt-5 space-y-3">
-            {filteredVendors.map((vendor) => (
-              <VendorCard
-                key={vendor.id}
-                vendor={vendor}
-                onOpen={() => openVendor(vendor)}
-              />
-            ))}
+            {filteredVendors.map((vendor) => {
+              const isExpanded = selectedVendor?.id === vendor.id;
+              return (
+                <VendorCard
+                  key={vendor.id}
+                  vendor={vendor}
+                  isExpanded={isExpanded}
+                  onOpen={() => openVendor(vendor)}
+                  expandedContent={
+                    isExpanded && selectedVendor ? (
+                      <div className="mt-4 space-y-4 border-t border-[#D8D6D0] pt-4">
+                        {/* 1. Financial Relationship & Bills List */}
+                        <section className="border border-[#D8D6D0] bg-[#FAF9F6] p-4">
+                          <div className="flex flex-wrap items-center justify-between gap-3">
+                            <div className="flex items-center gap-2">
+                              <Receipt size={14} className="text-[#A58A64]" />
+                              <h4 className="font-serif text-base text-[#171717]">
+                                Bills &amp; Vouchers ({(selectedVendor.bills || []).length})
+                              </h4>
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-4 font-mono text-[10px]">
+                              <span className="text-[#77736C]">
+                                Billed: <strong className="text-[#171717]">{formatCurrency(selectedVendor.totalBilledAmount || 0)}</strong>
+                              </span>
+                              <span className="text-[#77736C]">
+                                Settled: <strong className="text-emerald-700">{formatCurrency(selectedVendor.totalSettledAmount || 0)}</strong>
+                              </span>
+                              <span className="text-[#77736C]">
+                                Bal: <strong className="text-[#A58A64]">{formatCurrency(Math.max(0, (selectedVendor.totalBilledAmount || 0) - (selectedVendor.totalSettledAmount || 0)))}</strong>
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="mt-3">
+                            {(!selectedVendor.bills || selectedVendor.bills.length === 0) ? (
+                              <div className="border border-[#E5E2DC] bg-white px-4 py-3 text-center text-xs text-[#77736C]">
+                                No bills recorded for this trade partner yet.
+                              </div>
+                            ) : (
+                              <div className="divide-y divide-[#E5E2DC] border border-[#D8D6D0] bg-white">
+                                {selectedVendor.bills.map((bill) => (
+                                  <div
+                                    key={bill.id}
+                                    role="button"
+                                    tabIndex={0}
+                                    onClick={() => setPreviewBill(bill)}
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter" || e.key === " ") {
+                                        e.preventDefault();
+                                        setPreviewBill(bill);
+                                      }
+                                    }}
+                                    className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-x-4 gap-y-1.5 px-4 py-2.5 text-xs hover:bg-[#FAF9F6] transition-colors cursor-pointer"
+                                  >
+                                    <div className="flex min-w-0 flex-wrap items-center gap-2.5">
+                                      <span className="font-mono text-xs font-semibold text-[#171717]">
+                                        {bill.invoiceNumber || bill.billId || "BILL"}
+                                      </span>
+                                      {bill.tradeCategory && (
+                                        <span className="font-mono text-[10px] uppercase tracking-wider text-[#A58A64] bg-[#F4EFE2] px-2 py-0.5">
+                                          {bill.tradeCategory}
+                                        </span>
+                                      )}
+                                      <span className="text-xs text-[#555] truncate max-w-[220px]">
+                                        {bill.projectName || "Studio Project"}
+                                      </span>
+                                      <span className="text-xs text-[#888]">
+                                        · {formatDate(bill.createdAt)}
+                                      </span>
+                                    </div>
+
+                                    <div className="flex items-center gap-3 shrink-0">
+                                      <span
+                                        className={`px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider ${
+                                          bill.status === "Paid"
+                                            ? "bg-[#EAF1E8] text-[#547A51]"
+                                            : bill.status === "Approved"
+                                            ? "bg-[#EAEFF5] text-[#526C8A]"
+                                            : "bg-[#F4EFE2] text-[#94743F]"
+                                        }`}
+                                      >
+                                        {bill.status}
+                                      </span>
+                                      <span className="font-mono text-xs font-semibold text-[#171717]">
+                                        {formatCurrency(bill.amount)}
+                                      </span>
+                                      {bill.outstandingAmount !== undefined && bill.outstandingAmount > 0 && bill.outstandingAmount < bill.amount && (
+                                        <span className="font-mono text-[10px] text-[#A58A64]">
+                                          (Bal: {formatCurrency(bill.outstandingAmount)})
+                                        </span>
+                                      )}
+                                      {bill.billPhotoUrl && (
+                                        <a
+                                          href={bill.billPhotoUrl}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          onClick={(e) => e.stopPropagation()}
+                                          title="View Upload"
+                                          className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-[#A58A64] hover:underline"
+                                        >
+                                          <ExternalLink size={11} />
+                                        </a>
+                                      )}
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          printBillVoucher(bill, selectedVendor);
+                                        }}
+                                        className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-[#171717] hover:text-[#A58A64] transition-colors"
+                                      >
+                                        <FileText size={11} /> Print
+                                      </button>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </section>
+
+                        {/* 2. Two-column equal-height details: Vendor Account + Assigned Projects */}
+                        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 items-stretch">
+                          <section className="flex flex-col justify-between border border-[#D8D6D0] bg-[#FAF9F6] p-4">
+                            <div>
+                              <div className="flex items-center justify-between gap-2">
+                                <SectionHeading>Vendor Account</SectionHeading>
+                                <span
+                                  className={`px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider ${vendorStatusStyle(selectedVendor.status)}`}
+                                >
+                                  {selectedVendor.status}
+                                </span>
+                              </div>
+
+                              <label className="mt-3 block">
+                                <span className="mb-1.5 block font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
+                                  Update Vendor Status
+                                </span>
+                                <select
+                                  value={selectedVendor.status}
+                                  disabled={actionLoading || updatingVendorId === selectedVendor.id}
+                                  onChange={(event) => {
+                                    const status = event.target.value as AdminVendorStatus;
+                                    void runAction(() => onUpdateVendorStatus(selectedVendor.id, status));
+                                  }}
+                                  className="h-9 w-full border border-[#D8D6D0] bg-white px-3 text-xs outline-none focus:border-[#A58A64]"
+                                >
+                                  {VENDOR_STATUSES.map((status) => (
+                                    <option key={status} value={status}>
+                                      {status}
+                                    </option>
+                                  ))}
+                                </select>
+                              </label>
+                            </div>
+
+                            <div className="mt-4 grid grid-cols-2 gap-3 border-t border-[#E5E2DC] pt-3">
+                              <div className="border border-[#E5E2DC] bg-white px-3 py-2">
+                                <p className="font-mono text-[10px] uppercase tracking-wider text-[#99958D]">Created</p>
+                                <p className="mt-0.5 text-xs text-[#33312D]">{formatDate(selectedVendor.createdAt)}</p>
+                              </div>
+                              <div className="border border-[#E5E2DC] bg-white px-3 py-2">
+                                <p className="font-mono text-[10px] uppercase tracking-wider text-[#99958D]">Last Updated</p>
+                                <p className="mt-0.5 text-xs text-[#33312D]">{formatDate(selectedVendor.lastUpdated)}</p>
+                              </div>
+                            </div>
+                          </section>
+
+                          <section className="flex flex-col border border-[#D8D6D0] bg-[#FAF9F6] p-4">
+                            <div className="flex items-center justify-between border-b border-[#E5E2DC] pb-2.5">
+                              <SectionHeading>Assigned Projects</SectionHeading>
+                              <p className="font-mono text-[10px] uppercase tracking-wider text-[#99958D]">
+                                {selectedVendor.linkedProjects.length} Projects
+                              </p>
+                            </div>
+
+                            {selectedVendor.linkedProjects.length === 0 ? (
+                              <div className="mt-3 flex flex-1 items-center justify-center border border-[#E5E2DC] bg-white p-4 text-center text-xs text-[#77736C]">
+                                No projects are assigned to this vendor.
+                              </div>
+                            ) : (
+                              <div className="mt-3 divide-y divide-[#E5E2DC] border border-[#D8D6D0] bg-white">
+                                {selectedVendor.linkedProjects.map((project) => (
+                                  <button
+                                    key={project.id}
+                                    type="button"
+                                    disabled={!onOpenProject}
+                                    onClick={() => onOpenProject?.(project.id)}
+                                    className="flex w-full items-center justify-between gap-3 px-3.5 py-2.5 text-left hover:bg-[#FAF9F6] disabled:cursor-default"
+                                  >
+                                    <span className="min-w-0 flex items-center gap-2.5">
+                                      <span className="font-mono text-[10px] uppercase tracking-wider text-[#A58A64]">
+                                        {project.reference}
+                                      </span>
+                                      <span className="text-xs font-medium text-[#171717] truncate">
+                                        {project.name}
+                                      </span>
+                                    </span>
+                                    <span className="flex items-center gap-1.5 shrink-0 font-mono text-[10px] text-[#77736C]">
+                                      {project.status}
+                                      <ArrowUpRight size={12} className="text-[#A58A64]" />
+                                    </span>
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </section>
+                        </div>
+
+                        {actionError && (
+                          <div
+                            role="alert"
+                            className="border border-[#E3C9C5] bg-[#FAF3F1] p-3 text-xs text-[#805B55]"
+                          >
+                            {actionError}
+                          </div>
+                        )}
+
+                        {/* Inline Action Bar */}
+                        <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            {onEditVendor && (
+                              <button
+                                type="button"
+                                onClick={() => onEditVendor(selectedVendor)}
+                                disabled={actionLoading}
+                                className="inline-flex items-center gap-1 bg-[#171717] px-2 py-1 font-mono text-[7px] uppercase tracking-widest text-white hover:bg-[#A58A64] transition-colors"
+                              >
+                                <Edit3 size={9} />
+                                Edit Details
+                              </button>
+                            )}
+                            {onManagePaymentSettings && (
+                              <button
+                                type="button"
+                                onClick={() => onManagePaymentSettings(selectedVendor)}
+                                disabled={actionLoading}
+                                className="inline-flex items-center gap-1 border border-[#B68A4A] bg-white px-2 py-1 font-mono text-[7px] uppercase tracking-widest text-[#B68A4A] hover:bg-[#B68A4A] hover:text-white transition-colors"
+                              >
+                                <CreditCard size={9} />
+                                Bank & QR
+                              </button>
+                            )}
+                          </div>
+                          <div>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedVendor(null)}
+                              disabled={actionLoading}
+                              className="inline-flex items-center gap-1 border border-[#D8D6D0] bg-white px-2 py-1 font-mono text-[7px] uppercase tracking-widest text-[#77736C] hover:border-[#171717] hover:text-[#171717] disabled:opacity-40 transition-colors"
+                            >
+                              <X size={9} />
+                              Close Review
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ) : null
+                  }
+                />
+              );
+            })}
           </div>
         )}
       </section>
 
-      {/* Vendor Detail Drawer */}
-      {selectedVendor && (
-        <div
-          data-lenis-prevent="true"
-          className="fixed inset-0 z-[60] flex justify-end bg-black/50"
-          role="presentation"
-          onMouseDown={(event) => {
-            if (
-              event.target === event.currentTarget &&
-              !actionLoading
-            ) {
-              setSelectedVendor(null);
-            }
-          }}
-        >
-          <aside
-            data-lenis-prevent="true"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="vendor-detail-title"
-            className="flex h-full w-full max-w-2xl flex-col overflow-y-auto overscroll-contain bg-[#F2F0EB] shadow-2xl"
-          >
-            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#D8D6D0] bg-[#F2F0EB] px-6 py-5 md:px-8">
-              <div>
-                <p className="font-mono text-[9px] uppercase tracking-widest text-[#A58A64]">
-                  Vendor Record / {selectedVendor.reference}
-                </p>
-
-                <h2
-                  id="vendor-detail-title"
-                  className="mt-2 font-serif text-2xl text-[#171717]"
-                >
-                  Vendor Details
-                </h2>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setSelectedVendor(null)}
-                disabled={actionLoading}
-                aria-label="Close vendor details"
-                className="text-[#77736C] disabled:opacity-40"
-              >
-                <X size={21} />
-              </button>
-            </div>
-
-            <div className="flex-1 space-y-7 p-6 md:p-8">
-
-              {/* Business Profile */}
-              <section className="border border-[#D8D6D0] bg-white p-6">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center border border-[#E5E2DC] bg-[#FAF9F6] text-[#A58A64]">
-                    <Building2 size={20} />
-                  </div>
-
-                  <span
-                    className={`px-3 py-2 text-[8px] uppercase tracking-widest ${vendorStatusStyle(selectedVendor.status)}`}
-                  >
-                    {selectedVendor.status}
-                  </span>
-                </div>
-
-                <h3 className="mt-5 font-serif text-3xl text-[#171717]">
-                  {selectedVendor.businessName}
-                </h3>
-
-                <p className="mt-2 text-xs text-[#77736C]">
-                  {selectedVendor.vendorCategory}
-                </p>
-
-                <div className="mt-6 space-y-4 border-t border-[#E5E2DC] pt-5">
-                  <DetailLine
-                    icon={<Users size={15} />}
-                    label="Contact Person"
-                    value={selectedVendor.contactPerson}
-                  />
-
-                  <DetailLine
-                    icon={<Mail size={15} />}
-                    label="Email"
-                    value={selectedVendor.email}
-                  />
-
-                  <DetailLine
-                    icon={<Phone size={15} />}
-                    label="Phone"
-                    value={selectedVendor.phone}
-                  />
-
-                  {selectedVendor.location && (
-                    <DetailLine
-                      icon={<MapPin size={15} />}
-                      label="Location"
-                      value={selectedVendor.location}
-                    />
-                  )}
-                </div>
-              </section>
-
-              {/* 1. Project Associations */}
-              <section>
-                <div className="flex items-end justify-between border-b border-[#D8D6D0] pb-4">
-                  <div>
-                    <SectionHeading>Project Association</SectionHeading>
-
-                    <h3 className="mt-3 font-serif text-2xl text-[#171717]">
-                      Assigned Projects
-                    </h3>
-                  </div>
-
-                  <p className="font-mono text-[9px] text-[#99958D]">
-                    {selectedVendor.linkedProjects.length} PROJECTS
-                  </p>
-                </div>
-
-                {selectedVendor.linkedProjects.length === 0 ? (
-                  <div className="mt-4 border border-[#D8D6D0] bg-white p-7 text-center">
-                    <FolderKanban
-                      size={24}
-                      className="mx-auto text-[#A58A64]"
-                    />
-
-                    <p className="mt-3 text-xs text-[#77736C]">
-                      No projects are assigned to this vendor.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="mt-4 space-y-3">
-                    {selectedVendor.linkedProjects.map((project) => (
-                      <button
-                        key={project.id}
-                        type="button"
-                        disabled={!onOpenProject}
-                        onClick={() => onOpenProject?.(project.id)}
-                        className="flex w-full items-center justify-between gap-4 border border-[#D8D6D0] bg-white p-5 text-left hover:border-[#A58A64] disabled:cursor-default"
-                      >
-                        <span className="min-w-0">
-                          <span className="block font-mono text-[9px] uppercase tracking-widest text-[#A58A64]">
-                            {project.reference}
-                          </span>
-
-                          <span className="mt-2 block font-serif text-xl text-[#171717]">
-                            {project.name}
-                          </span>
-
-                          <span className="mt-2 block text-[9px] text-[#77736C]">
-                            {project.status}
-                          </span>
-                        </span>
-
-                        <ArrowUpRight
-                          size={17}
-                          className="shrink-0 text-[#A58A64]"
-                        />
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </section>
-
-              {/* 2. Financial Relationship & Bills List (Direct on-page listing, no redirect) */}
-              <section className="border border-[#D8D6D0] bg-white p-6">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <SectionHeading>Financial Relationship</SectionHeading>
-
-                    <h3 className="mt-3 font-serif text-2xl text-[#171717]">
-                      Bills &amp; Invoices
-                    </h3>
-                  </div>
-
-                  <FileText
-                    size={21}
-                    className="text-[#A58A64]"
-                  />
-                </div>
-
-                <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-px border border-[#D8D6D0] bg-[#D8D6D0]">
-                  <div className="bg-[#FAF9F6] p-4">
-                    <p className="font-mono text-[8px] uppercase tracking-widest text-[#99958D]">
-                      Submitted Bills
-                    </p>
-                    <p className="mt-2 font-serif text-2xl text-[#171717]">
-                      {selectedVendor.bills?.length ?? selectedVendor.submittedInvoiceCount}
-                    </p>
-                  </div>
-
-                  <div className="bg-[#FAF9F6] p-4">
-                    <p className="font-mono text-[8px] uppercase tracking-widest text-[#99958D]">
-                      Total Billed
-                    </p>
-                    <p className="mt-2 font-mono text-sm sm:text-base font-bold text-[#171717]">
-                      {formatCurrency(selectedVendor.totalBilledAmount || 0)}
-                    </p>
-                  </div>
-
-                  <div className="bg-[#FAF9F6] p-4">
-                    <p className="font-mono text-[8px] uppercase tracking-widest text-[#99958D]">
-                      Recorded Settled
-                    </p>
-                    <p className="mt-2 font-mono text-sm sm:text-base font-bold text-emerald-700">
-                      {formatCurrency(selectedVendor.totalSettledAmount || 0)}
-                    </p>
-                  </div>
-
-                  <div className="bg-[#FAF9F6] p-4">
-                    <p className="font-mono text-[8px] uppercase tracking-widest text-[#99958D]">
-                      Outstanding
-                    </p>
-                    <p className="mt-2 font-mono text-sm sm:text-base font-bold text-[#A58A64]">
-                      {formatCurrency(Math.max(0, (selectedVendor.totalBilledAmount || 0) - (selectedVendor.totalSettledAmount || 0)))}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Direct Bills Listing */}
-                <div className="mt-6 border-t border-[#E5E2DC] pt-5">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="font-mono text-[9px] uppercase tracking-widest text-[#A58A64] font-semibold flex items-center gap-1.5">
-                      <Receipt size={13} /> Recorded Bills &amp; Vouchers
-                    </span>
-                    <span className="font-mono text-[9px] text-[#77736C]">
-                      {(selectedVendor.bills || []).length} item{(selectedVendor.bills || []).length === 1 ? "" : "s"}
-                    </span>
-                  </div>
-
-                  {(!selectedVendor.bills || selectedVendor.bills.length === 0) ? (
-                    <div className="border border-[#D8D6D0] bg-[#FAF9F6] p-6 text-center">
-                      <Receipt size={22} className="mx-auto text-[#A58A64]" />
-                      <p className="mt-2 font-mono text-xs text-[#77736C]">
-                        No bills recorded for this trade partner yet.
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {selectedVendor.bills.map((bill) => (
-                        <div
-                          key={bill.id}
-                          className="border border-[#D8D6D0] bg-[#FAF9F6] p-4 transition-colors hover:border-[#A58A64]"
-                        >
-                          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                            <div className="min-w-0">
-                              <div className="flex items-center gap-2">
-                                <span className="font-mono text-xs font-bold text-[#171717]">
-                                  {bill.invoiceNumber || bill.billId || "BILL"}
-                                </span>
-                                {bill.tradeCategory && (
-                                  <span className="font-mono text-[10px] text-[#A58A64] bg-[#F4EFE2] px-1.5 py-0.5 rounded-xs">
-                                    {bill.tradeCategory}
-                                  </span>
-                                )}
-                              </div>
-                              <p className="mt-1 text-xs text-[#555] font-medium truncate">
-                                {bill.projectName || "Studio Architecture Project"}
-                              </p>
-                              <p className="mt-0.5 font-mono text-[10px] text-[#888]">
-                                Issued: {formatDate(bill.createdAt)}
-                              </p>
-                            </div>
-
-                            <div className="sm:text-right shrink-0">
-                              <span
-                                className={`inline-block px-2 py-0.5 text-[8px] uppercase font-mono tracking-wider ${
-                                  bill.status === "Paid"
-                                    ? "bg-[#EAF1E8] text-[#547A51]"
-                                    : bill.status === "Approved"
-                                    ? "bg-[#EAEFF5] text-[#526C8A]"
-                                    : "bg-[#F4EFE2] text-[#94743F]"
-                                }`}
-                              >
-                                {bill.status}
-                              </span>
-                              <div className="mt-1 font-mono text-sm font-bold text-[#171717]">
-                                {formatCurrency(bill.amount)}
-                              </div>
-                              {bill.paidAmount > 0 && (
-                                <p className="font-mono text-[10px] text-emerald-700">
-                                  Paid: {formatCurrency(bill.paidAmount)}
-                                </p>
-                              )}
-                              {bill.outstandingAmount !== undefined && bill.outstandingAmount > 0 && (
-                                <p className="font-mono text-[10px] text-[#A58A64]">
-                                  Bal: {formatCurrency(bill.outstandingAmount)}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Bill Actions - Print voucher & View Upload without redirecting */}
-                          <div className="mt-3 flex items-center justify-end gap-3 border-t border-[#EAE7E0] pt-2">
-                            {bill.billPhotoUrl && (
-                              <a
-                                href={bill.billPhotoUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 font-mono text-[9px] uppercase tracking-wider text-[#A58A64] hover:underline"
-                              >
-                                <ExternalLink size={11} /> View Upload
-                              </a>
-                            )}
-                            <button
-                              type="button"
-                              onClick={() => printBillVoucher(bill, selectedVendor)}
-                              className="inline-flex items-center gap-1 font-mono text-[9px] uppercase tracking-wider text-[#171717] hover:text-[#A58A64] transition-colors"
-                            >
-                              <FileText size={11} /> Print Voucher
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <p className="mt-4 text-[10px] leading-5 text-[#99958D]">
-                  All bills recorded for this trade contractor are listed directly above. Settlement and cash disbursements are logged in the studio finance registry.
-                </p>
-              </section>
-
-              {/* 3. Metadata */}
-              <section className="grid grid-cols-2 gap-3">
-                <MetadataCard
-                  label="Vendor Created"
-                  value={formatDate(selectedVendor.createdAt)}
-                />
-
-                <MetadataCard
-                  label="Last Updated"
-                  value={formatDate(selectedVendor.lastUpdated)}
-                />
-              </section>
-
-              {/* 4. Vendor Account ("Acc access tile" - moved to the end) */}
-              <section className="border border-[#D8D6D0] bg-white p-6">
-                <SectionHeading>Vendor Account</SectionHeading>
-
-                <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-                  <p className="text-xs text-[#77736C]">
-                    Account status
-                  </p>
-
-                  <span
-                    className={`px-3 py-2 text-[8px] uppercase tracking-widest ${vendorStatusStyle(selectedVendor.status)}`}
-                  >
-                    {selectedVendor.status}
-                  </span>
-                </div>
-
-                <label className="mt-5 block">
-                  <span className="mb-2 block font-mono text-[9px] uppercase tracking-widest text-[#77736C]">
-                    Update Vendor Status
-                  </span>
-
-                  <select
-                    value={selectedVendor.status}
-                    disabled={
-                      actionLoading ||
-                      updatingVendorId === selectedVendor.id
-                    }
-                    onChange={(event) => {
-                      const status = event.target.value as AdminVendorStatus;
-
-                      void runAction(() =>
-                        onUpdateVendorStatus(
-                          selectedVendor.id,
-                          status
-                        )
-                      );
-                    }}
-                    className="h-11 w-full border border-[#D8D6D0] bg-white px-3 text-xs outline-none focus:border-[#A58A64]"
-                  >
-                    {VENDOR_STATUSES.map((status) => (
-                      <option key={status} value={status}>
-                        {status}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </section>
-
-              {/* 5. Portal Access ("Portal invite tile" - moved to the end) */}
-              <section className="border border-[#D8D6D0] bg-white p-6">
-                <div className="flex items-start gap-3">
-                  <ShieldCheck
-                    size={20}
-                    className="mt-0.5 shrink-0 text-[#A58A64]"
-                  />
-
-                  <div>
-                    <SectionHeading>Vendor Portal Access</SectionHeading>
-
-                    <p className="mt-2 text-xs leading-6 text-[#77736C]">
-                      Vendor accounts are invitation-controlled.
-                      Invitations, expiry and account activation
-                      must be managed by the authentication service.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-y border-[#E5E2DC] py-4">
-                  <p className="text-xs text-[#77736C]">
-                    Current portal status
-                  </p>
-
-                  <span
-                    className={`px-3 py-2 text-[8px] uppercase tracking-widest ${portalStatusStyle(selectedVendor.portalAccess)}`}
-                  >
-                    {selectedVendor.portalAccess}
-                  </span>
-                </div>
-
-                {selectedVendor.portalAccess === "Not Invited" && (
-                  <button
-                    type="button"
-                    disabled={
-                      actionLoading ||
-                      selectedVendor.status !== "Active"
-                    }
-                    onClick={() =>
-                      void runAction(() =>
-                        onInviteVendor(selectedVendor.id)
-                      )
-                    }
-                    className="mt-5 inline-flex w-full items-center justify-center gap-2 bg-[#171717] px-5 py-4 text-[9px] uppercase tracking-widest text-white hover:bg-[#A58A64] disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    <UserPlus size={15} />
-                    Send Vendor Invitation
-                  </button>
-                )}
-
-                {selectedVendor.portalAccess === "Invitation Pending" && (
-                  <div className="mt-5 space-y-3">
-                    <button
-                      type="button"
-                      disabled={actionLoading}
-                      onClick={() =>
-                        void runAction(() =>
-                          onUpdatePortalAccess(
-                            selectedVendor.id,
-                            "resend"
-                          )
-                        )
-                      }
-                      className="inline-flex w-full items-center justify-center gap-2 border border-[#D8D6D0] px-5 py-4 text-[9px] uppercase tracking-widest text-[#55514A] hover:border-[#A58A64] disabled:opacity-40"
-                    >
-                      <Mail size={15} />
-                      Resend Invitation
-                    </button>
-
-                    <button
-                      type="button"
-                      disabled={actionLoading}
-                      onClick={() =>
-                        void runAction(() =>
-                          onUpdatePortalAccess(
-                            selectedVendor.id,
-                            "revoke"
-                          )
-                        )
-                      }
-                      className="w-full border border-[#E3C9C5] px-5 py-4 text-[9px] uppercase tracking-widest text-[#9A5147] disabled:opacity-40"
-                    >
-                      Revoke Invitation
-                    </button>
-                  </div>
-                )}
-
-                {selectedVendor.portalAccess === "Expired" && (
-                  <button
-                    type="button"
-                    disabled={
-                      actionLoading ||
-                      selectedVendor.status !== "Active"
-                    }
-                    onClick={() =>
-                      void runAction(() =>
-                        onInviteVendor(selectedVendor.id)
-                      )
-                    }
-                    className="mt-5 inline-flex w-full items-center justify-center gap-2 bg-[#171717] px-5 py-4 text-[9px] uppercase tracking-widest text-white hover:bg-[#A58A64] disabled:opacity-40"
-                  >
-                    <RefreshCw size={15} />
-                    Issue New Invitation
-                  </button>
-                )}
-
-                {selectedVendor.portalAccess === "Active" && (
-                  <button
-                    type="button"
-                    disabled={actionLoading}
-                    onClick={() =>
-                      void runAction(() =>
-                        onUpdatePortalAccess(
-                          selectedVendor.id,
-                          "revoke"
-                        )
-                      )
-                    }
-                    className="mt-5 w-full border border-[#E3C9C5] px-5 py-4 text-[9px] uppercase tracking-widest text-[#9A5147] disabled:opacity-40"
-                  >
-                    Revoke Portal Access
-                  </button>
-                )}
-
-                {/* Direct Set Login Password Card */}
-                {credentialSuccess && (
-                  <div className="mt-5 p-4 border border-[#B68A4A]/50 bg-[#F9F7F3] rounded-sm space-y-2">
-                    <div className="flex items-center gap-2 text-emerald-700 font-mono text-xs font-semibold">
-                      <Check size={16} /> PORTAL LOGIN READY
-                    </div>
-                    <div className="text-xs font-mono text-[#333] space-y-1 bg-white p-3 border border-[#E5E2DC]">
-                      <div><strong>Username:</strong> {credentialSuccess.username}</div>
-                      <div><strong>Password:</strong> {credentialSuccess.password}</div>
-                      <div><strong>Portal URL:</strong> <a href="/login" target="_blank" className="text-[#A58A64] underline">http://localhost:3000/login</a></div>
-                    </div>
-                    <p className="text-[10px] text-[#77736C]">
-                      The vendor can now sign in at the login page using these credentials.
-                    </p>
-                  </div>
-                )}
-
-                {showDirectCredentials ? (
-                  <div className="mt-5 border border-[#A58A64]/40 bg-[#FAF9F5] p-4 rounded-sm space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="font-mono text-xs font-semibold uppercase tracking-wider text-[#171717] flex items-center gap-1.5">
-                        <KeyRound size={14} className="text-[#A58A64]" /> Direct Vendor Credentials
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setShowDirectCredentials(false)}
-                        className="text-[10px] uppercase text-[#77736C] hover:text-[#171717]"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                    <p className="text-[11px] text-[#77736C] leading-relaxed">
-                      Configure username &amp; password for immediate vendor portal login without requiring email verification.
-                    </p>
-
-                    {credentialError && (
-                      <p className="text-xs text-red-600 bg-red-50 p-2 border border-red-200">
-                        {credentialError}
-                      </p>
-                    )}
-
-                    <div>
-                      <label className="block text-[10px] uppercase font-mono tracking-wider text-[#77736C] mb-1">
-                        Username
-                      </label>
-                      <input
-                        type="text"
-                        value={portalUsername}
-                        onChange={(e) => setPortalUsername(e.target.value)}
-                        placeholder="e.g. vendor_username"
-                        className="w-full border border-[#D8D6D0] bg-white px-3 py-2 text-xs font-mono focus:border-[#A58A64] focus:outline-none"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-[10px] uppercase font-mono tracking-wider text-[#77736C] mb-1">
-                        Password
-                      </label>
-                      <div className="relative">
-                        <input
-                          type={showPassword ? "text" : "password"}
-                          value={portalPassword}
-                          onChange={(e) => setPortalPassword(e.target.value)}
-                          placeholder="Password"
-                          className="w-full border border-[#D8D6D0] bg-white px-3 py-2 text-xs font-mono pr-9 focus:border-[#A58A64] focus:outline-none"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#77736C] hover:text-[#171717]"
-                        >
-                          {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
-                        </button>
-                      </div>
-                    </div>
-
-                    <button
-                      type="button"
-                      disabled={credentialsLoading || !portalUsername.trim() || !portalPassword.trim()}
-                      onClick={async () => {
-                        if (!onCreatePortalAccount) return;
-                        setCredentialsLoading(true);
-                        setCredentialError(null);
-                        try {
-                          await onCreatePortalAccount(selectedVendor.id, portalUsername.trim(), portalPassword.trim());
-                          setCredentialSuccess({ username: portalUsername.trim(), password: portalPassword.trim() });
-                          setShowDirectCredentials(false);
-                          selectedVendor.portalAccess = "Active";
-                        } catch (err: unknown) {
-                          setCredentialError(err instanceof Error ? err.message : "Failed to create vendor credentials.");
-                        } finally {
-                          setCredentialsLoading(false);
-                        }
-                      }}
-                      className="w-full inline-flex items-center justify-center gap-2 bg-[#171717] px-4 py-3 text-[10px] uppercase tracking-widest text-white hover:bg-[#A58A64] disabled:opacity-40 transition-colors"
-                    >
-                      <KeyRound size={14} />
-                      {credentialsLoading ? "Saving..." : "Save Credentials & Enable Login"}
-                    </button>
-                  </div>
-                ) : (
-                  <div className="mt-4 pt-3 border-t border-[#E5E2DC]">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowDirectCredentials(true);
-                        setCredentialSuccess(null);
-                        setCredentialError(null);
-                      }}
-                      className="inline-flex w-full items-center justify-center gap-2 border border-[#A58A64] bg-[#F7F5F0] px-4 py-3 text-[9px] uppercase tracking-widest text-[#8A704C] hover:bg-[#A58A64] hover:text-white transition-colors"
-                    >
-                      <KeyRound size={14} />
-                      {selectedVendor.portalAccess === "Active" ? "Reset Login Password" : "Set Direct Login Password"}
-                    </button>
-                  </div>
-                )}
-
-                {selectedVendor.portalAccess === "Suspended" && (
-                  <p className="mt-5 text-xs leading-6 text-[#9A5147]">
-                    Vendor portal access is suspended. Reactivation
-                    must follow the studio&apos;s authorised access-review
-                    procedure.
-                  </p>
-                )}
-              </section>
-
-              {/* Metadata */}
-              <section className="grid grid-cols-2 gap-3">
-                <MetadataCard
-                  label="Vendor Created"
-                  value={formatDate(selectedVendor.createdAt)}
-                />
-
-                <MetadataCard
-                  label="Last Updated"
-                  value={formatDate(selectedVendor.lastUpdated)}
-                />
-              </section>
-
-              {actionError && (
-                <div
-                  role="alert"
-                  className="border border-[#E3C9C5] bg-[#FAF3F1] p-4 text-xs leading-6 text-[#805B55]"
-                >
-                  {actionError}
-                </div>
-              )}
-            </div>
-
-            {/* Footer */}
-            <div className="sticky bottom-0 border-t border-[#D8D6D0] bg-[#F2F0EB] p-5">
-              <div className="flex flex-col gap-2.5">
-                <div className="grid grid-cols-2 gap-2">
-                  {onEditVendor && (
-                    <button
-                      type="button"
-                      onClick={() => onEditVendor(selectedVendor)}
-                      disabled={actionLoading}
-                      className="inline-flex items-center justify-center gap-1.5 bg-[#171717] px-3 py-3 font-mono text-[9px] uppercase tracking-widest text-white hover:bg-[#A58A64] transition-colors"
-                    >
-                      <Edit3 size={13} />
-                      Edit Details
-                    </button>
-                  )}
-                  {onManagePaymentSettings && (
-                    <button
-                      type="button"
-                      onClick={() => onManagePaymentSettings(selectedVendor)}
-                      disabled={actionLoading}
-                      className="inline-flex items-center justify-center gap-1.5 border border-[#B68A4A] bg-white px-3 py-3 font-mono text-[9px] uppercase tracking-widest text-[#B68A4A] hover:bg-[#B68A4A] hover:text-white transition-colors"
-                    >
-                      <CreditCard size={13} />
-                      Bank & QR
-                    </button>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-2">
-                  {onDeleteVendor && (
-                    <button
-                      type="button"
-                      disabled={actionLoading}
-                      onClick={() => {
-                        if (confirm(`Are you sure you want to delete vendor "${selectedVendor.businessName}"? This action cannot be undone.`)) {
-                          void runAction(async () => {
-                            await onDeleteVendor(selectedVendor.id);
-                            setSelectedVendor(null);
-                          });
-                        }
-                      }}
-                      className="flex-1 inline-flex items-center justify-center gap-1.5 border border-red-300 bg-red-50 px-4 py-3 font-mono text-[9px] uppercase tracking-widest text-red-700 hover:bg-red-100 disabled:opacity-40 transition-colors"
-                    >
-                      <Trash2 size={13} />
-                      Delete Vendor
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => setSelectedVendor(null)}
-                    disabled={actionLoading}
-                    className="flex-1 border border-[#D8D6D0] bg-white px-4 py-3 font-mono text-[9px] uppercase tracking-widest text-[#77736C] hover:border-[#A58A64] disabled:opacity-40"
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            </div>
-          </aside>
-        </div>
-      )}
+      <BillPhotoModal
+        bill={previewBill}
+        onClose={() => setPreviewBill(null)}
+        onPhotoUploaded={(updatedBill, newPhotoUrl) => {
+          setPreviewBill((prev) => (prev ? { ...prev, billPhotoUrl: newPhotoUrl } : prev));
+          setSelectedVendor((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  bills: (prev.bills || []).map((b) =>
+                    b.id === updatedBill.id ? { ...b, billPhotoUrl: newPhotoUrl } : b
+                  ),
+                }
+              : prev
+          );
+          onRefresh?.();
+        }}
+      />
     </main>
   );
 }
@@ -1309,120 +874,97 @@ function SummaryCard({
 
 function VendorCard({
   vendor,
+  isExpanded = false,
   onOpen,
+  expandedContent,
 }: {
   vendor: AdminVendorRecord;
+  isExpanded?: boolean;
   onOpen: () => void;
+  expandedContent?: ReactNode;
 }) {
   return (
-    <article className="border border-[#D8D6D0] bg-white p-5 md:p-7">
-      <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
-        <div className="flex min-w-0 items-start gap-4">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center border border-[#E5E2DC] bg-[#FAF9F6] text-[#A58A64]">
-            <Building2 size={19} />
+    <article
+      className={`border bg-white p-5 transition-all ${
+        isExpanded
+          ? "border-[#A58A64] ring-1 ring-[#A58A64]/40 shadow-md"
+          : "border-[#D8D6D0]"
+      }`}
+    >
+      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center border border-[#E5E2DC] bg-[#FAF9F6] text-[#A58A64]">
+            <Building2 size={16} />
           </div>
 
           <div className="min-w-0">
-            <p className="font-mono text-[9px] uppercase tracking-widest text-[#A58A64]">
-              {vendor.reference}
-            </p>
-
-            <h3 className="mt-2 break-words font-serif text-2xl text-[#171717]">
-              {vendor.businessName}
-            </h3>
-
-            <p className="mt-2 text-xs text-[#77736C]">
-              {vendor.vendorCategory} · {vendor.contactPerson}
-            </p>
+            <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5">
+              <h3 className="break-words font-serif text-xl text-[#171717]">
+                {vendor.businessName}
+              </h3>
+              <span className="text-xs text-[#77736C]">
+                · {vendor.vendorCategory} · {vendor.contactPerson}
+              </span>
+            </div>
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2 lg:justify-end">
+        <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+          {!isExpanded && (
+            <button
+              type="button"
+              onClick={onOpen}
+              className="inline-flex items-center gap-1 border border-[#D8D6D0] bg-[#FAF9F6] px-2 py-1 text-[7px] uppercase tracking-widest text-[#987543] hover:border-[#171717] hover:text-[#171717] transition-colors rounded-sm"
+            >
+              Review Vendor
+              <ArrowUpRight size={9} />
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="mt-4 grid grid-cols-1 gap-3 border-t border-[#E5E2DC] pt-4 sm:grid-cols-3">
+        <VendorDetail
+          icon={<Mail size={13} />}
+          value={vendor.email}
+        />
+
+        <VendorDetail
+          icon={<Phone size={13} />}
+          value={vendor.phone}
+        />
+
+        <VendorDetail
+          icon={<MapPin size={13} />}
+          value={vendor.location || "Location not specified"}
+        />
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[#E5E2DC] pt-4">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#77736C]">
+          <span>Projects: <strong className="text-[#171717]">{vendor.linkedProjects.length}</strong></span>
+          <span>Billed: <strong className="text-[#171717]">{formatCurrency(vendor.totalBilledAmount || 0)}</strong></span>
+          <span>Bills: <strong className="text-[#171717]">{vendor.submittedInvoiceCount}</strong></span>
+          <span>Due: <strong className="text-[#A58A64]">{vendor.outstandingInvoiceCount}</strong></span>
+          <span>· Created: {formatDate(vendor.createdAt)}</span>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
           <span
-            className={`px-3 py-2 text-[8px] uppercase tracking-widest ${vendorStatusStyle(vendor.status)}`}
+            className={`px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider ${vendorStatusStyle(vendor.status)}`}
           >
             {vendor.status}
           </span>
 
           <span
-            className={`px-3 py-2 text-[8px] uppercase tracking-widest ${portalStatusStyle(vendor.portalAccess)}`}
+            className={`px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider ${portalStatusStyle(vendor.portalAccess)}`}
           >
             Portal: {vendor.portalAccess}
           </span>
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-4 border-t border-[#E5E2DC] pt-5 md:grid-cols-3">
-        <VendorDetail
-          icon={<Mail size={14} />}
-          value={vendor.email}
-        />
-
-        <VendorDetail
-          icon={<Phone size={14} />}
-          value={vendor.phone}
-        />
-
-        <VendorDetail
-          icon={<MapPin size={14} />}
-          value={vendor.location || "Location not specified"}
-        />
-      </div>
-
-      <div className="mt-6 grid grid-cols-2 gap-3 border-t border-[#E5E2DC] pt-5 md:grid-cols-4">
-        <MiniMetric
-          label="Assigned Projects"
-          value={vendor.linkedProjects.length}
-        />
-
-        <MiniMetric
-          label="Total Billed (₹)"
-          value={vendor.totalBilledAmount || 0}
-        />
-
-        <MiniMetric
-          label="Submitted Invoices"
-          value={vendor.submittedInvoiceCount}
-        />
-
-        <MiniMetric
-          label="Outstanding Invoices"
-          value={vendor.outstandingInvoiceCount}
-        />
-      </div>
-
-      <div className="mt-4 rounded-sm bg-[#FAF9F6] p-3 text-xs">
-        <p className="font-mono text-[9px] uppercase tracking-widest text-[#99958D]">
-          Associated Clients:
-        </p>
-        {vendor.associatedClients && vendor.associatedClients.length > 0 ? (
-          <ul className="mt-1.5 space-y-1 font-medium text-[#171717]">
-            {vendor.associatedClients.map((clientName, idx) => (
-              <li key={`${clientName}-${idx}`} className="flex items-center gap-2">
-                <span className="h-1 w-1 rounded-full bg-[#A58A64] shrink-0" />
-                <span>{clientName}</span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="mt-1 font-medium text-[#77736C]">No active clients linked yet</p>
-        )}
-      </div>
-
-      <div className="mt-6 flex flex-col justify-between gap-4 border-t border-[#E5E2DC] pt-5 sm:flex-row sm:items-center">
-        <p className="text-[10px] text-[#77736C]">
-          Created: {formatDate(vendor.createdAt)}
-        </p>
-
-        <button
-          type="button"
-          onClick={onOpen}
-          className="min-h-[44px] inline-flex items-center gap-2 border border-[#D8D6D0] bg-[#FAF9F6] px-3.5 py-2 text-[9px] uppercase tracking-widest text-[#987543] hover:border-[#171717] hover:text-[#171717] transition-colors rounded-sm"
-        >
-          Review Vendor
-          <ArrowUpRight size={14} />
-        </button>
-      </div>
+      {isExpanded && expandedContent}
     </article>
   );
 }
@@ -1494,12 +1036,12 @@ function MiniMetric({
   value: number;
 }) {
   return (
-    <div className="bg-[#FAF9F6] p-4">
+    <div className="bg-[#FAF9F6] px-3 py-2.5">
       <p className="font-mono text-[8px] uppercase tracking-widest text-[#99958D]">
         {label}
       </p>
 
-      <p className="mt-3 font-serif text-2xl text-[#171717]">
+      <p className="mt-1 font-serif text-xl text-[#171717]">
         {value.toLocaleString("en-IN")}
       </p>
     </div>
@@ -1508,9 +1050,9 @@ function MiniMetric({
 
 function SectionHeading({ children }: { children: ReactNode }) {
   return (
-    <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#A58A64]">
+    <h4 className="font-serif text-base text-[#171717]">
       {children}
-    </p>
+    </h4>
   );
 }
 

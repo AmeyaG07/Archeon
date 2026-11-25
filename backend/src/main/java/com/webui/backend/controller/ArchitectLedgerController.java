@@ -2,10 +2,12 @@ package com.webui.backend.controller;
 
 import com.webui.backend.model.ArchitectAuditReportEntity;
 import com.webui.backend.model.ArchitectLedgerEntryEntity;
+import com.webui.backend.model.BillApprovalEntity;
 import com.webui.backend.model.ClientEntity;
 import com.webui.backend.model.VendorEntity;
 import com.webui.backend.repository.ArchitectAuditReportRepository;
 import com.webui.backend.repository.ArchitectLedgerEntryRepository;
+import com.webui.backend.repository.BillApprovalRepository;
 import com.webui.backend.repository.ClientRepository;
 import com.webui.backend.repository.VendorRepository;
 import lombok.Data;
@@ -41,6 +43,9 @@ public class ArchitectLedgerController {
 
     @Autowired
     private VendorRepository vendorRepository;
+
+    @Autowired(required = false)
+    private BillApprovalRepository billApprovalRepository;
 
     @Data
     public static class CreateEntryRequest {
@@ -218,8 +223,20 @@ public class ArchitectLedgerController {
         }
         String title = (req != null && req.getTitle() != null && !req.getTitle().isBlank()) ? req.getTitle().trim() : defaultTitle;
 
+        List<BillApprovalEntity> allBills = billApprovalRepository != null
+                ? billApprovalRepository.findAll()
+                : List.of();
+        Map<String, String> clientNameByKey = new HashMap<>();
+        if (clientRepository != null) {
+            for (ClientEntity c : clientRepository.findAll()) {
+                String name = c.getFullName() != null && !c.getFullName().isBlank() ? c.getFullName() : c.getClientReference();
+                if (c.getId() != null) clientNameByKey.put(c.getId().toString().toLowerCase(), name);
+                if (c.getClientReference() != null) clientNameByKey.put(c.getClientReference().toLowerCase(), name);
+            }
+        }
+
         String workbookXml = buildExcelSpreadsheetXml(
-                reportCode, title, year, filtered, totalRev, totalExp, netIncome, clientRev, vendorRev, directRev,
+                reportCode, title, year, filtered, allBills, clientNameByKey, totalRev, totalExp, netIncome, clientRev, vendorRev, directRev,
                 auth != null ? auth.getName() : "architect"
         );
 
@@ -293,6 +310,8 @@ public class ArchitectLedgerController {
             String title,
             int year,
             List<ArchitectLedgerEntryEntity> entries,
+            List<BillApprovalEntity> bills,
+            Map<String, String> clientNameByKey,
             BigDecimal totalRev,
             BigDecimal totalExp,
             BigDecimal netIncome,
@@ -315,7 +334,7 @@ public class ArchitectLedgerController {
 
         // Sheet 1: CA Audit Summary
         sb.append("<Worksheet ss:Name=\"CA Audit Summary\">\n<Table>\n");
-        sb.append("  <Column ss:Width=\"220\"/><Column ss:Width=\"160\"/><Column ss:Width=\"160\"/>\n");
+        sb.append("  <Column ss:Width=\"220\"/><Column ss:Width=\"180\"/><Column ss:Width=\"140\"/><Column ss:Width=\"150\"/><Column ss:Width=\"140\"/>\n");
         appendRow(sb, "Title", "ArcheOn Design Studio — Chartered Accountant Audit Statement");
         appendRow(sb, "Bold", title);
         appendPair(sb, "Audit Report Code", reportCode);
@@ -357,6 +376,53 @@ public class ArchitectLedgerController {
                     .append(cellNum(mRev.subtract(mExp)))
                     .append("</Row>\n");
         }
+
+        // Bill Entries Section inside Sheet 1
+        sb.append("  <Row></Row>\n");
+        appendRow(sb, "Bold", "Bill Entries");
+        sb.append("  <Row><Cell ss:StyleID=\"Header\"><Data ss:Type=\"String\">Bill Reference</Data></Cell>"
+                + "<Cell ss:StyleID=\"Header\"><Data ss:Type=\"String\">Client Name</Data></Cell>"
+                + "<Cell ss:StyleID=\"Header\"><Data ss:Type=\"String\">Expenses (INR)</Data></Cell>"
+                + "<Cell ss:StyleID=\"Header\"><Data ss:Type=\"String\">Amount Received (INR)</Data></Cell>"
+                + "<Cell ss:StyleID=\"Header\"><Data ss:Type=\"String\">Amount (INR)</Data></Cell></Row>\n");
+
+        BigDecimal totalBillExpenses = BigDecimal.ZERO;
+        BigDecimal totalBillReceived = BigDecimal.ZERO;
+        BigDecimal totalBillAmount = BigDecimal.ZERO;
+
+        for (BillApprovalEntity b : bills) {
+            String billRef = (b.getInvoiceNumber() != null && !b.getInvoiceNumber().isBlank())
+                    ? b.getInvoiceNumber()
+                    : (b.getBillId() != null ? b.getBillId() : "BILL");
+            String cKey = b.getClientId() != null ? b.getClientId().trim().toLowerCase() : "";
+            String clientName = !cKey.isEmpty()
+                    ? clientNameByKey.getOrDefault(cKey, b.getClientId())
+                    : "Studio / Unassigned";
+            BigDecimal expenseAmt = b.getAmount() != null ? b.getAmount() : BigDecimal.ZERO;
+            BigDecimal receivedAmt = b.getPaidAmount() != null ? b.getPaidAmount() : BigDecimal.ZERO;
+            BigDecimal billAmt = b.getAmount() != null ? b.getAmount() : BigDecimal.ZERO;
+
+            totalBillExpenses = totalBillExpenses.add(expenseAmt);
+            totalBillReceived = totalBillReceived.add(receivedAmt);
+            totalBillAmount = totalBillAmount.add(billAmt);
+
+            sb.append("  <Row>")
+                    .append(cellStr(billRef))
+                    .append(cellStr(clientName))
+                    .append(cellNum(expenseAmt))
+                    .append(cellNum(receivedAmt))
+                    .append(cellNum(billAmt))
+                    .append("</Row>\n");
+        }
+
+        sb.append("  <Row>")
+                .append("<Cell ss:StyleID=\"Bold\"><Data ss:Type=\"String\">TOTAL BILL ENTRIES</Data></Cell>")
+                .append(cellStr(""))
+                .append(cellNum(totalBillExpenses))
+                .append(cellNum(totalBillReceived))
+                .append(cellNum(totalBillAmount))
+                .append("</Row>\n");
+
         sb.append("</Table>\n</Worksheet>\n");
 
         // Sheet 2: Detailed Ledger Register

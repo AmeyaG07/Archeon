@@ -278,6 +278,10 @@ export function AdminInvoiceManagement({
   }
 
   function openInvoice(invoice: AdminInvoiceRecord) {
+    if (selectedInvoice?.id === invoice.id) {
+      setSelectedInvoice(null);
+      return;
+    }
     setSelectedInvoice(invoice);
   }
 
@@ -625,379 +629,233 @@ export function AdminInvoiceManagement({
           </div>
         ) : (
           <div className="mt-5 space-y-3">
-            {filteredInvoices.map((invoice) => (
-              <InvoiceCard
-                key={invoice.id}
-                invoice={invoice}
-                updating={updatingInvoiceId === invoice.id}
-                onOpen={() => openInvoice(invoice)}
-              />
-            ))}
+            {filteredInvoices.map((invoice) => {
+              const isExpanded = selectedInvoice?.id === invoice.id;
+              return (
+                <InvoiceCard
+                  key={invoice.id}
+                  invoice={invoice}
+                  updating={updatingInvoiceId === invoice.id}
+                  isExpanded={isExpanded}
+                  onOpen={() => openInvoice(invoice)}
+                  expandedContent={
+                    isExpanded && selectedInvoice ? (
+                      <div className="mt-4 space-y-4 border-t border-[#D8D6D0] pt-4">
+                        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 items-stretch">
+                          {/* Left: Identity, Dates & Project */}
+                          <section className="flex flex-col justify-between border border-[#D8D6D0] bg-[#FAF9F6] p-4">
+                            <div>
+                              <div className="flex items-center justify-between border-b border-[#E5E2DC] pb-2.5">
+                                <SectionHeading>Invoice Details</SectionHeading>
+                                <span className="font-mono text-[10px] uppercase tracking-wider text-[#A58A64]">
+                                  {selectedInvoice.reference}
+                                </span>
+                              </div>
+
+                              <div className="mt-3 grid grid-cols-2 gap-3">
+                                <div className="border border-[#E5E2DC] bg-white px-3 py-2">
+                                  <p className="font-mono text-[10px] uppercase tracking-wider text-[#99958D]">Party</p>
+                                  <p className="mt-0.5 text-xs text-[#171717] truncate">{selectedInvoice.partyName}</p>
+                                </div>
+                                <div className="border border-[#E5E2DC] bg-white px-3 py-2">
+                                  <p className="font-mono text-[10px] uppercase tracking-wider text-[#99958D]">Invoice Date</p>
+                                  <p className="mt-0.5 text-xs text-[#171717]">{formatDate(selectedInvoice.invoiceDate)}</p>
+                                </div>
+                                <div className="border border-[#E5E2DC] bg-white px-3 py-2">
+                                  <p className="font-mono text-[10px] uppercase tracking-wider text-[#99958D]">Due Date</p>
+                                  <p className="mt-0.5 text-xs text-[#171717]">{formatDate(selectedInvoice.dueDate)}</p>
+                                </div>
+                                <div className="border border-[#E5E2DC] bg-white px-3 py-2">
+                                  <p className="font-mono text-[10px] uppercase tracking-wider text-[#99958D]">Last Updated</p>
+                                  <p className="mt-0.5 text-xs text-[#171717]">{formatDate(selectedInvoice.lastUpdated)}</p>
+                                </div>
+                              </div>
+
+                              {(selectedInvoice.projectId || selectedInvoice.projectName) && (
+                                <div className="mt-3 border border-[#E5E2DC] bg-white px-3 py-2.5 flex items-center justify-between gap-2">
+                                  <div className="min-w-0">
+                                    <p className="font-mono text-[10px] uppercase tracking-wider text-[#99958D]">Project</p>
+                                    <p className="mt-0.5 text-xs font-medium text-[#171717] truncate">
+                                      {selectedInvoice.projectName || "Project"}
+                                      {selectedInvoice.projectReference ? ` (${selectedInvoice.projectReference})` : ""}
+                                    </p>
+                                  </div>
+                                  {selectedInvoice.projectId && onOpenProject && (
+                                    <button
+                                      type="button"
+                                      onClick={() => onOpenProject(selectedInvoice.projectId!)}
+                                      className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-[#987543] hover:text-[#171717] shrink-0"
+                                    >
+                                      Open <ArrowUpRight size={11} />
+                                    </button>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+
+                            {onOpenParty && (
+                              <div className="mt-3 border-t border-[#E5E2DC] pt-3">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    onOpenParty(
+                                      selectedInvoice.partyType,
+                                      selectedInvoice.partyId
+                                    )
+                                  }
+                                  className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-[#987543] hover:text-[#171717]"
+                                >
+                                  Open {selectedInvoice.partyType} Record
+                                  <ArrowUpRight size={12} />
+                                </button>
+                              </div>
+                            )}
+                          </section>
+
+                          {/* Right: Financial Breakdown */}
+                          <section className="flex flex-col justify-between border border-[#D8D6D0] bg-[#FAF9F6] p-4">
+                            <div>
+                              <div className="flex items-center justify-between border-b border-[#E5E2DC] pb-2.5">
+                                <SectionHeading>Financial Breakdown</SectionHeading>
+                                <span className="font-mono text-[10px] text-[#77736C]">
+                                  {getBalancePercentage(selectedInvoice)}% Paid
+                                </span>
+                              </div>
+
+                              <div className="mt-3 space-y-2 text-xs">
+                                <div className="flex justify-between">
+                                  <span className="text-[#77736C]">Subtotal</span>
+                                  <span className="font-mono text-[#171717]">{formatCurrency(selectedInvoice.subtotal)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-[#77736C]">Tax Amount</span>
+                                  <span className="font-mono text-[#171717]">{formatCurrency(selectedInvoice.taxAmount)}</span>
+                                </div>
+                                <div className="flex justify-between border-t border-[#E5E2DC] pt-2 font-semibold">
+                                  <span className="text-[#171717]">Invoice Total</span>
+                                  <span className="font-mono text-[#171717]">{formatCurrency(selectedInvoice.totalAmount)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-[#77736C]">Approved / Paid</span>
+                                  <span className="font-mono text-emerald-700">
+                                    {formatCurrency(selectedInvoice.approvedAmount ?? 0)} / {formatCurrency(selectedInvoice.paidAmount)}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between border-t border-[#E5E2DC] pt-2 font-semibold">
+                                  <span className="text-[#171717]">Outstanding</span>
+                                  <span className="font-mono text-[#A58A64]">{formatCurrency(selectedInvoice.outstandingAmount)}</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="mt-3">
+                              <div
+                                className="h-1.5 overflow-hidden bg-[#EAE7E0]"
+                                role="progressbar"
+                                aria-valuenow={getBalancePercentage(selectedInvoice)}
+                                aria-valuemin={0}
+                                aria-valuemax={100}
+                                aria-label="Invoice payment progress"
+                              >
+                                <div
+                                  className="h-full bg-[#A58A64]"
+                                  style={{ width: `${getBalancePercentage(selectedInvoice)}%` }}
+                                />
+                              </div>
+                            </div>
+                          </section>
+                        </div>
+
+                        {/* Remarks & Attachments */}
+                        {(selectedInvoice.financeRemarks || selectedInvoice.attachmentCount > 0) && (
+                          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                            {selectedInvoice.financeRemarks && (
+                              <section className="border border-[#D8D6D0] bg-[#FAF9F6] p-4">
+                                <SectionHeading>Finance Remarks</SectionHeading>
+                                <p className="mt-2 whitespace-pre-wrap text-xs leading-relaxed text-[#55514A]">
+                                  {selectedInvoice.financeRemarks}
+                                </p>
+                              </section>
+                            )}
+                            {selectedInvoice.attachmentCount > 0 && (
+                              <section className="flex items-center justify-between border border-[#D8D6D0] bg-[#FAF9F6] p-4">
+                                <div>
+                                  <SectionHeading>Attachments ({selectedInvoice.attachmentCount})</SectionHeading>
+                                  <p className="mt-1 text-xs text-[#77736C]">
+                                    Available via authorised document service.
+                                  </p>
+                                </div>
+                                {onDownloadAttachment && (
+                                  <button
+                                    type="button"
+                                    onClick={() => onDownloadAttachment(selectedInvoice.id)}
+                                    className="inline-flex items-center gap-1.5 border border-[#D8D6D0] bg-white px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-[#55514A] hover:border-[#A58A64]"
+                                  >
+                                    <Download size={12} />
+                                    Access
+                                  </button>
+                                )}
+                              </section>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Validation Warnings */}
+                        {(!isValidMoney(selectedInvoice.totalAmount) ||
+                          !isValidMoney(selectedInvoice.paidAmount) ||
+                          !isValidMoney(selectedInvoice.outstandingAmount)) && (
+                          <div
+                            role="alert"
+                            className="border border-[#E3C9C5] bg-[#FAF3F1] p-3 text-xs text-[#805B55]"
+                          >
+                            The supplied invoice contains an invalid financial value. Do not use these figures for financial approval or payment decisions.
+                          </div>
+                        )}
+
+                        {/* Inline Action Bar */}
+                        <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            {onOpenInvoice && (
+                              <button
+                                type="button"
+                                onClick={() => onOpenInvoice(selectedInvoice.id)}
+                                className="inline-flex items-center gap-1 border border-[#D8D6D0] bg-white px-3 py-1 font-mono text-[8px] uppercase tracking-widest text-[#55514A] hover:border-[#171717]"
+                              >
+                                Open Full Invoice
+                              </button>
+                            )}
+                            {onReviewInvoice &&
+                              (selectedInvoice.status === "Submitted" ||
+                                selectedInvoice.status === "Under Review") && (
+                                <button
+                                  type="button"
+                                  disabled={updatingInvoiceId === selectedInvoice.id}
+                                  onClick={() => onReviewInvoice(selectedInvoice.id)}
+                                  className="inline-flex items-center gap-1 bg-[#171717] px-3 py-1 font-mono text-[8px] uppercase tracking-widest text-white hover:bg-[#A58A64] disabled:opacity-40"
+                                >
+                                  Review Invoice
+                                </button>
+                              )}
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => setSelectedInvoice(null)}
+                            className="inline-flex items-center gap-1 border border-[#D8D6D0] bg-white px-3 py-1 font-mono text-[8px] uppercase tracking-widest text-[#77736C] hover:border-[#171717] hover:text-[#171717] transition-colors"
+                          >
+                            <X size={9} />
+                            Close Review
+                          </button>
+                        </div>
+                      </div>
+                    ) : null
+                  }
+                />
+              );
+            })}
           </div>
         )}
       </section>
-
-      {/* Invoice Details */}
-      {selectedInvoice && (
-        <div
-          data-lenis-prevent="true"
-          className="fixed inset-0 z-[60] flex justify-end bg-black/50"
-          role="presentation"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) {
-              setSelectedInvoice(null);
-            }
-          }}
-        >
-          <aside
-            data-lenis-prevent="true"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="invoice-detail-title"
-            className="flex h-full w-full max-w-2xl flex-col overflow-y-auto overscroll-contain bg-[#F2F0EB] shadow-2xl"
-          >
-            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#D8D6D0] bg-[#F2F0EB] px-6 py-5 md:px-8">
-              <div>
-                <p className="font-mono text-[9px] uppercase tracking-widest text-[#A58A64]">
-                  Invoice / {selectedInvoice.reference}
-                </p>
-
-                <h2
-                  id="invoice-detail-title"
-                  className="mt-2 font-serif text-2xl text-[#171717]"
-                >
-                  Invoice Details
-                </h2>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setSelectedInvoice(null)}
-                aria-label="Close invoice details"
-                className="text-[#77736C]"
-              >
-                <X size={21} />
-              </button>
-            </div>
-
-            <div className="flex-1 space-y-7 p-6 md:p-8">
-
-              {/* Invoice Identity */}
-              <section className="border border-[#D8D6D0] bg-white p-6">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center border border-[#E5E2DC] bg-[#FAF9F6] text-[#A58A64]">
-                    <FileText size={20} />
-                  </div>
-
-                  <span
-                    className={`px-3 py-2 text-[8px] uppercase tracking-widest ${statusStyle(selectedInvoice.status)}`}
-                  >
-                    {selectedInvoice.status}
-                  </span>
-                </div>
-
-                <h3 className="mt-5 break-words font-serif text-3xl text-[#171717]">
-                  {selectedInvoice.reference}
-                </h3>
-
-                <p className="mt-2 text-xs text-[#77736C]">
-                  {selectedInvoice.partyType} invoice
-                </p>
-
-                <div className="mt-6 space-y-4 border-t border-[#E5E2DC] pt-5">
-                  <DetailLine
-                    icon={<Building2 size={15} />}
-                    label="Invoice Party"
-                    value={selectedInvoice.partyName}
-                  />
-
-                  <DetailLine
-                    icon={<CalendarDays size={15} />}
-                    label="Invoice Date"
-                    value={formatDate(selectedInvoice.invoiceDate)}
-                  />
-
-                  <DetailLine
-                    icon={<Clock3 size={15} />}
-                    label="Due Date"
-                    value={formatDate(selectedInvoice.dueDate)}
-                  />
-
-                  <DetailLine
-                    icon={<CalendarDays size={15} />}
-                    label="Last Updated"
-                    value={formatDate(selectedInvoice.lastUpdated)}
-                  />
-                </div>
-
-                {onOpenParty && (
-                  <button
-                    type="button"
-                    onClick={() =>
-                      onOpenParty(
-                        selectedInvoice.partyType,
-                        selectedInvoice.partyId
-                      )
-                    }
-                    className="mt-6 inline-flex items-center gap-2 text-[9px] uppercase tracking-widest text-[#987543]"
-                  >
-                    Open {selectedInvoice.partyType} Record
-                    <ArrowUpRight size={14} />
-                  </button>
-                )}
-              </section>
-
-              {/* Project */}
-              {(selectedInvoice.projectId ||
-                selectedInvoice.projectName) && (
-                <section className="border border-[#D8D6D0] bg-white p-6">
-                  <SectionHeading>Project Association</SectionHeading>
-
-                  <h3 className="mt-3 font-serif text-xl text-[#171717]">
-                    {selectedInvoice.projectName || "Project"}
-                  </h3>
-
-                  {selectedInvoice.projectReference && (
-                    <p className="mt-2 font-mono text-[9px] text-[#A58A64]">
-                      {selectedInvoice.projectReference}
-                    </p>
-                  )}
-
-                  {selectedInvoice.projectId && onOpenProject && (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        onOpenProject(selectedInvoice.projectId!)
-                      }
-                      className="mt-5 inline-flex items-center gap-2 text-[9px] uppercase tracking-widest text-[#987543]"
-                    >
-                      Open Project
-                      <ArrowUpRight size={14} />
-                    </button>
-                  )}
-                </section>
-              )}
-
-              {/* Financial Breakdown */}
-              <section className="border border-[#D8D6D0] bg-white p-6">
-                <SectionHeading>Financial Breakdown</SectionHeading>
-
-                <div className="mt-5 space-y-4">
-                  <MoneyRow
-                    label="Subtotal"
-                    value={selectedInvoice.subtotal}
-                  />
-
-                  <MoneyRow
-                    label="Tax Amount"
-                    value={selectedInvoice.taxAmount}
-                  />
-
-                  <div className="border-t border-[#E5E2DC] pt-4">
-                    <MoneyRow
-                      label="Invoice Total"
-                      value={selectedInvoice.totalAmount}
-                      strong
-                    />
-                  </div>
-
-                  <MoneyRow
-                    label="Approved Amount"
-                    value={selectedInvoice.approvedAmount ?? 0}
-                  />
-
-                  <MoneyRow
-                    label="Paid Amount"
-                    value={selectedInvoice.paidAmount}
-                  />
-
-                  <div className="border-t border-[#E5E2DC] pt-4">
-                    <MoneyRow
-                      label="Outstanding Amount"
-                      value={selectedInvoice.outstandingAmount}
-                      strong
-                    />
-                  </div>
-                </div>
-
-                <div className="mt-6">
-                  <div className="mb-2 flex items-center justify-between">
-                    <p className="font-mono text-[8px] uppercase tracking-widest text-[#99958D]">
-                      Payment Progress
-                    </p>
-
-                    <p className="font-mono text-[9px] text-[#77736C]">
-                      {getBalancePercentage(selectedInvoice)}%
-                    </p>
-                  </div>
-
-                  <div
-                    className="h-2 overflow-hidden bg-[#EAE7E0]"
-                    role="progressbar"
-                    aria-valuenow={getBalancePercentage(selectedInvoice)}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                    aria-label="Invoice payment progress"
-                  >
-                    <div
-                      className="h-full bg-[#A58A64]"
-                      style={{
-                        width: `${getBalancePercentage(selectedInvoice)}%`,
-                      }}
-                    />
-                  </div>
-                </div>
-
-                <div className="mt-5 rounded-xs border border-[#C6A779]/40 bg-[#FAF8F5] p-3">
-                  <p className="font-mono text-[9px] uppercase tracking-widest text-[#A58A64] font-semibold">
-                    Total Expenses for this Project
-                  </p>
-                  <p className="font-mono text-lg font-bold text-[#171717] mt-1">
-                    {formatCurrency(selectedInvoice.projectTotalExpenses ?? selectedInvoice.totalAmount)}
-                  </p>
-                  <p className="font-mono text-[8px] uppercase text-[#77736C] mt-0.5">
-                    Cumulative Recorded Project Spend
-                  </p>
-                </div>
-              </section>
-
-              {/* Attached Bill Voucher Photo */}
-              {selectedInvoice.billPhotoUrl && (
-                <section className="border border-[#D8D6D0] bg-white p-6">
-                  <SectionHeading>Attached Bill Voucher</SectionHeading>
-                  <div className="mt-3 overflow-hidden rounded-xs border border-[#D8D6D0] bg-[#FAF9F6] p-2">
-                    <img
-                      src={selectedInvoice.billPhotoUrl}
-                      alt="Bill Voucher"
-                      className="max-h-72 w-full object-contain"
-                    />
-                    <div className="mt-2 flex justify-end">
-                      <a
-                        href={selectedInvoice.billPhotoUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-mono text-[10px] uppercase text-[#987543] hover:underline"
-                      >
-                        Open High-Res Attachment ↗
-                      </a>
-                    </div>
-                  </div>
-                </section>
-              )}
-
-              {/* Description and Finance Remarks */}
-              {(selectedInvoice.description ||
-                selectedInvoice.financeRemarks) && (
-                <section className="border border-[#D8D6D0] bg-white p-6">
-                  {selectedInvoice.description && (
-                    <>
-                      <SectionHeading>Invoice Description</SectionHeading>
-
-                      <p className="mt-3 whitespace-pre-wrap text-xs leading-7 text-[#55514A]">
-                        {selectedInvoice.description}
-                      </p>
-                    </>
-                  )}
-
-                  {selectedInvoice.financeRemarks && (
-                    <div className="mt-6 border-t border-[#E5E2DC] pt-5">
-                      <SectionHeading>Finance Remarks</SectionHeading>
-
-                      <p className="mt-3 whitespace-pre-wrap text-xs leading-7 text-[#55514A]">
-                        {selectedInvoice.financeRemarks}
-                      </p>
-                    </div>
-                  )}
-                </section>
-              )}
-
-              {/* Attachments */}
-              <section className="border border-[#D8D6D0] bg-white p-6">
-                <div className="flex items-center justify-between">
-                  <SectionHeading>Invoice Attachments</SectionHeading>
-
-                  <span className="font-mono text-[9px] text-[#99958D]">
-                    {selectedInvoice.attachmentCount} FILES
-                  </span>
-                </div>
-
-                <p className="mt-3 text-xs leading-6 text-[#77736C]">
-                  Attachments are available only through the
-                  authorised document service.
-                </p>
-
-                {selectedInvoice.attachmentCount > 0 &&
-                  onDownloadAttachment && (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        onDownloadAttachment(selectedInvoice.id)
-                      }
-                      className="mt-5 inline-flex items-center gap-2 border border-[#D8D6D0] px-5 py-3 text-[9px] uppercase tracking-widest text-[#55514A] hover:border-[#A58A64]"
-                    >
-                      <Download size={14} />
-                      Access Attachments
-                    </button>
-                  )}
-              </section>
-
-              {/* Validation Warnings */}
-              {!isValidMoney(selectedInvoice.totalAmount) ||
-              !isValidMoney(selectedInvoice.paidAmount) ||
-              !isValidMoney(selectedInvoice.outstandingAmount) ? (
-                <div
-                  role="alert"
-                  className="border border-[#E3C9C5] bg-[#FAF3F1] p-4 text-xs leading-6 text-[#805B55]"
-                >
-                  The supplied invoice contains an invalid financial
-                  value. Do not use these figures for financial
-                  approval or payment decisions.
-                </div>
-              ) : null}
-            </div>
-
-            {/* Actions */}
-            <div className="sticky bottom-0 border-t border-[#D8D6D0] bg-[#F2F0EB] p-5">
-              <div className="flex flex-col-reverse gap-3 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={() => setSelectedInvoice(null)}
-                  className="flex-1 border border-[#D8D6D0] px-5 py-4 text-[9px] uppercase tracking-widest text-[#77736C]"
-                >
-                  Close
-                </button>
-
-                {onOpenInvoice && (
-                  <button
-                    type="button"
-                    onClick={() => onOpenInvoice(selectedInvoice.id)}
-                    className="flex-1 border border-[#D8D6D0] bg-white px-5 py-4 text-[9px] uppercase tracking-widest text-[#55514A] hover:border-[#A58A64]"
-                  >
-                    Open Full Invoice
-                  </button>
-                )}
-
-                {onReviewInvoice &&
-                  (selectedInvoice.status === "Submitted" ||
-                    selectedInvoice.status === "Under Review") && (
-                    <button
-                      type="button"
-                      disabled={
-                        updatingInvoiceId === selectedInvoice.id
-                      }
-                      onClick={() =>
-                        onReviewInvoice(selectedInvoice.id)
-                      }
-                      className="flex-1 bg-[#171717] px-5 py-4 text-[9px] uppercase tracking-widest text-white hover:bg-[#A58A64] disabled:opacity-40"
-                    >
-                      Review Invoice
-                    </button>
-                  )}
-              </div>
-            </div>
-          </aside>
-        </div>
-      )}
     </main>
   );
 }
@@ -1034,14 +892,24 @@ function SummaryCard({
 function InvoiceCard({
   invoice,
   updating,
+  isExpanded = false,
   onOpen,
+  expandedContent,
 }: {
   invoice: AdminInvoiceRecord;
   updating: boolean;
+  isExpanded?: boolean;
   onOpen: () => void;
+  expandedContent?: ReactNode;
 }) {
   return (
-    <article className="border border-[#D8D6D0] bg-white p-5 md:p-7">
+    <article
+      className={`border bg-white p-5 transition-all ${
+        isExpanded
+          ? "border-[#A58A64] ring-1 ring-[#A58A64]/40 shadow-md"
+          : "border-[#D8D6D0]"
+      }`}
+    >
       <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
         <div className="flex min-w-0 items-start gap-4">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center border border-[#E5E2DC] bg-[#FAF9F6] text-[#A58A64]">
@@ -1163,15 +1031,19 @@ function InvoiceCard({
           </span>
         </div>
 
-        <button
-          type="button"
-          onClick={onOpen}
-          className="inline-flex items-center gap-2 text-[9px] uppercase tracking-widest text-[#987543] hover:text-[#171717]"
-        >
-          Review Details
-          <ArrowUpRight size={14} />
-        </button>
+        {!isExpanded && (
+          <button
+            type="button"
+            onClick={onOpen}
+            className="inline-flex items-center gap-1.5 border border-[#D8D6D0] bg-[#FAF9F6] px-2.5 py-1 font-mono text-[8px] uppercase tracking-widest text-[#987543] hover:border-[#171717] hover:text-[#171717] transition-colors rounded-sm"
+          >
+            Review Details
+            <ArrowUpRight size={10} />
+          </button>
+        )}
       </div>
+
+      {isExpanded && expandedContent}
     </article>
   );
 }
