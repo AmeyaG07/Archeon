@@ -35,7 +35,36 @@ public class UserDto {
     @Builder
     public static class UpdateProfileRequest {
         private String fullName;
+        private String email;
         private String phone;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class CreateTeamMemberRequest {
+        private String username;
+        private String password;
+        private String role;
+        private String fullName;
+        private String email;
+        private String phone;
+        private String status;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class AdminUpdateUserProfileRequest {
+        private String fullName;
+        private String email;
+        private String phone;
+        private String role;
+        private String status;
+        private Boolean enabled;
+        private String newPassword;
     }
 
     @Data

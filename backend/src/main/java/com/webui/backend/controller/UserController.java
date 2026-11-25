@@ -63,6 +63,33 @@ public class UserController {
         }
     }
 
+    @PostMapping
+    public ResponseEntity<?> createTeamMember(@RequestBody CreateTeamMemberRequest req, Authentication auth) {
+        try {
+            UserSummaryResponse created = userService.createTeamMember(req, auth);
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateUserProfileByAdmin(
+            @PathVariable Long id,
+            @RequestBody AdminUpdateUserProfileRequest req,
+            Authentication auth) {
+        try {
+            UserSummaryResponse updated = userService.updateUserProfileByAdmin(id, req, auth);
+            return ResponseEntity.ok(updated);
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getUserById(@PathVariable Long id, Authentication auth) {
         try {

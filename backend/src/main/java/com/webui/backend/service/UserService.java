@@ -27,11 +27,18 @@ import java.util.stream.Collectors;
 @Service
 public class UserService {
 
+    private static final Set<String> TEAM_ROLES = Set.of(
+            "ROLE_ADMIN", "ROLE_STAFF", "ROLE_PRINCIPAL_ARCHITECT", "ROLE_PROJECT_MANAGER",
+            "ROLE_FINANCE_MAKER", "ROLE_FINANCE_CHECKER", "ROLE_FINANCE_CHECKER_1",
+            "ROLE_FINANCE_CHECKER_2", "ROLE_FINANCE_MANAGER", "ROLE_FINANCE_LEAD",
+            "ROLE_FINANCE_AUDIT", "ROLE_SITE_SUPERVISOR"
+    );
+
     private static final Set<String> ALLOWED_ROLES = Set.of(
-            "ROLE_ADMIN", "ROLE_STAFF", "ROLE_FINANCE_MAKER", "ROLE_FINANCE_CHECKER",
-            "ROLE_FINANCE_CHECKER_1", "ROLE_FINANCE_CHECKER_2", "ROLE_FINANCE_MANAGER",
-            "ROLE_FINANCE_LEAD", "ROLE_FINANCE_AUDIT", "ROLE_SITE_SUPERVISOR",
-            "ROLE_CLIENT", "ROLE_VENDOR"
+            "ROLE_ADMIN", "ROLE_STAFF", "ROLE_PRINCIPAL_ARCHITECT", "ROLE_PROJECT_MANAGER",
+            "ROLE_FINANCE_MAKER", "ROLE_FINANCE_CHECKER", "ROLE_FINANCE_CHECKER_1",
+            "ROLE_FINANCE_CHECKER_2", "ROLE_FINANCE_MANAGER", "ROLE_FINANCE_LEAD",
+            "ROLE_FINANCE_AUDIT", "ROLE_SITE_SUPERVISOR", "ROLE_CLIENT", "ROLE_VENDOR"
     );
 
     @Autowired
@@ -129,6 +136,10 @@ public class UserService {
 
         if (req.getFullName() != null) {
             user.setFullName(req.getFullName().trim());
+        }
+        if (req.getEmail() != null) {
+            String cleanEmail = normalizeAndValidateEmail(req.getEmail(), user.getId());
+            user.setEmail(cleanEmail);
         }
         if (req.getPhone() != null) {
             user.setPhone(req.getPhone().trim());
@@ -295,5 +306,174 @@ public class UserService {
                 .build());
 
         return toSummary(saved);
+    }
+
+    @Transactional
+    public UserSummaryResponse createTeamMember(CreateTeamMemberRequest req, Authentication auth) {
+        if (!isAdmin(auth.getAuthorities())) {
+            throw new AccessDeniedException("Only studio administrators can create team profiles");
+        }
+        if (req == null || !StringUtils.hasText(req.getUsername())) {
+            throw new IllegalArgumentException("Username is required");
+        }
+        if (!StringUtils.hasText(req.getFullName())) {
+            throw new IllegalArgumentException("Full name is required");
+        }
+        if (!StringUtils.hasText(req.getPassword()) || req.getPassword().length() < 8) {
+            throw new IllegalArgumentException("Initial password must be at least 8 characters long");
+        }
+
+        String username = req.getUsername().trim();
+        if (userRepository.existsByUsername(username)) {
+            throw new IllegalArgumentException("Username already exists: " + username);
+        }
+
+        String normalizedRole = normalizeRole(req.getRole());
+        if (!TEAM_ROLES.contains(normalizedRole)) {
+            throw new IllegalArgumentException("Invalid team role: " + normalizedRole + ". Client and Vendor accounts must be created in their directories.");
+        }
+
+        String cleanEmail = normalizeAndValidateEmail(req.getEmail(), null);
+        boolean active = !"SUSPENDED".equalsIgnoreCase(req.getStatus());
+        String status = active ? "ACTIVE" : "SUSPENDED";
+
+        UserEntity entity = UserEntity.builder()
+                .username(username)
+                .password(passwordEncoder.encode(req.getPassword()))
+                .role(normalizedRole)
+                .fullName(req.getFullName().trim())
+                .email(cleanEmail)
+                .phone(StringUtils.hasText(req.getPhone()) ? req.getPhone().trim() : null)
+                .status(status)
+                .enabled(active)
+                .tokenVersion(1L)
+                .build();
+
+        UserEntity saved = userRepository.save(entity);
+
+        auditEventRepository.save(AuditEventEntity.builder()
+                .actorId(auth.getName())
+                .actorRole("ADMIN")
+                .action("TEAM_MEMBER_CREATED")
+                .entityName("User")
+                .entityId(saved.getId().toString())
+                .detailsJson(String.format("{\"username\": \"%s\", \"role\": \"%s\"}",
+                        saved.getUsername(), saved.getRole()))
+                .build());
+
+        return toSummary(saved);
+    }
+
+    @Transactional
+    public UserSummaryResponse updateUserProfileByAdmin(Long userId, AdminUpdateUserProfileRequest req, Authentication auth) {
+        if (!isAdmin(auth.getAuthorities())) {
+            throw new AccessDeniedException("Only studio administrators can update team profiles");
+        }
+
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+
+        boolean isSelf = auth.getName().equals(user.getUsername());
+        boolean revokeSessions = false;
+
+        if (req.getFullName() != null) {
+            String trimmedName = req.getFullName().trim();
+            if (!StringUtils.hasText(trimmedName)) {
+                throw new IllegalArgumentException("Full name cannot be empty");
+            }
+            user.setFullName(trimmedName);
+        }
+
+        if (req.getEmail() != null) {
+            user.setEmail(normalizeAndValidateEmail(req.getEmail(), user.getId()));
+        }
+
+        if (req.getPhone() != null) {
+            user.setPhone(StringUtils.hasText(req.getPhone()) ? req.getPhone().trim() : null);
+        }
+
+        if (StringUtils.hasText(req.getRole())) {
+            String newRole = normalizeRole(req.getRole());
+            if (!ALLOWED_ROLES.contains(newRole)) {
+                throw new IllegalArgumentException("Invalid role specified: " + newRole);
+            }
+            if (!newRole.equals(user.getRole())) {
+                if (isSelf) {
+                    throw new IllegalStateException("Security Invariant Violation: Administrators cannot modify their own role.");
+                }
+                user.setRole(newRole);
+                revokeSessions = true;
+            }
+        }
+
+        if (req.getEnabled() != null || StringUtils.hasText(req.getStatus())) {
+            boolean shouldEnable = req.getEnabled() != null
+                    ? req.getEnabled()
+                    : !"SUSPENDED".equalsIgnoreCase(req.getStatus());
+            if (isSelf && !shouldEnable) {
+                throw new IllegalStateException("Security Invariant Violation: Administrators cannot deactivate their own account.");
+            }
+            String nextStatus = shouldEnable ? "ACTIVE" : "SUSPENDED";
+            if (user.isEnabled() != shouldEnable || !nextStatus.equals(user.getStatus())) {
+                user.setEnabled(shouldEnable);
+                user.setStatus(nextStatus);
+                if (!shouldEnable) {
+                    revokeSessions = true;
+                }
+            }
+        }
+
+        if (StringUtils.hasText(req.getNewPassword())) {
+            if (req.getNewPassword().length() < 8) {
+                throw new IllegalArgumentException("Password must be at least 8 characters long");
+            }
+            user.setPassword(passwordEncoder.encode(req.getNewPassword()));
+            revokeSessions = true;
+        }
+
+        if (revokeSessions) {
+            revokeUserSessions(user);
+        }
+
+        UserEntity saved = userRepository.save(user);
+
+        auditEventRepository.save(AuditEventEntity.builder()
+                .actorId(auth.getName())
+                .actorRole("ADMIN")
+                .action("USER_PROFILE_UPDATED_BY_ADMIN")
+                .entityName("User")
+                .entityId(saved.getId().toString())
+                .detailsJson(String.format("{\"username\": \"%s\", \"role\": \"%s\", \"status\": \"%s\"}",
+                        saved.getUsername(), saved.getRole(), saved.getStatus()))
+                .build());
+
+        return toSummary(saved);
+    }
+
+    private String normalizeRole(String rawRole) {
+        if (!StringUtils.hasText(rawRole)) {
+            throw new IllegalArgumentException("Role is required");
+        }
+        String normalized = rawRole.trim().toUpperCase();
+        return normalized.startsWith("ROLE_") ? normalized : "ROLE_" + normalized;
+    }
+
+    private String normalizeAndValidateEmail(String rawEmail, Long excludeUserId) {
+        if (!StringUtils.hasText(rawEmail)) {
+            return null;
+        }
+        String cleanEmail = rawEmail.trim().toLowerCase();
+        userRepository.findByEmail(cleanEmail).ifPresent(existing -> {
+            if (excludeUserId == null || !existing.getId().equals(excludeUserId)) {
+                throw new IllegalArgumentException("Email is already registered to another account: " + cleanEmail);
+            }
+        });
+        return cleanEmail;
+    }
+
+    private void revokeUserSessions(UserEntity user) {
+        user.setTokenVersion(user.getTokenVersion() + 1);
+        refreshTokenRepository.revokeAllForUser(user.getUsername());
+        tokenRevocationService.revokeAllForUser(user.getUsername());
     }
 }

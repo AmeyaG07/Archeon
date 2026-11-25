@@ -102,6 +102,8 @@ public class SecurityConfig {
                         // 2. Protected Identity Domain (Users, Clients, Vendors, Invitations)
                         // A. User Administration (Admin Only)
                         .requestMatchers(HttpMethod.GET, "/api/users").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/users", "/api/users/").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/users/*").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/users/*/role").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/users/*/status").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/users/*").authenticated()

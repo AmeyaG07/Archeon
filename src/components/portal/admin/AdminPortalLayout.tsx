@@ -34,6 +34,7 @@ export type AdminPortalSection =
   | "leads"
   | "clients"
   | "vendors"
+  | "team"
   | "invoices"
   | "cash-settlements"
   | "finance-reports"
@@ -105,6 +106,12 @@ const NAVIGATION_GROUPS: NavigationGroup[] = [
         label: "Vendors",
         description: "Trade & contractor directory",
         icon: HardHat,
+      },
+      {
+        id: "team",
+        label: "Team & Profiles",
+        description: "Staff accounts & profiles",
+        icon: ShieldCheck,
       },
     ],
   },
