@@ -102,17 +102,17 @@ export function DualImageUpload({
   return (
     <div className="w-full space-y-2">
       {/* Label & Tabs Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <label className="block font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
           {label} {required && <span className="text-red-500">*</span>}
         </label>
 
         {/* Source Toggle */}
-        <div className="inline-flex rounded-sm border border-[#D8D6D0] bg-[#FAF9F5] p-0.5 text-[10px] font-mono">
+        <div className="inline-flex self-start sm:self-auto shrink-0 rounded-sm border border-[#D8D6D0] bg-[#FAF9F5] p-0.5 text-[10px] font-mono">
           <button
             type="button"
             onClick={() => setActiveTab("device")}
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xs transition-colors ${
+            className={`inline-flex items-center gap-1.5 whitespace-nowrap px-2.5 py-1 rounded-xs transition-colors ${
               activeTab === "device"
                 ? "bg-white font-semibold text-[#171717] shadow-2xs"
                 : "text-[#77736C] hover:text-[#171717]"
@@ -123,7 +123,7 @@ export function DualImageUpload({
           <button
             type="button"
             onClick={() => setActiveTab("drive")}
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xs transition-colors ${
+            className={`inline-flex items-center gap-1.5 whitespace-nowrap px-2.5 py-1 rounded-xs transition-colors ${
               activeTab === "drive"
                 ? "bg-white font-semibold text-[#171717] shadow-2xs"
                 : "text-[#77736C] hover:text-[#171717]"
