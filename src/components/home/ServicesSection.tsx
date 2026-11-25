@@ -139,12 +139,12 @@ export function ServicesSection({
             return (
               <StaggerItem
                 key={service.id}
-                className={`border-b border-r border-white/10 ${
-                  index === 4 ? "sm:col-span-2 lg:col-span-1" : ""
-                }`}
+                className={`border-b border-r border-white/10 ${index === 4 ? "sm:col-span-2 lg:col-span-1" : ""
+                  }`}
               >
                 <button
                   type="button"
+                  data-cursor-label="Explore"
                   onClick={() => {
                     handleSelectDiscipline(service.id);
                     onSelectService(service);
@@ -165,11 +165,7 @@ export function ServicesSection({
 
                   <div>
                     {/* Top Header inside Card */}
-                    <div className="flex items-center justify-between">
-                      <span className="font-mono text-[9px] sm:text-[9.5px] tracking-widest uppercase text-[#B68A4A]">
-                        {service.code}
-                      </span>
-
+                    <div className="flex items-center justify-end">
                       <span className="font-mono text-[10px] text-white/40">
                         0{index + 1}
                       </span>

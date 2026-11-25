@@ -58,29 +58,54 @@ export default function Home() {
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) {
           const mapped: PortfolioProject[] = data.map((p: any) => {
-            const base = siteConfig.projects.find((sp) => sp.id === p.id) || siteConfig.projects[0];
-            let tags: string[] = base.tags;
+            const matchedPreset = siteConfig.projects.find((sp) => sp.id === p.id);
+            let tags: string[] = matchedPreset?.tags ?? [];
             try {
               if (p.tagsJson) tags = JSON.parse(p.tagsJson);
               else if (Array.isArray(p.tags)) tags = p.tags;
             } catch {}
 
+            const category = (p.category || matchedPreset?.category || "Residential") as PortfolioProject["category"];
+            const area = p.area || matchedPreset?.area || "Custom";
+            const status = (p.status || matchedPreset?.status || "Completed") as PortfolioProject["status"];
+            const year = p.projectYear || p.year || matchedPreset?.year || "2026";
+            const summary = p.summary || matchedPreset?.heroSummary || "";
+
+            const dynamicMetrics =
+              matchedPreset?.metrics && matchedPreset.metrics.length > 0
+                ? matchedPreset.metrics.map((m, idx) =>
+                    idx === 0 ? { ...m, value: area } : m
+                  )
+                : [
+                    { label: "Built-Up Area", value: area },
+                    { label: "Delivery Stage", value: status },
+                    { label: "Completion Year", value: year },
+                  ];
+
+            const dynamicDeliverables = matchedPreset?.deliverables ?? [
+              `${category} Concept & Planning`,
+              "3D Architectural Visualisation",
+              "GFC Working Drawings",
+            ];
+
             return {
-              ...base,
-              id: p.id || base.id,
-              code: p.code || base.code,
-              title: p.title || base.title,
-              image: p.image || base.image,
-              category: (p.category || base.category) as any,
-              location: p.location || base.location,
-              area: p.area || base.area,
-              status: (p.status || base.status) as any,
-              year: p.projectYear || p.year || base.year,
-              heroSummary: p.summary || base.heroSummary,
-              brief: p.summary || base.brief,
-              designResponse: p.summary || base.designResponse,
-              tags: tags.length > 0 ? tags : base.tags,
-              accentColor: p.accentColor || base.accentColor,
+              ...(matchedPreset || siteConfig.projects[0]),
+              id: p.id || matchedPreset?.id || String(Math.random()),
+              code: p.code || matchedPreset?.code || "ARCHEON_PRJ",
+              title: p.title || matchedPreset?.title || "Architectural Commission",
+              image: p.image || matchedPreset?.image,
+              category,
+              location: p.location || matchedPreset?.location || "India",
+              area,
+              status,
+              year,
+              heroSummary: summary,
+              brief: matchedPreset ? (p.summary || matchedPreset.brief) : summary,
+              designResponse: matchedPreset ? matchedPreset.designResponse : "",
+              deliverables: dynamicDeliverables,
+              metrics: dynamicMetrics,
+              tags: tags.length > 0 ? tags : ["Architecture", category],
+              accentColor: p.accentColor || matchedPreset?.accentColor || "#A58A64",
             };
           });
           setProjects(mapped);
@@ -159,7 +184,7 @@ export default function Home() {
           <ProjectDetailModal
             project={selectedProject}
             onClose={() => setSelectedProject(null)}
-            onEnquire={() => openConsultationWithService()}
+            onEnquire={(serviceId) => openConsultationWithService(serviceId)}
           />
 
           <ConsultationModal

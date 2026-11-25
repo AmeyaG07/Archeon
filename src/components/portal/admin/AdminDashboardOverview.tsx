@@ -1,6 +1,7 @@
 
 "use client";
 
+import { PortalDashboardSkeleton } from "@/components/portal/shared/PortalSkeleton";
 import {
   Activity,
   AlertCircle,
@@ -169,13 +170,7 @@ export function AdminDashboardOverview({
   onOpenActivity,
 }: AdminDashboardOverviewProps) {
   if (loading && !data) {
-    return (
-      <div className="flex min-h-[450px] items-center justify-center bg-[#F2F0EB]">
-        <p className="font-mono text-[10px] uppercase tracking-widest text-[#99958D]">
-          Loading studio operations...
-        </p>
-      </div>
-    );
+    return <PortalDashboardSkeleton label="Loading studio operations..." />;
   }
 
   if (!data) {

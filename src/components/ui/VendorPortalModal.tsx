@@ -73,15 +73,15 @@ export function VendorPortalModal({ isOpen, onClose }: VendorPortalModalProps) {
             transition={{ type: "spring", stiffness: 320, damping: 30 }}
             className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-3xl border border-[#C6A779]/30 bg-[#0C0B0A]/95 backdrop-blur-2xl p-5 sm:p-8 md:p-9 shadow-[0_25px_80px_rgba(0,0,0,0.95),inset_0_1px_1px_rgba(255,255,255,0.12)] text-[#F2F0EB] overscroll-contain [scrollbar-width:thin] [scrollbar-color:#2a2725_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-stone-800 [&::-webkit-scrollbar-thumb]:rounded-full"
           >
-            {/* Top Bar */}
-            <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-6">
-              <div className="flex items-center gap-2.5">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#C6A779]/15 border border-[#C6A779]/40 text-[#C6A779]">
-                  <Lock size={12} />
-                </span>
-                <span className="font-mono text-[10.5px] tracking-[0.22em] uppercase text-[#C6A779] font-medium">
-                  ARCHEON ATELIER // FABRICATOR & VENDOR DESK
-                </span>
+            {/* Clean Header & Close Button */}
+            <div className="flex items-start justify-between gap-4 border-b border-white/10 pb-5 mb-6">
+              <div>
+                <h2 className="font-serif text-2xl sm:text-3xl text-white tracking-tight mb-1.5">
+                  Vendor &amp; Contractor Portal
+                </h2>
+                <p className="font-['Outfit',sans-serif] text-[13.5px] text-[#C2BEB6] leading-relaxed font-light">
+                  Secure conduit for verified contractors, stone fabricators, MEP engineers, and material suppliers. Submit GST tax invoices, audit purchase orders, log site delivery receipts, and track milestone disbursements.
+                </p>
               </div>
               <button
                 type="button"
@@ -89,21 +89,11 @@ export function VendorPortalModal({ isOpen, onClose }: VendorPortalModalProps) {
                   playSfx("ui-short");
                   onClose();
                 }}
-                className="w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.14] border border-white/10 flex items-center justify-center text-stone-400 hover:text-white transition-all cursor-pointer"
+                className="w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.14] border border-white/10 flex items-center justify-center text-stone-400 hover:text-white transition-all cursor-pointer shrink-0"
                 aria-label="Close modal"
               >
                 <X className="w-4 h-4" />
               </button>
-            </div>
-
-            {/* Title & Description */}
-            <div className="mb-6">
-              <h2 className="font-serif text-2xl sm:text-3xl text-white tracking-tight mb-2">
-                Vendor & Contractor Portal
-              </h2>
-              <p className="font-['Outfit',sans-serif] text-[13.5px] text-[#C2BEB6] leading-relaxed font-light">
-                Secure conduit for verified contractors, stone fabricators, MEP engineers, and material suppliers. Submit GST tax invoices, audit purchase orders, log site delivery receipts, and track milestone disbursements.
-              </p>
             </div>
 
             {/* Vendor Capabilities Grid */}

@@ -1,6 +1,7 @@
 
 "use client";
 
+import { PortalDashboardSkeleton } from "@/components/portal/shared/PortalSkeleton";
 import {
   ArrowUpRight,
   Building2,
@@ -103,13 +104,7 @@ export function ClientPortalDashboard({
   );
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#F2F0EB] p-8">
-        <p className="text-sm text-[#77736C]">
-          Loading your client dashboard...
-        </p>
-      </div>
-    );
+    return <PortalDashboardSkeleton label="Loading your client dashboard..." />;
   }
 
   if (error) {

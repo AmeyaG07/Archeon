@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useRef, useState, useEffect } from "react";
@@ -134,7 +135,7 @@ export function SiteFooter({
   const [studioProfile, setStudioProfile] = useState<StudioProfileData>(DEFAULT_STUDIO_PROFILE);
 
   useEffect(() => {
-    fetchPublicStudioProfile().then(setStudioProfile).catch(() => {});
+    fetchPublicStudioProfile().then(setStudioProfile).catch(() => { });
   }, []);
 
   const isBuildingRef = useRef<boolean>(false);
@@ -262,7 +263,7 @@ export function SiteFooter({
         if (typeof (window as any).lenis?.scrollTo === "function") {
           try {
             (window as any).lenis.scrollTo(top);
-          } catch {}
+          } catch { }
         }
       }
     }
@@ -273,7 +274,7 @@ export function SiteFooter({
     if (typeof (window as any).lenis?.scrollTo === "function") {
       try {
         (window as any).lenis.scrollTo(0);
-      } catch {}
+      } catch { }
     }
   };
 
@@ -290,10 +291,10 @@ export function SiteFooter({
       />
 
       <div className="editorial-container relative z-10 pt-10 lg:pt-12 pb-6 lg:pb-8">
-        
+
         {/* Main Section: Left (Clock Animation) & Right (4 Columns) */}
         <div className="flex flex-col lg:flex-row gap-10 xl:gap-14 items-start">
-          
+
           {/* Left Side: Clock Animation Logo & Interactive Replay / Hover Trigger */}
           <div className="w-full lg:w-[260px] shrink-0 flex flex-col items-center lg:items-start">
             <div
@@ -324,7 +325,7 @@ export function SiteFooter({
           {/* Right Side: 4-Column Content with Multi-Arrow Swarm & Row Reveals */}
           <div className="flex-1 min-w-0 w-full lg:border-l lg:border-white/15 lg:pl-10 xl:pl-12">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 lg:gap-6 xl:gap-8">
-              
+
               {/* Column 1: EXPLORE (3 Arrows in 3 Rows: Top, Bottom-Left, Below) */}
               <div className="relative flex flex-col">
                 {COLUMN_SWARM_ARROWS.explore.map((arrow) => (

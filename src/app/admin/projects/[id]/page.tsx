@@ -20,6 +20,8 @@ import {
   UserPlus,
 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
+import { emitToast } from "@/providers/ToastProvider";
+import { PortalDashboardSkeleton } from "@/components/portal/shared/PortalSkeleton";
 import { DualImageUpload } from "@/components/ui/DualImageUpload";
 import { AdminAssignVendorModal } from "@/components/portal/admin/AdminAssignVendorModal";
 
@@ -158,10 +160,12 @@ export default function AdminProjectDetailPage() {
       });
       setNewVisitDate(visitDate);
       setMessage("Site visit date successfully updated.");
+      emitToast("Site visit date logged to project timeline.", "success");
       await loadData();
     } catch (err: unknown) {
       console.error("Failed to log site visit:", err);
       setMessage("Failed to log site visit date.");
+      emitToast("Could not update site visit date.", "error");
     } finally {
       setActionLoading(false);
       setTimeout(() => setMessage(null), 4000);
@@ -199,10 +203,12 @@ export default function AdminProjectDetailPage() {
       setPhotoNote("");
       setShowPhotoForm(false);
       setMessage("Client progress update published successfully.");
+      emitToast("Progress update published to client portal.", "success");
       await loadData();
     } catch (err: unknown) {
       console.error("Failed to post progress update:", err);
       setMessage("Failed to upload progress update.");
+      emitToast("Failed to publish progress update.", "error");
     } finally {
       setActionLoading(false);
       setTimeout(() => setMessage(null), 4000);
@@ -210,14 +216,7 @@ export default function AdminProjectDetailPage() {
   };
 
   if (loading && !project) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center p-8">
-        <div className="flex items-center gap-3 font-mono text-xs uppercase tracking-widest text-[#B68A4A]">
-          <RefreshCw className="h-4 w-4 animate-spin" />
-          Loading Project Workspace...
-        </div>
-      </div>
-    );
+    return <PortalDashboardSkeleton label="Loading Project Workspace..." />;
   }
 
   return (

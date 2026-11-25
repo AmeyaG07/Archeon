@@ -68,15 +68,15 @@ export function ServiceModal({ service, onClose, onEnquire }: ServiceModalProps)
             transition={{ type: "spring", stiffness: 320, damping: 30 }}
             className="relative w-full max-w-2xl max-h-[88vh] overflow-y-auto rounded-3xl border border-[#C6A779]/30 bg-[#0C0B0A]/95 backdrop-blur-2xl p-5 sm:p-8 md:p-9 shadow-[0_25px_80px_rgba(0,0,0,0.95),inset_0_1px_1px_rgba(255,255,255,0.12)] text-[#F2F0EB] [scrollbar-width:thin] [scrollbar-color:#2a2725_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-stone-800 [&::-webkit-scrollbar-thumb]:rounded-full"
           >
-            {/* Top Bar: Atelier Monogram Badge & Close Button */}
-            <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-6">
-              <div className="flex items-center gap-2.5">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#C6A779]/15 border border-[#C6A779]/40 text-[#C6A779]">
-                  <Compass size={13} className="animate-[spin_24s_linear_infinite]" />
-                </span>
-                <span className="font-mono text-[10.5px] tracking-[0.24em] uppercase text-[#C6A779] font-medium">
-                  ARCHEON ATELIER // {service.code}
-                </span>
+            {/* Clean Title Header & Close Button */}
+            <div className="flex items-start justify-between gap-4 border-b border-white/10 pb-5 mb-6">
+              <div>
+                <h2 className="font-serif text-3xl sm:text-4xl text-[#F2F0EB] tracking-tight mb-2">
+                  {service.title}
+                </h2>
+                <p className="font-['Outfit',sans-serif] text-[14.5px] leading-relaxed text-[#D6D3CD] font-light">
+                  {service.tagline}
+                </p>
               </div>
               <button
                 type="button"
@@ -84,42 +84,30 @@ export function ServiceModal({ service, onClose, onEnquire }: ServiceModalProps)
                   playSfx("leave-project");
                   onClose();
                 }}
-                className="w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.14] border border-white/10 flex items-center justify-center text-stone-400 hover:text-white transition-all cursor-pointer"
+                className="w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.14] border border-white/10 flex items-center justify-center text-stone-400 hover:text-white transition-all cursor-pointer shrink-0"
                 aria-label="Close modal"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Title & Tagline */}
-            <div className="mb-6">
-              <h2 className="font-serif text-3xl sm:text-4xl text-[#F2F0EB] tracking-tight mb-2">
-                {service.title}
-              </h2>
-              <p className="font-['Outfit',sans-serif] text-[14.5px] leading-relaxed text-[#D6D3CD] font-light">
-                {service.tagline}
-              </p>
-            </div>
-
             {/* Quick Metadata Info Pills */}
-            <div className="flex flex-wrap items-center gap-2.5 mb-7 p-3 rounded-xl bg-white/[0.03] border border-white/10">
-              {service.timeline && (
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-black/40 border border-white/10 text-xs font-['Outfit',sans-serif] text-[#C6A779]">
-                  <Clock size={13} className="text-[#C6A779]" />
-                  <span>Timeline: <strong className="text-white font-medium">{service.timeline}</strong></span>
-                </div>
-              )}
-              {service.leadArchitect && (
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-black/40 border border-white/10 text-xs font-['Outfit',sans-serif] text-stone-300">
-                  <ShieldCheck size={13} className="text-[#C6A779]" />
-                  <span>Principal: <strong className="text-white font-medium">{service.leadArchitect}</strong></span>
-                </div>
-              )}
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-black/40 border border-white/10 text-xs font-['Outfit',sans-serif] text-stone-300">
-                <Layers size={13} className="text-[#C6A779]" />
-                <span>Nagpur Studio // Scale 1:1</span>
+            {(service.timeline || service.leadArchitect) && (
+              <div className="flex flex-wrap items-center gap-2.5 mb-7 p-3 rounded-xl bg-white/[0.03] border border-white/10">
+                {service.timeline && (
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-black/40 border border-white/10 text-xs font-['Outfit',sans-serif] text-[#C6A779]">
+                    <Clock size={13} className="text-[#C6A779]" />
+                    <span>Timeline: <strong className="text-white font-medium">{service.timeline}</strong></span>
+                  </div>
+                )}
+                {service.leadArchitect && (
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-black/40 border border-white/10 text-xs font-['Outfit',sans-serif] text-stone-300">
+                    <ShieldCheck size={13} className="text-[#C6A779]" />
+                    <span>Principal: <strong className="text-white font-medium">{service.leadArchitect}</strong></span>
+                  </div>
+                )}
               </div>
-            </div>
+            )}
 
             {/* Atelier Philosophy Rationale */}
             {service.philosophy && (

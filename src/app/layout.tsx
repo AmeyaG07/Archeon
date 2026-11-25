@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/providers/AuthProvider";
 import { MotionProvider } from "@/providers/MotionProvider";
+import { ToastProvider } from "@/providers/ToastProvider";
 import { ClientCursorWrapper } from "@/components/ui/ClientCursorWrapper";
 
 export const metadata: Metadata = {
@@ -48,7 +49,9 @@ export default function RootLayout({
         <MotionProvider>
           <ClientCursorWrapper />
           <AuthProvider>
-            {children}
+            <ToastProvider>
+              {children}
+            </ToastProvider>
           </AuthProvider>
         </MotionProvider>
       </body>

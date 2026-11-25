@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { motion, useScroll, useSpring } from "framer-motion";
 import { ArrowUpRight, Shield, ChevronDown, Phone, Mail } from "lucide-react";
 import { useAuth } from "@/providers/AuthProvider";
 
@@ -34,8 +35,16 @@ export function Header({
   const { user, isAuthenticated } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [activeSection, setActiveSection] = useState<string | null>(null);
   const [portalDropdownOpen, setPortalDropdownOpen] = useState(false);
   const portalDropdownRef = useRef<HTMLDivElement>(null);
+
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 240,
+    damping: 32,
+    restDelta: 0.001,
+  });
 
   const handleClientPortalClick = () => {
     setPortalDropdownOpen(false);
@@ -69,14 +78,45 @@ export function Header({
     };
   }, [portalDropdownOpen]);
 
-  // Scroll listener for dynamic glassmorphic elevation
+  // Scroll listener for dynamic glassmorphic elevation and active section scroll-spy
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 25);
+    const updateOnScroll = () => {
+      const y = window.scrollY;
+      setScrolled(y > 25);
+
+      if (window.location.pathname !== "/") {
+        setActiveSection(null);
+        return;
+      }
+
+      const threshold = Math.min(window.innerHeight * 0.32, 260);
+      let current: string | null = null;
+      for (const item of navigation) {
+        const el = document.querySelector(item.href);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          if (rect.top <= threshold) {
+            current = item.href;
+          }
+        }
+      }
+
+      const nearBottom =
+        window.innerHeight + y >= document.documentElement.scrollHeight - 80;
+      if (nearBottom) {
+        current = "#contact";
+      }
+
+      setActiveSection(current);
     };
-    handleScroll();
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+
+    updateOnScroll();
+    window.addEventListener("scroll", updateOnScroll, { passive: true });
+    window.addEventListener("resize", updateOnScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", updateOnScroll);
+      window.removeEventListener("resize", updateOnScroll);
+    };
   }, []);
 
   // Lock body scroll when mobile menu is open
@@ -109,6 +149,7 @@ export function Header({
         router.push("/" + href);
         return;
       }
+      setActiveSection(href);
       const target = document.querySelector(href) as HTMLElement | null;
       if (target) {
         const top = Math.max(0, target.getBoundingClientRect().top + window.scrollY - 75);
@@ -168,26 +209,43 @@ export function Header({
             </Link>
           </div>
 
-          {/* Column 2: Center Navigation Links (Cleanly Spaced, Capitalized, No Numbers) */}
+          {/* Column 2: Center Navigation Links (Cleanly Spaced, Capitalized, Scroll-Spy Active Indicator) */}
           <nav
             aria-label="Main navigation"
             className="hidden lg:flex items-center justify-center gap-6 xl:gap-9 mx-auto"
           >
-            {navigation.map((item) => (
-              <a
-                key={item.label}
-                href={item.href}
-                onClick={() => {
-                  handleNavigation(item.href);
-                }}
-                className="group relative py-1.5 px-1 text-[15px] xl:text-[17px] font-['Outfit',sans-serif] font-medium tracking-[0.1em] text-[#E5E2D9] hover:text-white transition-colors duration-300 cursor-pointer"
-              >
-                <span className="capitalize pointer-events-none">{item.label}</span>
+            {navigation.map((item) => {
+              const isActive = activeSection === item.href;
+              return (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  aria-current={isActive ? "location" : undefined}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleNavigation(item.href);
+                  }}
+                  className={`group relative py-1.5 px-1 text-[15px] xl:text-[17px] font-['Outfit',sans-serif] font-medium tracking-[0.1em] transition-colors duration-300 cursor-pointer ${
+                    isActive
+                      ? "text-[#F4E6C8]"
+                      : "text-[#E5E2D9] hover:text-white"
+                  }`}
+                >
+                  <span className="capitalize pointer-events-none">{item.label}</span>
 
-                {/* Refined Gold Ambient Underline Indicator */}
-                <span className="absolute bottom-0 left-1/2 h-[1.5px] w-0 -translate-x-1/2 bg-gradient-to-r from-transparent via-[#C6A779] to-transparent transition-all duration-300 group-hover:w-full shadow-[0_0_8px_rgba(198,167,121,0.8)] pointer-events-none" />
-              </a>
-            ))}
+                  {/* Active Section Sliding Bronze-Gold Indicator */}
+                  {isActive ? (
+                    <motion.span
+                      layoutId="header-active-nav-indicator"
+                      transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                      className="absolute bottom-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent shadow-[0_0_10px_rgba(212,175,55,0.85)] pointer-events-none"
+                    />
+                  ) : (
+                    <span className="absolute bottom-0 left-1/2 h-[1.5px] w-0 -translate-x-1/2 bg-gradient-to-r from-transparent via-[#C6A779] to-transparent transition-all duration-300 group-hover:w-full shadow-[0_0_8px_rgba(198,167,121,0.8)] pointer-events-none" />
+                  )}
+                </a>
+              );
+            })}
           </nav>
 
           {/* Column 3: Right Desktop Action Suite (Portals & Inquire Project) */}
@@ -312,6 +370,13 @@ export function Header({
             </button>
           </div>
         </div>
+
+        {/* Continuous GPU Scroll-Progress Hairline Rail */}
+        <motion.div
+          aria-hidden="true"
+          style={{ scaleX }}
+          className="pointer-events-none absolute bottom-0 left-0 right-0 h-[1.5px] origin-left bg-gradient-to-r from-[#B68A4A] via-[#E8D7B9] to-[#D97724] shadow-[0_0_8px_rgba(198,167,121,0.65)]"
+        />
       </header>
 
       {/* Fullscreen Architectural Mobile Navigation Overlay */}
@@ -342,22 +407,39 @@ export function Header({
 
           {/* Navigation Links in Clean Capitalized Font */}
           <nav aria-label="Mobile navigation" className="flex flex-col space-y-1">
-            {navigation.map((item) => (
-              <a
-                key={item.label}
-                href={item.href}
-                tabIndex={mobileMenuOpen ? 0 : -1}
-                onClick={() => {
-                  handleNavigation(item.href);
-                }}
-                className="group flex items-center justify-between border-b border-white/[0.08] py-4 text-left font-['Outfit',sans-serif] text-2xl font-normal tracking-[0.1em] text-white/90 hover:text-[#C6A779] transition-all cursor-pointer"
-              >
-                <span className="capitalize group-hover:translate-x-2 transition-transform duration-300 pointer-events-none">
-                  {item.label}
-                </span>
-                <ArrowUpRight size={16} className="text-[#B68A4A] opacity-50 group-hover:opacity-100 transition-opacity pointer-events-none" />
-              </a>
-            ))}
+            {navigation.map((item) => {
+              const isActive = activeSection === item.href;
+              return (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  aria-current={isActive ? "location" : undefined}
+                  tabIndex={mobileMenuOpen ? 0 : -1}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleNavigation(item.href);
+                  }}
+                  className={`group flex items-center justify-between border-b border-white/[0.08] py-4 text-left font-['Outfit',sans-serif] text-2xl font-normal tracking-[0.1em] transition-all cursor-pointer ${
+                    isActive
+                      ? "text-[#C6A779]"
+                      : "text-white/90 hover:text-[#C6A779]"
+                  }`}
+                >
+                  <span className="flex items-center gap-3 capitalize group-hover:translate-x-2 transition-transform duration-300 pointer-events-none">
+                    {isActive && (
+                      <span className="h-1.5 w-1.5 rounded-full bg-[#C6A779] shadow-[0_0_6px_rgba(198,167,121,0.9)]" />
+                    )}
+                    <span>{item.label}</span>
+                  </span>
+                  <ArrowUpRight
+                    size={16}
+                    className={`text-[#B68A4A] transition-opacity pointer-events-none ${
+                      isActive ? "opacity-100" : "opacity-50 group-hover:opacity-100"
+                    }`}
+                  />
+                </a>
+              );
+            })}
           </nav>
 
           {/* Portals & Actions */}

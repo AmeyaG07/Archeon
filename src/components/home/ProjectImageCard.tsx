@@ -47,6 +47,7 @@ export function ProjectImageCard({
   return (
     <div
       ref={containerRef}
+      data-cursor-label="View"
       onMouseMove={handleMouseMove}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}

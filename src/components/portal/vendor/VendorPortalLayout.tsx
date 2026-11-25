@@ -6,6 +6,8 @@ import {
   useEffect,
   type ReactNode,
 } from "react";
+import { motion } from "framer-motion";
+import { PortalDashboardSkeleton } from "@/components/portal/shared/PortalSkeleton";
 
 import {
   LayoutDashboard,
@@ -384,13 +386,16 @@ export function VendorPortalLayout({
           {/* Page Content */}
           <main className="min-h-[calc(100vh-76px)]">
             {loading ? (
-              <div className="flex min-h-80 items-center justify-center">
-                <p className="font-mono text-[10px] uppercase tracking-widest text-[#99958D]">
-                  Loading workspace...
-                </p>
-              </div>
+              <PortalDashboardSkeleton label="Loading workspace..." />
             ) : (
-              children
+              <motion.div
+                key={activeSection}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+              >
+                {children}
+              </motion.div>
             )}
           </main>
 

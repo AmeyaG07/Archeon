@@ -10,6 +10,7 @@ import {
 } from "@/components/portal/admin/AdminDashboardOverview";
 import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/providers/AuthProvider";
+import { PortalDashboardSkeleton } from "@/components/portal/shared/PortalSkeleton";
 import { ShieldAlert, LogIn, ArrowRight } from "lucide-react";
 
 export default function AdminDashboardPage() {
@@ -113,13 +114,7 @@ export default function AdminDashboardPage() {
   }, [authLoading, isAuthenticated, loadDashboard]);
 
   if (authLoading) {
-    return (
-      <div className="min-h-[400px] flex items-center justify-center">
-        <p className="font-mono text-xs uppercase tracking-widest text-[#77736C] animate-pulse">
-          Validating Session...
-        </p>
-      </div>
-    );
+    return <PortalDashboardSkeleton label="Validating Session..." />;
   }
 
   if (!isAuthenticated) {
