@@ -22,16 +22,16 @@ public class VendorPaymentMethodEntity {
     @Column(name = "vendor_id", nullable = false, unique = true)
     private UUID vendorId;
 
-    @Column(name = "account_holder_name", nullable = false)
+    @Column(name = "account_holder_name")
     private String accountHolderName;
 
-    @Column(name = "bank_name", nullable = false)
+    @Column(name = "bank_name")
     private String bankName;
 
-    @Column(name = "account_number", nullable = false, length = 100)
+    @Column(name = "account_number", length = 100)
     private String accountNumber;
 
-    @Column(name = "ifsc_code", nullable = false, length = 50)
+    @Column(name = "ifsc_code", length = 50)
     private String ifscCode;
 
     @Column(name = "upi_id", length = 100)

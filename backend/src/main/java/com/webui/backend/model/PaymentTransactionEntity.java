@@ -44,6 +44,7 @@ public class PaymentTransactionEntity {
 
     private LocalDateTime paymentDate;
 
+    @Column(columnDefinition = "TEXT")
     private String proofAttachmentUrl;
 
     @Column(nullable = false)
@@ -53,6 +54,7 @@ public class PaymentTransactionEntity {
 
     private LocalDateTime verifiedAt;
 
+    @Column(columnDefinition = "TEXT")
     private String verificationNotes;
 
     @Builder.Default

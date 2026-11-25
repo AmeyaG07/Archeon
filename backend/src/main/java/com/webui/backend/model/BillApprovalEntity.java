@@ -36,10 +36,13 @@ public class BillApprovalEntity {
     @Builder.Default
     private boolean disputed = false;
 
+    @Column(columnDefinition = "TEXT")
     private String disputeReason;
 
+    @Column(columnDefinition = "TEXT")
     private String billPhotoUrl;
 
+    @Column(columnDefinition = "TEXT")
     private String paymentProofUrl;
 
     private String paymentProofUtr;
@@ -76,6 +79,7 @@ public class BillApprovalEntity {
     @Column(nullable = false)
     private String status; // PENDING_PRIMARY, PENDING_SECONDARY, APPROVED, REJECTED
 
+    @Column(columnDefinition = "TEXT")
     private String rejectionReason;
 
     private boolean isHighValue;
