@@ -389,10 +389,8 @@ export function AdminDashboardOverview({
         </div>
       </section>
 
-      {/* Project and Approval Columns */}
-      <section className="mt-12 grid grid-cols-1 gap-9 xl:grid-cols-2">
-
-        {/* Projects */}
+      {/* Recent Projects */}
+      <section className="mt-12">
         <div>
           <div className="flex items-end justify-between gap-4 border-b border-[#D8D6D0] pb-5">
             <div>
@@ -478,8 +476,10 @@ export function AdminDashboardOverview({
             )}
           </div>
         </div>
+      </section>
 
-        {/* Recent Activity */}
+      {/* Recent Activity (below Recent Projects) */}
+      <section className="mt-12">
         <div>
           <div className="flex items-end justify-between gap-4 border-b border-[#D8D6D0] pb-5">
             <div>
