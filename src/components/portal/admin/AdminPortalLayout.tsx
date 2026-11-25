@@ -107,12 +107,6 @@ const NAVIGATION_GROUPS: NavigationGroup[] = [
         description: "Trade & contractor directory",
         icon: HardHat,
       },
-      {
-        id: "team",
-        label: "Team & Profiles",
-        description: "Staff accounts & profiles",
-        icon: ShieldCheck,
-      },
     ],
   },
   {
@@ -152,6 +146,12 @@ const NAVIGATION_GROUPS: NavigationGroup[] = [
         label: "Website Content",
         description: "Showcase & Philosophy CMS",
         icon: Globe,
+      },
+      {
+        id: "team",
+        label: "Team & Profiles",
+        description: "Staff accounts & profiles",
+        icon: ShieldCheck,
       },
       {
         id: "settings",

@@ -25,7 +25,9 @@ import { useAuth } from "@/providers/AuthProvider";
 import { DualImageUpload } from "@/components/ui/DualImageUpload";
 
 interface BillItem {
-  id: string;
+  id: string | number;
+  billId?: string;
+  invoiceNumber?: string;
   billNumber?: string;
   projectId?: string;
   projectName?: string;
@@ -33,7 +35,7 @@ interface BillItem {
   clientName?: string;
   amount: number;
   tradeCategory?: string;
-  status: "PENDING" | "CASH_REQUESTED" | "PAID_CASH" | "PAID_ONLINE" | "APPROVED" | "REJECTED";
+  status: string;
   billPhotoUrl?: string;
   paymentProofUrl?: string;
   createdAt: string;
@@ -338,7 +340,7 @@ function VendorInvoicesContent() {
                       Client: {p.clientName}
                     </div>
                     <div className="font-semibold text-sm text-[#111111] mt-1">{p.name}</div>
-                    <div className="font-mono text-[10px] text-[#777777] mt-1">Ref: {p.projectReference || p.id.slice(0, 8)}</div>
+                    <div className="font-mono text-[10px] text-[#777777] mt-1">Ref: {p.projectReference || String(p.id ?? "").slice(0, 8)}</div>
                   </div>
                 ))}
               </div>
@@ -396,7 +398,7 @@ function VendorInvoicesContent() {
                         </td>
 
                         <td className="py-3 px-4">
-                          <div className="font-bold text-[#111111]">{bill.billNumber || String(bill.id).slice(0, 8)}</div>
+                          <div className="font-bold text-[#111111]">{bill.invoiceNumber || bill.billNumber || bill.billId || String(bill.id ?? "").slice(0, 8)}</div>
                           <div className="text-[10px] text-[#777777]">{bill.clientName || "Client"}</div>
                         </td>
 
@@ -405,7 +407,7 @@ function VendorInvoicesContent() {
                         </td>
 
                         <td className="py-3 px-4 text-right font-bold text-sm text-[#111111]">
-                          ₹{bill.amount.toLocaleString("en-IN")}
+                          ₹{Number(bill.amount || 0).toLocaleString("en-IN")}
                         </td>
 
                         <td className="py-3 px-4 text-center">
@@ -428,7 +430,7 @@ function VendorInvoicesContent() {
                         <td className="py-3 px-4 text-right">
                           {bill.status === "PENDING" && (
                             <button
-                              onClick={() => handleRequestCash(bill.id)}
+                              onClick={() => handleRequestCash(String(bill.id))}
                               disabled={actionLoading}
                               className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#D97724] text-white hover:bg-[#B45309] font-mono text-[10px] uppercase tracking-wider rounded-sm transition-colors disabled:opacity-50"
                             >
@@ -489,12 +491,12 @@ function VendorInvoicesContent() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#E5E2DC]">
-                  {bills.filter(b => b.status.includes("PAID")).length > 0 ? (
-                    bills.filter(b => b.status.includes("PAID")).map((bill) => (
+                  {bills.filter(b => (b.status || "").includes("PAID")).length > 0 ? (
+                    bills.filter(b => (b.status || "").includes("PAID")).map((bill) => (
                       <tr key={bill.id} className="hover:bg-[#FAF9F5]">
-                        <td className="py-3 px-4 font-bold">{bill.billNumber || bill.id.slice(0, 8)}</td>
+                        <td className="py-3 px-4 font-bold">{bill.invoiceNumber || bill.billNumber || bill.billId || String(bill.id ?? "").slice(0, 8)}</td>
                         <td className="py-3 px-4">{bill.clientName || "Studio Client"}</td>
-                        <td className="py-3 px-4 text-right font-bold text-emerald-700">₹{bill.amount.toLocaleString("en-IN")}</td>
+                        <td className="py-3 px-4 text-right font-bold text-emerald-700">₹{Number(bill.amount || 0).toLocaleString("en-IN")}</td>
                         <td className="py-3 px-4 text-center">{bill.status === "PAID_CASH" ? "Cash Handover" : "Bank Transfer (NEFT/RTGS)"}</td>
                         <td className="py-3 px-4 text-[#777777]">{new Date(bill.createdAt).toLocaleDateString("en-IN")}</td>
                         <td className="py-3 px-4 text-center">

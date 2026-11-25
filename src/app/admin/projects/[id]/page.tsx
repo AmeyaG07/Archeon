@@ -116,7 +116,11 @@ export default function AdminProjectDetailPage() {
       try {
         const res = await apiFetch(`/api/site-updates/projects/${projectId}`);
         const allUpdates = await res.json();
-        setUpdates(Array.isArray(allUpdates) ? allUpdates : []);
+        // Deduplicate by id to prevent React duplicate-key warnings
+        const deduped = Array.isArray(allUpdates)
+          ? [...new Map(allUpdates.map((u: SiteUpdate) => [u.id, u])).values()]
+          : [];
+        setUpdates(deduped);
       } catch {
         setUpdates([]);
       }
@@ -125,7 +129,10 @@ export default function AdminProjectDetailPage() {
       try {
         const res = await apiFetch(`/api/site-updates/projects/${projectId}/vendor-updates`);
         const vUpdates = await res.json();
-        setVendorUpdates(Array.isArray(vUpdates) ? vUpdates : []);
+        const dedupedVendor = Array.isArray(vUpdates)
+          ? [...new Map(vUpdates.map((u: SiteUpdate) => [u.id, u])).values()]
+          : [];
+        setVendorUpdates(dedupedVendor);
       } catch {
         setVendorUpdates([]);
       }

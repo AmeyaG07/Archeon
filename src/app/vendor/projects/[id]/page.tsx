@@ -80,12 +80,14 @@ interface SiteUpdate {
 }
 
 interface BillItem {
-  id: string;
+  id: string | number;
+  billId?: string;
+  invoiceNumber?: string;
   billNumber?: string;
   projectId?: string;
   amount: number;
   tradeCategory?: string;
-  status: "PENDING" | "CASH_REQUESTED" | "PAID_CASH" | "PAID_ONLINE" | "APPROVED" | "REJECTED";
+  status: string;
   billPhotoUrl?: string;
   paymentProofUrl?: string;
   createdAt: string;
@@ -126,9 +128,11 @@ export default function VendorProjectDetailPage() {
     setErrorMsg(null);
     try {
       // 1. Project details
+      let loadedProject: ProjectDetail | null = null;
       try {
         const res = await apiFetch(`/api/operational-projects/${projectId}`);
         const proj = await res.json();
+        loadedProject = proj;
         setProject(proj);
       } catch (err) {
         console.error("Failed to load project:", err);
@@ -148,8 +152,14 @@ export default function VendorProjectDetailPage() {
         const bRes = await apiFetch("/api/billing/bills/me");
         const bList = await bRes.json();
         if (Array.isArray(bList)) {
-          const projectBills = bList.filter((b: any) => b.projectId === projectId || b.projectName === project?.name);
-          setBills(projectBills.length > 0 ? projectBills : bList);
+          const projectBills = bList.filter(
+            (b: any) =>
+              String(b.projectId || "") === String(projectId) ||
+              (loadedProject?.projectReference &&
+                String(b.projectId || "") === String(loadedProject.projectReference)) ||
+              (loadedProject?.name && b.projectName === loadedProject.name)
+          );
+          setBills(projectBills);
         }
       } catch {
         setBills([]);
@@ -626,11 +636,11 @@ export default function VendorProjectDetailPage() {
                     {bills.map((b) => (
                       <tr key={b.id} className="hover:bg-[#FAF9F5] transition-colors">
                         <td className="py-3 px-4 font-semibold text-[#111111]">
-                          {b.billNumber || b.id.slice(0, 8)}
+                          {b.invoiceNumber || b.billNumber || b.billId || String(b.id ?? "").slice(0, 8)}
                         </td>
                         <td className="py-3 px-4 text-[#555]">{b.tradeCategory || "Contractor Trade"}</td>
                         <td className="py-3 px-4 text-right font-bold text-sm text-[#111111]">
-                          ₹{b.amount.toLocaleString("en-IN")}
+                          ₹{Number(b.amount || 0).toLocaleString("en-IN")}
                         </td>
                         <td className="py-3 px-4 text-center">
                           <span
@@ -662,7 +672,7 @@ export default function VendorProjectDetailPage() {
                           {b.status === "PENDING" && (
                             <button
                               type="button"
-                              onClick={() => handleRequestCash(b.id)}
+                              onClick={() => handleRequestCash(String(b.id))}
                               disabled={actionLoading}
                               className="px-3 py-1 bg-[#D97724] text-white hover:bg-[#B45309] font-mono text-[10px] uppercase tracking-wider rounded-xs transition-colors disabled:opacity-50 inline-flex items-center gap-1"
                             >
