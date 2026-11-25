@@ -44,7 +44,7 @@ export const typography = {
   fonts: {
     serif: "var(--font-cormorant), 'Cormorant Garamond', Georgia, serif",
     sans: "var(--font-inter), 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-    mono: "var(--font-mono), 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace",
+    mono: "var(--font-inter), 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
   },
   sizes: {
     xs: "0.75rem",     // 12px

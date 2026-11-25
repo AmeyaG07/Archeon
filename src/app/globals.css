@@ -17,7 +17,7 @@
 
   --font-serif: "Cormorant Garamond", Georgia, serif;
   --font-sans: "Inter", Arial, sans-serif;
-  --font-mono: "IBM Plex Mono", monospace;
+  --font-mono: "Inter", Arial, sans-serif;
   --font-cinzel: "Cinzel", Georgia, serif;
   --font-outfit: "Outfit", sans-serif;
 }
@@ -72,7 +72,7 @@
 
   --font-cormorant: "Cormorant Garamond", Georgia, serif;
   --font-inter: "Inter", Arial, sans-serif;
-  --font-mono-stack: "IBM Plex Mono", monospace;
+  --font-mono-stack: "Inter", Arial, sans-serif;
 
   --container-wide: 1440px;
   --container-content: 1280px;
@@ -149,7 +149,10 @@ h6,
 code,
 kbd,
 samp,
-pre,
+pre {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
 .font-mono {
   font-family: var(--font-mono-stack);
 }
