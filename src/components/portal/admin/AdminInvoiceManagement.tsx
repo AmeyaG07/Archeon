@@ -371,7 +371,7 @@ export function AdminInvoiceManagement({
               className="inline-flex items-center gap-2 rounded-sm border border-[#25D366] bg-[#E8F8EE] px-5 py-3 font-mono text-[10px] uppercase tracking-widest text-[#128C7E] hover:bg-[#25D366] hover:text-white transition-colors shadow-xs font-semibold cursor-pointer"
             >
               <MessageSquare size={15} />
-              Notify Clients via WhatsApp
+              Bill Reminder
             </button>
           )}
 
