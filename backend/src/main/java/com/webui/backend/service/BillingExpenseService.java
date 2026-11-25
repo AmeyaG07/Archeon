@@ -367,101 +367,77 @@ public class BillingExpenseService {
                 .collect(Collectors.toMap(VendorEntity::getId, v -> v));
 
         List<VendorExpenseBreakdownDto> vendorBreakdowns = new ArrayList<>();
+        Set<String> processedVendorKeys = new HashSet<>();
         BigDecimal totalExpenses = BigDecimal.ZERO;
         BigDecimal totalSettled = BigDecimal.ZERO;
         BigDecimal totalPending = BigDecimal.ZERO;
 
         for (ProjectVendorAssignmentEntity a : assignments) {
             VendorEntity v = assignedVendorMap.get(a.getVendorId());
-            if (v == null) continue;
+            if (v == null || !processedVendorKeys.add(v.getId().toString().toLowerCase())) continue;
 
-            String vRef = v.getVendorReference();
-            List<BillApprovalEntity> vBills = billsByVendor.getOrDefault(vRef, Collections.emptyList());
-            if (vBills.isEmpty()) {
-                vBills = billsByVendor.getOrDefault(v.getId().toString(), Collections.emptyList());
+            if (v.getVendorReference() != null) processedVendorKeys.add(v.getVendorReference().toLowerCase());
+            if (v.getBusinessName() != null) processedVendorKeys.add(v.getBusinessName().toLowerCase());
+
+            List<BillApprovalEntity> vBills = new ArrayList<>();
+            if (v.getVendorReference() != null && billsByVendor.containsKey(v.getVendorReference())) {
+                vBills.addAll(billsByVendor.get(v.getVendorReference()));
             }
-
-            int settledCount = 0;
-            BigDecimal settledAmt = BigDecimal.ZERO;
-            int pendingCount = 0;
-            BigDecimal pendingAmt = BigDecimal.ZERO;
-
-            for (BillApprovalEntity b : vBills) {
-                if ("PAID_CASH".equalsIgnoreCase(b.getStatus()) || "PAID_ONLINE".equalsIgnoreCase(b.getStatus()) || "APPROVED".equalsIgnoreCase(b.getStatus())) {
-                    settledCount++;
-                    settledAmt = settledAmt.add(b.getAmount());
-                } else {
-                    pendingCount++;
-                    pendingAmt = pendingAmt.add(b.getAmount());
-                }
+            if (billsByVendor.containsKey(v.getId().toString())) {
+                vBills.addAll(billsByVendor.get(v.getId().toString()));
             }
-
-            BigDecimal vendorTotal = settledAmt.add(pendingAmt);
-            totalExpenses = totalExpenses.add(vendorTotal);
-            totalSettled = totalSettled.add(settledAmt);
-            totalPending = totalPending.add(pendingAmt);
 
             VendorPaymentMethodEntity vpm = paymentMethodRepository.findByVendorId(v.getId()).orElse(null);
-
-            vendorBreakdowns.add(VendorExpenseBreakdownDto.builder()
-                    .vendorId(v.getId().toString())
-                    .vendorBusinessName(v.getBusinessName())
-                    .tradeCategory(a.getScopeOfWork() != null ? a.getScopeOfWork() : v.getCategory())
-                    .paymentMethods(vpm)
-                    .settledBillsCount(settledCount)
-                    .settledBillsAmount(settledAmt)
-                    .pendingBillsCount(pendingCount)
-                    .pendingBillsAmount(pendingAmt)
-                    .totalSpending(vendorTotal)
-                    .bills(vBills)
-                    .build());
+            String categoryLabel = a.getScopeOfWork() != null ? a.getScopeOfWork() : v.getCategory();
+            VendorExpenseBreakdownDto dto = buildVendorBreakdown(
+                    v.getId().toString(),
+                    v.getBusinessName(),
+                    categoryLabel,
+                    vpm,
+                    vBills
+            );
+            vendorBreakdowns.add(dto);
+            totalExpenses = totalExpenses.add(dto.getTotalSpending());
+            totalSettled = totalSettled.add(dto.getSettledBillsAmount());
+            totalPending = totalPending.add(dto.getPendingBillsAmount());
         }
 
-        // Also include any vendors who have submitted bills for this project
+        // Also include any un-assigned vendors who submitted bills for this project
         for (Map.Entry<String, List<BillApprovalEntity>> entry : billsByVendor.entrySet()) {
             String vKey = entry.getKey();
-            boolean alreadyProcessed = vendorBreakdowns.stream()
-                    .anyMatch(vb -> vb.getVendorId().equalsIgnoreCase(vKey) || vb.getVendorBusinessName().equalsIgnoreCase(vKey));
-            if (!alreadyProcessed) {
-                VendorEntity v = vendorRepository.findByVendorReference(vKey).orElse(null);
-                if (v == null) {
-                    try {
-                        v = vendorRepository.findById(UUID.fromString(vKey)).orElse(null);
-                    } catch (Exception ignored) {}
-                }
-                List<BillApprovalEntity> vBills = entry.getValue();
-                int settledCount = 0;
-                BigDecimal settledAmt = BigDecimal.ZERO;
-                int pendingCount = 0;
-                BigDecimal pendingAmt = BigDecimal.ZERO;
-                for (BillApprovalEntity b : vBills) {
-                    if ("PAID_CASH".equalsIgnoreCase(b.getStatus()) || "PAID_ONLINE".equalsIgnoreCase(b.getStatus()) || "APPROVED".equalsIgnoreCase(b.getStatus())) {
-                        settledCount++;
-                        settledAmt = settledAmt.add(b.getAmount());
-                    } else {
-                        pendingCount++;
-                        pendingAmt = pendingAmt.add(b.getAmount());
-                    }
-                }
-                BigDecimal vendorTotal = settledAmt.add(pendingAmt);
-                totalExpenses = totalExpenses.add(vendorTotal);
-                totalSettled = totalSettled.add(settledAmt);
-                totalPending = totalPending.add(pendingAmt);
-
-                VendorPaymentMethodEntity vpm = (v != null) ? paymentMethodRepository.findByVendorId(v.getId()).orElse(null) : null;
-                vendorBreakdowns.add(VendorExpenseBreakdownDto.builder()
-                        .vendorId(v != null ? v.getId().toString() : vKey)
-                        .vendorBusinessName(v != null ? v.getBusinessName() : vKey)
-                        .tradeCategory(v != null ? v.getCategory() : (vBills.isEmpty() ? "Contractor" : vBills.get(0).getTradeCategory()))
-                        .paymentMethods(vpm)
-                        .settledBillsCount(settledCount)
-                        .settledBillsAmount(settledAmt)
-                        .pendingBillsCount(pendingCount)
-                        .pendingBillsAmount(pendingAmt)
-                        .totalSpending(vendorTotal)
-                        .bills(vBills)
-                        .build());
+            if (vKey == null || processedVendorKeys.contains(vKey.toLowerCase())) {
+                continue;
             }
+            VendorEntity v = vendorRepository.findByVendorReference(vKey).orElse(null);
+            if (v == null) {
+                try {
+                    v = vendorRepository.findById(UUID.fromString(vKey)).orElse(null);
+                } catch (Exception ignored) {}
+            }
+            if (v != null && (processedVendorKeys.contains(v.getId().toString().toLowerCase())
+                    || (v.getVendorReference() != null && processedVendorKeys.contains(v.getVendorReference().toLowerCase())))) {
+                continue;
+            }
+
+            processedVendorKeys.add(vKey.toLowerCase());
+            if (v != null) {
+                processedVendorKeys.add(v.getId().toString().toLowerCase());
+                if (v.getVendorReference() != null) processedVendorKeys.add(v.getVendorReference().toLowerCase());
+            }
+
+            List<BillApprovalEntity> vBills = entry.getValue();
+            VendorPaymentMethodEntity vpm = (v != null) ? paymentMethodRepository.findByVendorId(v.getId()).orElse(null) : null;
+            VendorExpenseBreakdownDto dto = buildVendorBreakdown(
+                    v != null ? v.getId().toString() : vKey,
+                    v != null ? v.getBusinessName() : vKey,
+                    v != null ? v.getCategory() : (vBills.isEmpty() ? "Contractor" : vBills.get(0).getTradeCategory()),
+                    vpm,
+                    vBills
+            );
+            vendorBreakdowns.add(dto);
+            totalExpenses = totalExpenses.add(dto.getTotalSpending());
+            totalSettled = totalSettled.add(dto.getSettledBillsAmount());
+            totalPending = totalPending.add(dto.getPendingBillsAmount());
         }
 
         return ClientProjectExpenseSummaryDto.builder()
@@ -475,6 +451,43 @@ public class BillingExpenseService {
                 .totalSettledExpenses(totalSettled)
                 .totalPendingExpenses(totalPending)
                 .vendors(vendorBreakdowns)
+                .build();
+    }
+
+    private VendorExpenseBreakdownDto buildVendorBreakdown(
+            String vendorId,
+            String vendorBusinessName,
+            String tradeCategory,
+            VendorPaymentMethodEntity paymentMethods,
+            List<BillApprovalEntity> bills
+    ) {
+        int settledCount = 0;
+        BigDecimal settledAmt = BigDecimal.ZERO;
+        int pendingCount = 0;
+        BigDecimal pendingAmt = BigDecimal.ZERO;
+
+        for (BillApprovalEntity b : bills) {
+            String st = b.getStatus() != null ? b.getStatus().toUpperCase(Locale.ROOT) : "";
+            if ("PAID".equals(st) || "PAID_CASH".equals(st) || "PAID_ONLINE".equals(st) || "APPROVED".equals(st) || "SETTLED".equals(st)) {
+                settledCount++;
+                settledAmt = settledAmt.add(b.getAmount());
+            } else {
+                pendingCount++;
+                pendingAmt = pendingAmt.add(b.getAmount());
+            }
+        }
+
+        return VendorExpenseBreakdownDto.builder()
+                .vendorId(vendorId)
+                .vendorBusinessName(vendorBusinessName)
+                .tradeCategory(tradeCategory)
+                .paymentMethods(paymentMethods)
+                .settledBillsCount(settledCount)
+                .settledBillsAmount(settledAmt)
+                .pendingBillsCount(pendingCount)
+                .pendingBillsAmount(pendingAmt)
+                .totalSpending(settledAmt.add(pendingAmt))
+                .bills(bills)
                 .build();
     }
 

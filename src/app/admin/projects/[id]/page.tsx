@@ -473,7 +473,7 @@ export default function AdminProjectDetailPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E5E3DE]">
-                {expenseSummary.vendors.map((v: any) => {
+                {expenseSummary.vendors.map((v: any, idx: number) => {
                   const sAmt = Number(v.settledBillsAmount ?? v.settledAmount ?? 0);
                   const sCnt = Number(v.settledBillsCount ?? v.settledCount ?? 0);
                   const pAmt = Number(v.pendingBillsAmount ?? v.pendingAmount ?? 0);
@@ -481,7 +481,7 @@ export default function AdminProjectDetailPage() {
                   const tot = Number(v.totalSpending ?? v.totalBilled ?? (sAmt + pAmt));
                   const name = v.vendorBusinessName || v.vendorName || "Contractor";
                   return (
-                    <tr key={v.vendorId || name} className="hover:bg-[#FAF9F5]">
+                    <tr key={`${v.vendorId || name}-${idx}`} className="hover:bg-[#FAF9F5]">
                       <td className="py-4 px-5 font-semibold text-[#111111]">{name}</td>
                       <td className="py-4 px-5 text-xs text-[#777777]">{v.tradeCategory || "Contractor"}</td>
                       <td className="py-4 px-5 text-right font-medium tabular-nums text-[#10B981]">

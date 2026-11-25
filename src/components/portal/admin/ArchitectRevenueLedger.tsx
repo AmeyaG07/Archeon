@@ -661,16 +661,16 @@ export function ArchitectRevenueLedger({
           ))}
         </section>
 
-        {/* EASY LOG ENTRY CARD + CA AUDIT EXCEL REPORT PANEL */}
-        <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* EASY LOG ENTRY CARD (FULL WIDTH) + CA AUDIT EXCEL REPORT PANEL (MOVED BELOW) */}
+        <section className="space-y-6">
           {/* Quick Add Revenue Received / Expense Form */}
-          <div className="lg:col-span-7 rounded-sm border border-[#D8D6D0] bg-white p-5 sm:p-6 space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#EFECE6] pb-3.5">
+          <div className="rounded-sm border border-[#D8D6D0] bg-white p-5 sm:p-7 space-y-5">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#EFECE6] pb-4">
               <div>
                 <p className="font-mono text-[9px] uppercase tracking-widest text-[#9F7947] font-semibold">
                   Quick Entry · Instant Ledger Logging
                 </p>
-                <h2 className="font-serif text-xl text-[#171717] mt-0.5">
+                <h2 className="font-serif text-2xl text-[#171717] mt-0.5">
                   {entryType === "REVENUE" ? "Add Amount Received by Architect" : "Log Architect / Studio Expense"}
                 </h2>
               </div>
@@ -680,7 +680,7 @@ export function ArchitectRevenueLedger({
                 <button
                   type="button"
                   onClick={() => handleSwitchEntryType("REVENUE")}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider rounded-xs transition-colors cursor-pointer ${
+                  className={`inline-flex items-center gap-1.5 px-3.5 py-2 font-mono text-[10px] uppercase tracking-wider rounded-xs transition-colors cursor-pointer ${
                     entryType === "REVENUE"
                       ? "bg-[#171717] text-white font-semibold"
                       : "text-[#77736C] hover:text-[#171717]"
@@ -691,7 +691,7 @@ export function ArchitectRevenueLedger({
                 <button
                   type="button"
                   onClick={() => handleSwitchEntryType("EXPENSE")}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider rounded-xs transition-colors cursor-pointer ${
+                  className={`inline-flex items-center gap-1.5 px-3.5 py-2 font-mono text-[10px] uppercase tracking-wider rounded-xs transition-colors cursor-pointer ${
                     entryType === "EXPENSE"
                       ? "bg-[#9A5147] text-white font-semibold"
                       : "text-[#77736C] hover:text-[#171717]"
@@ -725,7 +725,7 @@ export function ArchitectRevenueLedger({
                   <button
                     type="button"
                     onClick={() => handleSwitchSourceType("CLIENT")}
-                    className={`inline-flex items-center gap-1.5 rounded-sm border px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider transition-colors cursor-pointer ${
+                    className={`inline-flex items-center gap-1.5 rounded-sm border px-3.5 py-2 font-mono text-[10px] uppercase tracking-wider transition-colors cursor-pointer ${
                       sourceType === "CLIENT"
                         ? "border-[#171717] bg-[#171717] text-white"
                         : "border-[#D8D6D0] bg-[#FAF9F6] text-[#55514A]"
@@ -736,7 +736,7 @@ export function ArchitectRevenueLedger({
                   <button
                     type="button"
                     onClick={() => handleSwitchSourceType("VENDOR")}
-                    className={`inline-flex items-center gap-1.5 rounded-sm border px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider transition-colors cursor-pointer ${
+                    className={`inline-flex items-center gap-1.5 rounded-sm border px-3.5 py-2 font-mono text-[10px] uppercase tracking-wider transition-colors cursor-pointer ${
                       sourceType === "VENDOR"
                         ? "border-[#171717] bg-[#171717] text-white"
                         : "border-[#D8D6D0] bg-[#FAF9F6] text-[#55514A]"
@@ -747,7 +747,7 @@ export function ArchitectRevenueLedger({
                   <button
                     type="button"
                     onClick={() => handleSwitchSourceType("DIRECT")}
-                    className={`inline-flex items-center gap-1.5 rounded-sm border px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider transition-colors cursor-pointer ${
+                    className={`inline-flex items-center gap-1.5 rounded-sm border px-3.5 py-2 font-mono text-[10px] uppercase tracking-wider transition-colors cursor-pointer ${
                       sourceType === "DIRECT"
                         ? "border-[#A58A64] bg-[#A58A64] text-white"
                         : "border-[#D8D6D0] bg-[#FAF9F6] text-[#55514A]"
@@ -762,7 +762,7 @@ export function ArchitectRevenueLedger({
                     aria-label="Select Client Source"
                     value={sourceId}
                     onChange={(e) => setSourceId(e.target.value)}
-                    className="mt-2 w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3 py-2 font-mono text-xs text-[#171717]"
+                    className="mt-2.5 w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3.5 py-2.5 font-mono text-xs text-[#171717]"
                   >
                     <option value="">— Leave Client Unspecified / Select Client —</option>
                     {clients.map((c) => (
@@ -778,7 +778,7 @@ export function ArchitectRevenueLedger({
                     aria-label="Select Vendor Source"
                     value={sourceId}
                     onChange={(e) => setSourceId(e.target.value)}
-                    className="mt-2 w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3 py-2 font-mono text-xs text-[#171717]"
+                    className="mt-2.5 w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3.5 py-2.5 font-mono text-xs text-[#171717]"
                   >
                     <option value="">— Leave Vendor Unspecified / Select Vendor —</option>
                     {vendors.map((v) => (
@@ -791,7 +791,7 @@ export function ArchitectRevenueLedger({
               </div>
 
               {/* Amount, Date, Payment Mode */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label className="block font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
                     Amount (₹ INR) *
@@ -804,7 +804,7 @@ export function ArchitectRevenueLedger({
                     value={amountInput}
                     onChange={(e) => setAmountInput(e.target.value)}
                     placeholder="e.g. 75000"
-                    className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:bg-white focus:outline-none"
+                    className="mt-1.5 w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3.5 py-2.5 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:bg-white focus:outline-none"
                   />
                 </div>
 
@@ -817,7 +817,7 @@ export function ArchitectRevenueLedger({
                     required
                     value={txDate}
                     onChange={(e) => setTxDate(e.target.value)}
-                    className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:bg-white focus:outline-none"
+                    className="mt-1.5 w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3.5 py-2.5 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:bg-white focus:outline-none"
                   />
                 </div>
 
@@ -828,9 +828,9 @@ export function ArchitectRevenueLedger({
                   <select
                     value={paymentMode}
                     onChange={(e) => setPaymentMode(e.target.value)}
-                    className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3 py-2 font-mono text-xs text-[#171717]"
+                    className="mt-1.5 w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3.5 py-2.5 font-mono text-xs text-[#171717]"
                   >
-                    <option value="BANK_TRANSFER">Bank / NEFT / RTGS</option>
+                    <option value="BANK_TRANSFER">Bank Transfer / NEFT / RTGS</option>
                     <option value="UPI">UPI</option>
                     <option value="CASH">Cash</option>
                     <option value="CHEQUE">Cheque</option>
@@ -839,7 +839,7 @@ export function ArchitectRevenueLedger({
               </div>
 
               {/* Category, Reference, Notes */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
                     Category
@@ -847,7 +847,7 @@ export function ArchitectRevenueLedger({
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3 py-2 font-mono text-xs text-[#171717]"
+                    className="mt-1.5 w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3.5 py-2.5 font-mono text-xs text-[#171717]"
                   >
                     {(entryType === "REVENUE" ? REVENUE_CATEGORIES : EXPENSE_CATEGORIES).map((c) => (
                       <option key={c} value={c}>
@@ -866,29 +866,29 @@ export function ArchitectRevenueLedger({
                     value={referenceNumber}
                     onChange={(e) => setReferenceNumber(e.target.value)}
                     placeholder="e.g. UTR-994120 / VOUCHER-12"
-                    className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3 py-2 font-mono text-xs text-[#171717]"
+                    className="mt-1.5 w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3.5 py-2.5 font-mono text-xs text-[#171717]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
+                    Audit Notes / Remarks (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Optional remark for Chartered Accountant audit..."
+                    className="mt-1.5 w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3.5 py-2.5 text-xs text-[#171717]"
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
-                  Audit Notes / Remarks (Optional)
-                </label>
-                <input
-                  type="text"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Optional remark for Chartered Accountant audit..."
-                  className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3 py-2 text-xs text-[#171717]"
-                />
-              </div>
-
-              <div className="pt-2">
+              <div className="pt-1">
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="inline-flex items-center gap-2 rounded-sm bg-[#171717] px-5 py-2.5 font-mono text-xs uppercase tracking-wider text-white hover:bg-[#A58A64] disabled:opacity-50 transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-2 rounded-sm bg-[#171717] px-6 py-2.5 font-mono text-xs uppercase tracking-wider text-white hover:bg-[#A58A64] disabled:opacity-50 transition-colors cursor-pointer"
                 >
                   <Wallet size={14} />
                   {submitting
@@ -901,83 +901,120 @@ export function ArchitectRevenueLedger({
             </form>
           </div>
 
-          {/* CA AUDIT EXCEL REPORT GENERATOR & VAULT */}
-          <div className="lg:col-span-5 rounded-sm border border-[#D8D6D0] bg-white p-5 sm:p-6 space-y-4">
-            <div className="border-b border-[#EFECE6] pb-3.5">
-              <p className="font-mono text-[9px] uppercase tracking-widest text-[#1b5e20] font-semibold flex items-center gap-1.5">
-                <FileSpreadsheet size={12} /> Chartered Accountant (CA) Audit Export
-              </p>
-              <h2 className="font-serif text-xl text-[#171717] mt-0.5">
-                Generate &amp; Store Excel Report
-              </h2>
-              <p className="text-xs text-[#77736C] mt-1">
-                Creates an Excel workbook (.xls) with CA Summary + Ledger sheets, downloads immediately, and stores a permanent copy below.
-              </p>
-            </div>
-
-            <div className="space-y-3">
+          {/* CA AUDIT EXCEL REPORT GENERATOR & VAULT (Moved Below & Formatted Readably) */}
+          <div className="rounded-sm border border-[#D8D6D0] bg-white p-5 sm:p-7 space-y-5">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[#EFECE6] pb-4">
               <div>
-                <label className="block font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
-                  Report Scope for CA Audit
-                </label>
-                <select
-                  aria-label="CA Report Period Scope"
-                  value={reportPeriod}
-                  onChange={(e) => setReportPeriod(e.target.value as any)}
-                  className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3 py-2 font-mono text-xs text-[#171717]"
-                >
-                  <option value="YEARLY">Annual Statement ({selectedYear})</option>
-                  <option value="QUARTERLY">Quarterly Statement (Q{currentQuarter} {selectedYear})</option>
-                  <option value="MONTHLY">Monthly Statement ({MONTH_LABELS[selectedMonth - 1]} {selectedYear})</option>
-                  <option value="ALL">Complete Lifetime Ledger</option>
-                </select>
+                <p className="font-mono text-[9px] uppercase tracking-widest text-[#1b5e20] font-semibold flex items-center gap-1.5">
+                  <FileSpreadsheet size={12} /> Chartered Accountant (CA) Audit Export
+                </p>
+                <h2 className="font-serif text-2xl text-[#171717] mt-0.5">
+                  Generate &amp; Store Excel Report
+                </h2>
+                <p className="text-xs text-[#77736C] mt-1 max-w-2xl leading-relaxed">
+                  Exports a structured multi-sheet Excel workbook (.xls) with CA Summary, Revenue/Expense Breakdown, and Full Transaction Ledger for tax filing and audit, while archiving a permanent copy below.
+                </p>
               </div>
 
-              <button
-                type="button"
-                disabled={generatingReport}
-                onClick={handleCreateAndDownloadCaReport}
-                className="w-full inline-flex items-center justify-center gap-2 rounded-sm border border-[#2e7d32] bg-[#f1f8e9] px-4 py-2.5 font-mono text-[11px] uppercase tracking-wider text-[#1b5e20] hover:bg-[#2e7d32] hover:text-white transition-colors font-semibold cursor-pointer disabled:opacity-50"
-              >
-                <FileSpreadsheet size={15} />
-                {generatingReport ? "Generating & Storing..." : "Generate & Store CA Excel (.xls)"}
-              </button>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3 shrink-0">
+                <div className="sm:w-72">
+                  <label className="block font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
+                    Report Scope for CA Audit
+                  </label>
+                  <select
+                    aria-label="CA Report Period Scope"
+                    value={reportPeriod}
+                    onChange={(e) => setReportPeriod(e.target.value as any)}
+                    className="mt-1.5 w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3.5 py-2.5 font-mono text-xs text-[#171717]"
+                  >
+                    <option value="YEARLY">Annual Statement ({selectedYear})</option>
+                    <option value="QUARTERLY">Quarterly Statement (Q{currentQuarter} {selectedYear})</option>
+                    <option value="MONTHLY">Monthly Statement ({MONTH_LABELS[selectedMonth - 1]} {selectedYear})</option>
+                    <option value="ALL">Complete Lifetime Ledger</option>
+                  </select>
+                </div>
+
+                <button
+                  type="button"
+                  disabled={generatingReport}
+                  onClick={handleCreateAndDownloadCaReport}
+                  className="inline-flex items-center justify-center gap-2 rounded-sm border border-[#2e7d32] bg-[#f1f8e9] px-5 py-2.5 font-mono text-[11px] uppercase tracking-wider text-[#1b5e20] hover:bg-[#2e7d32] hover:text-white transition-colors font-semibold cursor-pointer disabled:opacity-50"
+                >
+                  <FileSpreadsheet size={15} />
+                  {generatingReport ? "Generating & Storing..." : "Generate & Store CA Excel (.xls)"}
+                </button>
+              </div>
             </div>
 
-            {/* Stored Reports List */}
-            <div className="pt-2 border-t border-[#EFECE6] space-y-2.5">
-              <p className="font-mono text-[9px] uppercase tracking-widest text-[#77736C]">
-                Stored CA Audit Reports ({reports.length})
-              </p>
+            {/* Stored Reports Table / Cards in Readable Format */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="font-mono text-[10px] uppercase tracking-widest text-[#77736C] font-semibold">
+                  Stored CA Audit Reports ({reports.length})
+                </p>
+                <p className="font-mono text-[9px] uppercase tracking-wider text-[#99958D]">
+                  Archived in Database · Instant Download
+                </p>
+              </div>
 
               {reports.length === 0 ? (
-                <p className="text-xs text-[#77736C] bg-[#FAF8F5] border border-[#EFECE6] p-3 rounded-xs">
-                  No stored CA audit reports yet. Click &ldquo;Generate &amp; Store CA Excel (.xls)&rdquo; above to create and archive your first statement.
+                <p className="text-xs text-[#77736C] bg-[#FAF8F5] border border-[#EFECE6] p-4 rounded-xs">
+                  No stored CA audit reports yet. Select a scope above and click &ldquo;Generate &amp; Store CA Excel (.xls)&rdquo; to create and archive your first statement.
                 </p>
               ) : (
-                <div className="max-h-60 overflow-y-auto space-y-2 pr-1">
-                  {reports.map((rep) => (
-                    <div
-                      key={rep.id}
-                      className="rounded-xs border border-[#E4E1DA] bg-[#FAF8F5] p-3 flex items-center justify-between gap-2"
-                    >
-                      <div className="min-w-0">
-                        <p className="font-mono text-[10px] font-semibold text-[#171717] truncate">
-                          {rep.title}
-                        </p>
-                        <p className="font-mono text-[9px] text-[#77736C] mt-0.5">
-                          {rep.reportCode} · {rep.entryCount} entries · Net {formatCompactInr(Number(rep.netIncome || 0))}
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => onDownloadReport(rep.id, `${rep.reportCode}_CA_Audit.xls`)}
-                        className="inline-flex items-center gap-1 rounded-xs border border-[#D8D6D0] bg-white px-2.5 py-1.5 font-mono text-[9px] uppercase tracking-wider text-[#171717] hover:border-[#171717] shrink-0 cursor-pointer"
-                      >
-                        <Download size={11} /> .xls
-                      </button>
-                    </div>
-                  ))}
+                <div className="overflow-x-auto border border-[#E4E1DA] rounded-xs">
+                  <table className="w-full text-left font-mono text-xs min-w-[640px]">
+                    <thead className="bg-[#FAF8F5] border-b border-[#E4E1DA] text-[9px] uppercase tracking-wider text-[#77736C]">
+                      <tr>
+                        <th className="py-3 px-4">Report Reference</th>
+                        <th className="py-3 px-4">Statement Title &amp; Scope</th>
+                        <th className="py-3 px-4 text-right">Entries</th>
+                        <th className="py-3 px-4 text-right">Total Revenue</th>
+                        <th className="py-3 px-4 text-right">Expenses</th>
+                        <th className="py-3 px-4 text-right">Net Surplus</th>
+                        <th className="py-3 px-4 text-right">Excel Export</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#EFECE6] bg-white">
+                      {reports.map((rep) => (
+                        <tr key={rep.id} className="hover:bg-[#FAF9F5] transition-colors">
+                          <td className="py-3.5 px-4 font-semibold text-[#9F7947] whitespace-nowrap">
+                            {rep.reportCode}
+                          </td>
+                          <td className="py-3.5 px-4">
+                            <p className="font-serif text-sm font-semibold text-[#171717]">
+                              {rep.title}
+                            </p>
+                            <p className="text-[10px] text-[#77736C] mt-0.5">
+                              Scope: {rep.periodFilter} ({rep.reportYear}) · Generated{" "}
+                              {rep.generatedAt ? new Date(rep.generatedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "Today"}
+                            </p>
+                          </td>
+                          <td className="py-3.5 px-4 text-right tabular-nums text-[#55514A]">
+                            {rep.entryCount}
+                          </td>
+                          <td className="py-3.5 px-4 text-right tabular-nums font-semibold text-emerald-800">
+                            {formatInr(Number(rep.totalRevenue || 0))}
+                          </td>
+                          <td className="py-3.5 px-4 text-right tabular-nums text-red-700">
+                            {formatInr(Number(rep.totalExpenses || 0))}
+                          </td>
+                          <td className="py-3.5 px-4 text-right tabular-nums font-bold text-[#171717]">
+                            {formatInr(Number(rep.netIncome || 0))}
+                          </td>
+                          <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                            <button
+                              type="button"
+                              onClick={() => onDownloadReport(rep.id, `${rep.reportCode}_CA_Audit.xls`)}
+                              className="inline-flex items-center gap-1.5 rounded-xs border border-[#2e7d32] bg-[#f1f8e9] px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider font-semibold text-[#1b5e20] hover:bg-[#2e7d32] hover:text-white transition-colors cursor-pointer"
+                            >
+                              <Download size={12} /> Download .XLS
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
             </div>

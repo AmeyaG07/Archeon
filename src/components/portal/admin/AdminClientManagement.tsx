@@ -622,7 +622,81 @@ export function AdminClientManagement({
                 </label>
               </section>
 
-              {/* Portal Access */}
+              {/* Linked Projects */}
+              <section>
+                <div className="flex items-end justify-between border-b border-[#D8D6D0] pb-4">
+                  <div>
+                    <SectionHeading>Project Association</SectionHeading>
+
+                    <h3 className="mt-3 font-serif text-2xl text-[#171717]">
+                      Linked Projects
+                    </h3>
+                  </div>
+
+                  <p className="font-mono text-[9px] text-[#99958D]">
+                    {selectedClient.projects.length} PROJECTS
+                  </p>
+                </div>
+
+                {selectedClient.projects.length === 0 ? (
+                  <div className="mt-4 border border-[#D8D6D0] bg-white p-7 text-center">
+                    <FolderKanban
+                      size={24}
+                      className="mx-auto text-[#A58A64]"
+                    />
+
+                    <p className="mt-3 text-xs text-[#77736C]">
+                      No projects are linked to this client.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="mt-4 space-y-3">
+                    {selectedClient.projects.map((project) => (
+                      <button
+                        key={project.id}
+                        type="button"
+                        disabled={!onOpenProject}
+                        onClick={() => onOpenProject?.(project.id)}
+                        className="flex w-full items-center justify-between gap-4 border border-[#D8D6D0] bg-white p-5 text-left hover:border-[#A58A64] disabled:cursor-default"
+                      >
+                        <span className="min-w-0">
+                          <span className="block font-mono text-[9px] uppercase tracking-widest text-[#A58A64]">
+                            {project.reference}
+                          </span>
+
+                          <span className="mt-2 block font-serif text-xl text-[#171717]">
+                            {project.name}
+                          </span>
+
+                          <span className="mt-2 block text-[9px] text-[#77736C]">
+                            {project.status}
+                          </span>
+                        </span>
+
+                        <ArrowUpRight
+                          size={17}
+                          className="shrink-0 text-[#A58A64]"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </section>
+
+              {/* Record Metadata */}
+              <section className="grid grid-cols-2 gap-3">
+                <MetadataCard
+                  label="Client Created"
+                  value={formatDate(selectedClient.createdAt)}
+                />
+
+                <MetadataCard
+                  label="Last Updated"
+                  value={formatDate(selectedClient.lastUpdated)}
+                />
+              </section>
+
+              {/* Portal Access Control (Moved Last) */}
               <section className="border border-[#D8D6D0] bg-white p-6">
                 <div className="flex items-start gap-3">
                   <ShieldCheck
@@ -870,80 +944,6 @@ export function AdminClientManagement({
                     procedure.
                   </p>
                 )}
-              </section>
-
-              {/* Linked Projects */}
-              <section>
-                <div className="flex items-end justify-between border-b border-[#D8D6D0] pb-4">
-                  <div>
-                    <SectionHeading>Project Association</SectionHeading>
-
-                    <h3 className="mt-3 font-serif text-2xl text-[#171717]">
-                      Linked Projects
-                    </h3>
-                  </div>
-
-                  <p className="font-mono text-[9px] text-[#99958D]">
-                    {selectedClient.projects.length} PROJECTS
-                  </p>
-                </div>
-
-                {selectedClient.projects.length === 0 ? (
-                  <div className="mt-4 border border-[#D8D6D0] bg-white p-7 text-center">
-                    <FolderKanban
-                      size={24}
-                      className="mx-auto text-[#A58A64]"
-                    />
-
-                    <p className="mt-3 text-xs text-[#77736C]">
-                      No projects are linked to this client.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="mt-4 space-y-3">
-                    {selectedClient.projects.map((project) => (
-                      <button
-                        key={project.id}
-                        type="button"
-                        disabled={!onOpenProject}
-                        onClick={() => onOpenProject?.(project.id)}
-                        className="flex w-full items-center justify-between gap-4 border border-[#D8D6D0] bg-white p-5 text-left hover:border-[#A58A64] disabled:cursor-default"
-                      >
-                        <span className="min-w-0">
-                          <span className="block font-mono text-[9px] uppercase tracking-widest text-[#A58A64]">
-                            {project.reference}
-                          </span>
-
-                          <span className="mt-2 block font-serif text-xl text-[#171717]">
-                            {project.name}
-                          </span>
-
-                          <span className="mt-2 block text-[9px] text-[#77736C]">
-                            {project.status}
-                          </span>
-                        </span>
-
-                        <ArrowUpRight
-                          size={17}
-                          className="shrink-0 text-[#A58A64]"
-                        />
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </section>
-
-              {/* Record Metadata */}
-              <section className="grid grid-cols-2 gap-3">
-                <MetadataCard
-                  label="Client Created"
-                  value={formatDate(selectedClient.createdAt)}
-                />
-
-                <MetadataCard
-                  label="Last Updated"
-                  value={formatDate(selectedClient.lastUpdated)}
-                />
               </section>
 
               {actionError && (

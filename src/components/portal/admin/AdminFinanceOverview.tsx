@@ -208,16 +208,15 @@ export function AdminFinanceOverview({
       <header className="flex flex-col justify-between gap-6 border-b border-[#D8D6D0] pb-8 md:flex-row md:items-end">
         <div>
           <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#A58A64]">
-            Administration / Finance
+            Administration / Studio Financial Statements
           </p>
 
           <h1 className="mt-4 font-serif text-4xl text-[#171717] md:text-5xl">
-            Finance Overview
+            Finance Reports
           </h1>
 
-          <p className="mt-3 max-w-xl text-sm leading-7 text-[#77736C]">
-            Monitor receivables, payables, overdue balances,
-            collections and verified financial activity.
+          <p className="mt-3 max-w-2xl text-sm leading-7 text-[#77736C]">
+            Studio-wide financial reconciliation report summarizing live project bills, client-funded balances, verified contractor payouts, ageing risk buckets, and monthly settlement trends.
           </p>
 
           {data && (
@@ -229,20 +228,64 @@ export function AdminFinanceOverview({
           )}
         </div>
 
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-3 shrink-0">
+          {onRefresh && (
+            <button
+              type="button"
+              onClick={onRefresh}
+              disabled={loading}
+              className="inline-flex items-center gap-2 border border-[#D8D6D0] bg-white px-4 py-3 font-mono text-[10px] uppercase tracking-widest text-[#55514A] hover:border-[#A58A64] disabled:opacity-40 cursor-pointer"
+            >
+              <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
+              Refresh
+            </button>
+          )}
           {onExportReport && (
             <button
               type="button"
               onClick={onExportReport}
               disabled={!data || loading || invalidData}
-              className="inline-flex items-center gap-2 border border-[#D8D6D0] bg-white px-5 py-3 text-[10px] uppercase tracking-widest text-[#55514A] hover:border-[#A58A64] disabled:opacity-40"
+              className="inline-flex items-center gap-2 bg-[#171717] px-5 py-3 font-mono text-[10px] uppercase tracking-widest text-white hover:bg-[#A58A64] disabled:opacity-40 cursor-pointer transition-colors"
             >
               <Download size={14} />
-              Export Report
+              Export CSV Statement
             </button>
           )}
         </div>
       </header>
+
+      {/* Defined Purpose & Operational Uses */}
+      <section className="mt-7 rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] p-5 md:p-6">
+        <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#A58A64] font-semibold">
+          Report Purpose &amp; Operational Uses
+        </p>
+        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="border border-[#E5E2DC] bg-white p-4">
+            <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-[#171717]">
+              1. Payables &amp; Receivables Tracking
+            </p>
+            <p className="mt-1.5 text-xs leading-relaxed text-[#77736C]">
+              Consolidates unpaid contractor bills and pending client-funded dues across 0–60+ day ageing buckets so overdue exposure is spotted early.
+            </p>
+          </div>
+          <div className="border border-[#E5E2DC] bg-white p-4">
+            <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-[#171717]">
+              2. Cash &amp; UTR Settlement Audit
+            </p>
+            <p className="mt-1.5 text-xs leading-relaxed text-[#77736C]">
+              Separates verified settled disbursements from pending approvals and disputed records to ensure clean studio book closing.
+            </p>
+          </div>
+          <div className="border border-[#E5E2DC] bg-white p-4">
+            <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-[#171717]">
+              3. Management Cash-Flow &amp; Export
+            </p>
+            <p className="mt-1.5 text-xs leading-relaxed text-[#77736C]">
+              Compares monthly project billing vs payouts and exports studio-level CSV statements. (Personal Architect receipts &amp; CA Excel live under Architect Revenue.)
+            </p>
+          </div>
+        </div>
+      </section>
 
       {error && (
         <div
@@ -357,55 +400,65 @@ export function AdminFinanceOverview({
 
           {/* Cash Settlement Monitoring */}
           <section className="mt-9">
-            <SectionHeading>Cash Settlement Monitoring</SectionHeading>
+            <SectionHeading>Cash Settlement &amp; Exception Monitoring</SectionHeading>
 
             <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
               <SettlementMetric
-                label="Active Settlements"
+                label="Verified Cash Settlements"
                 value={formatNumber(data.verifiedCashSettlements)}
-                description="Finance-verified settlement records"
+                description="Two-party acknowledged and finance-verified cash disbursements"
                 icon={<ShieldCheck size={19} />}
                 onClick={onOpenCashSettlements}
+              />
+
+              <SettlementMetric
+                label="Disputed / Flagged Settlements"
+                value={formatNumber(data.disputedCashSettlements)}
+                description="Records flagged for discrepancy or finance dispute resolution"
+                icon={<AlertCircle size={19} />}
+                onClick={onOpenInvoices}
               />
             </div>
           </section>
 
-          {/* Ageing Analysis */}
-          <section className="mt-10">
-            <div className="flex items-end justify-between border-b border-[#D8D6D0] pb-5">
-              <div>
-                <SectionHeading>Outstanding Analysis</SectionHeading>
+          {/* Ageing Analysis Side-by-Side Alignment */}
+          <div className="mt-10 grid grid-cols-1 gap-8 xl:grid-cols-2">
+            <section>
+              <div className="flex items-end justify-between border-b border-[#D8D6D0] pb-4">
+                <div>
+                  <SectionHeading>Outstanding Analysis</SectionHeading>
 
-                <h2 className="mt-3 font-serif text-2xl text-[#171717]">
-                  Receivables Ageing
-                </h2>
+                  <h2 className="mt-2 font-serif text-2xl text-[#171717]">
+                    Receivables Ageing
+                  </h2>
+                </div>
+
+                <p className="font-mono text-[9px] text-[#99958D]">
+                  CLIENT BALANCES
+                </p>
               </div>
 
-              <p className="font-mono text-[9px] text-[#99958D]">
-                CLIENT BALANCES
-              </p>
-            </div>
+              <AgeingTable buckets={data.receivablesAgeing} />
+            </section>
 
-            <AgeingTable buckets={data.receivablesAgeing} />
-          </section>
+            <section>
+              <div className="flex items-end justify-between border-b border-[#D8D6D0] pb-4">
+                <div>
+                  <SectionHeading>Outstanding Analysis</SectionHeading>
 
-          <section className="mt-10">
-            <div className="flex items-end justify-between border-b border-[#D8D6D0] pb-5">
-              <div>
-                <SectionHeading>Outstanding Analysis</SectionHeading>
+                  <h2 className="mt-2 font-serif text-2xl text-[#171717]">
+                    Payables Ageing
+                  </h2>
+                </div>
 
-                <h2 className="mt-3 font-serif text-2xl text-[#171717]">
-                  Payables Ageing
-                </h2>
+                <p className="font-mono text-[9px] text-[#99958D]">
+                  VENDOR BALANCES
+                </p>
               </div>
 
-              <p className="font-mono text-[9px] text-[#99958D]">
-                VENDOR BALANCES
-              </p>
-            </div>
-
-            <AgeingTable buckets={data.payablesAgeing} />
-          </section>
+              <AgeingTable buckets={data.payablesAgeing} />
+            </section>
+          </div>
 
           {/* Monthly Financial Trend */}
           <section className="mt-10">
