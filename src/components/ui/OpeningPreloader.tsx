@@ -85,6 +85,16 @@ export function OpeningPreloader() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [shouldPlay, isDismissed]);
 
+  // Guaranteed unmount fallback: ensure preloader never lingers or blocks clicks
+  useEffect(() => {
+    if (isExiting && !isDismissed) {
+      const fallbackTimer = setTimeout(() => {
+        setIsDismissed(true);
+      }, 600);
+      return () => clearTimeout(fallbackTimer);
+    }
+  }, [isExiting, isDismissed]);
+
   // Lock body scroll while preloader is active
   useEffect(() => {
     if (shouldPlay && !isDismissed && !isExiting) {
@@ -120,7 +130,9 @@ export function OpeningPreloader() {
             scale: 1.04,
             transition: { duration: 0.55, ease: [0.16, 1, 0.3, 1] },
           }}
-          className="fixed inset-0 z-[100] flex flex-col items-center justify-center select-none cursor-default bg-[#111111]"
+          className={`fixed inset-0 z-[100] flex flex-col items-center justify-center select-none cursor-default bg-[#111111] ${
+            isExiting ? "pointer-events-none" : "pointer-events-auto"
+          }`}
           style={{
             backgroundImage: `
               radial-gradient(circle at 50% 50%, rgba(217, 119, 36, 0.08) 0%, transparent 65%),

@@ -239,6 +239,10 @@ export function SiteFooter({
   };
 
   const scrollToSection = (href: string) => {
+    if (typeof window !== "undefined" && window.location.pathname !== "/") {
+      router.push("/" + href);
+      return;
+    }
     if (href.startsWith("#")) {
       const target = document.querySelector(href) as HTMLElement | null;
       if (target) {
@@ -434,12 +438,14 @@ export function SiteFooter({
                   >
                     DISCIPLINES
                   </p>
-                  <span
-                    className="block font-outfit text-white/70 mb-3"
+                  <button
+                    type="button"
+                    onClick={() => scrollToSection("#expertise")}
+                    className="block text-left font-outfit text-white/70 hover:text-white transition-colors duration-200 cursor-pointer mb-3"
                     style={{ fontSize: "15px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
                   >
                     {disciplines[0]}
-                  </span>
+                  </button>
                 </AgenticRow>
 
                 {/* Row 2: Interior Design + Landscape Architecture */}
@@ -449,18 +455,22 @@ export function SiteFooter({
                   cycleKey={buildCycle}
                 >
                   <div className="flex flex-col gap-3 mb-3">
-                    <span
-                      className="font-outfit text-white/70"
+                    <button
+                      type="button"
+                      onClick={() => scrollToSection("#expertise")}
+                      className="text-left font-outfit text-white/70 hover:text-white transition-colors duration-200 cursor-pointer"
                       style={{ fontSize: "15px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
                     >
                       {disciplines[1]}
-                    </span>
-                    <span
-                      className="font-outfit text-white/70"
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => scrollToSection("#expertise")}
+                      className="text-left font-outfit text-white/70 hover:text-white transition-colors duration-200 cursor-pointer"
                       style={{ fontSize: "15px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
                     >
                       {disciplines[2]}
-                    </span>
+                    </button>
                   </div>
                 </AgenticRow>
 
@@ -471,24 +481,28 @@ export function SiteFooter({
                   cycleKey={buildCycle}
                 >
                   <div className="flex flex-col gap-3">
-                    <span
-                      className="font-outfit text-white/70"
+                    <button
+                      type="button"
+                      onClick={() => scrollToSection("#expertise")}
+                      className="text-left font-outfit text-white/70 hover:text-white transition-colors duration-200 cursor-pointer"
                       style={{ fontSize: "15px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
                     >
                       {disciplines[3]}
-                    </span>
-                    <span
-                      className="font-outfit text-white/70"
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => scrollToSection("#expertise")}
+                      className="text-left font-outfit text-white/70 hover:text-white transition-colors duration-200 cursor-pointer"
                       style={{ fontSize: "15px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
                     >
                       {disciplines[4]}
-                    </span>
+                    </button>
                   </div>
                 </AgenticRow>
               </div>
 
               {/* Column 3: PRIVATE ACCESS (2 Arrows: Top-Right & Down-Below) */}
-              <div className="relative flex flex-col">
+              <div className="relative flex flex-col col-span-2 sm:col-span-1">
                 {COLUMN_SWARM_ARROWS.portals.map((arrow) => (
                   <SwarmCursorArrow
                     key={arrow.id}
@@ -552,7 +566,7 @@ export function SiteFooter({
               </div>
 
               {/* Column 4: STUDIO INQUIRIES & FOLLOW US (3 Arrows: Top, Mid-Right, Down-Below) */}
-              <div className="relative flex flex-col">
+              <div className="relative flex flex-col col-span-2 sm:col-span-1">
                 {COLUMN_SWARM_ARROWS.inquiries.map((arrow) => (
                   <SwarmCursorArrow
                     key={arrow.id}
@@ -637,7 +651,7 @@ export function SiteFooter({
                           rel="noopener noreferrer"
                           aria-label={s.name}
                           title={s.name}
-                          className="w-8 h-8 rounded-lg bg-[#141414] hover:bg-[#1E1E1E] border border-white/10 hover:border-[#C6A779]/60 text-white/70 hover:text-[#C6A779] flex items-center justify-center transition-all shadow-sm group"
+                          className="w-10 h-10 sm:w-8 sm:h-8 rounded-lg bg-[#141414] hover:bg-[#1E1E1E] border border-white/10 hover:border-[#C6A779]/60 text-white/70 hover:text-[#C6A779] flex items-center justify-center transition-all shadow-sm group"
                         >
                           <span className="transition-transform duration-200 group-hover:scale-110">
                             {s.icon}

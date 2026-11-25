@@ -105,6 +105,10 @@ export function Header({
   const handleNavigation = (href: string) => {
     closeMenu();
     if (href.startsWith("#")) {
+      if (typeof window !== "undefined" && window.location.pathname !== "/") {
+        router.push("/" + href);
+        return;
+      }
       const target = document.querySelector(href) as HTMLElement | null;
       if (target) {
         const top = Math.max(0, target.getBoundingClientRect().top + window.scrollY - 75);
@@ -215,7 +219,7 @@ export function Header({
               {/* Dropdown Menu */}
               {portalDropdownOpen && (
                 <div
-                  className="absolute right-0 top-full pt-1.5 w-52 z-50 animate-in fade-in slide-in-from-top-1 duration-200"
+                  className="absolute right-0 top-full pt-1.5 w-52 z-[60] animate-in fade-in slide-in-from-top-1 duration-200"
                 >
                   <div className="rounded-sm border border-[#B68A4A]/30 bg-[#121212]/95 backdrop-blur-2xl p-2 shadow-[0_12px_40px_rgba(0,0,0,0.8)]">
                     <div className="px-3 py-1.5 text-[9px] font-mono uppercase tracking-[0.2em] text-[#B68A4A] border-b border-white/10 mb-1">
@@ -409,12 +413,18 @@ export function Header({
 
           {/* Quick Studio Contacts */}
           <div className="mt-auto pt-8 flex items-center justify-between text-xs font-mono text-stone-400">
-            <span className="flex items-center gap-1.5">
+            <a
+              href="tel:+919322458477"
+              className="flex items-center gap-1.5 hover:text-[#C6A779] transition-colors cursor-pointer"
+            >
               <Phone size={12} className="text-[#B68A4A]" /> +91 93224 58477
-            </span>
-            <span className="flex items-center gap-1.5">
+            </a>
+            <a
+              href="mailto:studio@archeon.design"
+              className="flex items-center gap-1.5 hover:text-[#C6A779] transition-colors cursor-pointer"
+            >
               <Mail size={12} className="text-[#B68A4A]" /> studio@archeon.design
-            </span>
+            </a>
           </div>
         </div>
       </div>

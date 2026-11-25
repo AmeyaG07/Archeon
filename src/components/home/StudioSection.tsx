@@ -222,7 +222,7 @@ export function StudioSection() {
           {/* =========================================================================
               RIGHT COLUMN: PROUD 3D VILLA LUMIÈRE PERSPECTIVE HUD
               ========================================================================= */}
-          <div className="lg:col-span-5 xl:col-span-6 relative flex flex-col justify-end self-stretch min-h-[380px] lg:min-h-[580px] pointer-events-none">
+          <div className="lg:col-span-5 xl:col-span-6 relative flex flex-col justify-end self-stretch min-h-[250px] sm:min-h-[320px] lg:min-h-[580px] pointer-events-none">
             {/* Bottom-Right 3D Interactive Orbit Hint */}
             <div className="self-end pb-2 pr-2 pointer-events-auto">
               <div className="inline-flex items-center gap-2 rounded-full border border-stone-800/10 bg-white/80 px-3.5 py-1.5 font-mono text-[9px] tracking-widest text-stone-600 uppercase shadow-xs backdrop-blur-sm">

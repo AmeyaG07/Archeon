@@ -140,7 +140,7 @@ export function ServicesSection({
               <StaggerItem
                 key={service.id}
                 className={`border-b border-r border-white/10 ${
-                  index === 0 || index === 4 ? "lg:col-span-1" : ""
+                  index === 4 ? "sm:col-span-2 lg:col-span-1" : ""
                 }`}
               >
                 <button
@@ -150,19 +150,17 @@ export function ServicesSection({
                     onSelectService(service);
                   }}
                   onMouseEnter={() => handleSelectDiscipline(service.id)}
-                  className={`group relative flex min-h-[225px] sm:min-h-[240px] lg:min-h-[250px] w-full flex-col justify-between overflow-hidden p-5 sm:p-6 lg:p-6 text-left backdrop-blur-md transition-all duration-400 cursor-pointer ${
-                    activeDiscipline === service.id
-                      ? "bg-[#181818]/95 border-t-2 border-t-[#D97724] shadow-xl shadow-black/70 -translate-y-1"
-                      : "bg-[#101010]/63 hover:bg-[#181818]/88 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/60"
-                  } ${isMatch ? "opacity-100" : "opacity-[0.58]"}`}
+                  className={`group relative flex min-h-[225px] sm:min-h-[240px] lg:min-h-[250px] w-full flex-col justify-between overflow-hidden p-5 sm:p-6 lg:p-6 text-left backdrop-blur-md transition-all duration-400 cursor-pointer ${activeDiscipline === service.id
+                    ? "bg-[#181818]/95 border-t-2 border-t-[#D97724] shadow-xl shadow-black/70 -translate-y-1"
+                    : "bg-[#101010]/63 hover:bg-[#181818]/88 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/60"
+                    } ${isMatch ? "opacity-100" : "opacity-[0.58]"}`}
                 >
                   {/* Chromatic Edge Sweep Line on Hover / Active */}
                   <div
-                    className={`absolute left-0 top-0 h-[2px] bg-gradient-to-r from-[#D97724] via-[#C6A779] to-[#F59E0B] transition-all duration-500 ease-out ${
-                      activeDiscipline === service.id
-                        ? "w-full"
-                        : "w-0 group-hover:w-full"
-                    }`}
+                    className={`absolute left-0 top-0 h-[2px] bg-gradient-to-r from-[#D97724] via-[#C6A779] to-[#F59E0B] transition-all duration-500 ease-out ${activeDiscipline === service.id
+                      ? "w-full"
+                      : "w-0 group-hover:w-full"
+                      }`}
                   />
 
                   <div>
@@ -188,18 +186,17 @@ export function ServicesSection({
                     </p>
                   </div>
 
-                    {/* Bottom Action Footer */}
+                  {/* Bottom Action Footer */}
                   <div className="mt-4 pt-3 flex items-center justify-between border-t border-white/10">
                     <span className="text-[9px] font-medium uppercase tracking-[0.14em] text-white/60 transition-colors group-hover:text-[#B68A4A]">
                       Explore Discipline
                     </span>
 
                     <span
-                      className={`flex h-7.5 w-7.5 sm:h-8 sm:w-8 items-center justify-center rounded-full border transition-all duration-300 ${
-                        activeDiscipline === service.id
-                          ? "border-[#B68A4A] bg-[#B68A4A] text-white shadow-md shadow-[#B68A4A]/30"
-                          : "border-white/20 text-white group-hover:border-[#B68A4A] group-hover:bg-[#B68A4A] group-hover:text-white"
-                      }`}
+                      className={`flex h-7.5 w-7.5 sm:h-8 sm:w-8 items-center justify-center rounded-full border transition-all duration-300 ${activeDiscipline === service.id
+                        ? "border-[#B68A4A] bg-[#B68A4A] text-white shadow-md shadow-[#B68A4A]/30"
+                        : "border-white/20 text-white group-hover:border-[#B68A4A] group-hover:bg-[#B68A4A] group-hover:text-white"
+                        }`}
                     >
                       <ArrowUpRight
                         size={14}
