@@ -87,18 +87,6 @@ const NAVIGATION_GROUPS: NavigationGroup[] = [
         description: "Project oversight",
         icon: FolderKanban,
       },
-      {
-        id: "leads",
-        label: "Enquiries & Leads",
-        description: "Incoming enquiries",
-        icon: Users,
-      },
-      {
-        id: "website-projects",
-        label: "Website Content",
-        description: "Showcase & Philosophy CMS",
-        icon: Globe,
-      },
     ],
   },
   {
@@ -144,6 +132,18 @@ const NAVIGATION_GROUPS: NavigationGroup[] = [
   {
     title: "Governance",
     items: [
+      {
+        id: "leads",
+        label: "Enquiries & Leads",
+        description: "Incoming enquiries",
+        icon: Users,
+      },
+      {
+        id: "website-projects",
+        label: "Website Content",
+        description: "Showcase & Philosophy CMS",
+        icon: Globe,
+      },
       {
         id: "settings",
         label: "System Settings",
