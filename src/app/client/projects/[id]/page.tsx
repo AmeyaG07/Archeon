@@ -403,6 +403,58 @@ export default function ClientProjectWorkspacePage() {
         </div>
       </div>
 
+      {/* Project Progress Photos Gallery & Architect Notes */}
+      <div className="rounded-sm border border-[#D8D6D0] bg-white p-6 md:p-8 shadow-sm">
+        <div className="flex items-center justify-between border-b border-[#D8D6D0] pb-4">
+          <div className="flex items-center gap-2">
+            <Camera className="text-[#B68A4A]" size={18} />
+            <h2 className="font-serif text-xl text-[#111111]">Project Progress Gallery & Architect Notes</h2>
+          </div>
+          <span className="font-mono text-xs text-[#777777]">
+            {(Array.isArray(updates) ? updates : []).filter((u) => u.authorRole === "ARCHITECT").length} Site Updates
+          </span>
+        </div>
+
+        {(Array.isArray(updates) ? updates : []).filter((u) => u.authorRole === "ARCHITECT").length === 0 ? (
+          <div className="py-12 text-center font-mono text-xs text-[#777777]">
+            No progress updates posted yet. Photos and notes will appear here once the architect visits the site.
+          </div>
+        ) : (
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {(Array.isArray(updates) ? updates : [])
+              .filter((u) => u.authorRole === "ARCHITECT")
+              .map((u) => (
+                <div key={u.id} className="group rounded-sm border border-[#D8D6D0] overflow-hidden bg-[#FAF9F5] shadow-xs">
+                  {u.photoUrl ? (
+                    <button
+                      onClick={() => setPreviewPhotoUrl(u.photoUrl || null)}
+                      className="block relative w-full h-48 overflow-hidden bg-black/10"
+                    >
+                      <img src={u.photoUrl} alt="Progress" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white font-mono text-xs">
+                        <Eye size={16} className="mr-1.5" /> View Photo
+                      </div>
+                    </button>
+                  ) : (
+                    <div className="h-32 w-full flex items-center justify-center bg-[#E5E3DE] text-[#777777]">
+                      <ImageIcon size={24} />
+                    </div>
+                  )}
+                  <div className="p-4">
+                    <div className="flex items-center justify-between font-mono text-[10px] text-[#777777]">
+                      <span>{new Date(u.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
+                      <span className="text-[#B68A4A]">{u.authorName}</span>
+                    </div>
+                    <p className="mt-2 text-xs text-[#333333] leading-relaxed whitespace-pre-line">
+                      {u.note || "Site progress update."}
+                    </p>
+                  </div>
+                </div>
+              ))}
+          </div>
+        )}
+      </div>
+
       {/* All Project Bills & Invoices (Sorted Latest First) */}
       <div className="rounded-sm border border-[#D8D6D0] bg-white p-6 md:p-8 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#D8D6D0] pb-4 gap-2">
@@ -498,58 +550,6 @@ export default function ClientProjectWorkspacePage() {
                 </div>
               );
             })}
-          </div>
-        )}
-      </div>
-
-      {/* Project Progress Photos Gallery & Architect Notes */}
-      <div className="rounded-sm border border-[#D8D6D0] bg-white p-6 md:p-8 shadow-sm">
-        <div className="flex items-center justify-between border-b border-[#D8D6D0] pb-4">
-          <div className="flex items-center gap-2">
-            <Camera className="text-[#B68A4A]" size={18} />
-            <h2 className="font-serif text-xl text-[#111111]">Project Progress Gallery & Architect Notes</h2>
-          </div>
-          <span className="font-mono text-xs text-[#777777]">
-            {(Array.isArray(updates) ? updates : []).filter((u) => u.authorRole === "ARCHITECT").length} Site Updates
-          </span>
-        </div>
-
-        {(Array.isArray(updates) ? updates : []).filter((u) => u.authorRole === "ARCHITECT").length === 0 ? (
-          <div className="py-12 text-center font-mono text-xs text-[#777777]">
-            No progress updates posted yet. Photos and notes will appear here once the architect visits the site.
-          </div>
-        ) : (
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {(Array.isArray(updates) ? updates : [])
-              .filter((u) => u.authorRole === "ARCHITECT")
-              .map((u) => (
-                <div key={u.id} className="group rounded-sm border border-[#D8D6D0] overflow-hidden bg-[#FAF9F5] shadow-xs">
-                  {u.photoUrl ? (
-                    <button
-                      onClick={() => setPreviewPhotoUrl(u.photoUrl || null)}
-                      className="block relative w-full h-48 overflow-hidden bg-black/10"
-                    >
-                      <img src={u.photoUrl} alt="Progress" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                      <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white font-mono text-xs">
-                        <Eye size={16} className="mr-1.5" /> View Photo
-                      </div>
-                    </button>
-                  ) : (
-                    <div className="h-32 w-full flex items-center justify-center bg-[#E5E3DE] text-[#777777]">
-                      <ImageIcon size={24} />
-                    </div>
-                  )}
-                  <div className="p-4">
-                    <div className="flex items-center justify-between font-mono text-[10px] text-[#777777]">
-                      <span>{new Date(u.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
-                      <span className="text-[#B68A4A]">{u.authorName}</span>
-                    </div>
-                    <p className="mt-2 text-xs text-[#333333] leading-relaxed whitespace-pre-line">
-                      {u.note || "Site progress update."}
-                    </p>
-                  </div>
-                </div>
-              ))}
           </div>
         )}
       </div>

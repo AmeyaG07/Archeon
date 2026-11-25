@@ -3,184 +3,175 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
-  AdminCashSettlementManagement,
-  type AdminCashSettlementRecord,
-  type CashSettlementSummary,
-  type CashFinanceDecision,
-} from "@/components/portal/admin/AdminCashSettlementManagement";
+  ArchitectRevenueLedger,
+  type LedgerEntryRecord,
+  type StoredAuditReportRecord,
+  type PartyOption,
+} from "@/components/portal/admin/ArchitectRevenueLedger";
 import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/providers/AuthProvider";
 
-export default function AdminCashSettlementsPage() {
+export default function AdminArchitectRevenuePage() {
   const router = useRouter();
-  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
 
-  const [settlements, setSettlements] = useState<AdminCashSettlementRecord[]>([]);
-  const [summary, setSummary] = useState<CashSettlementSummary | undefined>();
+  const [entries, setEntries] = useState<LedgerEntryRecord[]>([]);
+  const [reports, setReports] = useState<StoredAuditReportRecord[]>([]);
+  const [clients, setClients] = useState<PartyOption[]>([]);
+  const [vendors, setVendors] = useState<PartyOption[]>([]);
   const [loading, setLoading] = useState(true);
-  const [processingId, setProcessingId] = useState<string | undefined>();
   const [error, setError] = useState<string | null>(null);
 
-  const loadSettlements = useCallback(async () => {
+  const loadAll = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await apiFetch("/api/finance/cash/all");
-      const list = await res.json();
-      if (Array.isArray(list)) {
-        let totalVal = 0;
-        let awaitingVend = 0;
-        let awaitingFin = 0;
-        let verified = 0;
-        let disputed = 0;
+      const [eRes, rRes, cRes, vRes] = await Promise.all([
+        apiFetch("/api/architect-ledger/entries"),
+        apiFetch("/api/architect-ledger/reports"),
+        apiFetch("/api/clients").catch(() => null),
+        apiFetch("/api/vendors").catch(() => null),
+      ]);
 
-        const records: AdminCashSettlementRecord[] = list.map((s: any) => {
-          const amt = Number(s.amount || 0);
-          totalVal += amt;
-
-          const isAwaitingVendor = s.counterpartyStatus === "PENDING";
-          const isAcknowledged = s.counterpartyStatus === "ACKNOWLEDGED";
-          const isDisputed = s.counterpartyStatus === "DISPUTED";
-          const isVerified = s.financeApprovalStatus === "SETTLED_VERIFIED" || s.financeApprovalStatus === "APPROVED";
-          const isRejected = s.financeApprovalStatus === "REJECTED";
-
-          if (isVerified) verified++;
-          else if (isDisputed) disputed++;
-          else if (isAwaitingVendor) awaitingVend++;
-          else if (isAcknowledged) awaitingFin++;
-
-          const overallStatus = isVerified
-            ? "Verified"
-            : isRejected
-            ? "Rejected"
-            : isDisputed
-            ? "Disputed"
-            : isAcknowledged
-            ? "Awaiting Finance Verification"
-            : "Awaiting Acknowledgement";
-
-          const currentUsername = user?.username || "";
-          const isInitiator = s.initiator === currentUsername;
-
-          return {
-            id: s.settlementRef || s.id || "",
-            reference: s.settlementRef || "CSH",
-            vendorId: s.counterpartyId || "",
-            vendorName: `Trade Partner ${s.counterpartyId?.slice(0, 8) || ""}`,
-            projectId: s.projectId,
-            projectReference: s.projectId,
-            projectName: "Site Operations",
-            amount: amt,
-            currency: "INR" as const,
-            initiatedBy: s.initiator || "Site Supervisor",
-            initiatedAt: s.createdAt || new Date().toISOString(),
-            settlementDate: s.createdAt,
-            settlementDescription: s.sitePurpose || "Emergency on-site material & labor cash settlement",
-            vendorAcknowledgement: (isAcknowledged ? "Acknowledged" : isDisputed ? "Disputed" : "Pending") as any,
-            vendorAcknowledgedAt: s.counterpartyRespondedAt,
-            vendorResponse: s.counterpartyNotes,
-            financeStatus: (isVerified ? "Verified" : isRejected ? "Rejected" : isDisputed ? "Disputed" : isAcknowledged ? "Pending Verification" : "Awaiting Vendor") as any,
-            financeVerifiedBy: s.financeApprover,
-            financeVerifiedAt: s.financeApprovedAt,
-            overallStatus: overallStatus as any,
-            evidenceCount: 1,
-            hasRequiredEvidence: true,
-            currentUserCanVerify: !isInitiator && isAcknowledged && !isVerified,
-            currentUserInitiated: isInitiator,
-            history: [
-              {
-                id: "h1",
-                actorName: s.initiator || "Supervisor",
-                actorRole: "Initiator",
-                action: "Initiated Cash Settlement",
-                remarks: s.sitePurpose,
-                timestamp: s.createdAt || new Date().toISOString(),
-              },
-              ...(s.counterpartyRespondedAt
-                ? [{
-                    id: "h2",
-                    actorName: "Vendor Counterparty",
-                    actorRole: "Recipient",
-                    action: isAcknowledged ? "Acknowledged Cash Receipt" : "Disputed Cash Amount",
-                    remarks: s.counterpartyNotes,
-                    timestamp: s.counterpartyRespondedAt,
-                  }]
-                : []),
-              ...(s.financeApprovedAt
-                ? [{
-                    id: "h3",
-                    actorName: s.financeApprover || "Finance",
-                    actorRole: "Auditor",
-                    action: "Finance Verified & Cleared",
-                    timestamp: s.financeApprovedAt,
-                  }]
-                : []),
-            ],
-          };
-        });
-
-        setSettlements(records);
-        setSummary({
-          totalCount: records.length,
-          totalValue: totalVal,
-          awaitingVendor: awaitingVend,
-          awaitingFinance: awaitingFin,
-          verifiedCount: verified,
-          disputedCount: disputed,
-        });
+      if (!eRes.ok) {
+        const body = await eRes.json().catch(() => ({}));
+        throw new Error(body.error || `Failed to load revenue ledger (HTTP ${eRes.status})`);
       }
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to load cash settlements");
+
+      const [eData, rData] = await Promise.all([
+        eRes.json(),
+        rRes.ok ? rRes.json() : Promise.resolve([]),
+      ]);
+
+      setEntries(Array.isArray(eData) ? eData : []);
+      setReports(Array.isArray(rData) ? rData : []);
+
+      if (cRes && cRes.ok) {
+        const cList = await cRes.json();
+        if (Array.isArray(cList)) {
+          setClients(
+            cList.map((c: any) => ({
+              id: String(c.id),
+              name: c.fullName || c.name || "Client",
+              reference: c.clientReference,
+            }))
+          );
+        }
+      }
+
+      if (vRes && vRes.ok) {
+        const vList = await vRes.json();
+        if (Array.isArray(vList)) {
+          setVendors(
+            vList.map((v: any) => ({
+              id: String(v.id),
+              name: v.businessName || v.name || "Vendor",
+              reference: v.vendorReference,
+            }))
+          );
+        }
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load architect revenue ledger.");
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, []);
 
   useEffect(() => {
     if (!authLoading) {
       if (isAuthenticated) {
-        loadSettlements();
+        loadAll();
       } else {
         router.push("/login");
       }
     }
-  }, [authLoading, isAuthenticated, loadSettlements, router]);
+  }, [authLoading, isAuthenticated, loadAll, router]);
 
-  const handleSubmitFinanceDecision = async (
-    settlementId: string,
-    decision: CashFinanceDecision
-  ) => {
-    setProcessingId(settlementId);
-    try {
-      if (decision.decision === "Verify") {
-        await apiFetch(`/api/finance/cash/${settlementId}/approve`, {
-          method: "POST",
-        });
-      } else {
-        await apiFetch(`/api/finance/cash/${settlementId}/respond`, {
-          method: "POST",
-          body: { acknowledge: false, notes: decision.remarks || "Rejected by finance" },
-        });
-      }
-      await loadSettlements();
-    } catch (err: unknown) {
-      alert("Finance action failed: " + (err instanceof Error ? err.message : String(err)));
-    } finally {
-      setProcessingId(undefined);
+  const handleAddEntry = async (payload: {
+    entryType: "REVENUE" | "EXPENSE";
+    sourceType: "CLIENT" | "VENDOR" | "DIRECT";
+    sourceId?: string;
+    sourceName?: string;
+    amount: number;
+    transactionDate: string;
+    paymentMode: string;
+    category: string;
+    referenceNumber?: string;
+    notes?: string;
+  }) => {
+    const res = await apiFetch("/api/architect-ledger/entries", {
+      method: "POST",
+      body: payload,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Failed to save entry (HTTP ${res.status})`);
     }
+    await loadAll();
+  };
+
+  const handleDeleteEntry = async (id: string) => {
+    const res = await apiFetch(`/api/architect-ledger/entries/${id}`, {
+      method: "DELETE",
+    });
+    if (!res.ok) {
+      setError("Failed to remove entry.");
+      return;
+    }
+    await loadAll();
+  };
+
+  const handleGenerateReport = async (payload: {
+    periodFilter: "MONTHLY" | "QUARTERLY" | "YEARLY" | "ALL";
+    year: number;
+    month?: number;
+    quarter?: number;
+  }): Promise<StoredAuditReportRecord | null> => {
+    setError(null);
+    const res = await apiFetch("/api/architect-ledger/reports", {
+      method: "POST",
+      body: payload,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      setError(err.error || `Failed to generate CA report (HTTP ${res.status})`);
+      return null;
+    }
+    const created = (await res.json()) as StoredAuditReportRecord;
+    await loadAll();
+    return created;
+  };
+
+  const handleDownloadReport = async (reportId: string, filename: string) => {
+    const res = await apiFetch(`/api/architect-ledger/reports/${reportId}/download`);
+    if (!res.ok) {
+      setError("Failed to download stored CA audit workbook.");
+      return;
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
-    <div className="p-4 sm:p-8">
-      <AdminCashSettlementManagement
-        settlements={settlements}
-        summary={summary}
-        loading={loading}
-        processingSettlementId={processingId}
-        error={error ?? undefined}
-        onRefresh={loadSettlements}
-        onSubmitFinanceDecision={handleSubmitFinanceDecision}
-      />
-    </div>
+    <ArchitectRevenueLedger
+      entries={entries}
+      reports={reports}
+      clients={clients}
+      vendors={vendors}
+      loading={loading}
+      error={error}
+      onAddEntry={handleAddEntry}
+      onDeleteEntry={handleDeleteEntry}
+      onGenerateReport={handleGenerateReport}
+      onDownloadReport={handleDownloadReport}
+    />
   );
 }

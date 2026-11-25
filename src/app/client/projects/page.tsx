@@ -27,6 +27,7 @@ export default function ClientProjectsPage() {
       if (Array.isArray(list)) {
         const records: ClientProject[] = list.map((p: any) => ({
           id: p.id || "",
+          projectReference: p.projectReference,
           projectName: p.name || "Architecture Project",
           projectType: p.projectType || "Residential",
           location: p.siteAddress || "Maharashtra",
@@ -39,6 +40,7 @@ export default function ClientProjectsPage() {
             : "Under Design") as ClientProjectStatus,
           startDate: p.startDate,
           expectedCompletion: p.expectedCompletionDate,
+          lastVisitDate: p.lastVisitDate,
           projectManager: p.projectManagerUsername || "Ar. Mandar Bhalekar",
           description: p.description,
         }));
@@ -67,7 +69,6 @@ export default function ClientProjectsPage() {
       loading={loading}
       error={error ?? undefined}
       onRetry={loadProjects}
-      onOpenProject={(proj) => router.push(`/client/projects/${proj.id}`)}
     />
   );
 }

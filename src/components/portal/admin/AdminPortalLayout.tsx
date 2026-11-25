@@ -129,8 +129,8 @@ const NAVIGATION_GROUPS: NavigationGroup[] = [
       },
       {
         id: "cash-settlements",
-        label: "Cash Settlements",
-        description: "Settlement verification",
+        label: "Architect Revenue",
+        description: "Revenue, expenses & CA audit",
         icon: Banknote,
       },
       {
