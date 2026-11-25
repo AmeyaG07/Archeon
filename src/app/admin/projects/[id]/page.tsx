@@ -82,8 +82,16 @@ export default function AdminProjectDetailPage() {
   const [actionLoading, setActionLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
+  const getLocalTodayIso = () => {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, "0");
+    const d = String(now.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  };
+
   // Form states
-  const [newVisitDate, setNewVisitDate] = useState(new Date().toISOString().split("T")[0]);
+  const [newVisitDate, setNewVisitDate] = useState(getLocalTodayIso);
   const [photoNote, setPhotoNote] = useState("");
   const [photoUrl, setPhotoUrl] = useState("");
   const [showPhotoForm, setShowPhotoForm] = useState(false);
@@ -139,16 +147,16 @@ export default function AdminProjectDetailPage() {
     loadData();
   }, [loadData]);
 
-  // Log new site visit date
-  const handleLogSiteVisit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newVisitDate) return;
+  // Submit a site visit date update
+  const submitSiteVisitDate = async (visitDate: string) => {
+    if (!visitDate) return;
     setActionLoading(true);
     try {
       await apiFetch(`/api/site-updates/projects/${projectId}/site-visit`, {
         method: "POST",
-        body: JSON.stringify({ visitDate: newVisitDate }),
+        body: JSON.stringify({ visitDate }),
       });
+      setNewVisitDate(visitDate);
       setMessage("Site visit date successfully updated.");
       await loadData();
     } catch (err: unknown) {
@@ -158,6 +166,17 @@ export default function AdminProjectDetailPage() {
       setActionLoading(false);
       setTimeout(() => setMessage(null), 4000);
     }
+  };
+
+  // Log new site visit date from date picker form
+  const handleLogSiteVisit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await submitSiteVisitDate(newVisitDate);
+  };
+
+  // One-click log today's date
+  const handleLogToday = async () => {
+    await submitSiteVisitDate(getLocalTodayIso());
   };
 
   // Upload progress photo for client
@@ -287,15 +306,32 @@ export default function AdminProjectDetailPage() {
           <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-[#B68A4A]">
             <CalendarDays size={14} /> Site Visit Management
           </div>
-          <div className="mt-4">
-            <div className="text-xs text-[#777777]">Current Last Visit Date:</div>
-            <div className="font-mono text-lg font-bold text-[#111111] mt-1">
-              {project?.lastVisitDate ? new Date(project.lastVisitDate).toLocaleDateString("en-IN", {
-                day: "numeric",
-                month: "short",
-                year: "numeric"
-              }) : "No site visits logged yet"}
+          <div className="mt-4 flex items-end justify-between gap-3">
+            <div>
+              <div className="text-xs text-[#777777]">Current Last Visit Date:</div>
+              <div className="font-mono text-lg font-bold text-[#111111] mt-1">
+                {project?.lastVisitDate ? new Date(project.lastVisitDate).toLocaleDateString("en-IN", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric"
+                }) : "No site visits logged yet"}
+              </div>
             </div>
+
+            <button
+              type="button"
+              onClick={handleLogToday}
+              disabled={actionLoading}
+              className="shrink-0 rounded-sm border border-[#A58A64]/60 bg-[#FAF9F5] px-3.5 py-2.5 text-left transition-colors hover:border-[#A58A64] hover:bg-[#111111] hover:text-[#F2F0EB] disabled:opacity-50 cursor-pointer group"
+            >
+              <span className="flex items-center gap-1.5 font-mono text-[10px] font-semibold uppercase tracking-wider text-[#111111] group-hover:text-[#F2F0EB]">
+                <Calendar size={12} className="text-[#A58A64]" />
+                Log Today
+              </span>
+              <span className="mt-0.5 block font-mono text-[9px] text-[#777777] group-hover:text-[#D8D6D0]">
+                {new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
+              </span>
+            </button>
           </div>
 
           <form onSubmit={handleLogSiteVisit} className="mt-6 border-t border-[#D8D6D0] pt-4 space-y-3">
