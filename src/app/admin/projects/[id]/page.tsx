@@ -229,43 +229,52 @@ export default function AdminProjectDetailPage() {
       )}
 
       {/* Project Overview Card */}
-      <div className="rounded-sm border border-[#D8D6D0] bg-white p-6 shadow-sm">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <div>
-            <h1 className="font-serif text-3xl text-[#111111]">{project?.name}</h1>
-            <p className="mt-1 font-mono text-xs text-[#777777]">
-              Client: <span className="text-[#111111] font-medium">{project?.clientName || "Direct Studio Client"}</span> • Category: {project?.projectType}
-            </p>
-            {project?.siteAddress && (
-              <p className="mt-1 font-mono text-xs text-[#777777]">Site Address: {project.siteAddress}</p>
-            )}
+      <div className="rounded-sm border border-[#D8D6D0] bg-white p-6 sm:p-8 shadow-sm">
+        <div className="space-y-2">
+          <h1 className="font-serif text-3xl sm:text-4xl text-[#111111]">{project?.name}</h1>
+          <p className="font-mono text-xs sm:text-[13px] text-[#777777]">
+            Client: <span className="text-[#111111] font-medium">{project?.clientName || "Direct Studio Client"}</span> • Category: {project?.projectType}
+          </p>
+          {project?.siteAddress && (
+            <p className="font-mono text-xs sm:text-[13px] text-[#777777]">Site Address: {project.siteAddress}</p>
+          )}
+        </div>
+
+        {/* Finance Specifics */}
+        <div className="mt-7 pt-7 border-t border-[#E5E2DC] grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 sm:gap-6">
+          <div className="rounded-sm border border-[#E5E2DC] bg-[#FAF9F5] p-5">
+            <div className="font-mono text-[11px] uppercase tracking-[0.16em] text-[#77736C]">
+              Contract Value
+            </div>
+            <div className="mt-3 font-serif text-2xl sm:text-[28px] leading-none font-medium tabular-nums text-[#111111]">
+              ₹{project?.contractValue?.toLocaleString("en-IN") || "—"}
+            </div>
           </div>
 
-          {/* Quick Metrics */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 border-t lg:border-t-0 lg:border-l border-[#D8D6D0] pt-4 lg:pt-0 lg:pl-6">
-            <div>
-              <div className="font-mono text-[10px] uppercase tracking-wider text-[#777777]">Contract Value</div>
-              <div className="font-mono text-sm font-semibold text-[#111111]">
-                ₹{project?.contractValue?.toLocaleString("en-IN") || "—"}
-              </div>
+          <div className="rounded-sm border border-[#E5E2DC] bg-[#FAF9F5] p-5">
+            <div className="font-mono text-[11px] uppercase tracking-[0.16em] text-[#77736C]">
+              Total Billed
             </div>
-            <div>
-              <div className="font-mono text-[10px] uppercase tracking-wider text-[#777777]">Total Billed</div>
-              <div className="font-mono text-sm font-semibold text-[#111111]">
-                ₹{expenseSummary?.totalBilled?.toLocaleString("en-IN") || "0"}
-              </div>
+            <div className="mt-3 font-serif text-2xl sm:text-[28px] leading-none font-medium tabular-nums text-[#111111]">
+              ₹{expenseSummary?.totalBilled?.toLocaleString("en-IN") || "0"}
             </div>
-            <div>
-              <div className="font-mono text-[10px] uppercase tracking-wider text-[#10B981]">Settled</div>
-              <div className="font-mono text-sm font-semibold text-[#10B981]">
-                ₹{expenseSummary?.totalSettled?.toLocaleString("en-IN") || "0"}
-              </div>
+          </div>
+
+          <div className="rounded-sm border border-[#D7E2D2] bg-[#F5F9F4] p-5">
+            <div className="font-mono text-[11px] uppercase tracking-[0.16em] text-[#10B981]">
+              Settled
             </div>
-            <div>
-              <div className="font-mono text-[10px] uppercase tracking-wider text-[#D97724]">Pending</div>
-              <div className="font-mono text-sm font-semibold text-[#D97724]">
-                ₹{expenseSummary?.totalPending?.toLocaleString("en-IN") || "0"}
-              </div>
+            <div className="mt-3 font-serif text-2xl sm:text-[28px] leading-none font-medium tabular-nums text-[#10B981]">
+              ₹{expenseSummary?.totalSettled?.toLocaleString("en-IN") || "0"}
+            </div>
+          </div>
+
+          <div className="rounded-sm border border-[#EADBC8] bg-[#FCF8F2] p-5">
+            <div className="font-mono text-[11px] uppercase tracking-[0.16em] text-[#D97724]">
+              Pending
+            </div>
+            <div className="mt-3 font-serif text-2xl sm:text-[28px] leading-none font-medium tabular-nums text-[#D97724]">
+              ₹{expenseSummary?.totalPending?.toLocaleString("en-IN") || "0"}
             </div>
           </div>
         </div>
@@ -463,15 +472,15 @@ export default function AdminProjectDetailPage() {
             No vendors with billing activity recorded on this project.
           </div>
         ) : (
-          <div className="mt-4 overflow-x-auto">
-            <table className="w-full text-left font-mono text-xs">
+          <div className="mt-5 overflow-x-auto">
+            <table className="w-full text-left font-mono text-sm">
               <thead>
-                <tr className="border-b border-[#D8D6D0] text-[#777777] uppercase text-[10px] tracking-wider">
-                  <th className="py-3 px-4">Vendor</th>
-                  <th className="py-3 px-4">Trade Category</th>
-                  <th className="py-3 px-4 text-right">Settled Bills</th>
-                  <th className="py-3 px-4 text-right">Pending Bills</th>
-                  <th className="py-3 px-4 text-right">Total Billed</th>
+                <tr className="border-b border-[#D8D6D0] text-[#777777] uppercase text-[11px] tracking-[0.12em]">
+                  <th className="py-4 px-5">Vendor</th>
+                  <th className="py-4 px-5">Trade Category</th>
+                  <th className="py-4 px-5 text-right">Settled Bills</th>
+                  <th className="py-4 px-5 text-right">Pending Bills</th>
+                  <th className="py-4 px-5 text-right">Total Billed</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E5E3DE]">
@@ -484,15 +493,15 @@ export default function AdminProjectDetailPage() {
                   const name = v.vendorBusinessName || v.vendorName || "Contractor";
                   return (
                     <tr key={v.vendorId || name} className="hover:bg-[#FAF9F5]">
-                      <td className="py-3 px-4 font-semibold text-[#111111]">{name}</td>
-                      <td className="py-3 px-4 text-[#777777]">{v.tradeCategory || "Contractor"}</td>
-                      <td className="py-3 px-4 text-right text-[#10B981]">
+                      <td className="py-4 px-5 font-semibold text-[#111111]">{name}</td>
+                      <td className="py-4 px-5 text-xs text-[#777777]">{v.tradeCategory || "Contractor"}</td>
+                      <td className="py-4 px-5 text-right font-medium tabular-nums text-[#10B981]">
                         ₹{sAmt.toLocaleString("en-IN")} ({sCnt})
                       </td>
-                      <td className="py-3 px-4 text-right text-[#D97724]">
+                      <td className="py-4 px-5 text-right font-medium tabular-nums text-[#D97724]">
                         ₹{pAmt.toLocaleString("en-IN")} ({pCnt})
                       </td>
-                      <td className="py-3 px-4 text-right font-bold text-[#111111]">
+                      <td className="py-4 px-5 text-right text-base font-bold tabular-nums text-[#111111]">
                         ₹{tot.toLocaleString("en-IN")}
                       </td>
                     </tr>
