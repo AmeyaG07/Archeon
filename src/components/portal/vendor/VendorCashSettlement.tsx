@@ -520,78 +520,71 @@ export function VendorCashSettlement({
                 </p>
               </div>
 
-              {decision === "ACKNOWLEDGE" ? (
-                <div className="mt-6 border border-[#E8DFCE] bg-[#F8F4EB] p-5">
-                  <p className="text-xs leading-7 text-[#6F5C39]">
-                    By continuing, you confirm that you have received
-                    the cash amount shown above. Do not acknowledge
-                    a settlement that you have not actually received
-                    or that has an incorrect amount.
+              <form onSubmit={handleSubmit}>
+                {decision === "ACKNOWLEDGE" ? (
+                  <div className="mt-6 border border-[#E8DFCE] bg-[#F8F4EB] p-5">
+                    <p className="text-xs leading-7 text-[#6F5C39]">
+                      By continuing, you confirm that you have received
+                      the cash amount shown above. Do not acknowledge
+                      a settlement that you have not actually received
+                      or that has an incorrect amount.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="mt-6">
+                    <label
+                      htmlFor="settlement-dispute-reason"
+                      className="mb-3 block font-mono text-[9px] uppercase tracking-widest text-[#77736C]"
+                    >
+                      Explain the discrepancy
+                    </label>
+
+                    <textarea
+                      id="settlement-dispute-reason"
+                      value={disputeReason}
+                      onChange={(event) =>
+                        setDisputeReason(event.target.value)
+                      }
+                      rows={5}
+                      maxLength={2000}
+                      placeholder="Explain why the amount or settlement record is incorrect..."
+                      className="w-full border border-[#D8D6D0] bg-white p-4 text-sm text-[#33312D] outline-none focus:border-[#A58A64]"
+                    />
+
+                    <p className="mt-2 text-right font-mono text-[9px] text-[#99958D]">
+                      {disputeReason.length}/2000
+                    </p>
+                  </div>
+                )}
+
+                {validationError && (
+                  <p role="alert" className="mt-4 text-xs text-[#9A5147]">
+                    {validationError}
                   </p>
-                </div>
-              ) : (
-                <div className="mt-6">
-                  <label
-                    htmlFor="settlement-dispute-reason"
-                    className="mb-3 block font-mono text-[9px] uppercase tracking-widest text-[#77736C]"
+                )}
+
+                <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                  <button
+                    type="button"
+                    disabled={Boolean(submittingId)}
+                    onClick={() => setSelectedSettlement(null)}
+                    className="border border-[#D8D6D0] px-6 py-3 text-[10px] uppercase tracking-widest text-[#77736C] disabled:opacity-50"
                   >
-                    Explain the discrepancy
-                  </label>
+                    Cancel
+                  </button>
 
-                  <textarea
-                    id="settlement-dispute-reason"
-                    value={disputeReason}
-                    onChange={(event) =>
-                      setDisputeReason(event.target.value)
-                    }
-                    rows={5}
-                    maxLength={2000}
-                    placeholder="Explain why the amount or settlement record is incorrect..."
-                    className="w-full border border-[#D8D6D0] bg-white p-4 text-sm text-[#33312D] outline-none focus:border-[#A58A64]"
-                  />
-
-                  <p className="mt-2 text-right font-mono text-[9px] text-[#99958D]">
-                    {disputeReason.length}/2000
-                  </p>
+                  <button
+                    type="submit"
+                    disabled={Boolean(submittingId)}
+                    className="bg-[#171717] px-6 py-3 text-[10px] uppercase tracking-widest text-white hover:bg-[#A58A64] disabled:opacity-50"
+                  >
+                    {submittingId === selectedSettlement.id
+                      ? "Processing..."
+                      : decision === "ACKNOWLEDGE"
+                        ? "Confirm Receipt"
+                        : "Submit Dispute"}
+                  </button>
                 </div>
-              )}
-
-              {validationError && (
-                <p role="alert" className="mt-4 text-xs text-[#9A5147]">
-                  {validationError}
-                </p>
-              )}
-
-              <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-                <button
-                  type="button"
-                  disabled={Boolean(submittingId)}
-                  onClick={() => setSelectedSettlement(null)}
-                  className="border border-[#D8D6D0] px-6 py-3 text-[10px] uppercase tracking-widest text-[#77736C] disabled:opacity-50"
-                >
-                  Cancel
-                </button>
-
-                <button
-                  type="button"
-                  disabled={Boolean(submittingId)}
-                  onClick={(event) => {
-                    const form = event.currentTarget.form;
-                    if (form) form.requestSubmit();
-                  }}
-                  className="bg-[#171717] px-6 py-3 text-[10px] uppercase tracking-widest text-white hover:bg-[#A58A64] disabled:opacity-50"
-                >
-                  {submittingId === selectedSettlement.id
-                    ? "Processing..."
-                    : decision === "ACKNOWLEDGE"
-                      ? "Confirm Receipt"
-                      : "Submit Dispute"}
-                </button>
-              </div>
-
-              {/* Hidden form handles the actual submission */}
-              <form onSubmit={handleSubmit} className="hidden">
-                <button type="submit">Submit</button>
               </form>
             </section>
           </div>

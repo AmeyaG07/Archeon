@@ -30,7 +30,7 @@ export default function VendorCashSettlementsPage() {
         const records: VendorCashSettlementRecord[] = list.map((s: any) => {
           const isAck = s.counterpartyStatus === "ACKNOWLEDGED";
           const isDisp = s.counterpartyStatus === "DISPUTED";
-          const isVer = s.financeApprovalStatus === "APPROVED";
+          const isVer = s.financeApprovalStatus === "SETTLED_VERIFIED" || s.financeApprovalStatus === "APPROVED";
           const isRej = s.financeApprovalStatus === "REJECTED";
 
           const status: VendorSettlementStatus = isVer

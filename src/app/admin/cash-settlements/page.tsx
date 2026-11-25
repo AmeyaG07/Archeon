@@ -41,7 +41,7 @@ export default function AdminCashSettlementsPage() {
           const isAwaitingVendor = s.counterpartyStatus === "PENDING";
           const isAcknowledged = s.counterpartyStatus === "ACKNOWLEDGED";
           const isDisputed = s.counterpartyStatus === "DISPUTED";
-          const isVerified = s.financeApprovalStatus === "APPROVED";
+          const isVerified = s.financeApprovalStatus === "SETTLED_VERIFIED" || s.financeApprovalStatus === "APPROVED";
           const isRejected = s.financeApprovalStatus === "REJECTED";
 
           if (isVerified) verified++;
