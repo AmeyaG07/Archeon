@@ -273,9 +273,9 @@ export function VendorPortalLayout({
             <button
               type="button"
               onClick={() => setLogoutConfirmation(true)}
-              className="mt-5 flex w-full items-center gap-3 border border-[#343434] px-4 py-3 text-left text-[10px] uppercase tracking-widest text-[#B7B3AC] transition-colors hover:border-[#A58A64] hover:text-white"
+              className="mt-3.5 inline-flex items-center gap-2 rounded border border-[#2c2c2c] bg-[#161616] px-2.5 py-1.5 font-mono text-[9px] uppercase tracking-wider text-[#8e8a83] transition-colors hover:border-[#A58A64]/60 hover:bg-[#1f1e1a] hover:text-white"
             >
-              <LogOut size={15} />
+              <LogOut size={12} />
               Sign Out
             </button>
           </div>
@@ -323,9 +323,9 @@ export function VendorPortalLayout({
               <button
                 type="button"
                 onClick={() => setLogoutConfirmation(true)}
-                className="mt-auto flex items-center gap-3 border border-[#343434] px-5 py-4 text-xs uppercase tracking-widest text-[#D8D6D0]"
+                className="mt-auto inline-flex items-center justify-center gap-2 rounded border border-[#2c2c2c] bg-[#161616] px-3 py-2 font-mono text-[10px] uppercase tracking-wider text-[#8e8a83] transition-colors hover:text-white"
               >
-                <LogOut size={16} />
+                <LogOut size={13} />
                 Sign Out
               </button>
             </div>
