@@ -171,7 +171,7 @@ export function Header({
           {/* Column 2: Center Navigation Links (Cleanly Spaced, Capitalized, No Numbers) */}
           <nav
             aria-label="Main navigation"
-            className="hidden lg:flex items-center justify-center gap-5 xl:gap-8 mx-auto"
+            className="hidden lg:flex items-center justify-center gap-6 xl:gap-9 mx-auto"
           >
             {navigation.map((item) => (
               <a
@@ -180,7 +180,7 @@ export function Header({
                 onClick={() => {
                   handleNavigation(item.href);
                 }}
-                className="group relative py-1.5 px-1 text-[13px] xl:text-[14px] font-['Outfit',sans-serif] font-normal tracking-[0.12em] text-[#D4D0C5] hover:text-white transition-colors duration-300 cursor-pointer"
+                className="group relative py-1.5 px-1 text-[15px] xl:text-[17px] font-['Outfit',sans-serif] font-medium tracking-[0.1em] text-[#E5E2D9] hover:text-white transition-colors duration-300 cursor-pointer"
               >
                 <span className="capitalize pointer-events-none">{item.label}</span>
 
@@ -200,17 +200,17 @@ export function Header({
               <button
                 type="button"
                 onClick={() => setPortalDropdownOpen((prev) => !prev)}
-                className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border transition-all duration-300 font-['Outfit',sans-serif] text-[11.5px] font-medium tracking-[0.1em] backdrop-blur-md cursor-pointer ${
+                className={`inline-flex items-center gap-2.5 px-4.5 py-1.5 xl:px-5 xl:py-2 rounded-full border transition-all duration-300 font-['Outfit',sans-serif] text-[14px] xl:text-[15px] font-medium tracking-[0.08em] backdrop-blur-md cursor-pointer ${
                   portalDropdownOpen
-                    ? "border-[#B68A4A] bg-[#B68A4A]/20 text-[#E0D8C3] shadow-[0_0_15px_rgba(182,138,74,0.3)]"
-                    : "border-white/15 bg-white/[0.04] text-white/80 hover:border-[#B68A4A]/60 hover:bg-[#B68A4A]/10 hover:text-white"
+                    ? "border-[#B68A4A] bg-[#B68A4A]/25 text-[#F2F0EB] shadow-[0_0_15px_rgba(182,138,74,0.35)]"
+                    : "border-[#B68A4A]/55 bg-[#B68A4A]/10 text-[#F2F0EB] hover:border-[#B68A4A] hover:bg-[#B68A4A]/20 hover:text-white"
                 }`}
               >
-                <Shield size={12} className="text-[#B68A4A] pointer-events-none" />
+                <Shield size={14} className="text-[#B68A4A] pointer-events-none" />
                 <span className="pointer-events-none">Portals</span>
                 <ChevronDown
-                  size={12}
-                  className={`transition-transform duration-300 text-white/60 pointer-events-none ${
+                  size={14}
+                  className={`transition-transform duration-300 text-white/70 pointer-events-none ${
                     portalDropdownOpen ? "rotate-180 text-[#B68A4A]" : ""
                   }`}
                 />
