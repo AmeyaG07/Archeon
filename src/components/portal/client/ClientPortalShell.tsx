@@ -1,7 +1,7 @@
 "use client";
 
-import React, { Suspense } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import React from "react";
+import { usePathname, useRouter } from "next/navigation";
 import {
   ClientPortalLayout,
   type ClientPortalSection,
@@ -14,35 +14,29 @@ const routes: Record<ClientPortalSection, string> = {
   drawings: "/client/documents",
   documents: "/client/documents",
   invoices: "/client/invoices?tab=invoices",
-  payments: "/client/invoices?tab=payments",
   notifications: "/client/notifications",
   support: "/client/support",
   settings: "/client/profile",
 };
 
-function getActiveSection(pathname: string, tab?: string | null): ClientPortalSection {
+function getActiveSection(pathname: string): ClientPortalSection {
   if (pathname.includes("/projects")) return "projects";
   if (pathname.includes("/documents")) return "documents";
-  if (pathname.includes("/invoices")) {
-    if (tab === "payments") return "payments";
-    return "invoices";
-  }
+  if (pathname.includes("/invoices")) return "invoices";
   if (pathname.includes("/notifications")) return "notifications";
   if (pathname.includes("/support")) return "support";
   if (pathname.includes("/profile")) return "settings";
   return "dashboard";
 }
 
-function ClientPortalShellInner({ children }: { children: React.ReactNode }) {
+export function ClientPortalShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const router = useRouter();
   const { user, logout } = useAuth();
-  const currentTab = searchParams?.get("tab");
 
   return (
     <ClientPortalLayout
-      activeSection={getActiveSection(pathname, currentTab)}
+      activeSection={getActiveSection(pathname)}
       clientName={user?.username || "Studio Client"}
       clientReference="CLIENT-PORTAL"
       pageTitle="Client Portal"
@@ -55,13 +49,5 @@ function ClientPortalShellInner({ children }: { children: React.ReactNode }) {
     >
       {children}
     </ClientPortalLayout>
-  );
-}
-
-export function ClientPortalShell({ children }: { children: React.ReactNode }) {
-  return (
-    <Suspense fallback={null}>
-      <ClientPortalShellInner>{children}</ClientPortalShellInner>
-    </Suspense>
   );
 }

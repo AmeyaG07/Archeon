@@ -28,7 +28,6 @@ export type ClientPortalSection =
   | "drawings"
   | "documents"
   | "invoices"
-  | "payments"
   | "notifications"
   | "support"
   | "settings";
@@ -76,13 +75,7 @@ const NAVIGATION: NavigationItem[] = [
   {
     id: "invoices",
     label: "Invoices & Bills",
-    description: "Review your bills",
-    icon: CreditCard,
-  },
-  {
-    id: "payments",
-    label: "Payment Records",
-    description: "Payment submissions and status",
+    description: "Review bills & payment records",
     icon: CreditCard,
   },
   {
