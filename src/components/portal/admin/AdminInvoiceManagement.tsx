@@ -338,7 +338,7 @@ export function AdminInvoiceManagement({
     <main className="min-h-screen bg-[#F2F0EB] px-5 py-9 md:px-10 md:py-12 lg:px-12">
 
       {/* Header */}
-      <header className="flex flex-col justify-between gap-6 border-b border-[#D8D6D0] pb-8 md:flex-row md:items-end">
+      <header className="border-b border-[#D8D6D0] pb-8">
         <div>
           <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#A58A64]">
             Administration / Finance
@@ -352,39 +352,6 @@ export function AdminInvoiceManagement({
             Review client and vendor invoices, monitor payment
             progress and track outstanding balances.
           </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3">
-          <button
-            type="button"
-            onClick={handleExportExcel}
-            className="inline-flex items-center gap-2 rounded-sm border border-[#2e7d32] bg-[#f1f8e9] px-5 py-3 font-mono text-[10px] uppercase tracking-widest text-[#1b5e20] hover:bg-[#2e7d32] hover:text-white transition-colors shadow-xs font-semibold cursor-pointer"
-          >
-            <FileSpreadsheet size={15} />
-            Export Excel Report
-          </button>
-
-          {onNotifyWhatsApp && (
-            <button
-              type="button"
-              onClick={onNotifyWhatsApp}
-              className="inline-flex items-center gap-2 rounded-sm border border-[#25D366] bg-[#E8F8EE] px-5 py-3 font-mono text-[10px] uppercase tracking-widest text-[#128C7E] hover:bg-[#25D366] hover:text-white transition-colors shadow-xs font-semibold cursor-pointer"
-            >
-              <MessageSquare size={15} />
-              Bill Reminder
-            </button>
-          )}
-
-          {onAddBill && (
-            <button
-              type="button"
-              onClick={() => onAddBill(selectedClientId !== "All" ? selectedClientId : undefined)}
-              className="inline-flex items-center gap-2 rounded-sm bg-[#171717] px-6 py-3 font-mono text-[10px] uppercase tracking-widest text-white hover:bg-[#A58A64] transition-colors shadow-sm font-semibold cursor-pointer"
-            >
-              <Receipt size={15} className="text-[#A58A64]" />
-              + Add Amount / Bill
-            </button>
-          )}
         </div>
       </header>
 
@@ -582,20 +549,56 @@ export function AdminInvoiceManagement({
 
       {/* Invoice Register */}
       <section className="mt-9">
-        <div className="flex items-end justify-between border-b border-[#D8D6D0] pb-5">
-          <div>
-            <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#A58A64]">
-              Financial Records
-            </p>
+        <div className="border-b border-[#D8D6D0] pb-4 space-y-3">
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#A58A64]">
+                Financial Records
+              </p>
 
-            <h2 className="mt-3 font-serif text-2xl text-[#171717]">
-              Invoice Register
-            </h2>
+              <h2 className="mt-2 font-serif text-2xl text-[#171717]">
+                Invoice Register
+              </h2>
+            </div>
+
+            <p className="font-mono text-[9px] text-[#99958D] shrink-0">
+              {filteredInvoices.length} RECORDS
+            </p>
           </div>
 
-          <p className="font-mono text-[9px] text-[#99958D]">
-            {filteredInvoices.length} RECORDS
-          </p>
+          {/* Action Tiles moved after Invoice Register Label */}
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={handleExportExcel}
+              className="inline-flex items-center gap-1.5 rounded-sm border border-[#2e7d32] bg-[#f1f8e9] px-3 py-1.5 font-mono text-[9px] uppercase tracking-wider text-[#1b5e20] hover:bg-[#2e7d32] hover:text-white transition-colors font-semibold cursor-pointer"
+            >
+              <FileSpreadsheet size={12} />
+              Export Excel Report
+            </button>
+
+            {onNotifyWhatsApp && (
+              <button
+                type="button"
+                onClick={onNotifyWhatsApp}
+                className="inline-flex items-center gap-1.5 rounded-sm border border-[#25D366] bg-[#E8F8EE] px-3 py-1.5 font-mono text-[9px] uppercase tracking-wider text-[#128C7E] hover:bg-[#25D366] hover:text-white transition-colors font-semibold cursor-pointer"
+              >
+                <MessageSquare size={12} />
+                Bill Reminder
+              </button>
+            )}
+
+            {onAddBill && (
+              <button
+                type="button"
+                onClick={() => onAddBill(selectedClientId !== "All" ? selectedClientId : undefined)}
+                className="inline-flex items-center gap-1.5 rounded-sm bg-[#171717] px-3 py-1.5 font-mono text-[9px] uppercase tracking-wider text-white hover:bg-[#A58A64] transition-colors font-semibold cursor-pointer"
+              >
+                <Receipt size={12} className="text-[#A58A64]" />
+                + Add Amount / Bill
+              </button>
+            )}
+          </div>
         </div>
 
         {loading ? (
