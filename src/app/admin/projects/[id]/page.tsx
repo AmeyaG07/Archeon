@@ -438,57 +438,11 @@ export default function AdminProjectDetailPage() {
         </div>
       </div>
 
-      {/* Review Incoming Vendor Updates */}
-      <div className="rounded-sm border border-[#D8D6D0] bg-white p-6 shadow-sm">
-        <div className="flex items-center justify-between border-b border-[#D8D6D0] pb-4">
-          <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-[#B68A4A]">
-            <FileText size={14} /> Incoming Vendor Updates (Site Notes & Photos)
-          </div>
-          <span className="font-mono text-xs text-[#777777]">
-            {vendorUpdates.length} Updates Received
-          </span>
-        </div>
-
-        {vendorUpdates.length === 0 ? (
-          <div className="py-8 text-center font-mono text-xs text-[#777777]">
-            No site notes or updates submitted by vendors for this project yet.
-          </div>
-        ) : (
-          <div className="mt-4 divide-y divide-[#E5E3DE]">
-            {vendorUpdates.map((vu) => (
-              <div key={vu.id} className="py-4 flex flex-col md:flex-row gap-4">
-                {vu.photoUrl && (
-                  <div className="shrink-0 w-32 h-24 rounded-sm overflow-hidden border border-[#D8D6D0] bg-black/5">
-                    <img src={vu.photoUrl} alt="Vendor upload" className="w-full h-full object-cover" />
-                  </div>
-                )}
-                <div className="flex-1">
-                  <div className="flex items-center gap-3">
-                    <span className="font-semibold text-xs text-[#111111]">{vu.authorName}</span>
-                    <span className="font-mono text-[10px] text-[#777777]">
-                      {new Date(vu.createdAt).toLocaleString("en-IN", {
-                        day: "numeric",
-                        month: "short",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
-                  </div>
-                  <p className="mt-2 text-xs text-[#333333] leading-relaxed whitespace-pre-line">
-                    {vu.note || "No additional text note provided."}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Assigned Vendors & Expenses Breakdown */}
+      {/* Bills (moved above Vendor Updates) */}
       <div className="rounded-sm border border-[#D8D6D0] bg-white p-6 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#D8D6D0] pb-4 gap-3">
           <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-[#B68A4A]">
-            <Users size={14} /> Assigned Vendors & Expense Breakdown
+            <Users size={14} /> Bills
           </div>
           <div className="flex items-center gap-3">
             <span className="font-mono text-xs text-[#777777]">
@@ -545,6 +499,52 @@ export default function AdminProjectDetailPage() {
                 })}
               </tbody>
             </table>
+          </div>
+        )}
+      </div>
+
+      {/* Vendor Updates (moved below Bills) */}
+      <div className="rounded-sm border border-[#D8D6D0] bg-white p-6 shadow-sm">
+        <div className="flex items-center justify-between border-b border-[#D8D6D0] pb-4">
+          <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-[#B68A4A]">
+            <FileText size={14} /> Vendor Updates
+          </div>
+          <span className="font-mono text-xs text-[#777777]">
+            {vendorUpdates.length} Updates Received
+          </span>
+        </div>
+
+        {vendorUpdates.length === 0 ? (
+          <div className="py-8 text-center font-mono text-xs text-[#777777]">
+            No site notes or updates submitted by vendors for this project yet.
+          </div>
+        ) : (
+          <div className="mt-4 divide-y divide-[#E5E3DE]">
+            {vendorUpdates.map((vu) => (
+              <div key={vu.id} className="py-4 flex flex-col md:flex-row gap-4">
+                {vu.photoUrl && (
+                  <div className="shrink-0 w-32 h-24 rounded-sm overflow-hidden border border-[#D8D6D0] bg-black/5">
+                    <img src={vu.photoUrl} alt="Vendor upload" className="w-full h-full object-cover" />
+                  </div>
+                )}
+                <div className="flex-1">
+                  <div className="flex items-center gap-3">
+                    <span className="font-semibold text-xs text-[#111111]">{vu.authorName}</span>
+                    <span className="font-mono text-[10px] text-[#777777]">
+                      {new Date(vu.createdAt).toLocaleString("en-IN", {
+                        day: "numeric",
+                        month: "short",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-xs text-[#333333] leading-relaxed whitespace-pre-line">
+                    {vu.note || "No additional text note provided."}
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>
