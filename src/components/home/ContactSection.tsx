@@ -1,9 +1,15 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { ArrowUpRight, MapPin, MoveUpRight } from "lucide-react";
 import { RevealText } from "@/components/motion/EditorialMotion";
 import { ArchitecturalGlobe } from "./ArchitecturalGlobe";
+import {
+  DEFAULT_STUDIO_PROFILE,
+  StudioProfileData,
+  fetchPublicStudioProfile,
+  getOfficeMapsHref,
+} from "@/lib/studioProfile";
 
 interface ContactSectionProps {
   onOpenConsultation: () => void;
@@ -12,6 +18,12 @@ interface ContactSectionProps {
 export function ContactSection({
   onOpenConsultation,
 }: ContactSectionProps) {
+  const [studioProfile, setStudioProfile] = useState<StudioProfileData>(DEFAULT_STUDIO_PROFILE);
+
+  useEffect(() => {
+    fetchPublicStudioProfile().then(setStudioProfile).catch(() => { });
+  }, []);
+
   return (
     <section
       id="contact"
@@ -25,7 +37,7 @@ export function ContactSection({
 
       <div className="editorial-container relative z-10">
         <div className="grid gap-12 lg:gap-14 xl:gap-16 lg:grid-cols-12 items-center">
-          
+
           {/* Left Column: Heading, CTA, Studio Location & Principal Architect */}
           <div className="lg:col-span-7 xl:col-span-7 flex flex-col justify-center relative z-20">
             <div className="max-w-2xl">
@@ -67,48 +79,49 @@ export function ContactSection({
 
             {/* Studio Location & Principal Architect - Refined 2-Column Subgrid on Left Side */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-xl">
-              {/* Block 1: Studio Location */}
-              <div>
-                <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#C6A779] font-medium mb-3">
-                  STUDIO LOCATION
+              {/* Block 1: Studio Location(s) */}
+              <div className="space-y-5">
+                <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#C6A779] font-medium">
+                  {studioProfile.offices.length > 1 ? "STUDIO LOCATIONS" : "STUDIO LOCATION"}
                 </p>
 
-                <div className="flex items-start gap-3">
-                  <MapPin
-                    size={17}
-                    className="mt-1 shrink-0 text-[#C6A779]"
-                  />
+                {studioProfile.offices.map((office) => (
+                  <div
+                    key={office.id}
+                    className="space-y-3 border-b border-white/10 pb-4 last:border-b-0 last:pb-0"
+                  >
+                    <div className="flex items-start gap-3">
+                      <MapPin
+                        size={17}
+                        className="mt-1 shrink-0 text-[#C6A779]"
+                      />
 
-                  <address className="font-['Outfit',sans-serif] text-[13px] not-italic leading-relaxed text-white/70">
-                    1st Floor, Krishna-Kunj, 90,
-                    <br />
-                    Dharempeth Layout,
-                    <br />
-                    opposite Aaji Aajoba Park,
-                    <br />
-                    Deendayal Nagar,
-                    <br />
-                    Nagpur, Maharashtra 440022,
-                    <br />
-                    India.
-                  </address>
-                </div>
+                      <div className="space-y-1">
+                        {office.label && (
+                          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#E0D8C3] font-semibold">
+                            {office.label}
+                          </p>
+                        )}
+                        <address className="font-['Outfit',sans-serif] text-[13px] not-italic leading-relaxed text-white/70">
+                          {office.address}
+                        </address>
+                      </div>
+                    </div>
 
-                <a
-                  href="https://maps.app.goo.gl/wLidaC62gQLccoNY8"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => {
-                    window.open("https://maps.app.goo.gl/wLidaC62gQLccoNY8", "_blank", "noopener,noreferrer");
-                  }}
-                  className="group mt-4 inline-flex items-center gap-2 border border-[#C6A779]/60 bg-[#C6A779]/10 hover:bg-[#C6A779] hover:text-[#111111] hover:border-[#C6A779] px-4 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[#E0D8C3] transition-all shadow-sm rounded-xs cursor-pointer z-30 relative font-medium"
-                >
-                  <span>GET DIRECTIONS</span>
-                  <MoveUpRight
-                    size={12}
-                    className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                  />
-                </a>
+                    <a
+                      href={getOfficeMapsHref(office)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group inline-flex items-center gap-2 border border-[#C6A779]/60 bg-[#C6A779]/10 hover:bg-[#C6A779] hover:text-[#111111] hover:border-[#C6A779] px-4 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[#E0D8C3] transition-all shadow-sm rounded-xs cursor-pointer z-30 relative font-medium"
+                    >
+                      <span>GET DIRECTIONS</span>
+                      <MoveUpRight
+                        size={12}
+                        className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                      />
+                    </a>
+                  </div>
+                ))}
               </div>
 
               {/* Block 2: Principal Architect */}
@@ -119,7 +132,7 @@ export function ContactSection({
                   </p>
 
                   <h3 className="font-serif text-3xl font-light text-white tracking-tight leading-tight">
-                    Ar. Mandar Bhalekar
+                    {studioProfile.principalName}
                   </h3>
 
                   <p className="mt-2 font-['Outfit',sans-serif] text-[12.5px] text-white/60 leading-relaxed">
@@ -132,7 +145,11 @@ export function ContactSection({
                 {/* Studio Geographic Telemetry Stamp */}
                 <div className="mt-5 pt-3 border-t border-white/10 font-mono text-[9px] uppercase tracking-wider text-[#C6A779]/75 flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#D97724]" />
-                  <span>NAGPUR HQ · 21.1458° N, 79.0882° E</span>
+                  <span>
+                    {studioProfile.offices.length > 1
+                      ? `${studioProfile.offices.length} STUDIO OFFICES · ACTIVE`
+                      : "NAGPUR HQ · 21.1458° N, 79.0882° E"}
+                  </span>
                 </div>
               </div>
             </div>

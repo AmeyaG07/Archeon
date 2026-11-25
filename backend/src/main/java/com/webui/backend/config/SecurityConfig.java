@@ -89,6 +89,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/users/me", "/api/users/change-password").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/projects/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/manifesto/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/studio-profile/**").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/api/studio-profile/**").hasAnyRole("ADMIN", "STAFF")
                         .requestMatchers(HttpMethod.GET, "/api/approvals/config").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/leads").permitAll()
                         .requestMatchers("/api/webhooks/**").permitAll()

@@ -3,11 +3,13 @@ package com.webui.backend.config;
 import com.webui.backend.model.ClientEntity;
 import com.webui.backend.model.ManifestoEntity;
 import com.webui.backend.model.ProjectEntity;
+import com.webui.backend.model.StudioProfileEntity;
 import com.webui.backend.model.UserEntity;
 import com.webui.backend.model.VendorEntity;
 import com.webui.backend.repository.BillApprovalRepository;
 import com.webui.backend.repository.ManifestoRepository;
 import com.webui.backend.repository.ProjectRepository;
+import com.webui.backend.repository.StudioProfileRepository;
 import com.webui.backend.repository.UserRepository;
 import com.webui.backend.service.MakerCheckerApprovalService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +38,9 @@ public class DataInitializer implements CommandLineRunner {
 
     @Autowired
     private ManifestoRepository manifestoRepository;
+
+    @Autowired(required = false)
+    private StudioProfileRepository studioProfileRepository;
 
     @Autowired
     private BillApprovalRepository billApprovalRepository;
@@ -148,6 +153,16 @@ public class DataInitializer implements CommandLineRunner {
                     .title("/// ARCHEON DESIGN PHILOSOPHY")
                     .headline("Sculpting spaces from raw earth, monolithic stone, and controlled light. Where elemental purity meets precision execution.")
                     .paragraphsJson("[\"We design and build considered spatial environments that seamlessly harmonize architectural form, interior craft, natural landscape, and turnkey engineering.\", \"Rooted in geographic context, climate responsiveness, and geological permanence, every project is an individual response to natural terrain.\", \"By integrating architectural design with single-window turnkey execution, we eliminate the friction between concept drawings and on-site material craftsmanship.\"]")
+                    .build());
+        }
+
+        if (studioProfileRepository != null && studioProfileRepository.count() == 0) {
+            studioProfileRepository.save(StudioProfileEntity.builder()
+                    .principalName("Ar. Mandar Bhalekar")
+                    .phone("+91 9834653481")
+                    .email("dsarcheon@gmail.com")
+                    .socialHandle("@mbs_archeon_ds")
+                    .officesJson("[{\"id\":\"office-nagpur-hq\",\"label\":\"Nagpur Headquarters\",\"address\":\"1st Floor, Krishna-Kunj, 90, Dharampeth Layout, opposite Aaji Aajoba Park, Deendayal Nagar, Nagpur, Maharashtra 440022\",\"mapsUrl\":\"https://maps.app.goo.gl/wLidaC62gQLccoNY8\",\"isPrimary\":true}]")
                     .build());
         }
 

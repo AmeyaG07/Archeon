@@ -30,6 +30,12 @@ import {
 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { DualImageUpload } from "@/components/ui/DualImageUpload";
+import {
+  DEFAULT_STUDIO_OFFICES,
+  StudioOffice,
+  parseOfficesJson,
+  getOfficeMapsHref,
+} from "@/lib/studioProfile";
 
 export interface WebsiteProjectRecord {
   id: string;
@@ -109,10 +115,10 @@ export function AdminWebsiteProjectList() {
   // Studio profile contact info
   const [studioPhone, setStudioPhone] = useState("+91 9834653481");
   const [studioEmail, setStudioEmail] = useState("dsarcheon@gmail.com");
-  const [studioAddress, setStudioAddress] = useState(
-    "1st Floor, Krishna-Kunj, 90, Dharampeth Layout, opposite Aaji Aajoba Park, Deendayal Nagar, Nagpur, Maharashtra 440022"
-  );
+  const [studioHandle, setStudioHandle] = useState("@mbs_archeon_ds");
   const [studioPrincipal, setStudioPrincipal] = useState("Ar. Mandar Bhalekar");
+  const [studioOffices, setStudioOffices] = useState<StudioOffice[]>(DEFAULT_STUDIO_OFFICES);
+  const [savingContacts, setSavingContacts] = useState(false);
   const [contactsSaved, setContactsSaved] = useState(false);
 
   const loadProjects = useCallback(async () => {
@@ -148,10 +154,25 @@ export function AdminWebsiteProjectList() {
     } catch {}
   }, []);
 
+  const loadStudioProfile = useCallback(async () => {
+    try {
+      const res = await apiFetch("/api/studio-profile");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.principalName) setStudioPrincipal(data.principalName);
+        if (data.phone) setStudioPhone(data.phone);
+        if (data.email) setStudioEmail(data.email);
+        if (data.socialHandle) setStudioHandle(data.socialHandle);
+        setStudioOffices(parseOfficesJson(data.officesJson));
+      }
+    } catch {}
+  }, []);
+
   useEffect(() => {
     loadProjects();
     loadManifesto();
-  }, [loadProjects, loadManifesto]);
+    loadStudioProfile();
+  }, [loadProjects, loadManifesto, loadStudioProfile]);
 
   const handleOpenEdit = (project: WebsiteProjectRecord) => {
     setIsCreatingNew(false);
@@ -296,6 +317,88 @@ export function AdminWebsiteProjectList() {
       setError(err instanceof Error ? err.message : "Failed to save manifesto.");
     } finally {
       setSavingManifesto(false);
+    }
+  };
+
+  const handleAddOffice = () => {
+    setStudioOffices((prev) => [
+      ...prev,
+      {
+        id: `office-${Date.now().toString(36)}`,
+        label: `Branch Office ${prev.length + 1}`,
+        address: "",
+        mapsUrl: "",
+        isPrimary: prev.length === 0,
+      },
+    ]);
+  };
+
+  const handleUpdateOffice = (index: number, patch: Partial<StudioOffice>) => {
+    setStudioOffices((prev) =>
+      prev.map((office, idx) => (idx === index ? { ...office, ...patch } : office))
+    );
+  };
+
+  const handleSetPrimaryOffice = (index: number) => {
+    setStudioOffices((prev) =>
+      prev.map((office, idx) => ({ ...office, isPrimary: idx === index }))
+    );
+  };
+
+  const handleRemoveOffice = (index: number) => {
+    setStudioOffices((prev) => {
+      if (prev.length <= 1) return prev;
+      const filtered = prev.filter((_, idx) => idx !== index);
+      if (!filtered.some((o) => o.isPrimary) && filtered[0]) {
+        filtered[0] = { ...filtered[0], isPrimary: true };
+      }
+      return filtered;
+    });
+  };
+
+  const handleSaveStudioDetails = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanedOffices = studioOffices
+      .map((o, idx) => ({
+        ...o,
+        label: o.label.trim() || `Office ${idx + 1}`,
+        address: o.address.trim(),
+        mapsUrl: o.mapsUrl?.trim() || "",
+      }))
+      .filter((o) => o.address.length > 0);
+
+    if (cleanedOffices.length === 0) {
+      setError("Please keep at least one studio office address.");
+      return;
+    }
+
+    if (!cleanedOffices.some((o) => o.isPrimary)) {
+      cleanedOffices[0].isPrimary = true;
+    }
+
+    setSavingContacts(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const res = await apiFetch("/api/studio-profile", {
+        method: "PUT",
+        body: {
+          principalName: studioPrincipal.trim(),
+          phone: studioPhone.trim(),
+          email: studioEmail.trim(),
+          socialHandle: studioHandle.trim(),
+          officesJson: JSON.stringify(cleanedOffices),
+        },
+      });
+      if (!res.ok) throw new Error("Failed to save studio details & office addresses.");
+      setStudioOffices(cleanedOffices);
+      setContactsSaved(true);
+      setSuccess("Studio contact details & office locations published to the live website!");
+      setTimeout(() => setContactsSaved(false), 3000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save studio details.");
+    } finally {
+      setSavingContacts(false);
     }
   };
 
@@ -688,19 +791,29 @@ export function AdminWebsiteProjectList() {
       {/* TAB 3: STUDIO CONTACTS & PROFILE */}
       {activeTab === "contacts" && (
         <div className="rounded-sm border border-[#D8D6D0] bg-white p-6 sm:p-8 space-y-6">
-          <div>
-            <span className="font-mono text-[9px] uppercase tracking-widest text-[#9F7947] font-semibold">
-              Live Website Header & Footer Contact Channels
-            </span>
-            <h2 className="font-serif text-2xl text-[#111111] mt-1">
-              Studio Principal & Official Contact Information
-            </h2>
-            <p className="text-xs text-[#77736C] mt-1">
-              These details are displayed in the website header, footer, inquiry drawer, and client communication channels.
-            </p>
+          <div className="border-b border-[#EFECE6] pb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+            <div>
+              <span className="font-mono text-[9px] uppercase tracking-widest text-[#9F7947] font-semibold">
+                Live Website Contact Section, Footer &amp; Inquiry Drawer
+              </span>
+              <h2 className="font-serif text-2xl text-[#111111] mt-1">
+                Studio Principal, Contacts &amp; Office Addresses
+              </h2>
+              <p className="text-xs text-[#77736C] mt-1">
+                Changes saved here reflect live in the homepage Contact section, Footer, and Consultation drawer — including multiple office locations.
+              </p>
+            </div>
+            <a
+              href="/#contact"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 border border-[#D8D6D0] bg-[#FAF9F6] px-3 py-1.5 font-mono text-[9px] uppercase tracking-wider text-[#33312D] hover:border-[#171717] transition-colors rounded-sm shrink-0"
+            >
+              <ExternalLink size={11} /> View Contact Section Live
+            </a>
           </div>
 
-          <div className="space-y-4">
+          <form onSubmit={handleSaveStudioDetails} className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
@@ -710,7 +823,7 @@ export function AdminWebsiteProjectList() {
                   type="text"
                   value={studioPrincipal}
                   onChange={(e) => setStudioPrincipal(e.target.value)}
-                  className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717]"
+                  className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:bg-white focus:outline-none"
                 />
               </div>
 
@@ -722,7 +835,7 @@ export function AdminWebsiteProjectList() {
                   type="text"
                   value={studioPhone}
                   onChange={(e) => setStudioPhone(e.target.value)}
-                  className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717]"
+                  className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:bg-white focus:outline-none"
                 />
               </div>
             </div>
@@ -736,7 +849,7 @@ export function AdminWebsiteProjectList() {
                   type="email"
                   value={studioEmail}
                   onChange={(e) => setStudioEmail(e.target.value)}
-                  className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717]"
+                  className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:bg-white focus:outline-none"
                 />
               </div>
 
@@ -746,37 +859,181 @@ export function AdminWebsiteProjectList() {
                 </label>
                 <input
                   type="text"
-                  defaultValue="@mbs_archeon_ds"
-                  className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717]"
+                  value={studioHandle}
+                  onChange={(e) => setStudioHandle(e.target.value)}
+                  className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:bg-white focus:outline-none"
                 />
               </div>
             </div>
 
-            <div>
-              <label className="block font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
-                Studio Headquarters Address
-              </label>
-              <textarea
-                rows={2}
-                value={studioAddress}
-                onChange={(e) => setStudioAddress(e.target.value)}
-                className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717]"
-              />
+            {/* MULTIPLE STUDIO OFFICE ADDRESSES */}
+            <div className="space-y-3 pt-2 border-t border-[#EFECE6]">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <h3 className="font-mono text-[10px] uppercase tracking-wider text-[#171717] font-semibold">
+                    Studio Office Addresses ({studioOffices.length})
+                  </h3>
+                  <p className="text-[11px] text-[#77736C]">
+                    Add headquarters and branch studio offices. All saved addresses appear live on the website with Google Maps directions.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleAddOffice}
+                  className="inline-flex items-center gap-1.5 rounded-sm border border-[#171717] bg-white px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-[#171717] hover:bg-[#171717] hover:text-white transition-colors cursor-pointer shrink-0"
+                >
+                  <Plus size={12} /> Add Office Address
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {studioOffices.map((office, idx) => (
+                  <div
+                    key={office.id}
+                    className={`rounded-sm border p-4 space-y-3 transition-colors ${
+                      office.isPrimary
+                        ? "border-[#A58A64] bg-[#FAF8F5]"
+                        : "border-[#D8D6D0] bg-[#FAF9F6]"
+                    }`}
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#171717] font-mono text-[10px] text-white">
+                          {idx + 1}
+                        </span>
+                        <span className="font-mono text-[10px] uppercase tracking-wider text-[#171717] font-semibold">
+                          {office.label || `Office ${idx + 1}`}
+                        </span>
+                        {office.isPrimary ? (
+                          <span className="rounded-xs bg-[#A58A64]/15 border border-[#A58A64]/40 px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider text-[#9F7947] font-semibold">
+                            Primary HQ
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleSetPrimaryOffice(idx)}
+                            className="font-mono text-[9px] uppercase tracking-wider text-[#77736C] hover:text-[#171717] underline cursor-pointer"
+                          >
+                            Set as Primary
+                          </button>
+                        )}
+                      </div>
+
+                      {studioOffices.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveOffice(idx)}
+                          aria-label={`Remove ${office.label || `Office ${idx + 1}`}`}
+                          className="inline-flex items-center gap-1 text-[10px] font-mono uppercase text-[#77736C] hover:text-red-600 cursor-pointer"
+                        >
+                          <Trash2 size={13} /> Remove
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block font-mono text-[9px] uppercase tracking-wider text-[#77736C]">
+                          Office Title / Branch Name
+                        </label>
+                        <input
+                          type="text"
+                          value={office.label}
+                          onChange={(e) => handleUpdateOffice(idx, { label: e.target.value })}
+                          placeholder="e.g. Nagpur Headquarters or Mumbai Atelier"
+                          className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-1.5 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-mono text-[9px] uppercase tracking-wider text-[#77736C]">
+                          Google Maps Link (Optional)
+                        </label>
+                        <input
+                          type="text"
+                          value={office.mapsUrl || ""}
+                          onChange={(e) => handleUpdateOffice(idx, { mapsUrl: e.target.value })}
+                          placeholder="Leave blank to auto-link from address"
+                          className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-1.5 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block font-mono text-[9px] uppercase tracking-wider text-[#77736C]">
+                        Full Street Address *
+                      </label>
+                      <textarea
+                        rows={2}
+                        required
+                        value={office.address}
+                        onChange={(e) => handleUpdateOffice(idx, { address: e.target.value })}
+                        placeholder="Floor, Building, Street, City, State, PIN Code"
+                        className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-1.5 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            <div className="pt-4 border-t border-[#D8D6D0]">
+            {/* Live Preview Strip */}
+            <div className="rounded-sm border border-[#E4E1DA] bg-[#F2F0EB] p-4 space-y-2.5">
+              <p className="font-mono text-[9px] uppercase tracking-widest text-[#9F7947] font-semibold">
+                Live Website Reflection Preview ({studioOffices.filter((o) => o.address.trim()).length} Active Offices)
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {studioOffices
+                  .filter((o) => o.address.trim())
+                  .map((office) => (
+                    <div
+                      key={office.id}
+                      className="rounded-xs border border-[#D8D6D0] bg-white p-3 text-xs space-y-1"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-mono text-[10px] uppercase tracking-wider font-semibold text-[#171717] flex items-center gap-1.5">
+                          <MapPin size={12} className="text-[#A58A64]" />
+                          {office.label}
+                        </span>
+                        <a
+                          href={getOfficeMapsHref(office)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-mono text-[9px] uppercase tracking-wider text-[#9F7947] hover:underline"
+                        >
+                          Maps ↗
+                        </a>
+                      </div>
+                      <p className="text-[11px] text-[#55514A] leading-relaxed">
+                        {office.address}
+                      </p>
+                    </div>
+                  ))}
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-[#D8D6D0] flex flex-wrap items-center gap-3">
+              <button
+                type="submit"
+                disabled={savingContacts}
+                className="inline-flex items-center gap-2 bg-[#171717] px-6 py-2.5 font-mono text-xs uppercase tracking-wider text-white hover:bg-[#A58A64] transition-colors rounded-sm shadow-xs disabled:opacity-50 cursor-pointer"
+              >
+                <Save size={14} />{" "}
+                {savingContacts
+                  ? "Saving..."
+                  : contactsSaved
+                  ? "Saved & Published!"
+                  : "Save Studio Details"}
+              </button>
               <button
                 type="button"
-                onClick={() => {
-                  setContactsSaved(true);
-                  setTimeout(() => setContactsSaved(false), 3000);
-                }}
-                className="inline-flex items-center gap-2 bg-[#171717] px-6 py-2.5 font-mono text-xs uppercase tracking-wider text-white hover:bg-[#A58A64] transition-colors rounded-sm shadow-xs"
+                onClick={handleAddOffice}
+                className="inline-flex items-center gap-1.5 border border-[#D8D6D0] bg-white px-4 py-2.5 font-mono text-xs uppercase tracking-wider text-[#33312D] hover:border-[#171717] transition-colors rounded-sm cursor-pointer"
               >
-                <Save size={14} /> {contactsSaved ? "Saved!" : "Save Studio Details"}
+                <Plus size={14} /> Add Another Office
               </button>
             </div>
-          </div>
+          </form>
         </div>
       )}
 

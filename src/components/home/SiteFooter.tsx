@@ -9,6 +9,12 @@ import { motion } from "framer-motion";
 import { siteConfig } from "@/config/siteConfig";
 import { useAuth } from "@/providers/AuthProvider";
 import {
+  DEFAULT_STUDIO_PROFILE,
+  StudioProfileData,
+  fetchPublicStudioProfile,
+  getOfficeMapsHref,
+} from "@/lib/studioProfile";
+import {
   SwarmCursorArrow,
   AgenticRow,
   AgenticLaunchStreams,
@@ -125,6 +131,11 @@ export function SiteFooter({
   const [buildStep, setBuildStep] = useState<number>(0);
   const [hasBuilt, setHasBuilt] = useState<boolean>(false);
   const [buildCycle, setBuildCycle] = useState<number>(0);
+  const [studioProfile, setStudioProfile] = useState<StudioProfileData>(DEFAULT_STUDIO_PROFILE);
+
+  useEffect(() => {
+    fetchPublicStudioProfile().then(setStudioProfile).catch(() => {});
+  }, []);
 
   const isBuildingRef = useRef<boolean>(false);
   const timersRef = useRef<NodeJS.Timeout[]>([]);
@@ -590,20 +601,40 @@ export function SiteFooter({
                   </p>
                   <div className="flex flex-col gap-2 font-outfit text-white/70 mb-3">
                     <a
-                      href="mailto:dsarcheon@gmail.com"
+                      href={`mailto:${studioProfile.email}`}
                       className="hover:text-white transition-colors truncate"
-                      title="dsarcheon@gmail.com"
+                      title={studioProfile.email}
                       style={{ fontSize: "15px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
                     >
-                      dsarcheon@gmail.com
+                      {studioProfile.email}
                     </a>
                     <a
-                      href="tel:+919834653481"
+                      href={`tel:${studioProfile.phone.replace(/\s+/g, "")}`}
                       className="hover:text-white transition-colors tracking-wide"
                       style={{ fontSize: "15px", lineHeight: "1.5", fontFamily: 'var(--font-outfit), "Outfit", sans-serif', fontWeight: 400 }}
                     >
-                      +91 9834653481
+                      {studioProfile.phone}
                     </a>
+                    {studioProfile.offices.length > 0 && (
+                      <div className="pt-1 flex flex-wrap gap-x-2 gap-y-1 text-[12px] text-[#C6A779]/85">
+                        {studioProfile.offices.map((office, idx) => (
+                          <React.Fragment key={office.id}>
+                            <a
+                              href={getOfficeMapsHref(office)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title={office.address}
+                              className="hover:text-white transition-colors"
+                            >
+                              {office.label}
+                            </a>
+                            {idx < studioProfile.offices.length - 1 && (
+                              <span className="text-white/25">·</span>
+                            )}
+                          </React.Fragment>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </AgenticRow>
 

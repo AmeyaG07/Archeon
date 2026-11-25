@@ -6,6 +6,12 @@ import { X, Send, CheckCircle2, MessageSquare, MapPin, Navigation } from "lucide
 import { siteConfig } from "@/config/siteConfig";
 import { useAudio } from "@/providers/AudioProvider";
 import { apiFetch } from "@/lib/api";
+import {
+  DEFAULT_STUDIO_PROFILE,
+  StudioProfileData,
+  fetchPublicStudioProfile,
+  getOfficeMapsHref,
+} from "@/lib/studioProfile";
 
 interface ConsultationModalProps {
   isOpen: boolean;
@@ -37,6 +43,13 @@ export function ConsultationModal({
 
   const [submittedRef, setSubmittedRef] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [studioProfile, setStudioProfile] = useState<StudioProfileData>(DEFAULT_STUDIO_PROFILE);
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchPublicStudioProfile().then(setStudioProfile).catch(() => {});
+    }
+  }, [isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -165,36 +178,36 @@ export function ConsultationModal({
             </div>
 
             {/* Studio Coordinates Banner */}
-            <div className="p-3.5 rounded-xl border border-[#C6A779]/25 bg-white/[0.02] mb-7 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
-              <div className="space-y-0.5">
-                <div className="text-[10px] text-[#C6A779] font-mono font-bold uppercase tracking-wider flex items-center space-x-1.5">
-                  <MapPin className="w-3 h-3 text-[#C6A779]" />
-                  <span>{siteConfig.businessDisplayName} // NAGPUR ATELIER</span>
-                </div>
-                <div className="text-stone-300 font-['Outfit',sans-serif] text-[11.5px] font-light">
-                  {siteConfig.contact.office}
-                </div>
-              </div>
-              <div className="flex items-center space-x-2 shrink-0">
-                <a
-                  href={siteConfig.contact.mapsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-[#C6A779]/15 hover:bg-[#C6A779]/25 border border-[#C6A779]/35 text-[#E0D8C3] text-[10.5px] font-mono transition-colors"
+            <div className="p-3.5 rounded-xl border border-[#C6A779]/25 bg-white/[0.02] mb-7 space-y-2.5 text-xs">
+              {studioProfile.offices.map((office) => (
+                <div
+                  key={office.id}
+                  className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-2 last:pb-0 border-b border-white/10 last:border-b-0"
                 >
-                  <MapPin className="w-3 h-3 text-[#C6A779]" />
-                  <span>Studio Map</span>
-                </a>
-                <a
-                  href={siteConfig.contact.directionsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-stone-200 text-[10.5px] font-mono transition-colors"
-                >
-                  <Navigation className="w-3 h-3 text-stone-400" />
-                  <span>Directions</span>
-                </a>
-              </div>
+                  <div className="space-y-0.5">
+                    <div className="text-[10px] text-[#C6A779] font-mono font-bold uppercase tracking-wider flex items-center space-x-1.5">
+                      <MapPin className="w-3 h-3 text-[#C6A779]" />
+                      <span>
+                        {siteConfig.businessDisplayName} // {office.label}
+                      </span>
+                    </div>
+                    <div className="text-stone-300 font-['Outfit',sans-serif] text-[11.5px] font-light">
+                      {office.address}
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2 shrink-0">
+                    <a
+                      href={getOfficeMapsHref(office)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-[#C6A779]/15 hover:bg-[#C6A779]/25 border border-[#C6A779]/35 text-[#E0D8C3] text-[10.5px] font-mono transition-colors"
+                    >
+                      <Navigation className="w-3 h-3 text-[#C6A779]" />
+                      <span>Directions</span>
+                    </a>
+                  </div>
+                </div>
+              ))}
             </div>
 
             {submittedRef ? (
