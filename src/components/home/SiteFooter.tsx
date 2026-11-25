@@ -349,6 +349,7 @@ export function SiteFooter({
                   >
                     EXPLORE
                   </p>
+              
                   <a
                     href={exploreLinks[0].href}
                     onClick={(e) => {
@@ -450,6 +451,7 @@ export function SiteFooter({
                   >
                     DISCIPLINES
                   </p>
+              
                   <button
                     type="button"
                     onClick={() => scrollToSection("#expertise")}
@@ -536,6 +538,7 @@ export function SiteFooter({
                   >
                     PRIVATE ACCESS
                   </p>
+              
                   <Link
                     href="/client"
                     className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg bg-[#141414] hover:bg-[#1C1C1C] border border-white/10 hover:border-white/30 text-white/90 hover:text-white transition-all group shadow-sm cursor-pointer mb-3"
@@ -600,6 +603,7 @@ export function SiteFooter({
                   >
                     STUDIO INQUIRIES
                   </p>
+              
                   <div className="flex flex-col gap-2 font-outfit text-white/70 mb-3">
                     <a
                       href={`mailto:${studioProfile.email}`}
@@ -674,6 +678,7 @@ export function SiteFooter({
                     >
                       FOLLOW US
                     </p>
+              
                     <div className="flex items-center gap-2">
                       {socialLinks.map((s) => (
                         <a
@@ -725,13 +730,8 @@ export function SiteFooter({
               <p className="text-center sm:text-left text-[9.5px]">
                 All Rights Reserved. Architecture · Interior · Landscape · Turnkey.
               </p>
-              <button
-                type="button"
-                onClick={scrollToTop}
-                className="text-[#C6A779] hover:text-white uppercase tracking-widest transition-colors cursor-pointer"
-              >
-                BACK TO TOP ↑
-              </button>
+              
+              
             </div>
           </AgenticRow>
         </div>
