@@ -179,145 +179,148 @@ export function ClientSupportCentre({
   };
 
   return (
-    <div className="space-y-8 pb-16">
-      {/* Header */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between border-b border-[#EAE8E3] pb-6">
-        <div>
-          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-[#A58A64]">
-            <LifeBuoy size={14} /> Client Support & Concierge
-          </div>
-          <h1 className="mt-1 font-serif text-3xl text-[#171717] md:text-4xl">
-            Help & Client Support
-          </h1>
-          <p className="mt-1 max-w-2xl text-xs text-[#77736C]">
-            Direct liaison with ArcheOn Studio management for project queries, milestone updates, drawing reviews, and billing clarifications.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="inline-flex items-center gap-2 rounded-sm bg-[#171717] px-5 py-2 font-mono text-[10px] uppercase tracking-wider text-white hover:bg-[#A58A64] transition-colors shadow-sm"
-          >
-            <Plus size={14} /> New Support Inquiry
-          </button>
-        </div>
-      </div>
-
-      {error && (
-        <div className="flex items-center gap-2 rounded-sm border border-red-200 bg-red-50 p-3 text-xs font-mono text-red-800">
-          <AlertCircle size={15} className="shrink-0 text-red-600" />
-          <span>{error}</span>
-        </div>
-      )}
-
-      {/* Metrics Row */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-sm border border-[#EAE8E3] bg-white p-5">
-          <p className="font-mono text-[10px] uppercase tracking-wider text-[#77736C]">Total Inquiries</p>
-          <p className="mt-2 font-serif text-3xl text-[#171717]">{tickets.length}</p>
-        </div>
-        <div className="rounded-sm border border-[#EAE8E3] bg-white p-5">
-          <p className="font-mono text-[10px] uppercase tracking-wider text-amber-700">Active / In Progress</p>
-          <p className="mt-2 font-serif text-3xl text-amber-800">{openCount}</p>
-        </div>
-        <div className="rounded-sm border border-[#EAE8E3] bg-white p-5">
-          <p className="font-mono text-[10px] uppercase tracking-wider text-emerald-700">Resolved</p>
-          <p className="mt-2 font-serif text-3xl text-emerald-800">{resolvedCount}</p>
-        </div>
-      </div>
-
-      {/* Studio Concierge Direct Contacts */}
-      <div className="rounded-sm border border-[#E5E0D8] bg-[#FBF9F5] p-5">
-        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#A58A64]">Direct Studio Concierge</p>
-        <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#EFECE6] text-[#A58A64]">
-              <Phone size={15} />
-            </div>
-            <div>
-              <p className="font-mono text-[9px] uppercase tracking-wider text-[#77736C]">Studio Principal Call</p>
-              <a href="tel:+919834653481" className="font-mono text-xs font-semibold text-[#171717] hover:underline">
-                +91 9834653481
-              </a>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#EFECE6] text-[#A58A64]">
-              <Mail size={15} />
-            </div>
-            <div>
-              <p className="font-mono text-[9px] uppercase tracking-wider text-[#77736C]">Studio Desk Email</p>
-              <a href="mailto:dsarcheon@gmail.com" className="font-mono text-xs font-semibold text-[#171717] hover:underline">
-                dsarcheon@gmail.com
-              </a>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#EFECE6] text-[#A58A64]">
-              <Building2 size={15} />
-            </div>
-            <div>
-              <p className="font-mono text-[9px] uppercase tracking-wider text-[#77736C]">Studio Headquarters</p>
-              <p className="font-mono text-xs text-[#171717]">Krishna-Kunj, Dharampeth, Nagpur</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Filter and Search */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2">
-          {["All", "Open", "Resolved"].map((filter) => (
-            <button
-              key={filter}
-              onClick={() => setStatusFilter(filter)}
-              className={`rounded-sm px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider transition-colors ${
-                statusFilter === filter
-                  ? "bg-[#171717] text-white"
-                  : "bg-white border border-[#D8D6D0] text-[#77736C] hover:text-[#171717]"
-              }`}
-            >
-              {filter}
-            </button>
-          ))}
-        </div>
-
-        <div className="relative w-full sm:w-64">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#77736C]" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search inquiries..."
-            className="w-full rounded-sm border border-[#D8D6D0] bg-white pl-9 pr-3 py-1.5 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
-          />
-        </div>
-      </div>
-
-      {/* Ticket List */}
-      <div className="space-y-3">
-        {loading ? (
-          <div className="p-12 text-center font-mono text-xs text-[#77736C]">Loading support inquiries...</div>
-        ) : filteredTickets.length === 0 ? (
-          <div className="rounded-sm border border-dashed border-[#D8D6D0] bg-white p-12 text-center">
-            <LifeBuoy size={32} className="mx-auto text-[#A58A64] opacity-50" />
-            <h3 className="mt-3 font-serif text-lg text-[#171717]">No support inquiries found</h3>
-            <p className="mt-1 font-mono text-xs text-[#77736C]">
-              {search || statusFilter !== "All"
-                ? "No inquiries match your filter criteria."
-                : "You haven't submitted any inquiries yet. Click 'New Support Inquiry' above for any project questions."}
+    <div className="min-h-screen bg-[#F2F0EB] px-5 py-10 md:px-10 md:py-14">
+      <div className="mx-auto max-w-7xl space-y-8">
+        {/* Header */}
+        <header className="flex flex-col gap-5 border-b border-[#D8D6D0] pb-8 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-[#A58A64]">
+              <LifeBuoy size={14} /> Client Portal / Help &amp; Support
+            </p>
+            <h1 className="mt-4 font-serif text-4xl text-[#171717] md:text-5xl">
+              Help &amp; Client Support
+            </h1>
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-[#77736C]">
+              Direct liaison with ArcheOn Studio management for project queries, milestone updates, drawing reviews, and billing clarifications.
             </p>
           </div>
-        ) : (
-          filteredTickets.map((ticket) => {
-            const isResolved = ticket.status === "Resolved" || ticket.status === "Closed";
-            return (
-              <div
-                key={ticket.id}
-                onClick={() => setSelectedTicket(ticket)}
-                className="group cursor-pointer rounded-sm border border-[#EAE8E3] bg-white p-5 hover:border-[#A58A64] transition-all shadow-sm"
+
+          <div className="flex shrink-0 items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setShowCreateModal(true)}
+              className="inline-flex items-center gap-2 rounded-sm bg-[#171717] px-6 py-3 font-mono text-[10px] uppercase tracking-widest text-white shadow-sm transition-colors hover:bg-[#A58A64]"
+            >
+              <Plus size={14} /> New Support Inquiry
+            </button>
+          </div>
+        </header>
+
+        {error && (
+          <div className="flex items-center gap-2 rounded-sm border border-red-200 bg-red-50 p-4 font-mono text-xs text-red-800">
+            <AlertCircle size={15} className="shrink-0 text-red-600" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        {/* Metrics Row */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="rounded-sm border border-[#D8D6D0] bg-white p-6">
+            <p className="font-mono text-[10px] uppercase tracking-wider text-[#77736C]">Total Inquiries</p>
+            <p className="mt-2 font-serif text-3xl text-[#171717]">{tickets.length}</p>
+          </div>
+          <div className="rounded-sm border border-[#D8D6D0] bg-white p-6">
+            <p className="font-mono text-[10px] uppercase tracking-wider text-amber-700">Active / In Progress</p>
+            <p className="mt-2 font-serif text-3xl text-amber-800">{openCount}</p>
+          </div>
+          <div className="rounded-sm border border-[#D8D6D0] bg-white p-6">
+            <p className="font-mono text-[10px] uppercase tracking-wider text-emerald-700">Resolved</p>
+            <p className="mt-2 font-serif text-3xl text-emerald-800">{resolvedCount}</p>
+          </div>
+        </div>
+
+        {/* Studio Concierge Direct Contacts */}
+        <div className="rounded-sm border border-[#D8D6D0] bg-[#FBF9F5] p-6">
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#A58A64]">Direct Studio Concierge</p>
+          <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-3">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#EFECE6] text-[#A58A64]">
+                <Phone size={15} />
+              </div>
+              <div className="min-w-0">
+                <p className="font-mono text-[9px] uppercase tracking-wider text-[#77736C]">Studio Principal Call</p>
+                <a href="tel:+919834653481" className="mt-0.5 block font-mono text-xs font-semibold text-[#171717] hover:underline">
+                  +91 9834653481
+                </a>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#EFECE6] text-[#A58A64]">
+                <Mail size={15} />
+              </div>
+              <div className="min-w-0">
+                <p className="font-mono text-[9px] uppercase tracking-wider text-[#77736C]">Studio Desk Email</p>
+                <a href="mailto:dsarcheon@gmail.com" className="mt-0.5 block break-all font-mono text-xs font-semibold text-[#171717] hover:underline">
+                  dsarcheon@gmail.com
+                </a>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#EFECE6] text-[#A58A64]">
+                <Building2 size={15} />
+              </div>
+              <div className="min-w-0">
+                <p className="font-mono text-[9px] uppercase tracking-wider text-[#77736C]">Studio Headquarters</p>
+                <p className="mt-0.5 font-mono text-xs text-[#171717]">Krishna-Kunj, Dharampeth, Nagpur</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Filter and Search */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-wrap items-center gap-2">
+            {["All", "Open", "Resolved"].map((filter) => (
+              <button
+                key={filter}
+                type="button"
+                onClick={() => setStatusFilter(filter)}
+                className={`rounded-sm px-4 py-2 font-mono text-[10px] uppercase tracking-wider transition-colors ${
+                  statusFilter === filter
+                    ? "bg-[#171717] text-white"
+                    : "border border-[#D8D6D0] bg-white text-[#77736C] hover:text-[#171717]"
+                }`}
               >
+                {filter}
+              </button>
+            ))}
+          </div>
+
+          <div className="relative w-full sm:w-72">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#77736C]" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search inquiries..."
+              className="h-10 w-full rounded-sm border border-[#D8D6D0] bg-white pl-9 pr-3 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
+            />
+          </div>
+        </div>
+
+        {/* Ticket List */}
+        <div className="space-y-3">
+          {loading ? (
+            <div className="rounded-sm border border-[#D8D6D0] bg-white p-12 text-center font-mono text-xs text-[#77736C]">Loading support inquiries...</div>
+          ) : filteredTickets.length === 0 ? (
+            <div className="rounded-sm border border-dashed border-[#D8D6D0] bg-white p-12 text-center">
+              <LifeBuoy size={32} className="mx-auto text-[#A58A64] opacity-50" />
+              <h3 className="mt-3 font-serif text-lg text-[#171717]">No support inquiries found</h3>
+              <p className="mt-1 font-mono text-xs text-[#77736C]">
+                {search || statusFilter !== "All"
+                  ? "No inquiries match your filter criteria."
+                  : "You haven't submitted any inquiries yet. Click 'New Support Inquiry' above for any project questions."}
+              </p>
+            </div>
+          ) : (
+            filteredTickets.map((ticket) => {
+              const isResolved = ticket.status === "Resolved" || ticket.status === "Closed";
+              return (
+                <div
+                  key={ticket.id}
+                  onClick={() => setSelectedTicket(ticket)}
+                  className="group cursor-pointer rounded-sm border border-[#D8D6D0] bg-white p-6 shadow-sm transition-all hover:border-[#A58A64]"
+                >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="space-y-1.5">
                     <div className="flex items-center gap-2">
@@ -595,6 +598,7 @@ export function ClientSupportCentre({
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

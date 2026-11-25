@@ -72,12 +72,6 @@ const NAVIGATION: NavigationItem[] = [
     icon: Building2,
   },
   {
-    id: "documents",
-    label: "Document Library",
-    description: "Your project documents",
-    icon: FileText,
-  },
-  {
     id: "invoices",
     label: "Invoices & Bills",
     description: "Review your bills",
@@ -88,6 +82,12 @@ const NAVIGATION: NavigationItem[] = [
     label: "Payment Records",
     description: "Payment submissions and status",
     icon: CreditCard,
+  },
+  {
+    id: "documents",
+    label: "Document Library",
+    description: "Your project documents",
+    icon: FileText,
   },
   {
     id: "notifications",
