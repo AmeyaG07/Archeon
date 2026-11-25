@@ -23,8 +23,13 @@ import {
   Building2,
   Globe,
   Trash2,
+  Upload,
+  ChevronDown,
+  ChevronUp,
+  Eye,
 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
+import { DualImageUpload } from "@/components/ui/DualImageUpload";
 
 export interface WebsiteProjectRecord {
   id: string;
@@ -86,6 +91,11 @@ export function AdminWebsiteProjectList() {
   const [formSummary, setFormSummary] = useState("");
   const [formTags, setFormTags] = useState("");
   const [formAccentColor, setFormAccentColor] = useState("#d97706");
+  const [showPhotoChooser, setShowPhotoChooser] = useState(false);
+  const [showAdvancedFields, setShowAdvancedFields] = useState(false);
+  const [focusedField, setFocusedField] = useState<
+    "image" | "title" | "summary" | "location" | "specs" | "status" | "tags" | "advanced" | null
+  >(null);
 
   // Manifesto state
   const [manifesto, setManifesto] = useState<ManifestoRecord>({
@@ -166,6 +176,9 @@ export function AdminWebsiteProjectList() {
       }
     } catch {}
     setFormTags(tagsStr);
+    setShowPhotoChooser(false);
+    setShowAdvancedFields(false);
+    setFocusedField(null);
   };
 
   const handleOpenCreateNew = () => {
@@ -187,11 +200,17 @@ export function AdminWebsiteProjectList() {
     setFormSummary("");
     setFormTags("BRUTALIST STONE, CANTILEVER, SUSTAINABLE");
     setFormAccentColor("#d97706");
+    setShowPhotoChooser(true);
+    setShowAdvancedFields(false);
+    setFocusedField(null);
   };
 
   const handleCloseModal = () => {
     setEditingProject(null);
     setIsCreatingNew(false);
+    setShowPhotoChooser(false);
+    setShowAdvancedFields(false);
+    setFocusedField(null);
   };
 
   const handleSaveProject = async (e: React.FormEvent) => {
@@ -401,6 +420,7 @@ export function AdminWebsiteProjectList() {
                         src={imgSrc}
                         alt={project.title}
                         fill
+                        unoptimized={imgSrc.startsWith("http") || imgSrc.startsWith("data:")}
                         sizes="(max-width: 768px) 100vw, 240px"
                         className="object-cover transition-transform duration-500 group-hover:scale-105"
                       />
@@ -686,232 +706,522 @@ export function AdminWebsiteProjectList() {
           data-lenis-prevent="true"
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 sm:p-5 backdrop-blur-xs"
         >
           <div
             data-lenis-prevent="true"
-            className="relative max-h-[92vh] w-full max-w-3xl overflow-y-auto overscroll-contain rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] p-6 sm:p-8 shadow-2xl"
+            className="relative max-h-[94vh] w-full max-w-5xl overflow-y-auto overscroll-contain rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] p-5 sm:p-7 shadow-2xl"
           >
             <button
+              type="button"
               onClick={handleCloseModal}
-              className="absolute right-4 top-4 text-[#77736C] hover:text-[#171717]"
+              aria-label="Close project editor"
+              className="absolute right-4 top-4 rounded-sm p-1 text-[#77736C] hover:bg-[#EFECE6] hover:text-[#171717] transition-colors cursor-pointer"
             >
               <X size={20} />
             </button>
 
-            <div className="border-b border-[#D8D6D0] pb-4">
+            <div className="border-b border-[#D8D6D0] pb-4 pr-8">
               <span className="font-mono text-[9px] uppercase tracking-widest text-[#9F7947] font-semibold">
-                {isCreatingNew ? "Publish New Showcase Project" : "Edit Website Showcase Project"}
+                {isCreatingNew ? "New Showcase Project" : "Edit Website Project"}
               </span>
               <h2 className="mt-1 font-serif text-2xl text-[#111111]">
-                {isCreatingNew ? "Add New Portfolio Project" : `Edit: ${formTitle || editingProject.title}`}
+                {isCreatingNew ? "Add Project to Public Website" : formTitle || editingProject.title}
               </h2>
               <p className="mt-1 text-xs text-[#77736C]">
-                Configure the photograph, title, architectural details, and description displayed on the homepage.
+                Edit the details on the left and check the numbered <strong className="text-[#171717]">Website Preview</strong> on the right to see where each field appears.
               </p>
             </div>
 
-            <form onSubmit={handleSaveProject} className="mt-6 space-y-4">
-              {/* Photo & Image URL */}
-              <div>
-                <label className="block font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
-                  Showcase Photograph / Image URL *
-                </label>
-                <div className="mt-1 flex gap-2">
-                  <input
-                    type="text"
-                    required
-                    value={formImage}
-                    onChange={(e) => setFormImage(e.target.value)}
-                    placeholder="e.g. /projects/monolith-sanctuary.png or https://..."
-                    className="w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
-                  />
+            <form onSubmit={handleSaveProject} className="mt-5">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                {/* LEFT COLUMN: Simple Step-by-Step Fields */}
+                <div className="lg:col-span-7 space-y-5">
+                  {/* SECTION 1: PHOTO */}
+                  <div
+                    onMouseEnter={() => setFocusedField("image")}
+                    onMouseLeave={() => setFocusedField(null)}
+                    className="rounded-sm border border-[#E4E1DA] bg-white p-4 space-y-3"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#171717] font-mono text-[10px] font-semibold text-white">
+                          1
+                        </span>
+                        <div>
+                          <h3 className="text-xs font-semibold uppercase tracking-wider font-mono text-[#171717]">
+                            Project Photo
+                          </h3>
+                          <p className="text-[11px] text-[#77736C]">
+                            Main photograph shown on the website card
+                          </p>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowPhotoChooser((prev) => !prev);
+                          setFocusedField("image");
+                        }}
+                        className="inline-flex items-center gap-1.5 rounded-sm bg-[#171717] hover:bg-[#A58A64] px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-white transition-colors cursor-pointer shrink-0"
+                      >
+                        <Upload size={12} />
+                        {showPhotoChooser ? "Done Choosing Photo" : "Change Photo"}
+                      </button>
+                    </div>
+
+                    {/* Current Selected Photo Summary */}
+                    <div className="flex items-center gap-3 rounded-sm border border-[#EFECE6] bg-[#FAF8F5] p-2.5">
+                      <div className="relative h-14 w-24 shrink-0 overflow-hidden rounded-xs border border-[#D8D6D0] bg-stone-200">
+                        {formImage ? (
+                          <Image
+                            src={formImage}
+                            alt="Current project photo"
+                            fill
+                            unoptimized={formImage.startsWith("http") || formImage.startsWith("data:")}
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-[#77736C]">
+                            <ImageIcon size={16} />
+                          </div>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-medium text-[#171717]">
+                          Current Website Photo
+                        </p>
+                        <p className="mt-0.5 truncate font-mono text-[10px] text-[#77736C]">
+                          {formImage?.startsWith("data:")
+                            ? "Custom uploaded photo (ready to save)"
+                            : formImage || "No photo selected"}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Expandable Upload / Replace Photo Controls */}
+                    {showPhotoChooser && (
+                      <div className="space-y-3 pt-2 border-t border-[#EFECE6]">
+                        <DualImageUpload
+                          label="Upload a new photo or paste an image link"
+                          value={formImage}
+                          onChange={(url) => {
+                            if (url) setFormImage(url);
+                          }}
+                          placeholder="Paste image URL or Google Drive share link..."
+                        />
+
+                        <div>
+                          <p className="font-mono text-[10px] uppercase tracking-wider text-[#77736C] mb-1.5">
+                            Or pick a studio sample photo:
+                          </p>
+                          <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                            {PRESET_IMAGES.map((preset, pIdx) => {
+                              const isSelected = formImage === preset.url;
+                              return (
+                                <button
+                                  key={pIdx}
+                                  type="button"
+                                  onClick={() => setFormImage(preset.url)}
+                                  title={preset.label}
+                                  className={`group relative aspect-[4/3] overflow-hidden rounded-xs border transition-all cursor-pointer ${
+                                    isSelected
+                                      ? "border-[#171717] ring-2 ring-[#A58A64]"
+                                      : "border-[#D8D6D0] hover:border-[#A58A64]"
+                                  }`}
+                                >
+                                  <Image
+                                    src={preset.url}
+                                    alt={preset.label}
+                                    fill
+                                    unoptimized={preset.url.startsWith("http")}
+                                    className="object-cover"
+                                  />
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* SECTION 2: MAIN TEXT (NAME & DESCRIPTION) */}
+                  <div className="rounded-sm border border-[#E4E1DA] bg-white p-4 space-y-4">
+                    <div>
+                      <label className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-[#171717] font-semibold">
+                        <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#171717] text-[10px] text-white">
+                          2
+                        </span>
+                        Project Name *
+                      </label>
+                      <p className="ml-7 text-[11px] text-[#77736C]">
+                        Main heading shown directly below the photo
+                      </p>
+                      <input
+                        type="text"
+                        required
+                        value={formTitle}
+                        onFocus={() => setFocusedField("title")}
+                        onBlur={() => setFocusedField(null)}
+                        onChange={(e) => setFormTitle(e.target.value)}
+                        placeholder="e.g. The Monolith Sanctuary"
+                        className="mt-1.5 w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3 py-2 text-sm text-[#171717] focus:border-[#A58A64] focus:bg-white focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-[#171717] font-semibold">
+                        <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#171717] text-[10px] text-white">
+                          3
+                        </span>
+                        Short Description *
+                      </label>
+                      <p className="ml-7 text-[11px] text-[#77736C]">
+                        2–3 sentences shown right beneath the project name
+                      </p>
+                      <textarea
+                        required
+                        rows={3}
+                        value={formSummary}
+                        onFocus={() => setFocusedField("summary")}
+                        onBlur={() => setFocusedField(null)}
+                        onChange={(e) => setFormSummary(e.target.value)}
+                        placeholder="Briefly describe the architecture, materials, and setting..."
+                        className="mt-1.5 w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3 py-2 text-xs leading-relaxed text-[#171717] focus:border-[#A58A64] focus:bg-white focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  {/* SECTION 3: LOCATION, YEAR, SIZE */}
+                  <div className="rounded-sm border border-[#E4E1DA] bg-white p-4 space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="sm:col-span-1">
+                        <label className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-[#171717] font-semibold">
+                          <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#171717] text-[10px] text-white">
+                            4
+                          </span>
+                          Location
+                        </label>
+                        <input
+                          type="text"
+                          value={formLocation}
+                          onFocus={() => setFocusedField("location")}
+                          onBlur={() => setFocusedField(null)}
+                          onChange={(e) => setFormLocation(e.target.value)}
+                          placeholder="e.g. Khandala, Maharashtra"
+                          className="mt-1.5 w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3 py-2 text-xs text-[#171717] focus:border-[#A58A64] focus:bg-white focus:outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-[#171717] font-semibold">
+                          <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#171717] text-[10px] text-white">
+                            5
+                          </span>
+                          Year
+                        </label>
+                        <input
+                          type="text"
+                          value={formYear}
+                          onFocus={() => setFocusedField("specs")}
+                          onBlur={() => setFocusedField(null)}
+                          onChange={(e) => setFormYear(e.target.value)}
+                          placeholder="e.g. 2026"
+                          className="mt-1.5 w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3 py-2 text-xs text-[#171717] focus:border-[#A58A64] focus:bg-white focus:outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-[#171717] font-semibold">
+                          <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#171717] text-[10px] text-white">
+                            5
+                          </span>
+                          Built Area
+                        </label>
+                        <input
+                          type="text"
+                          value={formArea}
+                          onFocus={() => setFocusedField("specs")}
+                          onBlur={() => setFocusedField(null)}
+                          onChange={(e) => setFormArea(e.target.value)}
+                          placeholder="e.g. 8,500 sq.ft"
+                          className="mt-1.5 w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3 py-2 text-xs text-[#171717] focus:border-[#A58A64] focus:bg-white focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    {/* STATUS & TAGS */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-[#EFECE6]">
+                      <div>
+                        <label className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-[#171717] font-semibold">
+                          <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#171717] text-[10px] text-white">
+                            6
+                          </span>
+                          Project Status
+                        </label>
+                        <select
+                          value={formStatus}
+                          onFocus={() => setFocusedField("status")}
+                          onBlur={() => setFocusedField(null)}
+                          onChange={(e) => setFormStatus(e.target.value)}
+                          className="mt-1.5 w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3 py-2 text-xs text-[#171717] focus:border-[#A58A64] focus:bg-white focus:outline-none"
+                        >
+                          <option value="Completed">Completed</option>
+                          <option value="Under Execution">Under Execution</option>
+                          <option value="In Progress">In Progress</option>
+                          <option value="Under Design">Under Design</option>
+                          <option value="Concept">Concept</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-[#171717] font-semibold">
+                          <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#171717] text-[10px] text-white">
+                            7
+                          </span>
+                          Style Tags (Optional)
+                        </label>
+                        <input
+                          type="text"
+                          value={formTags}
+                          onFocus={() => setFocusedField("tags")}
+                          onBlur={() => setFocusedField(null)}
+                          onChange={(e) => setFormTags(e.target.value)}
+                          placeholder="e.g. BRUTALIST STONE, CANTILEVER"
+                          className="mt-1.5 w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3 py-2 text-xs text-[#171717] focus:border-[#A58A64] focus:bg-white focus:outline-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* COLLAPSIBLE OPTIONAL SETTINGS */}
+                  <div className="rounded-sm border border-[#E4E1DA] bg-white">
+                    <button
+                      type="button"
+                      onClick={() => setShowAdvancedFields((prev) => !prev)}
+                      className="flex w-full items-center justify-between px-4 py-3 text-left font-mono text-[10px] uppercase tracking-wider text-[#77736C] hover:text-[#171717] cursor-pointer"
+                    >
+                      <span>More Options (Category &amp; Reference Code)</span>
+                      {showAdvancedFields ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                    </button>
+
+                    {showAdvancedFields && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 border-t border-[#EFECE6] p-4">
+                        <div>
+                          <label className="block font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
+                            Project Category
+                          </label>
+                          <select
+                            value={formCategory}
+                            onFocus={() => setFocusedField("advanced")}
+                            onBlur={() => setFocusedField(null)}
+                            onChange={(e) => setFormCategory(e.target.value)}
+                            className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3 py-2 text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
+                          >
+                            <option value="Residential">Residential Architecture</option>
+                            <option value="Interior">Interior Architecture</option>
+                            <option value="Landscape">Landscape Architecture</option>
+                            <option value="Commercial">Commercial Architecture</option>
+                            <option value="Hospitality">Hospitality &amp; Resorts</option>
+                            <option value="Turnkey">Turnkey Execution</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
+                            Reference Code
+                          </label>
+                          <input
+                            type="text"
+                            value={formCode}
+                            onFocus={() => setFocusedField("advanced")}
+                            onBlur={() => setFocusedField(null)}
+                            onChange={(e) => setFormCode(e.target.value)}
+                            placeholder="e.g. PRJ_ARCH_2026_01"
+                            className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                {/* Preset Image Shortcuts */}
-                <div className="mt-2 flex flex-wrap gap-1.5 items-center">
-                  <span className="font-mono text-[9px] uppercase text-[#77736C] mr-1">Presets:</span>
-                  {PRESET_IMAGES.map((preset, pIdx) => (
-                    <button
-                      key={pIdx}
-                      type="button"
-                      onClick={() => setFormImage(preset.url)}
-                      className={`text-[9.5px] font-mono px-2 py-0.5 rounded border transition-colors ${
-                        formImage === preset.url
-                          ? "bg-[#171717] text-white border-[#171717]"
-                          : "bg-white text-[#77736C] border-[#D8D6D0] hover:text-[#171717]"
+                {/* RIGHT COLUMN: LIVE VISUAL WEBSITE REFERENCE */}
+                <div className="lg:col-span-5 lg:sticky lg:top-2 space-y-3">
+                  <div className="rounded-sm border border-[#D8D6D0] bg-[#F2F0EB] p-4 shadow-xs">
+                    <div className="flex items-center justify-between border-b border-[#D8D6D0] pb-2.5 mb-3">
+                      <span className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-[#9F7947] font-semibold">
+                        <Eye size={12} /> Website Preview (Live Reference)
+                      </span>
+                      <span className="font-mono text-[9px] text-[#77736C]">
+                        Public Homepage Card
+                      </span>
+                    </div>
+
+                    {/* Preview 1: Photo */}
+                    <div
+                      onClick={() => {
+                        setShowPhotoChooser(true);
+                        setFocusedField("image");
+                      }}
+                      title="Click to change this photo"
+                      className={`group relative aspect-[16/10] w-full overflow-hidden rounded-xs bg-stone-800 border transition-all cursor-pointer ${
+                        focusedField === "image"
+                          ? "ring-2 ring-[#A58A64] border-[#A58A64]"
+                          : "border-[#C6A779]/50 hover:border-[#A58A64]"
                       }`}
                     >
-                      {preset.label.split("(")[0].trim()}
-                    </button>
-                  ))}
-                </div>
+                      {formImage ? (
+                        <Image
+                          src={formImage}
+                          alt="Live Website Card Preview"
+                          fill
+                          unoptimized={formImage.startsWith("http") || formImage.startsWith("data:")}
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full items-center justify-center text-stone-400 font-mono text-xs">
+                          No Photo
+                        </div>
+                      )}
+                      <span className="absolute top-2 left-2 inline-flex items-center gap-1 rounded-full bg-[#171717]/85 px-2 py-0.5 font-mono text-[9px] text-white shadow">
+                        1 · Photo
+                      </span>
+                      <span className="absolute bottom-2 right-2 rounded-xs bg-black/75 px-2 py-1 font-mono text-[9px] uppercase tracking-wider text-white opacity-90 group-hover:bg-[#A58A64] transition-colors">
+                        Click to change photo
+                      </span>
+                    </div>
 
-                {/* Image Live Preview */}
-                {formImage && (
-                  <div className="mt-3 relative w-full h-40 rounded overflow-hidden border border-[#D8D6D0] bg-stone-100">
-                    <Image
-                      src={formImage}
-                      alt="Project Preview"
-                      fill
-                      className="object-cover"
-                      unoptimized={formImage.startsWith("http")}
-                    />
+                    {/* Preview 2 & 3 & 4 & 5: Title, Summary, Location, Year & Area */}
+                    <div className="mt-3.5 flex items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1 space-y-1.5">
+                        <div
+                          className={`rounded-xs p-1 -m-1 transition-colors ${
+                            focusedField === "title" ? "bg-[#E6CA9E]/35 ring-1 ring-[#A58A64]" : ""
+                          }`}
+                        >
+                          <div className="flex items-center gap-1.5">
+                            <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#171717] font-mono text-[9px] text-white">
+                              2
+                            </span>
+                            <h4 className="font-serif text-lg leading-tight text-[#111111] truncate">
+                              {formTitle || "Project Name"}
+                            </h4>
+                          </div>
+                        </div>
+
+                        <div
+                          className={`rounded-xs p-1 -m-1 transition-colors ${
+                            focusedField === "summary" ? "bg-[#E6CA9E]/35 ring-1 ring-[#A58A64]" : ""
+                          }`}
+                        >
+                          <p className="text-[11px] leading-relaxed text-[#66635D] line-clamp-3">
+                            <span className="mr-1.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-[#171717] font-mono text-[9px] text-white align-middle">
+                              3
+                            </span>
+                            {formSummary || "Short project description will appear here on the website..."}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="shrink-0 text-right space-y-1.5 max-w-[42%]">
+                        <div
+                          className={`rounded-xs p-1 -m-1 transition-colors ${
+                            focusedField === "location" ? "bg-[#E6CA9E]/35 ring-1 ring-[#A58A64]" : ""
+                          }`}
+                        >
+                          <p className="flex items-center justify-end gap-1 text-[10px] text-[#55514A]">
+                            <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#171717] font-mono text-[9px] text-white">
+                              4
+                            </span>
+                            <MapPin size={10} className="shrink-0 text-[#A58A64]" />
+                            <span className="truncate">{formLocation || "Location"}</span>
+                          </p>
+                        </div>
+
+                        <div
+                          className={`rounded-xs p-1 -m-1 transition-colors ${
+                            focusedField === "specs" ? "bg-[#E6CA9E]/35 ring-1 ring-[#A58A64]" : ""
+                          }`}
+                        >
+                          <p className="flex items-center justify-end gap-1 font-mono text-[9px] uppercase tracking-wider text-[#88847C]">
+                            <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#171717] text-[9px] text-white">
+                              5
+                            </span>
+                            <span className="truncate">
+                              {formYear || "2026"} · {formArea || "Area"}
+                            </span>
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Preview 6 & 7: Status & Tags */}
+                    <div className="mt-3 pt-2.5 border-t border-[#D8D6D0] flex flex-wrap items-center gap-2">
+                      <span
+                        className={`inline-flex items-center gap-1 border border-[#D8D6D0] bg-white px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider text-[#55514A] transition-colors ${
+                          focusedField === "status" ? "bg-[#E6CA9E]/40 ring-1 ring-[#A58A64]" : ""
+                        }`}
+                      >
+                        <span className="inline-flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#171717] text-[8px] text-white">
+                          6
+                        </span>
+                        {formStatus || "Completed"}
+                      </span>
+
+                      <div
+                        className={`flex flex-wrap items-center gap-1.5 rounded-xs px-1 transition-colors ${
+                          focusedField === "tags" ? "bg-[#E6CA9E]/35 ring-1 ring-[#A58A64]" : ""
+                        }`}
+                      >
+                        <span className="inline-flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#77736C] font-mono text-[8px] text-white">
+                          7
+                        </span>
+                        {(formTags
+                          ? formTags
+                              .split(",")
+                              .map((t) => t.trim())
+                              .filter(Boolean)
+                              .slice(0, 2)
+                          : ["TAG 1", "TAG 2"]
+                        ).map((tag, i) => (
+                          <span
+                            key={i}
+                            className="font-mono text-[8.5px] uppercase tracking-wider text-[#77736C]"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Secondary note for Category & Code */}
+                    <div
+                      className={`mt-3 rounded-xs bg-white/80 px-2.5 py-1.5 border border-[#E4E1DA] flex items-center justify-between font-mono text-[9px] text-[#77736C] ${
+                        focusedField === "advanced" ? "ring-1 ring-[#A58A64]" : ""
+                      }`}
+                    >
+                      <span>Popup Header: {formCategory}</span>
+                      <span>Code: {formCode || "AUTO"}</span>
+                    </div>
                   </div>
-                )}
-              </div>
-
-              {/* Title & Code */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="sm:col-span-2">
-                  <label className="block font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
-                    Project Title *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formTitle}
-                    onChange={(e) => setFormTitle(e.target.value)}
-                    placeholder="e.g. The Monolith Sanctuary"
-                    className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
-                    Project Code
-                  </label>
-                  <input
-                    type="text"
-                    value={formCode}
-                    onChange={(e) => setFormCode(e.target.value)}
-                    placeholder="e.g. PRJ_ARCH_2026_01"
-                    className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
-                  />
                 </div>
               </div>
 
-              {/* Category, Year, Status */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label className="block font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
-                    Discipline / Category
-                  </label>
-                  <select
-                    value={formCategory}
-                    onChange={(e) => setFormCategory(e.target.value)}
-                    className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
-                  >
-                    <option value="Residential">Residential Architecture</option>
-                    <option value="Interior">Interior Architecture</option>
-                    <option value="Landscape">Landscape Architecture</option>
-                    <option value="Commercial">Commercial Architecture</option>
-                    <option value="Hospitality">Hospitality & Resorts</option>
-                    <option value="Turnkey">Turnkey Execution</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
-                    Year
-                  </label>
-                  <input
-                    type="text"
-                    value={formYear}
-                    onChange={(e) => setFormYear(e.target.value)}
-                    placeholder="e.g. 2026"
-                    className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
-                    Execution Status
-                  </label>
-                  <select
-                    value={formStatus}
-                    onChange={(e) => setFormStatus(e.target.value)}
-                    className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
-                  >
-                    <option value="Completed">Completed</option>
-                    <option value="Under Execution">Under Execution</option>
-                    <option value="In Progress">In Progress</option>
-                    <option value="Under Design">Under Design</option>
-                    <option value="Concept">Concept</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Location & Area */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
-                    Site Location
-                  </label>
-                  <input
-                    type="text"
-                    value={formLocation}
-                    onChange={(e) => setFormLocation(e.target.value)}
-                    placeholder="e.g. Khandala, Maharashtra"
-                    className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
-                    Built Area / Scale
-                  </label>
-                  <input
-                    type="text"
-                    value={formArea}
-                    onChange={(e) => setFormArea(e.target.value)}
-                    placeholder="e.g. 8,500 sq.ft or 2.5 Acres"
-                    className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              {/* Architectural Description / Summary */}
-              <div>
-                <label className="block font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
-                  Architectural Summary & Narrative *
-                </label>
-                <textarea
-                  required
-                  rows={3}
-                  value={formSummary}
-                  onChange={(e) => setFormSummary(e.target.value)}
-                  placeholder="Describe the architectural concept, materials, natural lighting, and site context..."
-                  className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
-                />
-              </div>
-
-              {/* Architectural Tags */}
-              <div>
-                <label className="block font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
-                  Architectural Tags (Comma separated)
-                </label>
-                <input
-                  type="text"
-                  value={formTags}
-                  onChange={(e) => setFormTags(e.target.value)}
-                  placeholder="e.g. BRUTALIST STONE, CANTILEVER, SUSTAINABLE GEOLOGY"
-                  className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t border-[#D8D6D0]">
+              <div className="mt-6 flex justify-end gap-3 pt-4 border-t border-[#D8D6D0]">
                 <button
                   type="button"
                   onClick={handleCloseModal}
-                  className="rounded-sm border border-[#D8D6D0] bg-white px-4 py-2 font-mono text-xs uppercase tracking-wider text-[#77736C] hover:bg-[#F2F0EB]"
+                  className="rounded-sm border border-[#D8D6D0] bg-white px-4 py-2 font-mono text-xs uppercase tracking-wider text-[#77736C] hover:bg-[#F2F0EB] cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="inline-flex items-center gap-2 rounded-sm bg-[#171717] px-6 py-2 font-mono text-xs uppercase tracking-wider text-white hover:bg-[#A58A64] disabled:opacity-50"
+                  className="inline-flex items-center gap-2 rounded-sm bg-[#171717] px-6 py-2 font-mono text-xs uppercase tracking-wider text-white hover:bg-[#A58A64] disabled:opacity-50 cursor-pointer"
                 >
                   <Save size={14} />
                   {saving ? "Saving..." : isCreatingNew ? "Publish Project" : "Save Changes"}

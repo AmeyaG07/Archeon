@@ -158,6 +158,7 @@ export function ProjectImageCard({
               alt={project.title}
               fill
               priority={index === 0}
+              unoptimized={project.image.startsWith("http") || project.image.startsWith("data:")}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 1200px"
               className={`object-contain sm:object-cover object-center transition-all duration-700 ${
                 isHovered
