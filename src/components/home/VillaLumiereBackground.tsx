@@ -305,7 +305,7 @@ export function VillaLumiereBackground({
     const height = container.clientHeight || 750;
 
     const isDesktop = width > 1024;
-    let shiftX = isDesktop ? 9.5 : width > 768 ? 4.8 : 0.0;
+    let shiftX = isDesktop ? 8.2 : width > 768 ? 4.2 : 0.0;
 
     // Architectural Perspective Camera: Expansive Frustum ensuring complete visibility of rooftop terrace & pool plinth
     const camera = new THREE.PerspectiveCamera(40, width / height, 0.2, 250);
@@ -564,6 +564,7 @@ export function VillaLumiereBackground({
     // --- ENTITIES & GROUPS ---
     const villaMasterGroup = new THREE.Group();
     villaMasterGroup.position.x = shiftX;
+    villaMasterGroup.scale.setScalar(0.68);
     scene.add(villaMasterGroup);
 
     villaMasterGroup.add(new THREE.LineSegments(gridGeo, gridMat));
@@ -1256,7 +1257,7 @@ export function VillaLumiereBackground({
       renderer.setSize(nw, nh);
 
       const isD = nw > 1024;
-      const sX = isD ? 9.5 : nw > 768 ? 4.8 : 0.0;
+      const sX = isD ? 8.2 : nw > 768 ? 4.2 : 0.0;
       shiftX = sX;
       targetShiftX = sX;
       currentShiftX = sX;
