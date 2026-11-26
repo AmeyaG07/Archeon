@@ -51,13 +51,12 @@ export function ServicesSection({
           muted={isMuted}
           playsInline
           preload="auto"
-          className="h-full w-full object-cover object-center opacity-45 sm:opacity-60 filter contrast-[1.12] brightness-[1.05]"
+          className="h-full w-full object-cover object-center opacity-85 sm:opacity-95 filter contrast-[1.08] brightness-[1.08]"
         />
 
-        {/* Cinematic Vignette & Radial Contrast Scrims for Text Legibility */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0A0A0A]/90 via-[#0A0A0A]/35 to-[#0A0A0A]/90" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0A0A0A]/80 via-transparent to-[#0A0A0A]/80" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-transparent via-[#0A0A0A]/30 to-[#0A0A0A]/80" />
+        {/* Lightened Vignette Scrim for Text Legibility without Hiding HD Video */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0A0A0A]/50 via-[#0A0A0A]/10 to-[#0A0A0A]/50" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0A0A0A]/35 via-transparent to-[#0A0A0A]/35" />
 
         {/* Ambient Warm Terracotta & Amber Light Halo */}
         <div
@@ -70,7 +69,7 @@ export function ServicesSection({
 
         {/* Precision Axonometric 3D Wireframe Grid Overlay */}
         <svg
-          className="absolute inset-0 h-full w-full opacity-[0.08]"
+          className="absolute inset-0 h-full w-full opacity-[0.03]"
           viewBox="0 0 1440 900"
           preserveAspectRatio="xMidYMid slice"
           fill="none"
