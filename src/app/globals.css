@@ -553,10 +553,20 @@ pre {
   textarea,
   .settings-input) {
   border-radius: 0.625rem !important;
-  background: rgba(255, 255, 255, 0.62) !important;
+  background: rgba(255, 255, 255, 0.92) !important;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border-color: rgba(216, 214, 208, 0.85) !important;
+  border-color: rgba(180, 176, 168, 0.85) !important;
+  color: #111111 !important;
+}
+
+:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) :is(input, textarea)::placeholder {
+  color: #4A4843 !important;
+  opacity: 1 !important;
+}
+
+:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) :is(label, form label, form h2, form h3, form p, [role="dialog"] label, [role="dialog"] h2, [role="dialog"] h3, [role="dialog"] p, .fixed.inset-0 label, .fixed.inset-0 h2, .fixed.inset-0 h3, .fixed.inset-0 p) {
+  color: #111111 !important;
 }
 
 :is(.admin-portal-root, .client-portal-root, .vendor-portal-root) :is(.rounded-sm,
@@ -578,13 +588,14 @@ pre {
     inset 0 1px 0 rgba(255, 255, 255, 0.85);
 }
 
-:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) [role="dialog"]>div {
+:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) :is([role="dialog"] > div, .fixed.inset-0.z-50 > div) {
   border-radius: 1rem !important;
-  background: rgba(255, 255, 255, 0.88) !important;
-  backdrop-filter: blur(22px) saturate(165%);
-  -webkit-backdrop-filter: blur(22px) saturate(165%);
-  border: 1px solid rgba(255, 255, 255, 0.85) !important;
-  box-shadow: 0 24px 60px rgba(17, 17, 17, 0.18);
+  background: rgba(255, 255, 255, 0.96) !important;
+  backdrop-filter: blur(24px) saturate(165%);
+  -webkit-backdrop-filter: blur(24px) saturate(165%);
+  border: 1px solid rgba(216, 214, 208, 0.95) !important;
+  box-shadow: 0 24px 60px rgba(17, 17, 17, 0.22);
+  color: #111111;
 }
 
 :is(.admin-portal-root, .client-portal-root, .vendor-portal-root) button:not(.rounded-full):not(.border-l-2):not(.border-b-2) {
