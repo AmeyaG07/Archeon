@@ -38,7 +38,9 @@ services:
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-archeon_user}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-archeon_secure_password_2026}
       SPRING_DATASOURCE_DRIVER: org.postgresql.Driver
-      JWT_SECRET: ${JWT_SECRET:-404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+      APP_JWT_SECRET: ${APP_JWT_SECRET:-404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+      APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS:-http://localhost:3000}
+      APP_PORTAL_BASE_URL: ${APP_PORTAL_BASE_URL:-http://localhost:3000}
       PORT: 8080
     ports:
       - "8080:8080"
@@ -47,7 +49,7 @@ services:
 
   frontend:
     build:
-      context: ./frontend
+      context: .
       dockerfile: Dockerfile
     container_name: archeon-frontend
     restart: unless-stopped

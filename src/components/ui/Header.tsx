@@ -157,7 +157,7 @@ export function Header({
         if (typeof (window as any).lenis?.scrollTo === "function") {
           try {
             (window as any).lenis.scrollTo(top);
-          } catch {}
+          } catch { }
         }
       }
     } else {
@@ -169,8 +169,8 @@ export function Header({
     <>
       <header
         className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ease-out ${scrolled
-            ? "h-[70px] bg-[#0A0A0C]/92 border-b border-[#B68A4A]/25 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.55)]"
-            : "h-[80px] bg-gradient-to-b from-[#0A0A0A]/95 via-[#0E0E0E]/80 to-transparent border-b border-white/[0.08] backdrop-blur-md"
+          ? "h-[70px] bg-[#0A0A0C]/92 border-b border-[#B68A4A]/25 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.55)]"
+          : "h-[80px] bg-gradient-to-b from-[#0A0A0A]/95 via-[#0E0E0E]/80 to-transparent border-b border-white/[0.08] backdrop-blur-md"
           } text-[#F2F0EB]`}
       >
         {/* Subtle top architectural ambient gold accent line */}
@@ -200,7 +200,7 @@ export function Header({
               {/* Atelier Architectural Stamp */}
               <div className="hidden flex-col border-l border-[#B68A4A]/30 pl-2.5 xl:flex">
                 <span className="font-['Cinzel',serif] text-[9.5px] font-semibold tracking-[0.24em] text-[#E0D8C3] uppercase group-hover:text-[#C6A779] transition-colors">
-                  MB's
+                  MB&apos;s
                 </span>
                 <span className="font-mono text-[8px] tracking-[0.18em] text-[#B68A4A] uppercase">
                   Ar. Mandar Bhalekar
@@ -225,11 +225,10 @@ export function Header({
                     e.preventDefault();
                     handleNavigation(item.href);
                   }}
-                  className={`group relative py-1.5 px-1 text-[15px] xl:text-[17px] font-['Outfit',sans-serif] font-medium tracking-[0.1em] transition-colors duration-300 cursor-pointer ${
-                    isActive
-                      ? "text-[#F4E6C8]"
-                      : "text-[#E5E2D9] hover:text-white"
-                  }`}
+                  className={`group relative py-1.5 px-1 text-[15px] xl:text-[17px] font-['Outfit',sans-serif] font-medium tracking-[0.1em] transition-colors duration-300 cursor-pointer ${isActive
+                    ? "text-[#F4E6C8]"
+                    : "text-[#E5E2D9] hover:text-white"
+                    }`}
                 >
                   <span className="capitalize pointer-events-none">{item.label}</span>
 
@@ -258,19 +257,17 @@ export function Header({
               <button
                 type="button"
                 onClick={() => setPortalDropdownOpen((prev) => !prev)}
-                className={`inline-flex items-center gap-2.5 px-4.5 py-1.5 xl:px-5 xl:py-2 rounded-full border transition-all duration-300 font-['Outfit',sans-serif] text-[14px] xl:text-[15px] font-medium tracking-[0.08em] backdrop-blur-md cursor-pointer ${
-                  portalDropdownOpen
-                    ? "border-[#B68A4A] bg-[#B68A4A]/25 text-[#F2F0EB] shadow-[0_0_15px_rgba(182,138,74,0.35)]"
-                    : "border-[#B68A4A]/55 bg-[#B68A4A]/10 text-[#F2F0EB] hover:border-[#B68A4A] hover:bg-[#B68A4A]/20 hover:text-white"
-                }`}
+                className={`inline-flex items-center gap-2.5 px-4.5 py-1.5 xl:px-5 xl:py-2 rounded-full border transition-all duration-300 font-['Outfit',sans-serif] text-[14px] xl:text-[15px] font-medium tracking-[0.08em] backdrop-blur-md cursor-pointer ${portalDropdownOpen
+                  ? "border-[#B68A4A] bg-[#B68A4A]/25 text-[#F2F0EB] shadow-[0_0_15px_rgba(182,138,74,0.35)]"
+                  : "border-[#B68A4A]/55 bg-[#B68A4A]/10 text-[#F2F0EB] hover:border-[#B68A4A] hover:bg-[#B68A4A]/20 hover:text-white"
+                  }`}
               >
                 <Shield size={14} className="text-[#B68A4A] pointer-events-none" />
                 <span className="pointer-events-none">Portals</span>
                 <ChevronDown
                   size={14}
-                  className={`transition-transform duration-300 text-white/70 pointer-events-none ${
-                    portalDropdownOpen ? "rotate-180 text-[#B68A4A]" : ""
-                  }`}
+                  className={`transition-transform duration-300 text-white/70 pointer-events-none ${portalDropdownOpen ? "rotate-180 text-[#B68A4A]" : ""
+                    }`}
                 />
               </button>
 
@@ -383,11 +380,10 @@ export function Header({
       <div
         id="mobile-navigation"
         aria-hidden={!mobileMenuOpen}
-        className={`fixed inset-0 z-40 overflow-y-auto bg-[#0A0A0A]/98 backdrop-blur-2xl text-[#F2F0EB] transition-all duration-500 lg:hidden ${
-          mobileMenuOpen
-            ? "visible translate-y-0 opacity-100 pointer-events-auto"
-            : "invisible -translate-y-3 opacity-0 pointer-events-none"
-        }`}
+        className={`fixed inset-0 z-40 overflow-y-auto bg-[#0A0A0A]/98 backdrop-blur-2xl text-[#F2F0EB] transition-all duration-500 lg:hidden ${mobileMenuOpen
+          ? "visible translate-y-0 opacity-100 pointer-events-auto"
+          : "invisible -translate-y-3 opacity-0 pointer-events-none"
+          }`}
       >
         <div className="flex min-h-full flex-col px-6 pb-12 pt-24 sm:px-10">
           {/* Header Eyebrow */}
@@ -419,11 +415,10 @@ export function Header({
                     e.preventDefault();
                     handleNavigation(item.href);
                   }}
-                  className={`group flex items-center justify-between border-b border-white/[0.08] py-4 text-left font-['Outfit',sans-serif] text-2xl font-normal tracking-[0.1em] transition-all cursor-pointer ${
-                    isActive
-                      ? "text-[#C6A779]"
-                      : "text-white/90 hover:text-[#C6A779]"
-                  }`}
+                  className={`group flex items-center justify-between border-b border-white/[0.08] py-4 text-left font-['Outfit',sans-serif] text-2xl font-normal tracking-[0.1em] transition-all cursor-pointer ${isActive
+                    ? "text-[#C6A779]"
+                    : "text-white/90 hover:text-[#C6A779]"
+                    }`}
                 >
                   <span className="flex items-center gap-3 capitalize group-hover:translate-x-2 transition-transform duration-300 pointer-events-none">
                     {isActive && (
@@ -433,9 +428,8 @@ export function Header({
                   </span>
                   <ArrowUpRight
                     size={16}
-                    className={`text-[#B68A4A] transition-opacity pointer-events-none ${
-                      isActive ? "opacity-100" : "opacity-50 group-hover:opacity-100"
-                    }`}
+                    className={`text-[#B68A4A] transition-opacity pointer-events-none ${isActive ? "opacity-100" : "opacity-50 group-hover:opacity-100"
+                      }`}
                   />
                 </a>
               );

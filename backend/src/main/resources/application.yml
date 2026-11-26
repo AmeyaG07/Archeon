@@ -19,7 +19,7 @@ spring:
         format_sql: true
   h2:
     console:
-      enabled: true
+      enabled: ${SPRING_H2_CONSOLE_ENABLED:false}
       path: /h2-console
   flyway:
     enabled: true
@@ -84,7 +84,7 @@ app:
       secret-key: ${APP_ENCRYPTION_SECRET:MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDE=}
 
   cors:
-    allowed-origins: "http://localhost:3000,http://127.0.0.1:3000"
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:3000,http://127.0.0.1:3000}
 
   portal:
     base-url: ${APP_PORTAL_BASE_URL:http://localhost:3000}

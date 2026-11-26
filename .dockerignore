@@ -1,0 +1,10 @@
+node_modules
+.next
+.git
+backend
+frontend
+scripts
+*.log
+.env
+.env.*
+!.env.production.example

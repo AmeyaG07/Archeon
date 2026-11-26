@@ -1041,7 +1041,7 @@ export function VillaLumiereBackground({
 
     // --- ANIMATION LOOP ---
     let animationFrameId: number;
-    let cycleTime = 0.4;
+    const cycleTime = 0.4;
     let lastTime = performance.now();
     const startTime = performance.now();
 
