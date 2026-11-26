@@ -75,7 +75,7 @@ export default function LoginPage() {
       </header>
 
       {/* Main Light Golden / White Login Card with Colourful Border & Box Shadow */}
-      <div className="max-w-[390px] w-full mx-auto my-3 rounded-2xl p-[1.5px] bg-gradient-to-br from-[#F59E0B] via-[#06B6D4] to-[#8B5CF6] shadow-[0_24px_60px_-15px_rgba(17,17,17,0.18)]">
+      <div className="max-w-[390px] w-full mx-auto my-3 rounded-2xl p-[1.5px] bg-gradient-to-br from-[#F59E0B] via-[#06B6D4] to-[#8B5CF6] shadow-[0_25px_55px_-10px_rgba(17,17,17,0.32),0_10px_28px_-5px_rgba(182,138,74,0.25)]">
         <main className="rounded-[14.5px] bg-gradient-to-br from-[#FFFFFF] via-[#FBF6EC] to-[#F4EBD9] p-5 sm:p-7">
           {/* Brand Logo */}
           <div className="mb-4 flex justify-center">
