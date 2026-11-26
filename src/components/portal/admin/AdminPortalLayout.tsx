@@ -258,34 +258,32 @@ export function AdminPortalLayout({
         >
 
           {/* Brand */}
-          <div className={`border-b border-[#343434] transition-all duration-300 ${sidebarHovered ? "px-8 py-8" : "flex justify-center px-3 py-6"}`}>
+          <div className={`border-b border-[#343434] transition-all duration-300 ${sidebarHovered ? "px-7 py-7" : "flex justify-center px-2 py-6"}`}>
             {sidebarHovered ? (
               <>
-                <p className="font-serif text-2xl tracking-wide text-[#F2F0EB]">
-                  ARCHEON
-                </p>
+                <img
+                  src="/brand-assets/logo-transparent.png"
+                  alt="ArcheOn Design Studio"
+                  className="h-11 w-auto object-contain drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]"
+                />
 
-                <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.22em] text-[#A58A64]">
-                  Design Studio
-                </p>
-
-                <div className="mt-7 border-t border-[#343434] pt-5">
+                <div className="mt-6 border-t border-[#343434] pt-4">
                   <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-[#777777]">
                     Restricted Workspace
                   </p>
 
-                  <p className="mt-2 text-xs text-[#D8D6D0]">
+                  <p className="mt-1.5 text-xs text-[#D8D6D0]">
                     Studio Administration
                   </p>
                 </div>
               </>
             ) : (
-              <div
+              <img
+                src="/brand-assets/logo-transparent.png"
+                alt="ArcheOn Design Studio"
                 title="ArcheOn Design Studio — Administration"
-                className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#A58A64]/45 bg-[#1B1916] font-serif text-lg font-semibold text-[#C5A36D]"
-              >
-                A
-              </div>
+                className="h-9 w-auto object-contain drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]"
+              />
             )}
           </div>
 
