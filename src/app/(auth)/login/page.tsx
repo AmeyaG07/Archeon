@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Lock, Eye, EyeOff, ArrowRight, ShieldAlert } from "lucide-react";
+import { Lock, Eye, EyeOff, ArrowRight, ArrowLeft, ShieldAlert } from "lucide-react";
 import { useAuth } from "@/providers/AuthProvider";
 
 type LoginTarget = "admin" | "client" | "vendor";
@@ -70,7 +70,7 @@ export default function LoginPage() {
           onClick={() => router.push("/")}
           className="inline-flex items-center gap-2 rounded-lg border border-[#E5DEC9]/80 bg-white px-4 py-2 text-xs font-medium text-[#111111] shadow-[0_4px_14px_rgba(0,0,0,0.08)] hover:bg-[#FAF8F5] transition-all"
         >
-          Return To Website
+          <ArrowLeft className="w-3.5 h-3.5" /> Return To Website
         </button>
       </header>
 
