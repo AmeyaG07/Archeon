@@ -30,9 +30,12 @@ export function OpeningPreloader() {
 
   const [isDismissed, setIsDismissed] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
-  const [progress, setProgress] = useState(0);
 
-  // Initialize progress animation when preloader should play
+  const progressTextRef = React.useRef<HTMLSpanElement>(null);
+  const statusTextRef = React.useRef<HTMLSpanElement>(null);
+  const progressBarRef = React.useRef<HTMLDivElement>(null);
+
+  // Initialize progress animation via direct DOM refs (zero React re-renders per frame)
   useEffect(() => {
     if (!shouldPlay || isDismissed) return;
 
@@ -45,23 +48,52 @@ export function OpeningPreloader() {
     const startTime = performance.now();
     const duration = 2100; // ms
 
-    let rafId: number;
+    let rafId = 0;
+    let exitTimer: ReturnType<typeof setTimeout> | undefined;
+    let lastPct = -1;
+    let lastStage = -1;
+
     const updateProgress = (currentTime: number) => {
       const elapsed = currentTime - startTime;
       const ratio = Math.min(elapsed / duration, 1);
       // Easing: cubic-bezier(0.22, 1, 0.36, 1) approximation
       const eased = 1 - Math.pow(1 - ratio, 3);
-      setProgress(Math.round(eased * 100));
+      const pct = Math.round(eased * 100);
+
+      if (progressBarRef.current) {
+        progressBarRef.current.style.transform = `scaleX(${eased})`;
+      }
+
+      if (pct !== lastPct) {
+        lastPct = pct;
+        if (progressTextRef.current) {
+          progressTextRef.current.textContent = `${pct}%`;
+        }
+        const stage = pct < 45 ? 0 : pct < 90 ? 1 : 2;
+        if (stage !== lastStage && statusTextRef.current) {
+          lastStage = stage;
+          statusTextRef.current.textContent =
+            stage === 0
+              ? "INITIALIZING SPATIAL MATRIX"
+              : stage === 1
+              ? "CALIBRATING LIGHT & GEOMETRY"
+              : "ARCHEON SYSTEM READY";
+        }
+      }
 
       if (ratio < 1) {
         rafId = requestAnimationFrame(updateProgress);
       } else {
-        setProgress(100);
+        if (progressBarRef.current) {
+          progressBarRef.current.style.transform = "scaleX(1)";
+        }
+        if (progressTextRef.current) {
+          progressTextRef.current.textContent = "100%";
+        }
         // Hold at 100% briefly (~300ms), then trigger exit transition
-        const timer = setTimeout(() => {
+        exitTimer = setTimeout(() => {
           setIsExiting(true);
         }, 300);
-        return () => clearTimeout(timer);
       }
     };
 
@@ -69,6 +101,7 @@ export function OpeningPreloader() {
 
     return () => {
       if (rafId) cancelAnimationFrame(rafId);
+      if (exitTimer) clearTimeout(exitTimer);
     };
   }, [shouldPlay, isDismissed]);
 
@@ -156,7 +189,7 @@ export function OpeningPreloader() {
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute top-8 left-1/2 -translate-x-1/2 flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border border-white/10 bg-white/[0.02] backdrop-blur-md"
+            className="absolute top-8 left-1/2 -translate-x-1/2 flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border border-white/10 bg-[#161513]/90"
           >
             <span className="w-1.5 h-1.5 rounded-full bg-[#D97724] animate-pulse" />
             <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-[#A3A199]">
@@ -169,17 +202,17 @@ export function OpeningPreloader() {
             {/* Ambient Warm Radial Backlight */}
             <motion.div
               initial={{ opacity: 0, scale: 0.7 }}
-              animate={{ opacity: 0.75, scale: 1.15 }}
+              animate={{ opacity: 0.85, scale: 1.15 }}
               transition={{
                 duration: 2.1,
                 delay: 0.3,
                 ease: [0.22, 1, 0.36, 1],
               }}
-              className="absolute -inset-10 -z-10 rounded-full pointer-events-none"
+              className="absolute -inset-16 -z-10 rounded-full pointer-events-none"
               style={{
                 background:
-                  "radial-gradient(circle at center, rgba(217, 119, 36, 0.32) 0%, rgba(182, 138, 74, 0.12) 45%, transparent 72%)",
-                filter: "blur(32px)",
+                  "radial-gradient(circle at center, rgba(217, 119, 36, 0.28) 0%, rgba(182, 138, 74, 0.10) 45%, transparent 72%)",
+                willChange: "transform, opacity",
               }}
             />
 
@@ -191,6 +224,7 @@ export function OpeningPreloader() {
               <div className="absolute inset-0 opacity-25 text-[#77736C]">
                 <motion.div
                   className="w-full h-full"
+                  style={{ willChange: "transform" }}
                   animate={{ rotate: 360 }}
                   transition={{
                     duration: 26,
@@ -397,8 +431,7 @@ export function OpeningPreloader() {
               <motion.div
                 className="absolute inset-0 text-[#D97724] pointer-events-none"
                 style={{
-                  filter:
-                    "drop-shadow(0 0 18px rgba(217, 119, 36, 0.85)) drop-shadow(0 0 32px rgba(182, 138, 74, 0.55))",
+                  willChange: "clip-path",
                 }}
                 initial={{ clipPath: "inset(100% 0% 0% 0%)" }}
                 animate={{ clipPath: "inset(0% 0% 0% 0%)" }}
@@ -410,6 +443,7 @@ export function OpeningPreloader() {
               >
                 <motion.div
                   className="w-full h-full"
+                  style={{ willChange: "transform" }}
                   animate={{ rotate: 360 }}
                   transition={{
                     duration: 26,
@@ -620,23 +654,30 @@ export function OpeningPreloader() {
             {/* Bottom Progress Bar & State Telemetry */}
             <div className="mt-8 flex flex-col items-center gap-2">
               <div className="flex items-center gap-3">
-                <span className="font-mono text-[9px] uppercase tracking-[0.22em] text-[#77736C]">
-                  {progress < 45
-                    ? "INITIALIZING SPATIAL MATRIX"
-                    : progress < 90
-                    ? "CALIBRATING LIGHT & GEOMETRY"
-                    : "ARCHEON SYSTEM READY"}
+                <span
+                  ref={statusTextRef}
+                  className="font-mono text-[9px] uppercase tracking-[0.22em] text-[#77736C]"
+                >
+                  INITIALIZING SPATIAL MATRIX
                 </span>
-                <span className="font-mono text-[10px] tabular-nums font-medium text-[#D97724]">
-                  {progress}%
+                <span
+                  ref={progressTextRef}
+                  className="font-mono text-[10px] tabular-nums font-medium text-[#D97724]"
+                >
+                  0%
                 </span>
               </div>
 
-              {/* Minimal Progress Rule */}
+              {/* Minimal Progress Rule (GPU-composited scaleX) */}
               <div className="w-48 h-[1.5px] bg-white/10 rounded-full overflow-hidden">
-                <motion.div
-                  className="h-full bg-gradient-to-r from-[#B68A4A] via-[#D97724] to-[#F59E0B]"
-                  style={{ width: `${progress}%` }}
+                <div
+                  ref={progressBarRef}
+                  className="w-full h-full bg-gradient-to-r from-[#B68A4A] via-[#D97724] to-[#F59E0B]"
+                  style={{
+                    transform: "scaleX(0)",
+                    transformOrigin: "left center",
+                    willChange: "transform",
+                  }}
                 />
               </div>
             </div>
