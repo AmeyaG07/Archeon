@@ -62,12 +62,12 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F2F0EB] text-[#111111] flex flex-col justify-between p-4 sm:p-12 font-sans selection:bg-[#A58A64] selection:text-white">
+    <div className="min-h-screen bg-[#F2F0EB] text-[#111111] flex flex-col justify-between p-4 sm:px-10 sm:py-5 font-sans selection:bg-[#A58A64] selection:text-white">
       {/* Top Header */}
       <header className="flex items-center justify-between max-w-4xl w-full mx-auto">
         <button
           onClick={() => router.push("/")}
-          className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-[#4A4843] hover:text-[#111111] transition-colors py-2"
+          className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-[#4A4843] hover:text-[#111111] transition-colors py-1"
         >
           <ArrowLeft className="w-3.5 h-3.5" /> Return to Website
         </button>
@@ -77,18 +77,18 @@ export default function LoginPage() {
       </header>
 
       {/* Main Light Golden / White Login Card with Box Shadow */}
-      <main className="max-w-md w-full mx-auto my-8 sm:my-12 rounded-2xl border border-[#E5DEC9] bg-gradient-to-br from-[#FFFFFF] via-[#FBF6EC] to-[#F4EBD9] p-5 sm:p-10 shadow-[0_24px_60px_-15px_rgba(17,17,17,0.18),0_8px_24px_-6px_rgba(182,138,74,0.16)]">
+      <main className="max-w-md w-full mx-auto my-3 sm:my-4 rounded-2xl border border-[#E5DEC9] bg-gradient-to-br from-[#FFFFFF] via-[#FBF6EC] to-[#F4EBD9] p-5 sm:px-8 sm:py-6 shadow-[0_24px_60px_-15px_rgba(17,17,17,0.18),0_8px_24px_-6px_rgba(182,138,74,0.16)]">
           {/* Brand Logo */}
-          <div className="mb-6 flex justify-center">
+          <div className="mb-4 flex justify-center">
             <img
               src="/brand-assets/logo-light.png"
               alt="ArcheOn Design Studio"
-              className="w-56 sm:w-64 h-auto object-contain"
+              className="w-44 sm:w-48 h-auto object-contain"
             />
           </div>
 
           {/* Portal Tabs */}
-          <div className="grid grid-cols-3 rounded-xl border border-white/80 mb-8 p-1 bg-white/50 backdrop-blur-md text-center">
+          <div className="grid grid-cols-3 rounded-xl border border-white/80 mb-4 p-1 bg-white/50 backdrop-blur-md text-center">
             <button
               type="button"
               onClick={() => setActiveTab("admin")}
@@ -122,7 +122,7 @@ export default function LoginPage() {
           </div>
 
           {/* Description */}
-          <div className="mb-6">
+          <div className="mb-4">
             <h1 className="text-xl font-semibold text-[#111111]">
               {activeTab === "admin"
                 ? "Studio Administration"
@@ -148,7 +148,7 @@ export default function LoginPage() {
           )}
 
           {/* Login Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-3.5">
             <div>
               <label className="block text-[10px] font-mono font-medium uppercase tracking-widest text-[#111111] mb-2">
                 {activeTab === "admin" ? "Studio Username" : "Registered Username or Email"}
@@ -206,7 +206,7 @@ export default function LoginPage() {
           </form>
 
           {/* Security Note */}
-          <p className="mt-8 text-center text-[10px] text-[#52504B] leading-relaxed">
+          <p className="mt-4 text-center text-[10px] text-[#52504B] leading-relaxed">
             Access is monitored and audited. All communications are encrypted with TLS 1.3 and authenticated via signed JWT tokens.
           </p>
         </main>
