@@ -111,7 +111,7 @@ export function VendorPortalLayout({
 }: VendorPortalLayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [logoutConfirmation, setLogoutConfirmation] = useState(false);
-  const [sidebarHovered, setSidebarHovered] = useState(false);
+  const sidebarHovered = true;
 
   // Lock body scroll when mobile drawer is open
   useEffect(() => {
@@ -183,13 +183,9 @@ export function VendorPortalLayout({
 
       <div className="flex min-h-screen">
 
-        {/* Desktop Sidebar (collapses to logo/icon rail when cursor is on dashboard; expands on hover) */}
+        {/* Desktop Sidebar (always open) */}
         <aside
-          onMouseEnter={() => setSidebarHovered(true)}
-          onMouseLeave={() => setSidebarHovered(false)}
-          className={`vendor-sidebar fixed inset-y-0 left-0 z-40 hidden flex-col bg-[#111111] text-white transition-all duration-300 ease-out lg:flex ${
-            sidebarHovered ? "w-[270px] shadow-[12px_0_40px_rgba(0,0,0,0.35)]" : "w-[76px]"
-          }`}
+          className="vendor-sidebar fixed inset-y-0 left-0 z-40 hidden w-[270px] flex-col bg-[#111111] text-white shadow-[12px_0_40px_rgba(0,0,0,0.35)] lg:flex"
         >
 
           {/* Brand */}

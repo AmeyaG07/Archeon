@@ -44,14 +44,25 @@ export function ProjectImageCard({
     setMousePos({ x: 50, y: 50 });
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onClick();
+    }
+  };
+
   return (
     <div
       ref={containerRef}
+      role="button"
+      tabIndex={0}
+      aria-label={`View project ${project.title}`}
       data-cursor-label="View"
       onMouseMove={handleMouseMove}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onClick={onClick}
+      onKeyDown={handleKeyDown}
       style={{
         perspective: "1200px",
       }}

@@ -431,19 +431,18 @@ export function AdminWebsiteProjectList() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
-            <a
-              href="/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 border border-[#D8D6D0] bg-white px-3 py-1.5 text-[9px] font-mono uppercase tracking-wider text-[#33312D] hover:border-[#171717] hover:bg-[#FAF9F5] transition-colors rounded-sm"
+            <button
+              type="button"
+              onClick={() => window.open("/", "_blank", "noopener,noreferrer")}
+              className="inline-flex items-center justify-center gap-1.5 h-9 px-4 border border-[#D8D6D0] bg-white text-[10px] leading-none font-mono uppercase tracking-wider font-medium text-[#33312D] hover:border-[#171717] hover:bg-[#FAF9F5] transition-colors rounded-[0.625rem] cursor-pointer whitespace-nowrap"
             >
-              <Globe size={12} /> View Live Website
-            </a>
+              <Globe size={13} /> View Live Website
+            </button>
             {activeTab === "projects" && (
               <button
                 type="button"
                 onClick={handleOpenCreateNew}
-                className="inline-flex items-center gap-1.5 bg-[#171717] px-3.5 py-1.5 text-[9px] font-mono uppercase tracking-wider text-white hover:bg-[#A58A64] transition-colors rounded-sm shadow-xs font-medium cursor-pointer"
+                className="inline-flex items-center justify-center gap-1.5 h-9 px-4 bg-[#171717] text-[10px] leading-none font-mono uppercase tracking-wider text-white hover:bg-[#A58A64] transition-colors rounded-[0.625rem] shadow-xs font-medium cursor-pointer whitespace-nowrap"
               >
                 <Plus size={13} /> Add Showcase Project
               </button>
@@ -602,29 +601,28 @@ export function AdminWebsiteProjectList() {
                     </div>
 
                     {/* Right: Actions */}
-                    <div className="shrink-0 w-full md:w-auto flex md:flex-col gap-2 pt-2 md:pt-0 justify-center">
+                    <div className="shrink-0 w-full md:w-[136px] flex md:flex-col gap-2 pt-2 md:pt-0 justify-center">
                       <button
                         type="button"
                         onClick={() => handleOpenEdit(project)}
-                        className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-[#171717] hover:bg-[#A58A64] text-white text-[9px] font-mono uppercase tracking-wider transition-colors rounded-sm shadow-xs font-medium cursor-pointer"
+                        className="flex-1 md:flex-none w-full h-9 px-3 inline-flex items-center justify-center gap-1.5 bg-[#171717] hover:bg-[#A58A64] text-white text-[10px] leading-none font-mono uppercase tracking-wider transition-colors rounded-[0.625rem] shadow-xs font-medium cursor-pointer whitespace-nowrap"
                       >
                         <Edit3 size={12} />
                         Edit Details
                       </button>
-                      <a
-                        href={`/#${project.id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 px-3 py-1.5 border border-[#D8D6D0] hover:border-[#171717] text-[#55514A] hover:text-[#171717] text-[9px] font-mono uppercase tracking-wider transition-colors rounded-sm text-center"
+                      <button
+                        type="button"
+                        onClick={() => window.open(`/#${project.id}`, "_blank", "noopener,noreferrer")}
+                        className="flex-1 md:flex-none w-full h-9 px-3 inline-flex items-center justify-center gap-1.5 border border-[#D8D6D0] hover:border-[#171717] text-[#55514A] hover:text-[#171717] text-[10px] leading-none font-mono uppercase tracking-wider transition-colors rounded-[0.625rem] font-medium text-center cursor-pointer whitespace-nowrap"
                       >
                         <ExternalLink size={12} />
                         View Live
-                      </a>
+                      </button>
                       <button
                         type="button"
                         onClick={() => setConfirmDeleteProject(project)}
                         disabled={deletingId === project.id}
-                        className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 px-3 py-1.5 border border-red-200 bg-red-50/60 hover:bg-red-600 hover:border-red-600 text-red-700 hover:text-white text-[9px] font-mono uppercase tracking-wider transition-colors rounded-sm cursor-pointer disabled:opacity-50"
+                        className="flex-1 md:flex-none w-full h-9 px-3 inline-flex items-center justify-center gap-1.5 border border-red-200 bg-red-50/60 hover:bg-red-600 hover:border-red-600 text-red-700 hover:text-white text-[10px] leading-none font-mono uppercase tracking-wider transition-colors rounded-[0.625rem] font-medium cursor-pointer disabled:opacity-50 whitespace-nowrap"
                       >
                         <Trash2 size={12} />
                         Delete
@@ -653,14 +651,13 @@ export function AdminWebsiteProjectList() {
                 Edit the mission statement, headline, and philosophy paragraphs showcased in the interactive Studio 3D section on the website.
               </p>
             </div>
-            <a
-              href="/#studio"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 border border-[#D8D6D0] bg-[#FAF9F6] px-3 py-1.5 font-mono text-[9px] uppercase tracking-wider text-[#33312D] hover:border-[#171717] transition-colors rounded-sm shrink-0"
+            <button
+              type="button"
+              onClick={() => window.open("/#studio", "_blank", "noopener,noreferrer")}
+              className="inline-flex items-center justify-center gap-1.5 h-9 px-4 border border-[#D8D6D0] bg-[#FAF9F6] font-mono text-[10px] leading-none font-medium uppercase tracking-wider text-[#33312D] hover:border-[#171717] transition-colors rounded-[0.625rem] shrink-0 cursor-pointer whitespace-nowrap"
             >
-              <ExternalLink size={11} /> View Studio Section Live
-            </a>
+              <ExternalLink size={12} /> View Studio Section Live
+            </button>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">

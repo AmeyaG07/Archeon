@@ -14,8 +14,8 @@ export function ArchitecturalGlobe() {
     const mount = mountRef.current;
     if (!container || !mount) return;
 
-    let animationFrameId: number;
-    let isVisible = true;
+    let animationFrameId = 0;
+    let isVisible = false;
 
     // --- SCENE SETUP ---
     const scene = new THREE.Scene();
@@ -67,8 +67,7 @@ export function ArchitecturalGlobe() {
     video.loop = true;
     video.muted = true;
     video.playsInline = true;
-    video.preload = "auto";
-    video.play().catch(() => {});
+    video.preload = "metadata";
 
     const videoTexture = new THREE.VideoTexture(video);
     videoTexture.minFilter = THREE.LinearFilter;
@@ -235,22 +234,38 @@ export function ArchitecturalGlobe() {
     // --- INTERSECTION OBSERVER FOR LOW POWER ---
     const intersectionObserver = new IntersectionObserver(
       (entries) => {
-        isVisible = entries[0].isIntersecting;
-        if (isVisible && video.paused) {
-          video.play().catch(() => {});
-        } else if (!isVisible && !video.paused) {
-          video.pause();
+        const nextVisible = entries[0].isIntersecting;
+        if (nextVisible === isVisible) return;
+        isVisible = nextVisible;
+        if (isVisible) {
+          if (video.paused) {
+            video.play().catch(() => {});
+          }
+          if (!animationFrameId) {
+            animationFrameId = requestAnimationFrame(animate);
+          }
+        } else {
+          if (!video.paused) {
+            video.pause();
+          }
+          if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = 0;
+          }
         }
       },
-      { threshold: 0.1 }
+      { rootMargin: "200px 0px", threshold: 0.05 }
     );
     intersectionObserver.observe(container);
 
     // --- ANIMATION LOOP ---
     let clock = 0;
     const animate = () => {
+      if (!isVisible) {
+        animationFrameId = 0;
+        return;
+      }
       animationFrameId = requestAnimationFrame(animate);
-      if (!isVisible) return;
 
       clock += 0.016;
 
@@ -286,7 +301,8 @@ export function ArchitecturalGlobe() {
       renderer.render(scene, camera);
     };
 
-    animate();
+    // Render one initial frame so canvas is ready when scrolled into view
+    renderer.render(scene, camera);
 
     return () => {
       cancelAnimationFrame(animationFrameId);

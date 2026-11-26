@@ -21,12 +21,28 @@ function getServerSnapshot() {
   return false;
 }
 
-export function OpeningPreloader() {
-  const shouldPlay = useSyncExternalStore(
+interface OpeningPreloaderProps {
+  forcePlay?: boolean;
+  durationMs?: number;
+  onComplete?: () => void;
+}
+
+export function OpeningPreloader({
+  forcePlay = false,
+  durationMs = 4200,
+  onComplete,
+}: OpeningPreloaderProps = {}) {
+  const isClient = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    getServerSnapshot
+  );
+  const canPlayFromSession = useSyncExternalStore(
     emptySubscribe,
     getSnapshot,
     getServerSnapshot
   );
+  const shouldPlay = isClient && (forcePlay || canPlayFromSession);
 
   const [isDismissed, setIsDismissed] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
@@ -46,13 +62,12 @@ export function OpeningPreloader() {
     }
 
     const startTime = performance.now();
-    const duration = 2100; // ms
+    const duration = durationMs;
 
     let rafId = 0;
     let exitTimer: ReturnType<typeof setTimeout> | undefined;
     let lastPct = -1;
     let lastStage = -1;
-
     const updateProgress = (currentTime: number) => {
       const elapsed = currentTime - startTime;
       const ratio = Math.min(elapsed / duration, 1);
@@ -90,10 +105,10 @@ export function OpeningPreloader() {
         if (progressTextRef.current) {
           progressTextRef.current.textContent = "100%";
         }
-        // Hold at 100% briefly (~300ms), then trigger exit transition
+        // Hold at 100% briefly (~600ms), then trigger exit transition
         exitTimer = setTimeout(() => {
           setIsExiting(true);
-        }, 300);
+        }, 600);
       }
     };
 
@@ -103,7 +118,7 @@ export function OpeningPreloader() {
       if (rafId) cancelAnimationFrame(rafId);
       if (exitTimer) clearTimeout(exitTimer);
     };
-  }, [shouldPlay, isDismissed]);
+  }, [shouldPlay, isDismissed, durationMs]);
 
   // Keyboard shortcut (Escape) to skip
   useEffect(() => {
@@ -123,10 +138,11 @@ export function OpeningPreloader() {
     if (isExiting && !isDismissed) {
       const fallbackTimer = setTimeout(() => {
         setIsDismissed(true);
+        onComplete?.();
       }, 600);
       return () => clearTimeout(fallbackTimer);
     }
-  }, [isExiting, isDismissed]);
+  }, [isExiting, isDismissed, onComplete]);
 
   // Lock body scroll while preloader is active
   useEffect(() => {
@@ -152,6 +168,7 @@ export function OpeningPreloader() {
     <AnimatePresence
       onExitComplete={() => {
         setIsDismissed(true);
+        onComplete?.();
       }}
     >
       {!isExiting && (
@@ -204,7 +221,7 @@ export function OpeningPreloader() {
               initial={{ opacity: 0, scale: 0.7 }}
               animate={{ opacity: 0.85, scale: 1.15 }}
               transition={{
-                duration: 2.1,
+                duration: durationMs / 1000,
                 delay: 0.3,
                 ease: [0.22, 1, 0.36, 1],
               }}
@@ -361,65 +378,14 @@ export function OpeningPreloader() {
                   </svg>
                 </motion.div>
 
-                {/* Center Recessed Base Logo / Architectural Monogram */}
+                {/* Center Recessed Base Logo */}
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="relative w-[150px] h-[150px] rounded-full border border-current/30 flex flex-col items-center justify-center p-4">
-                    {/* Architectural "A" Monogram Geometry */}
-                    <svg
-                      viewBox="0 0 100 100"
-                      className="w-16 h-16 overflow-visible text-current"
-                      fill="none"
-                      stroke="currentColor"
-                    >
-                      {/* Apex Triangle */}
-                      <path
-                        d="M 22 76 L 50 20 L 78 76"
-                        strokeWidth="2.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                      {/* Crossbeam */}
-                      <line
-                        x1="32"
-                        y1="58"
-                        x2="68"
-                        y2="58"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                      />
-                      {/* Central Celestial Void */}
-                      <circle
-                        cx="50"
-                        cy="58"
-                        r="6"
-                        strokeWidth="1.5"
-                        fill="currentColor"
-                        fillOpacity="0.15"
-                      />
-                      {/* Precision Drafting Extensions */}
-                      <line
-                        x1="50"
-                        y1="10"
-                        x2="50"
-                        y2="18"
-                        strokeWidth="1"
-                        opacity="0.6"
-                      />
-                      <line
-                        x1="14"
-                        y1="76"
-                        x2="86"
-                        y2="76"
-                        strokeWidth="0.75"
-                        opacity="0.5"
-                      />
-                    </svg>
-                    <span className="mt-1 font-mono text-[9px] uppercase tracking-[0.3em] font-medium text-current">
-                      ArcheOn
-                    </span>
-                    <span className="font-mono text-[6.5px] uppercase tracking-[0.2em] opacity-60 text-current">
-                      Studio
-                    </span>
+                  <div className="relative w-[150px] h-[150px] rounded-full border border-current/30 flex items-center justify-center p-5">
+                    <img
+                      src="/brand-assets/logo-transparent.png"
+                      alt="ArcheOn Studio"
+                      className="w-24 h-24 object-contain opacity-30 grayscale select-none"
+                    />
                   </div>
                 </div>
               </div>
@@ -436,7 +402,7 @@ export function OpeningPreloader() {
                 initial={{ clipPath: "inset(100% 0% 0% 0%)" }}
                 animate={{ clipPath: "inset(0% 0% 0% 0%)" }}
                 transition={{
-                  duration: 2.1,
+                  duration: durationMs / 1000,
                   delay: 0.3,
                   ease: [0.22, 1, 0.36, 1],
                 }}
@@ -589,63 +555,12 @@ export function OpeningPreloader() {
 
                 {/* Center Recessed Glowing Logo */}
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="relative w-[150px] h-[150px] rounded-full border border-[#D97724] bg-[#171513]/90 shadow-[0_0_24px_rgba(217,119,36,0.5)] flex flex-col items-center justify-center p-4">
-                    {/* Glowing Architectural "A" Monogram Geometry */}
-                    <svg
-                      viewBox="0 0 100 100"
-                      className="w-16 h-16 overflow-visible text-[#F59E0B]"
-                      fill="none"
-                      stroke="currentColor"
-                    >
-                      {/* Apex Triangle */}
-                      <path
-                        d="M 22 76 L 50 20 L 78 76"
-                        strokeWidth="2.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                      {/* Crossbeam */}
-                      <line
-                        x1="32"
-                        y1="58"
-                        x2="68"
-                        y2="58"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                      />
-                      {/* Central Celestial Void with intense inner gold radiance */}
-                      <circle
-                        cx="50"
-                        cy="58"
-                        r="6"
-                        strokeWidth="1.5"
-                        fill="#F59E0B"
-                        fillOpacity="0.4"
-                      />
-                      {/* Precision Drafting Extensions */}
-                      <line
-                        x1="50"
-                        y1="10"
-                        x2="50"
-                        y2="18"
-                        strokeWidth="1"
-                        opacity="0.8"
-                      />
-                      <line
-                        x1="14"
-                        y1="76"
-                        x2="86"
-                        y2="76"
-                        strokeWidth="0.8"
-                        opacity="0.8"
-                      />
-                    </svg>
-                    <span className="mt-1 font-mono text-[9px] uppercase tracking-[0.3em] font-medium text-[#F59E0B]">
-                      ArcheOn
-                    </span>
-                    <span className="font-mono text-[6.5px] uppercase tracking-[0.2em] text-[#B68A4A]">
-                      Studio
-                    </span>
+                  <div className="relative w-[150px] h-[150px] rounded-full border border-[#D97724] bg-[#171513]/90 shadow-[0_0_24px_rgba(217,119,36,0.5)] flex items-center justify-center p-5">
+                    <img
+                      src="/brand-assets/logo-transparent.png"
+                      alt="ArcheOn Studio"
+                      className="w-24 h-24 object-contain drop-shadow-[0_0_14px_rgba(217,119,36,0.75)] select-none"
+                    />
                   </div>
                 </div>
               </motion.div>

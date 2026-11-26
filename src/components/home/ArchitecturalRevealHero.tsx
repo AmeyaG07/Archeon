@@ -16,20 +16,31 @@ export function ArchitecturalRevealHero({
 
   const [videoReady, setVideoReady] = useState(false);
 
-  // Play video on mount
+  // Play video when hero is visible in viewport; pause when offscreen to free hardware decoder
   useEffect(() => {
     const video = videoRef.current;
-    if (video) {
-      if (video.readyState >= 2) {
-        setVideoReady(true);
-      }
-      const playPromise = video.play();
-      if (playPromise && typeof playPromise.catch === "function") {
-        playPromise.catch(() => {
-          // Handled gracefully if autoplay blocked
-        });
-      }
+    const section = heroSectionRef.current;
+    if (!video || !section) return;
+
+    if (video.readyState >= 2) {
+      setVideoReady(true);
     }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          video.play().catch(() => {
+            // Handled gracefully if autoplay blocked
+          });
+        } else if (!video.paused) {
+          video.pause();
+        }
+      },
+      { threshold: 0.05 }
+    );
+
+    observer.observe(section);
+    return () => observer.disconnect();
   }, []);
 
   const handleVideoCanPlay = useCallback(() => {
@@ -60,26 +71,19 @@ export function ArchitecturalRevealHero({
           className={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-700 ${videoReady ? "opacity-100" : "opacity-0"
             }`}
           style={{
-            filter: "contrast(1.08) brightness(1.08) saturate(1.12)",
             transform: "translateZ(0)",
-            willChange: "transform",
+            backfaceVisibility: "hidden",
           }}
           autoPlay
           loop
           muted
           playsInline
           preload="auto"
-          crossOrigin="anonymous"
           src="/archeon_cinematic_homepage.mp4"
           onCanPlay={handleVideoCanPlay}
           onPlaying={handleVideoCanPlay}
           onLoadedData={handleVideoCanPlay}
-        >
-          <source
-            src="/archeon_cinematic_homepage.mp4"
-            type="video/mp4"
-          />
-        </video>
+        />
 
         {/* Refined Architectural Scrim: Rich left-to-right gradient fade ensuring supreme typography legibility */}
         <div

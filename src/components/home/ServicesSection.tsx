@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { ArrowUpRight } from "lucide-react";
 import type { ServiceItem } from "@/config/siteConfig";
 import {
@@ -21,7 +21,28 @@ export function ServicesSection({
 }: ServicesSectionProps) {
   const [activeDiscipline, setActiveDiscipline] = useState<string>("all");
   const [isMuted, setIsMuted] = useState<boolean>(true);
+  const sectionRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    const video = videoRef.current;
+    if (!section || !video) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          video.play().catch(() => {});
+        } else if (!video.paused) {
+          video.pause();
+        }
+      },
+      { rootMargin: "200px 0px", threshold: 0.01 }
+    );
+
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, []);
 
   const toggleMute = () => {
     if (!videoRef.current) return;
@@ -35,6 +56,7 @@ export function ServicesSection({
 
   return (
     <section
+      ref={sectionRef}
       id="expertise"
       className="relative overflow-hidden bg-[#0A0A0A] py-14 sm:py-16 md:py-20 scroll-mt-24 sm:scroll-mt-32 text-white"
     >
@@ -46,24 +68,27 @@ export function ServicesSection({
         <video
           ref={videoRef}
           src="/homepage_enhanced_full_hd.mp4"
-          autoPlay
           loop
           muted={isMuted}
           playsInline
-          preload="auto"
-          className="h-full w-full object-cover object-center opacity-65 sm:opacity-75 filter contrast-[1.1] brightness-[1.05]"
+          preload="metadata"
+          style={{
+            transform: "translateZ(0)",
+            backfaceVisibility: "hidden",
+          }}
+          className="h-full w-full object-cover object-center opacity-70 sm:opacity-75"
         />
 
         {/* Balanced Vignette Scrim for Text Legibility & Crisp Video */}
         <div className="absolute inset-0 bg-gradient-to-b from-[#0A0A0A]/75 via-[#0A0A0A]/30 to-[#0A0A0A]/75" />
         <div className="absolute inset-0 bg-gradient-to-r from-[#0A0A0A]/65 via-transparent to-[#0A0A0A]/65" />
 
-        {/* Ambient Warm Terracotta & Amber Light Halo */}
+        {/* Ambient Warm Terracotta & Amber Light Halo (pure gradient, no expensive blur filter) */}
         <div
-          className="absolute top-1/3 left-1/2 h-[800px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[150px]"
+          className="absolute top-1/3 left-1/2 h-[800px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full"
           style={{
             background:
-              "radial-gradient(circle, rgba(217, 119, 36, 0.14) 0%, rgba(182, 138, 74, 0.05) 50%, transparent 75%)",
+              "radial-gradient(circle, rgba(217, 119, 36, 0.14) 0%, rgba(182, 138, 74, 0.05) 45%, transparent 72%)",
           }}
         />
 
