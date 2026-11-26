@@ -20,7 +20,6 @@ export default function VendorPortalPage() {
     projects: [],
     invoices: [],
     activities: [],
-    unreadNotifications: 0,
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -75,7 +74,6 @@ export default function VendorPortalPage() {
             category: "Invoice",
           },
         ],
-        unreadNotifications: Number(d.unreadNotificationsCount || 0),
       });
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to load vendor workspace");
@@ -106,7 +104,6 @@ export default function VendorPortalPage() {
       onOpenInvoice={() => router.push("/vendor/invoices")}
       onCreateInvoice={() => router.push("/vendor/invoices")}
       onOpenDocuments={() => router.push("/vendor/invoices")}
-      onOpenNotifications={() => router.push("/vendor/notifications")}
     />
   );
 }

@@ -23,7 +23,6 @@ import {
   ChevronRight,
   ShieldCheck,
   Search,
-  Bell,
   Globe,
 } from "lucide-react";
 
@@ -50,7 +49,6 @@ interface AdminPortalLayoutProps {
   adminReference: string;
 
   pendingApprovals?: number;
-  unreadNotifications?: number;
 
   onNavigate: (section: AdminPortalSection) => void;
   onLogout: () => void;
@@ -170,7 +168,6 @@ export function AdminPortalLayout({
   adminRole,
   adminReference,
   pendingApprovals = 0,
-  unreadNotifications = 0,
   onNavigate,
   onLogout,
   pageTitle,
@@ -401,17 +398,6 @@ export function AdminPortalLayout({
             </div>
 
             <div className="flex items-center gap-6">
-              <div className="flex items-center gap-2 text-[#77736C]">
-                <Bell size={16} />
-                {unreadNotifications > 0 && (
-                  <span className="font-mono text-[9px] text-[#A58A64]">
-                    {unreadNotifications > 99
-                      ? "99+"
-                      : unreadNotifications}
-                  </span>
-                )}
-              </div>
-
               <div className="h-8 w-px bg-[#D8D6D0]" />
 
               <div className="text-right">

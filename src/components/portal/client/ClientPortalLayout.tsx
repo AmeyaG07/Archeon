@@ -11,7 +11,6 @@ import {
   FileText,
   CreditCard,
   MessageSquareWarning,
-  Bell,
   LifeBuoy,
   Settings,
   LogOut,
@@ -28,7 +27,6 @@ export type ClientPortalSection =
   | "drawings"
   | "documents"
   | "invoices"
-  | "notifications"
   | "support"
   | "settings";
 
@@ -39,8 +37,6 @@ interface ClientPortalLayoutProps {
 
   clientName: string;
   clientReference: string;
-
-  unreadNotifications?: number;
 
   onNavigate: (section: ClientPortalSection) => void;
   onLogout: () => void;
@@ -56,7 +52,6 @@ interface NavigationItem {
   label: string;
   description: string;
   icon: typeof LayoutDashboard;
-  badge?: boolean;
 }
 
 const NAVIGATION: NavigationItem[] = [
@@ -85,13 +80,6 @@ const NAVIGATION: NavigationItem[] = [
     icon: FileText,
   },
   {
-    id: "notifications",
-    label: "Notifications",
-    description: "Important updates",
-    icon: Bell,
-    badge: true,
-  },
-  {
     id: "support",
     label: "Help & Support",
     description: "Contact the studio",
@@ -110,7 +98,6 @@ export function ClientPortalLayout({
   activeSection,
   clientName,
   clientReference,
-  unreadNotifications = 0,
   onNavigate,
   onLogout,
   pageTitle,
@@ -227,11 +214,6 @@ export function ClientPortalLayout({
                   key={item.id}
                   item={item}
                   active={activeSection === item.id}
-                  unreadCount={
-                    item.id === "notifications"
-                      ? unreadNotifications
-                      : 0
-                  }
                   onClick={() => handleNavigate(item.id)}
                 />
               ))}
@@ -290,11 +272,6 @@ export function ClientPortalLayout({
                     key={item.id}
                     item={item}
                     active={activeSection === item.id}
-                    unreadCount={
-                      item.id === "notifications"
-                        ? unreadNotifications
-                        : 0
-                    }
                     onClick={() => handleNavigate(item.id)}
                     mobile
                   />
@@ -451,13 +428,11 @@ export function ClientPortalLayout({
 function NavigationButton({
   item,
   active,
-  unreadCount = 0,
   onClick,
   mobile = false,
 }: {
   item: NavigationItem;
   active: boolean;
-  unreadCount?: number;
   onClick: () => void;
   mobile?: boolean;
 }) {
@@ -497,15 +472,6 @@ function NavigationButton({
           </span>
         )}
       </span>
-
-      {item.badge && unreadCount > 0 && (
-        <span
-          aria-label={`${unreadCount} unread notifications`}
-          className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#A58A64] px-1.5 font-mono text-[9px] text-white"
-        >
-          {unreadCount > 99 ? "99+" : unreadCount}
-        </span>
-      )}
 
       {active && (
         <ChevronRight

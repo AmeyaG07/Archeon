@@ -127,12 +127,6 @@ const SECTIONS: {
     icon: <Wallet size={17} />,
   },
   {
-    id: "notifications",
-    label: "Notification Policies",
-    description: "WhatsApp reminders and communication rules",
-    icon: <Bell size={17} />,
-  },
-  {
     id: "portal",
     label: "Portal Access",
     description: "Client and vendor account access",
@@ -637,16 +631,6 @@ export function AdminSystemSettings({
                 editable={canManageFinancialSettings}
                 onChange={(field, value) =>
                   updateSection("financial", field, value)
-                }
-              />
-            )}
-
-            {activeSection === "notifications" && activeDraft && (
-              <NotificationSettings
-                value={activeDraft.notifications}
-                editable={canManageNotificationSettings}
-                onChange={(field, value) =>
-                  updateSection("notifications", field, value)
                 }
               />
             )}

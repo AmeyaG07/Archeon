@@ -20,7 +20,6 @@ export default function ClientPortalPage() {
     projects: [],
     invoices: [],
     activities: [],
-    unreadNotifications: 0,
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -72,7 +71,6 @@ export default function ClientPortalPage() {
             category: "Project",
           },
         ],
-        unreadNotifications: Number(d.unreadNotificationsCount || 0),
       });
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to load client workspace");
@@ -102,7 +100,6 @@ export default function ClientPortalPage() {
       onOpenInvoices={() => router.push("/client/invoices")}
       onOpenInvoice={() => router.push("/client/invoices")}
       onOpenDocuments={() => router.push("/client/documents")}
-      onOpenNotifications={() => router.push("/client/notifications")}
     />
   );
 }

@@ -237,11 +237,6 @@ export function VendorProfileSettings({
       icon: <CreditCard size={16} />,
     },
     {
-      id: "notifications",
-      label: "Notifications",
-      icon: <Bell size={16} />,
-    },
-    {
       id: "security",
       label: "Account Security",
       icon: <ShieldCheck size={16} />,

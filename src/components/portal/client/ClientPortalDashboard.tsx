@@ -10,7 +10,6 @@ import {
   Clock3,
   FileText,
   FolderOpen,
-  Bell,
   IndianRupee,
   AlertCircle,
 } from "lucide-react";
@@ -45,7 +44,6 @@ export interface ClientDashboardData {
   projects: DashboardProject[];
   invoices: DashboardInvoice[];
   activities: DashboardActivity[];
-  unreadNotifications: number;
 }
 
 interface ClientPortalDashboardProps {
@@ -57,7 +55,6 @@ interface ClientPortalDashboardProps {
   onOpenInvoices: () => void;
   onOpenInvoice: (invoice: DashboardInvoice) => void;
   onOpenDocuments: () => void;
-  onOpenNotifications: () => void;
   onRetry?: () => void;
 }
 
@@ -94,7 +91,6 @@ export function ClientPortalDashboard({
   onOpenInvoices,
   onOpenInvoice,
   onOpenDocuments,
-  onOpenNotifications,
   onRetry,
 }: ClientPortalDashboardProps) {
   const outstandingTotal = data.invoices.reduce(
@@ -156,29 +152,12 @@ export function ClientPortalDashboard({
               in one place.
             </p>
           </div>
-
-          <button
-            type="button"
-            onClick={onOpenNotifications}
-            className="relative flex w-fit items-center gap-3 border border-[#D8D6D0] bg-white px-5 py-3 text-xs text-[#33312D] hover:border-[#A58A64]"
-          >
-            <Bell size={17} className="text-[#A58A64]" />
-            Notifications
-
-            {data.unreadNotifications > 0 && (
-              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#A58A64] px-1 text-[9px] text-white">
-                {data.unreadNotifications > 99
-                  ? "99+"
-                  : data.unreadNotifications}
-              </span>
-            )}
-          </button>
         </header>
 
         {/* Overview Cards */}
         <section
           aria-label="Account overview"
-          className="mt-8 grid grid-cols-1 gap-px border border-[#D8D6D0] bg-[#D8D6D0] sm:grid-cols-2 lg:grid-cols-4"
+          className="mt-8 grid grid-cols-1 gap-px border border-[#D8D6D0] bg-[#D8D6D0] sm:grid-cols-3"
         >
           <OverviewCard
             label="Assigned Projects"
@@ -196,12 +175,6 @@ export function ClientPortalDashboard({
             label="Invoices"
             value={String(data.invoices.length)}
             icon={<FileText size={19} />}
-          />
-
-          <OverviewCard
-            label="Unread Notifications"
-            value={String(data.unreadNotifications)}
-            icon={<Bell size={19} />}
           />
         </section>
 
@@ -362,13 +335,6 @@ export function ClientPortalDashboard({
                 title="Invoices & Payments"
                 description="Review your financial records"
                 onClick={onOpenInvoices}
-              />
-
-              <QuickAccessItem
-                icon={<Bell size={19} />}
-                title="Notifications"
-                description="View recent account activity"
-                onClick={onOpenNotifications}
               />
             </div>
 

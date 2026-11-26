@@ -7,7 +7,6 @@ import {
   Mail,
   Phone,
   ShieldCheck,
-  Bell,
   Save,
   AlertCircle,
   LockKeyhole,
@@ -246,7 +245,7 @@ export function ClientProfileSettings({
           {/* Contact Preference */}
           <section className="border-t border-[#D8D6D0] pt-10">
             <SectionHeading
-              icon={<Bell size={19} />}
+              icon={<Phone size={19} />}
               title="Contact Preferences"
               description="Choose your preferred communication channel."
             />
@@ -268,44 +267,6 @@ export function ClientProfileSettings({
                   <option value="WhatsApp">WhatsApp</option>
                 </select>
               </Field>
-            </div>
-
-            <div className="mt-8 border border-[#D8D6D0] bg-white p-6">
-              <p className="font-mono text-[10px] uppercase tracking-widest text-[#A58A64]">
-                Notification Preferences
-              </p>
-
-              <div className="mt-5 divide-y divide-[#E5E2DC]">
-                <PreferenceToggle
-                  label="Project Updates"
-                  description="Progress updates and project milestones."
-                  checked={preferences.projectUpdateNotifications}
-                  onChange={(value) =>
-                    updatePreference("projectUpdateNotifications", value)
-                  }
-                  disabled={saving}
-                />
-
-                <PreferenceToggle
-                  label="Invoice Notifications"
-                  description="New invoices and payment-related updates."
-                  checked={preferences.invoiceNotifications}
-                  onChange={(value) =>
-                    updatePreference("invoiceNotifications", value)
-                  }
-                  disabled={saving}
-                />
-
-                <PreferenceToggle
-                  label="Studio Announcements"
-                  description="Important notices and studio communications."
-                  checked={preferences.announcementNotifications}
-                  onChange={(value) =>
-                    updatePreference("announcementNotifications", value)
-                  }
-                  disabled={saving}
-                />
-              </div>
             </div>
           </section>
 

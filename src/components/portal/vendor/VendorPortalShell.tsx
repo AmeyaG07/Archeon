@@ -13,7 +13,6 @@ const routes: Record<VendorPortalSection, string> = {
   projects: "/vendor/projects",
   invoices: "/vendor/invoices?tab=invoices",
   "cash-settlements": "/vendor/cash-settlements",
-  notifications: "/vendor/notifications",
   support: "/vendor/support",
   settings: "/vendor/profile",
 };
@@ -24,7 +23,6 @@ function getActiveSection(pathname: string, tab?: string | null): VendorPortalSe
   if (pathname.includes("/invoices")) {
     return "invoices";
   }
-  if (pathname.includes("/notifications")) return "notifications";
   if (pathname.includes("/support")) return "support";
   if (pathname.includes("/profile")) return "settings";
   return "dashboard";

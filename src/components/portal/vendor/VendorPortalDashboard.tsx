@@ -12,7 +12,6 @@ import {
   AlertCircle,
   Receipt,
   Wallet,
-  Bell,
   FolderOpen,
 } from "lucide-react";
 
@@ -59,7 +58,6 @@ export interface VendorDashboardData {
   projects: VendorDashboardProject[];
   invoices: VendorDashboardInvoice[];
   activities: VendorDashboardActivity[];
-  unreadNotifications: number;
 }
 
 interface VendorPortalDashboardProps {
@@ -75,7 +73,6 @@ interface VendorPortalDashboardProps {
 
   onCreateInvoice: () => void;
   onOpenDocuments: () => void;
-  onOpenNotifications: () => void;
 
   onRetry?: () => void;
 }
@@ -124,7 +121,7 @@ function getActivityIcon(
       return <IndianRupee size={17} />;
 
     case "Announcement":
-      return <Bell size={17} />;
+      return <FileText size={17} />;
   }
 }
 
@@ -138,7 +135,6 @@ export function VendorPortalDashboard({
   onOpenInvoice,
   onCreateInvoice,
   onOpenDocuments,
-  onOpenNotifications,
   onRetry,
 }: VendorPortalDashboardProps) {
   const submittedTotal = data.invoices.reduce(
@@ -218,23 +214,6 @@ export function VendorPortalDashboard({
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              onClick={onOpenNotifications}
-              className="relative flex items-center gap-3 border border-[#D8D6D0] bg-white px-5 py-3 text-xs text-[#33312D] hover:border-[#A58A64]"
-            >
-              <Bell size={17} className="text-[#A58A64]" />
-              Notifications
-
-              {data.unreadNotifications > 0 && (
-                <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#A58A64] px-1 text-[9px] text-white">
-                  {data.unreadNotifications > 99
-                    ? "99+"
-                    : data.unreadNotifications}
-                </span>
-              )}
-            </button>
-
             <button
               type="button"
               onClick={onCreateInvoice}
