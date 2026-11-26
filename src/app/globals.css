@@ -491,14 +491,51 @@ pre {
 :is(.admin-portal-root, .client-portal-root, .vendor-portal-root) {
   background-color: #F2F0EB;
   background-image:
-    radial-gradient(at 15% 10%, rgba(197, 163, 109, 0.16) 0px, transparent 48%),
-    radial-gradient(at 88% 18%, rgba(214, 206, 192, 0.45) 0px, transparent 45%),
-    radial-gradient(at 72% 85%, rgba(182, 138, 74, 0.12) 0px, transparent 50%);
+    radial-gradient(at 82% 8%, rgba(182, 138, 74, 0.24) 0px, transparent 42%),
+    linear-gradient(
+      180deg,
+      #111111 0%,
+      #1C1A17 22%,
+      #4A443B 48%,
+      #B5ADA0 74%,
+      #F2F0EB 100%
+    );
   background-attachment: fixed;
 }
 
 :is(.admin-portal-root, .client-portal-root, .vendor-portal-root) main {
   background: transparent !important;
+}
+
+/* Top bar & page hero contrast over dark top gradient */
+:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) .lg\:ml-\[270px\] > header {
+  background: rgba(17, 17, 17, 0.58) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #F2F0EB !important;
+}
+
+:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) .lg\:ml-\[270px\] > header :is(span, p) {
+  color: rgba(242, 240, 235, 0.85) !important;
+}
+
+:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) main > div > header:not(.bg-white) h1,
+:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) main > div > header:not(.bg-white) h2 {
+  color: #F2F0EB !important;
+}
+
+:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) main > div > header:not(.bg-white) p:not(.text-\[\#A58A64\]):not(.text-\[\#9F7947\]) {
+  color: rgba(242, 240, 235, 0.78) !important;
+}
+
+:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) main > div > header:not(.bg-white) {
+  border-color: rgba(255, 255, 255, 0.16) !important;
+}
+
+:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) main section > div > p.font-mono,
+:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) main section > p.font-mono {
+  color: #E5C896 !important;
 }
 
 :is(.admin-portal-root, .client-portal-root, .vendor-portal-root) .font-serif {
@@ -516,20 +553,20 @@ pre {
 :is(.admin-portal-root, .client-portal-root, .vendor-portal-root) .grid.gap-px > * {
   border: 1px solid rgba(255, 255, 255, 0.78) !important;
   border-radius: 0.875rem !important;
-  background: rgba(255, 255, 255, 0.56) !important;
-  backdrop-filter: blur(18px) saturate(160%);
-  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  background: rgba(255, 255, 255, 0.76) !important;
+  backdrop-filter: blur(20px) saturate(170%);
+  -webkit-backdrop-filter: blur(20px) saturate(170%);
   box-shadow:
-    0 8px 30px rgba(17, 17, 17, 0.045),
-    inset 0 1px 0 rgba(255, 255, 255, 0.88);
+    0 10px 32px rgba(0, 0, 0, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
   transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 :is(.admin-portal-root, .client-portal-root, .vendor-portal-root) .grid.gap-px > *:hover {
-  background: rgba(255, 255, 255, 0.76) !important;
-  border-color: rgba(182, 138, 74, 0.45) !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+  border-color: rgba(197, 163, 109, 0.65) !important;
   box-shadow:
-    0 12px 34px rgba(17, 17, 17, 0.075),
+    0 14px 36px rgba(0, 0, 0, 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.96);
 }
 
@@ -558,13 +595,13 @@ pre {
   section.border:not(.grid)
 ):not(.rounded-full):not(.rounded-2xl):not(.rounded-3xl):not(button):not(a) {
   border-radius: 0.875rem !important;
-  background: rgba(255, 255, 255, 0.58) !important;
-  backdrop-filter: blur(18px) saturate(160%);
-  -webkit-backdrop-filter: blur(18px) saturate(160%);
-  border-color: rgba(255, 255, 255, 0.75) !important;
+  background: rgba(255, 255, 255, 0.78) !important;
+  backdrop-filter: blur(20px) saturate(170%);
+  -webkit-backdrop-filter: blur(20px) saturate(170%);
+  border-color: rgba(255, 255, 255, 0.8) !important;
   box-shadow:
-    0 8px 30px rgba(17, 17, 17, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+    0 10px 32px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 :is(.admin-portal-root, .client-portal-root, .vendor-portal-root) [role="dialog"] > div {
