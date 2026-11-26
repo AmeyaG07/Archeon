@@ -39,8 +39,6 @@ export function ClientPortalShell({ children }: { children: React.ReactNode }) {
       activeSection={getActiveSection(pathname)}
       clientName={user?.username || "Studio Client"}
       clientReference="CLIENT-PORTAL"
-      pageTitle="Client Portal"
-      pageDescription="Your ArcheOn Design Studio workspace"
       onNavigate={(section) => router.push(routes[section])}
       onLogout={async () => {
         await logout();
