@@ -80,11 +80,11 @@ export default function LoginPage() {
       <div className="max-w-md w-full mx-auto my-8 sm:my-12 rounded-2xl p-[2px] bg-gradient-to-br from-[#F59E0B] via-[#06B6D4] to-[#8B5CF6] shadow-sm">
         <main className="rounded-[14px] bg-gradient-to-br from-[#FFFFFF] via-[#FBF6EC] to-[#F4EBD9] p-5 sm:p-10">
           {/* Brand Logo */}
-          <div className="mb-4 flex justify-center">
+          <div className="mb-6 flex justify-center">
             <img
-              src="/brand-assets/logo-clock-center.png"
+              src="/brand-assets/logo-light.jpg"
               alt="ArcheOn Design Studio"
-              className="h-28 sm:h-32 w-auto object-contain"
+              className="w-60 sm:w-72 h-auto object-contain mix-blend-multiply"
             />
           </div>
 
