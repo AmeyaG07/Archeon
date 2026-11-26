@@ -349,7 +349,7 @@ export function SiteFooter({
                   >
                     EXPLORE
                   </p>
-              
+
                   <a
                     href={exploreLinks[0].href}
                     onClick={(e) => {
@@ -451,7 +451,7 @@ export function SiteFooter({
                   >
                     DISCIPLINES
                   </p>
-              
+
                   <button
                     type="button"
                     onClick={() => scrollToSection("#expertise")}
@@ -538,7 +538,7 @@ export function SiteFooter({
                   >
                     PRIVATE ACCESS
                   </p>
-              
+
                   <Link
                     href="/client"
                     className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg bg-[#141414] hover:bg-[#1C1C1C] border border-white/10 hover:border-white/30 text-white/90 hover:text-white transition-all group shadow-sm cursor-pointer mb-3"
@@ -603,7 +603,7 @@ export function SiteFooter({
                   >
                     STUDIO INQUIRIES
                   </p>
-              
+
                   <div className="flex flex-col gap-2 font-outfit text-white/70 mb-3">
                     <a
                       href={`mailto:${studioProfile.email}`}
@@ -678,7 +678,7 @@ export function SiteFooter({
                     >
                       FOLLOW US
                     </p>
-              
+
                     <div className="flex items-center gap-2">
                       {socialLinks.map((s) => (
                         <a
@@ -726,12 +726,22 @@ export function SiteFooter({
             cycleKey={buildCycle}
           >
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-[10px] text-white/40 tracking-wider">
-              <p>© 2026 ARCHEON DESIGN STUDIO</p>
+              <p>
+                © 2026 ARCHEON DESIGN STUDIO   |{" "}
+                <a
+                  href="https://vigilantforensic.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-[#C5A36D] transition-colors"
+                >
+                  WEBSITE POWERED BY VIGILANT FORENSICS RESEARCH AND ANALYTICS
+                </a>
+              </p>
               <p className="text-center sm:text-left text-[9.5px]">
                 All Rights Reserved. Architecture · Interior · Landscape · Turnkey.
               </p>
-              
-              
+
+
             </div>
           </AgenticRow>
         </div>
