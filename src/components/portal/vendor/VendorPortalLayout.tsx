@@ -14,7 +14,6 @@ import {
   Building2,
   FileText,
   IndianRupee,
-  ReceiptText,
   MessageSquareWarning,
   Bell,
   LifeBuoy,
@@ -32,7 +31,6 @@ export type VendorPortalSection =
   | "projects"
   | "invoices"
   | "cash-settlements"
-  | "payments"
   | "notifications"
   | "support"
   | "settings";
@@ -89,12 +87,6 @@ const NAVIGATION: NavigationItem[] = [
     label: "Cash Settlements",
     description: "Settlement acknowledgements",
     icon: IndianRupee,
-  },
-  {
-    id: "payments",
-    label: "Payment History",
-    description: "Verified payments",
-    icon: ReceiptText,
   },
   {
     id: "notifications",
