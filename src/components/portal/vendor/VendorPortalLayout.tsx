@@ -196,11 +196,21 @@ export function VendorPortalLayout({
           <div className={`border-b border-[#343434] transition-all duration-300 ${sidebarHovered ? "px-7 py-7" : "flex justify-center px-2 py-6"}`}>
             {sidebarHovered ? (
               <>
-                <img
-                  src="/brand-assets/logo-transparent.png"
-                  alt="ArcheOn Design Studio"
-                  className="h-11 w-auto object-contain drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]"
-                />
+                <div className="flex items-center gap-3">
+                  <img
+                    src="/brand-assets/logo-transparent.png"
+                    alt="ArcheOn Design Studio"
+                    className="h-10 w-auto shrink-0 object-contain drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]"
+                  />
+                  <div className="min-w-0">
+                    <p className="text-base font-semibold tracking-wide text-[#F2F0EB]">
+                      ArcheOn Studio
+                    </p>
+                    <p className="mt-0.5 font-mono text-[8.5px] uppercase tracking-[0.2em] text-[#A58A64]">
+                      Architecture &amp; Design
+                    </p>
+                  </div>
+                </div>
 
                 <div className="mt-6 border-t border-[#343434] pt-4">
                   <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-[#777777]">
