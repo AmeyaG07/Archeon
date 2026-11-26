@@ -82,9 +82,9 @@ export default function LoginPage() {
           {/* Brand Logo */}
           <div className="mb-6 flex justify-center">
             <img
-              src="/brand-assets/logo-light.jpg"
+              src="/brand-assets/logo-light.png"
               alt="ArcheOn Design Studio"
-              className="w-60 sm:w-72 h-auto object-contain mix-blend-multiply"
+              className="w-56 sm:w-64 h-auto object-contain"
             />
           </div>
 
