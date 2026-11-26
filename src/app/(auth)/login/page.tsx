@@ -79,23 +79,13 @@ export default function LoginPage() {
       {/* Main Glassmorphism Login Card with Colourful Border */}
       <div className="max-w-md w-full mx-auto my-8 sm:my-12 rounded-2xl p-[2px] bg-gradient-to-br from-[#F59E0B] via-[#06B6D4] to-[#8B5CF6] shadow-sm">
         <main className="rounded-[14px] bg-gradient-to-br from-[#FFFFFF] via-[#FBF6EC] to-[#F4EBD9] p-5 sm:p-10">
-          {/* Brand */}
+          {/* Brand Logo */}
           <div className="mb-8 flex justify-center">
-            <div className="inline-flex items-center gap-3 rounded-2xl border border-[#B68A4A]/40 bg-[#111111] px-5 py-2.5 shadow-sm">
-              <img
-                src="/brand-assets/logo-transparent.png"
-                alt="ArcheOn Design Studio"
-                className="h-10 w-auto shrink-0 object-contain drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]"
-              />
-              <div className="text-left">
-                <p className="text-base font-semibold tracking-wide text-[#F5EFE6]">
-                  ArcheOn Studio
-                </p>
-                <p className="font-mono text-[8.5px] uppercase tracking-[0.2em] text-[#D4AF6A]">
-                  Architecture &amp; Design
-                </p>
-              </div>
-            </div>
+            <img
+              src="/brand-assets/logo-transparent.png"
+              alt="ArcheOn Design Studio"
+              className="h-16 sm:h-20 w-auto object-contain"
+            />
           </div>
 
           {/* Portal Tabs */}
