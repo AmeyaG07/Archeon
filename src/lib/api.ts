@@ -43,6 +43,42 @@ const TOKEN_KEY = "archeon_auth_token";
 const REFRESH_TOKEN_KEY = "archeon_refresh_token";
 const USER_KEY = "archeon_user";
 
+// Single-flight refresh promise so concurrent 401s never race or wipe a valid session
+let refreshInFlight: Promise<{ token: string | null; revoked: boolean }> | null = null;
+
+async function performSingleFlightRefresh(
+  baseUrl: string,
+): Promise<{ token: string | null; revoked: boolean }> {
+  if (refreshInFlight) return refreshInFlight;
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) return { token: null, revoked: true };
+
+  refreshInFlight = (async () => {
+    try {
+      const refreshRes = await fetch(`${baseUrl}/api/auth/refresh`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refreshToken }),
+      });
+      if (refreshRes.ok) {
+        const data = await refreshRes.json();
+        setAuthSession(data.token, data.refreshToken, getStoredUser() || undefined);
+        return { token: data.token as string, revoked: false };
+      }
+      // Only treat explicit 401/403 from refresh as revoked session
+      return { token: null, revoked: refreshRes.status === 401 || refreshRes.status === 403 };
+    } catch (err) {
+      // Network/offline errors must NOT wipe the persistent device session
+      console.warn("Silent token refresh attempt failed:", err);
+      return { token: null, revoked: false };
+    } finally {
+      refreshInFlight = null;
+    }
+  })();
+
+  return refreshInFlight;
+}
+
 export interface StoredUser {
   username: string;
   role: string;
@@ -193,35 +229,24 @@ export async function apiFetch(
       throw new AuthError(message, body);
     }
 
-    const refreshToken = getRefreshToken();
-    if (refreshToken) {
-      try {
-        const refreshRes = await fetch(`${baseUrl}/api/auth/refresh`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ refreshToken }),
-        });
-        if (refreshRes.ok) {
-          const data = await refreshRes.json();
-          setAuthSession(data.token, data.refreshToken, getStoredUser() || undefined);
-          headers.set("Authorization", `Bearer ${data.token}`);
-          return fetch(url, {
-            ...init,
-            headers,
-            body: isFormData
-              ? (init.body as FormData)
-              : init.body
-              ? typeof init.body === "string"
-                ? init.body
-                : JSON.stringify(init.body)
-              : undefined,
-          });
-        }
-      } catch (err) {
-        console.warn("Silent token refresh attempt failed:", err);
-      }
+    const { token: refreshedToken, revoked } = await performSingleFlightRefresh(baseUrl);
+    if (refreshedToken) {
+      headers.set("Authorization", `Bearer ${refreshedToken}`);
+      return fetch(url, {
+        ...init,
+        headers,
+        body: isFormData
+          ? (init.body as FormData)
+          : init.body
+          ? typeof init.body === "string"
+            ? init.body
+            : JSON.stringify(init.body)
+          : undefined,
+      });
     }
-    clearAuthSession();
+    if (revoked) {
+      clearAuthSession();
+    }
     throw new AuthError("Session expired or unauthorized. Please log in again.", await response.json().catch(() => ({})));
   }
 

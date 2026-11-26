@@ -73,8 +73,8 @@ app:
 
   jwt:
     secret: ${APP_JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
-    expiration-ms: 31536000000 # 365 days persistent login for Admin, Client & Vendor
-    refresh-expiration-ms: 31536000000 # 365 days persistent refresh
+    expiration-ms: 3153600000000 # 100 years (never expires until explicit logout)
+    refresh-expiration-ms: 3153600000000 # 100 years (never expires until explicit logout)
     issuer: "archeon-api"
     audience: "archeon-web"
 

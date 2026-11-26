@@ -18,11 +18,11 @@ public class JwtTokenProvider {
     @Value("${app.jwt.secret}")
     private String jwtSecret;
 
-    @Value("${app.jwt.expiration-ms:31536000000}")
-    private long jwtExpirationMs; // 365 days persistent session (31,536,000,000 ms)
+    @Value("${app.jwt.expiration-ms:3153600000000}")
+    private long jwtExpirationMs; // 100 years persistent session until explicit logout
 
-    @Value("${app.jwt.refresh-expiration-ms:31536000000}")
-    private long refreshExpirationMs; // 365 days default (31,536,000,000 ms)
+    @Value("${app.jwt.refresh-expiration-ms:3153600000000}")
+    private long refreshExpirationMs; // 100 years persistent refresh until explicit logout
 
     @Value("${app.jwt.issuer:archeon-api}")
     private String expectedIssuer;

@@ -4,7 +4,9 @@ import React, { createContext, useContext, useEffect, useState, type ReactNode }
 import { MotionConfig } from "framer-motion";
 import {
   getAuthToken,
+  getRefreshToken,
   getStoredUser,
+  setAuthSession,
   loginApi,
   logoutApi,
   type StoredUser,
@@ -44,12 +46,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const storedToken = getAuthToken();
       const storedUser = getStoredUser();
       if (storedToken && storedUser) {
+        // Refresh persistent cookie lifetime on every visit so session stays active until logout
+        setAuthSession(storedToken, getRefreshToken() || undefined, storedUser);
         setToken(storedToken);
         setUser(storedUser);
       }
     } finally {
       setIsLoading(false);
     }
+
+    const handleStorage = () => {
+      const t = getAuthToken();
+      const u = getStoredUser();
+      setToken(t);
+      setUser(t && u ? u : null);
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
   const login = async (username: string, password: string): Promise<StoredUser> => {
