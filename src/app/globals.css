@@ -1,4 +1,3 @@
-
 @import "tailwindcss";
 
 /* =========================================
@@ -368,30 +367,40 @@ pre {
    ========================================= */
 
 @keyframes float-slow {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0px) rotate(0deg) scale(1);
   }
+
   50% {
     transform: translateY(-24px) rotate(4deg) scale(1.03);
   }
 }
 
 @keyframes float-reverse {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0px) rotate(0deg) scale(1);
   }
+
   50% {
     transform: translateY(22px) rotate(-5deg) scale(0.97);
   }
 }
 
 @keyframes float-drift {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translate(0px, 0px) rotate(0deg);
   }
+
   33% {
     transform: translate(18px, -20px) rotate(3deg);
   }
+
   66% {
     transform: translate(-14px, 16px) rotate(-3deg);
   }
@@ -401,6 +410,7 @@ pre {
   0% {
     transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
   }
+
   100% {
     transform: rotateX(360deg) rotateY(360deg) rotateZ(360deg);
   }
@@ -438,12 +448,15 @@ pre {
     left: -150px;
     opacity: 0;
   }
+
   8% {
     opacity: 1;
   }
+
   92% {
     opacity: 1;
   }
+
   100% {
     left: 105%;
     opacity: 0;
@@ -459,6 +472,7 @@ pre {
   0% {
     stroke-dashoffset: 0;
   }
+
   100% {
     stroke-dashoffset: -100;
   }
@@ -468,6 +482,7 @@ pre {
   .cad-laser-scanner {
     animation: continuousCadLaserScan 3.5s cubic-bezier(0.4, 0, 0.2, 1) infinite !important;
   }
+
   .moving-golden-border-path {
     animation: svgBorderMove 4s linear infinite !important;
   }
@@ -491,51 +506,14 @@ pre {
 :is(.admin-portal-root, .client-portal-root, .vendor-portal-root) {
   background-color: #F2F0EB;
   background-image:
-    radial-gradient(at 82% 8%, rgba(182, 138, 74, 0.24) 0px, transparent 42%),
-    linear-gradient(
-      180deg,
-      #111111 0%,
-      #1C1A17 22%,
-      #4A443B 48%,
-      #B5ADA0 74%,
-      #F2F0EB 100%
-    );
+    radial-gradient(at 15% 10%, rgba(197, 163, 109, 0.16) 0px, transparent 48%),
+    radial-gradient(at 88% 18%, rgba(214, 206, 192, 0.45) 0px, transparent 45%),
+    radial-gradient(at 72% 85%, rgba(182, 138, 74, 0.12) 0px, transparent 50%);
   background-attachment: fixed;
 }
 
 :is(.admin-portal-root, .client-portal-root, .vendor-portal-root) main {
   background: transparent !important;
-}
-
-/* Top bar & page hero contrast over dark top gradient */
-:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) .portal-main-column > header {
-  background: rgba(17, 17, 17, 0.58) !important;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-color: rgba(255, 255, 255, 0.12) !important;
-  color: #F2F0EB !important;
-}
-
-:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) .portal-main-column > header :is(span, p) {
-  color: rgba(242, 240, 235, 0.85) !important;
-}
-
-:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) main > div > header:not(.bg-white) h1,
-:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) main > div > header:not(.bg-white) h2 {
-  color: #F2F0EB !important;
-}
-
-:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) main > div > header:not(.bg-white) p:not(.text-\[\#A58A64\]):not(.text-\[\#9F7947\]) {
-  color: rgba(242, 240, 235, 0.78) !important;
-}
-
-:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) main > div > header:not(.bg-white) {
-  border-color: rgba(255, 255, 255, 0.16) !important;
-}
-
-:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) main section > div > p.font-mono,
-:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) main section > p.font-mono {
-  color: #E5C896 !important;
 }
 
 :is(.admin-portal-root, .client-portal-root, .vendor-portal-root) .font-serif {
@@ -550,7 +528,7 @@ pre {
   background-color: transparent !important;
 }
 
-:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) .grid.gap-px > * {
+:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) .grid.gap-px>* {
   border: 1px solid rgba(255, 255, 255, 0.78) !important;
   border-radius: 0.875rem !important;
   background: rgba(255, 255, 255, 0.56) !important;
@@ -562,7 +540,7 @@ pre {
   transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
-:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) .grid.gap-px > *:hover {
+:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) .grid.gap-px>*:hover {
   background: rgba(255, 255, 255, 0.76) !important;
   border-color: rgba(182, 138, 74, 0.45) !important;
   box-shadow:
@@ -570,12 +548,10 @@ pre {
     inset 0 1px 0 rgba(255, 255, 255, 0.96);
 }
 
-:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) :is(
-  input:not([type="checkbox"]):not([type="radio"]),
+:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) :is(input:not([type="checkbox"]):not([type="radio"]),
   select,
   textarea,
-  .settings-input
-) {
+  .settings-input) {
   border-radius: 0.625rem !important;
   background: rgba(255, 255, 255, 0.62) !important;
   backdrop-filter: blur(10px);
@@ -583,8 +559,7 @@ pre {
   border-color: rgba(216, 214, 208, 0.85) !important;
 }
 
-:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) :is(
-  .rounded-sm,
+:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) :is(.rounded-sm,
   .rounded-xs,
   .rounded,
   article.border,
@@ -592,8 +567,7 @@ pre {
   div.border.bg-\[\#FAF9F6\],
   div.border.bg-\[\#FAF9F5\],
   div.border.bg-\[\#FAF8F5\],
-  section.border:not(.grid)
-):not(.rounded-full):not(.rounded-2xl):not(.rounded-3xl):not(button):not(a) {
+  section.border:not(.grid)):not(.rounded-full):not(.rounded-2xl):not(.rounded-3xl):not(button):not(a) {
   border-radius: 0.875rem !important;
   background: rgba(255, 255, 255, 0.58) !important;
   backdrop-filter: blur(18px) saturate(160%);
@@ -604,7 +578,7 @@ pre {
     inset 0 1px 0 rgba(255, 255, 255, 0.85);
 }
 
-:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) [role="dialog"] > div {
+:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) [role="dialog"]>div {
   border-radius: 1rem !important;
   background: rgba(255, 255, 255, 0.88) !important;
   backdrop-filter: blur(22px) saturate(165%);
@@ -616,5 +590,3 @@ pre {
 :is(.admin-portal-root, .client-portal-root, .vendor-portal-root) button:not(.rounded-full):not(.border-l-2):not(.border-b-2) {
   border-radius: 0.625rem;
 }
-
-
