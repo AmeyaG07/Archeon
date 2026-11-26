@@ -65,7 +65,21 @@ async function performSingleFlightRefresh(
         setAuthSession(data.token, data.refreshToken, getStoredUser() || undefined);
         return { token: data.token as string, revoked: false };
       }
-      // Only treat explicit 401/403 from refresh as revoked session
+      // Before wiping the persistent device session, verify if the access token itself is still accepted
+      const currentToken = getAuthToken();
+      if (currentToken && (refreshRes.status === 401 || refreshRes.status === 403)) {
+        try {
+          const meRes = await fetch(`${baseUrl}/api/users/me`, {
+            headers: { Authorization: `Bearer ${currentToken}` },
+          });
+          if (meRes.ok) {
+            return { token: currentToken, revoked: false };
+          }
+        } catch {
+          return { token: null, revoked: false };
+        }
+      }
+      // Only treat explicit 401/403 from both refresh & /api/users/me as revoked session
       return { token: null, revoked: refreshRes.status === 401 || refreshRes.status === 403 };
     } catch (err) {
       // Network/offline errors must NOT wipe the persistent device session
