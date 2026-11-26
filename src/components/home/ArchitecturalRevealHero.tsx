@@ -70,13 +70,13 @@ export function ArchitecturalRevealHero({
           playsInline
           preload="auto"
           crossOrigin="anonymous"
-          src="/hero-architectural-video.mp4"
+          src="/archeon_cinematic_homepage.mp4"
           onCanPlay={handleVideoCanPlay}
           onPlaying={handleVideoCanPlay}
           onLoadedData={handleVideoCanPlay}
         >
           <source
-            src="/hero-architectural-video.mp4"
+            src="/archeon_cinematic_homepage.mp4"
             type="video/mp4"
           />
         </video>
