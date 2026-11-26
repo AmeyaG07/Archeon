@@ -62,16 +62,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#F2F0EB] text-[#111111] flex flex-col justify-between p-4 sm:p-12 font-sans selection:bg-[#A58A64] selection:text-white">
-      {/* Ambient Colourful Orbs for Glassmorphism Depth */}
-      <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute -top-24 -left-24 h-96 w-96 rounded-full bg-[#F59E0B]/20 blur-3xl" />
-        <div className="absolute top-1/3 -right-24 h-96 w-96 rounded-full bg-[#06B6D4]/18 blur-3xl" />
-        <div className="absolute -bottom-24 left-1/3 h-96 w-96 rounded-full bg-[#8B5CF6]/18 blur-3xl" />
-      </div>
-
+    <div className="min-h-screen bg-[#F2F0EB] text-[#111111] flex flex-col justify-between p-4 sm:p-12 font-sans selection:bg-[#A58A64] selection:text-white">
       {/* Top Header */}
-      <header className="relative z-10 flex items-center justify-between max-w-4xl w-full mx-auto">
+      <header className="flex items-center justify-between max-w-4xl w-full mx-auto">
         <button
           onClick={() => router.push("/")}
           className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-[#4A4843] hover:text-[#111111] transition-colors py-2"
@@ -83,11 +76,9 @@ export default function LoginPage() {
         </span>
       </header>
 
-      {/* Main Glassmorphism Login Card with Colourful Gradient Border */}
-      <div className="relative z-10 max-w-md w-full mx-auto my-8 sm:my-12">
-        <div className="pointer-events-none absolute -inset-1 rounded-2xl bg-gradient-to-r from-[#F59E0B]/30 via-[#06B6D4]/30 to-[#8B5CF6]/30 blur-xl opacity-80" />
-        <div className="relative rounded-2xl p-[2px] bg-gradient-to-br from-[#F59E0B] via-[#06B6D4] to-[#8B5CF6] shadow-[0_24px_60px_-15px_rgba(17,17,17,0.18)]">
-          <main className="rounded-[14px] bg-white/75 backdrop-blur-2xl p-5 sm:p-10">
+      {/* Main Glassmorphism Login Card with Colourful Border */}
+      <div className="max-w-md w-full mx-auto my-8 sm:my-12 rounded-2xl p-[2px] bg-gradient-to-br from-[#F59E0B] via-[#06B6D4] to-[#8B5CF6] shadow-sm">
+        <main className="rounded-[14px] bg-white/85 backdrop-blur-xl p-5 sm:p-10">
             {/* Brand */}
             <div className="text-center mb-8">
               <p className="text-3xl font-semibold tracking-wide text-[#111111]">ARCHEON</p>
@@ -221,12 +212,11 @@ export default function LoginPage() {
             <p className="mt-8 text-center text-[10px] text-[#52504B] leading-relaxed">
               Access is monitored and audited. All communications are encrypted with TLS 1.3 and authenticated via signed JWT tokens.
             </p>
-          </main>
-        </div>
+        </main>
       </div>
 
       {/* Footer */}
-      <footer className="relative z-10 text-center text-[11px] text-[#4A4843] font-mono uppercase tracking-wider">
+      <footer className="text-center text-[11px] text-[#4A4843] font-mono uppercase tracking-wider">
         © 2026 ArcheOn Design Studio · Ar. Mandar Bhalekar
       </footer>
     </div>
