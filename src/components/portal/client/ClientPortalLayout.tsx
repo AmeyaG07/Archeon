@@ -312,7 +312,11 @@ export function ClientPortalLayout({
         )}
 
         {/* Main Workspace */}
-        <div className="portal-main-column min-w-0 flex-1 lg:ml-[76px]">
+        <div
+          className={`portal-main-column min-w-0 flex-1 transition-all duration-300 ease-out ${
+            sidebarHovered ? "lg:ml-[270px]" : "lg:ml-[76px]"
+          }`}
+        >
 
           {/* Desktop Topbar */}
           <header className="hidden h-[76px] items-center justify-between border-b border-[#D8D6D0] bg-[#F2F0EB] px-8 md:px-10 lg:flex">
