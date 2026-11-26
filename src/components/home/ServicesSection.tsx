@@ -45,7 +45,7 @@ export function ServicesSection({
         {/* The Autoplaying, Looping Background Video */}
         <video
           ref={videoRef}
-          src="/expertise-architectural-video.mp4"
+          src="/homepage_enhanced_full_hd.mp4"
           autoPlay
           loop
           muted={isMuted}
