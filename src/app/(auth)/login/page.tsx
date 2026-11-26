@@ -76,9 +76,8 @@ export default function LoginPage() {
         </span>
       </header>
 
-      {/* Main Glassmorphism Login Card with Colourful Border */}
-      <div className="max-w-md w-full mx-auto my-8 sm:my-12 rounded-2xl p-[2px] bg-gradient-to-br from-[#F59E0B] via-[#06B6D4] to-[#8B5CF6] shadow-sm">
-        <main className="rounded-[14px] bg-gradient-to-br from-[#FFFFFF] via-[#FBF6EC] to-[#F4EBD9] p-5 sm:p-10">
+      {/* Main Light Golden / White Login Card with Box Shadow */}
+      <main className="max-w-md w-full mx-auto my-8 sm:my-12 rounded-2xl border border-[#E5DEC9] bg-gradient-to-br from-[#FFFFFF] via-[#FBF6EC] to-[#F4EBD9] p-5 sm:p-10 shadow-[0_24px_60px_-15px_rgba(17,17,17,0.18),0_8px_24px_-6px_rgba(182,138,74,0.16)]">
           {/* Brand Logo */}
           <div className="mb-6 flex justify-center">
             <img
@@ -211,7 +210,6 @@ export default function LoginPage() {
             Access is monitored and audited. All communications are encrypted with TLS 1.3 and authenticated via signed JWT tokens.
           </p>
         </main>
-      </div>
 
       {/* Footer */}
       <footer className="text-center text-[11px] text-[#4A4843] font-mono uppercase tracking-wider">
