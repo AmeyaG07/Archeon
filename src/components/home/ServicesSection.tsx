@@ -51,12 +51,12 @@ export function ServicesSection({
           muted={isMuted}
           playsInline
           preload="auto"
-          className="h-full w-full object-cover object-center opacity-75 sm:opacity-85 filter contrast-[1.08] brightness-[1.06]"
+          className="h-full w-full object-cover object-center opacity-65 sm:opacity-75 filter contrast-[1.1] brightness-[1.05]"
         />
 
         {/* Balanced Vignette Scrim for Text Legibility & Crisp Video */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0A0A0A]/65 via-[#0A0A0A]/22 to-[#0A0A0A]/65" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0A0A0A]/52 via-transparent to-[#0A0A0A]/52" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0A0A0A]/75 via-[#0A0A0A]/30 to-[#0A0A0A]/75" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0A0A0A]/65 via-transparent to-[#0A0A0A]/65" />
 
         {/* Ambient Warm Terracotta & Amber Light Halo */}
         <div
