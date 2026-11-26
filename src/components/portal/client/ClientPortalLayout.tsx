@@ -24,8 +24,6 @@ import {
 export type ClientPortalSection =
   | "dashboard"
   | "projects"
-  | "drawings"
-  | "documents"
   | "invoices"
   | "support"
   | "settings";
@@ -72,12 +70,6 @@ const NAVIGATION: NavigationItem[] = [
     label: "Invoices & Bills",
     description: "Review bills & payment records",
     icon: CreditCard,
-  },
-  {
-    id: "documents",
-    label: "Document Library",
-    description: "Your project documents",
-    icon: FileText,
   },
   {
     id: "support",

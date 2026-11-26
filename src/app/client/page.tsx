@@ -99,7 +99,6 @@ export default function ClientPortalPage() {
       onOpenProject={() => router.push("/client/projects")}
       onOpenInvoices={() => router.push("/client/invoices")}
       onOpenInvoice={() => router.push("/client/invoices")}
-      onOpenDocuments={() => router.push("/client/documents")}
     />
   );
 }

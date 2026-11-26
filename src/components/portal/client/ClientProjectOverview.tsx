@@ -199,9 +199,9 @@ export function ClientProjectOverview({
 
     const sortedBills = Array.isArray(billsData)
       ? [...billsData].sort(
-          (a: any, b: any) =>
-            new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
-        )
+        (a: any, b: any) =>
+          new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+      )
       : [];
 
     setWorkspaces((prev) => ({
@@ -404,11 +404,10 @@ export function ClientProjectOverview({
                     <div className="mt-7 space-y-7 border-t border-[#D8D6D0] pt-7">
                       {actionMessage && (
                         <div
-                          className={`flex items-center gap-2 rounded-sm border p-3.5 font-mono text-xs ${
-                            actionMessage.type === "ok"
-                              ? "border-emerald-200 bg-emerald-50 text-emerald-800"
-                              : "border-red-200 bg-red-50 text-red-800"
-                          }`}
+                          className={`flex items-center gap-2 rounded-sm border p-3.5 font-mono text-xs ${actionMessage.type === "ok"
+                            ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                            : "border-red-200 bg-red-50 text-red-800"
+                            }`}
                         >
                           {actionMessage.type === "ok" ? <CheckCircle2 size={14} /> : <XCircle size={14} />}
                           <span>{actionMessage.text}</span>
@@ -464,6 +463,7 @@ export function ClientProjectOverview({
                             </div>
                           </div>
 
+                          {/* 2. Project Bills & Invoices */}
                           {/* 2. Progress Gallery & Architect Notes */}
                           <div className="rounded-sm border border-[#E4E1DA] bg-[#FAF9F6] p-5 space-y-4">
                             <div className="flex items-center justify-between border-b border-[#E4E1DA] pb-3">
@@ -556,11 +556,10 @@ export function ClientProjectOverview({
                                             </span>
                                           )}
                                           <span
-                                            className={`rounded-xs px-2 py-0.5 font-mono text-[9px] uppercase font-semibold ${
-                                              isPaid
-                                                ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                                                : "bg-amber-50 text-amber-800 border border-amber-200"
-                                            }`}
+                                            className={`rounded-xs px-2 py-0.5 font-mono text-[9px] uppercase font-semibold ${isPaid
+                                              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                              : "bg-amber-50 text-amber-800 border border-amber-200"
+                                              }`}
                                           >
                                             {b.status.replace(/_/g, " ")}
                                           </span>
@@ -587,6 +586,61 @@ export function ClientProjectOverview({
                                     </div>
                                   );
                                 })}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* 3. Progress Gallery & Architect Notes */}
+                          <div className="rounded-sm border border-[#E4E1DA] bg-[#FAF9F6] p-5 space-y-4">
+                            <div className="flex items-center justify-between border-b border-[#E4E1DA] pb-3">
+                              <div className="flex items-center gap-2">
+                                <Camera size={16} className="text-[#A58A64]" />
+                                <h3 className="font-serif text-lg text-[#171717]">Site Progress Photos &amp; Architect Notes</h3>
+                              </div>
+                              <span className="font-mono text-[10px] text-[#77736C]">
+                                {architectUpdates.length} Updates
+                              </span>
+                            </div>
+
+                            {architectUpdates.length === 0 ? (
+                              <p className="py-4 text-center font-mono text-xs text-[#77736C]">
+                                No site progress updates uploaded yet.
+                              </p>
+                            ) : (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {architectUpdates.map((u) => (
+                                  <div
+                                    key={u.id}
+                                    className="rounded-sm border border-[#D8D6D0] bg-white overflow-hidden"
+                                  >
+                                    {u.photoUrl ? (
+                                      <button
+                                        type="button"
+                                        onClick={() => setPreviewPhotoUrl(u.photoUrl || null)}
+                                        className="block relative h-40 w-full bg-stone-100 overflow-hidden cursor-pointer"
+                                      >
+                                        <img
+                                          src={u.photoUrl}
+                                          alt="Site update"
+                                          className="h-full w-full object-cover hover:scale-105 transition-transform duration-300"
+                                        />
+                                      </button>
+                                    ) : (
+                                      <div className="h-24 flex items-center justify-center bg-[#F2F0EB] text-[#77736C]">
+                                        <ImageIcon size={20} />
+                                      </div>
+                                    )}
+                                    <div className="p-3.5 space-y-1.5">
+                                      <div className="flex justify-between font-mono text-[9px] text-[#77736C]">
+                                        <span>{formatDateReadable(u.createdAt)}</span>
+                                        <span className="text-[#9F7947]">{u.authorName}</span>
+                                      </div>
+                                      <p className="text-xs text-[#33312D] leading-relaxed">
+                                        {u.note || "Site progress note logged."}
+                                      </p>
+                                    </div>
+                                  </div>
+                                ))}
                               </div>
                             )}
                           </div>

@@ -54,7 +54,6 @@ interface ClientPortalDashboardProps {
   onOpenProject: (project: DashboardProject) => void;
   onOpenInvoices: () => void;
   onOpenInvoice: (invoice: DashboardInvoice) => void;
-  onOpenDocuments: () => void;
   onRetry?: () => void;
 }
 
@@ -90,7 +89,6 @@ export function ClientPortalDashboard({
   onOpenProject,
   onOpenInvoices,
   onOpenInvoice,
-  onOpenDocuments,
   onRetry,
 }: ClientPortalDashboardProps) {
   const outstandingTotal = data.invoices.reduce(
