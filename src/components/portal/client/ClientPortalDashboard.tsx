@@ -252,11 +252,9 @@ export function ClientPortalDashboard({
           )}
         </section>
 
-        {/* Invoices and Quick Access */}
-        <section className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-12">
-
-          {/* Invoices */}
-          <div className="lg:col-span-7">
+        {/* Invoices */}
+        <section className="mt-10">
+          <div>
             <div className="flex items-end justify-between gap-4 border-b border-[#D8D6D0] pb-5">
               <div>
                 <p className="font-mono text-[10px] uppercase tracking-widest text-[#A58A64]">
@@ -317,49 +315,6 @@ export function ClientPortalDashboard({
               </div>
             )}
           </div>
-
-          {/* Quick Access */}
-          <aside className="lg:col-span-4 lg:col-start-9">
-            <p className="font-mono text-[10px] uppercase tracking-widest text-[#A58A64]">
-              Your Workspace
-            </p>
-
-            <h2 className="mt-3 font-serif text-3xl text-[#171717]">
-              Quick Access
-            </h2>
-
-            <div className="mt-7 space-y-3">
-              <QuickAccessItem
-                icon={<FolderOpen size={19} />}
-                title="Document Library"
-                description="Approved drawings and shared files"
-                onClick={onOpenDocuments}
-              />
-
-              <QuickAccessItem
-                icon={<FileText size={19} />}
-                title="Invoices & Payments"
-                description="Review your financial records"
-                onClick={onOpenInvoices}
-              />
-            </div>
-
-            <div className="mt-7 border border-[#D8D6D0] bg-white p-6">
-              <CheckCircle2
-                size={21}
-                className="text-[#A58A64]"
-              />
-
-              <h3 className="mt-4 font-serif text-xl text-[#171717]">
-                Your Client Workspace
-              </h3>
-
-              <p className="mt-3 text-xs leading-6 text-[#77736C]">
-                Access project information and documents that
-                have been authorised for your account.
-              </p>
-            </div>
-          </aside>
         </section>
 
         {/* Recent Activity */}
