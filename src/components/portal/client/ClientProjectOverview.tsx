@@ -330,7 +330,7 @@ export function ClientProjectOverview({
 
         {/* Project Cards with Inline Details Expansion */}
         {!loading && !error && projects.length > 0 && (
-          <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <div className="mt-8 grid grid-cols-1 gap-6">
             {projects.map((project) => {
               const isExpanded = expandedProjectId === project.id;
               const ws = workspaces[project.id];
@@ -341,7 +341,7 @@ export function ClientProjectOverview({
                   key={project.id}
                   className={`border bg-white p-6 sm:p-8 transition-all duration-300 ${
                     isExpanded
-                      ? "lg:col-span-2 border-[#A58A64] shadow-md"
+                      ? "border-[#A58A64] shadow-md"
                       : "border-[#D8D6D0] hover:border-[#B68A4A]"
                   }`}
                 >
