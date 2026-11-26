@@ -280,7 +280,13 @@ export function VendorPortalDashboard({
           {data.projects.length === 0 ? (
             <EmptyState message="Project assignments will appear here when the studio assigns work to your account." />
           ) : (
-            <div className="grid grid-cols-1 gap-5 py-7 md:grid-cols-2">
+            <div
+              className={`grid gap-5 py-7 ${
+                data.projects.length === 1
+                  ? "grid-cols-1"
+                  : "grid-cols-1 md:grid-cols-2"
+              }`}
+            >
               {data.projects.slice(0, 4).map((project) => (
                 <button
                   key={project.id}
