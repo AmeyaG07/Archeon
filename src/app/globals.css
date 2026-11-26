@@ -508,7 +508,7 @@ pre {
 }
 
 /* Top bar & page hero contrast over dark top gradient */
-:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) .lg\:ml-\[270px\] > header {
+:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) .portal-main-column > header {
   background: rgba(17, 17, 17, 0.58) !important;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -516,7 +516,7 @@ pre {
   color: #F2F0EB !important;
 }
 
-:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) .lg\:ml-\[270px\] > header :is(span, p) {
+:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) .portal-main-column > header :is(span, p) {
   color: rgba(242, 240, 235, 0.85) !important;
 }
 
@@ -553,20 +553,20 @@ pre {
 :is(.admin-portal-root, .client-portal-root, .vendor-portal-root) .grid.gap-px > * {
   border: 1px solid rgba(255, 255, 255, 0.78) !important;
   border-radius: 0.875rem !important;
-  background: rgba(255, 255, 255, 0.76) !important;
-  backdrop-filter: blur(20px) saturate(170%);
-  -webkit-backdrop-filter: blur(20px) saturate(170%);
+  background: rgba(255, 255, 255, 0.56) !important;
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
   box-shadow:
-    0 10px 32px rgba(0, 0, 0, 0.14),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    0 8px 30px rgba(17, 17, 17, 0.045),
+    inset 0 1px 0 rgba(255, 255, 255, 0.88);
   transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 :is(.admin-portal-root, .client-portal-root, .vendor-portal-root) .grid.gap-px > *:hover {
-  background: rgba(255, 255, 255, 0.88) !important;
-  border-color: rgba(197, 163, 109, 0.65) !important;
+  background: rgba(255, 255, 255, 0.76) !important;
+  border-color: rgba(182, 138, 74, 0.45) !important;
   box-shadow:
-    0 14px 36px rgba(0, 0, 0, 0.18),
+    0 12px 34px rgba(17, 17, 17, 0.075),
     inset 0 1px 0 rgba(255, 255, 255, 0.96);
 }
 
@@ -595,13 +595,13 @@ pre {
   section.border:not(.grid)
 ):not(.rounded-full):not(.rounded-2xl):not(.rounded-3xl):not(button):not(a) {
   border-radius: 0.875rem !important;
-  background: rgba(255, 255, 255, 0.78) !important;
-  backdrop-filter: blur(20px) saturate(170%);
-  -webkit-backdrop-filter: blur(20px) saturate(170%);
-  border-color: rgba(255, 255, 255, 0.8) !important;
+  background: rgba(255, 255, 255, 0.58) !important;
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  border-color: rgba(255, 255, 255, 0.75) !important;
   box-shadow:
-    0 10px 32px rgba(0, 0, 0, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    0 8px 30px rgba(17, 17, 17, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
 }
 
 :is(.admin-portal-root, .client-portal-root, .vendor-portal-root) [role="dialog"] > div {

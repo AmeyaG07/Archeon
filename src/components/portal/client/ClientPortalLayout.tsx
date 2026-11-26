@@ -98,6 +98,7 @@ export function ClientPortalLayout({
 }: ClientPortalLayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [logoutConfirmation, setLogoutConfirmation] = useState(false);
+  const [sidebarHovered, setSidebarHovered] = useState(false);
 
   // Lock body scroll when mobile drawer is open
   useEffect(() => {
@@ -168,37 +169,56 @@ export function ClientPortalLayout({
 
       <div className="flex min-h-screen">
 
-        {/* Desktop Sidebar */}
-        <aside className="fixed inset-y-0 left-0 z-30 hidden w-[270px] flex-col bg-[#111111] text-white lg:flex">
+        {/* Desktop Sidebar (collapses to logo/icon rail when cursor is on dashboard; expands on hover) */}
+        <aside
+          onMouseEnter={() => setSidebarHovered(true)}
+          onMouseLeave={() => setSidebarHovered(false)}
+          className={`fixed inset-y-0 left-0 z-40 hidden flex-col bg-[#111111] text-white transition-all duration-300 ease-out lg:flex ${
+            sidebarHovered ? "w-[270px] shadow-[12px_0_40px_rgba(0,0,0,0.35)]" : "w-[76px]"
+          }`}
+        >
 
           {/* Brand */}
-          <div className="border-b border-[#343434] px-8 py-8">
-            <p className="font-serif text-2xl tracking-wide text-[#F2F0EB]">
-              ARCHEON
-            </p>
+          <div className={`border-b border-[#343434] transition-all duration-300 ${sidebarHovered ? "px-8 py-8" : "flex justify-center px-3 py-6"}`}>
+            {sidebarHovered ? (
+              <>
+                <p className="font-serif text-2xl tracking-wide text-[#F2F0EB]">
+                  ARCHEON
+                </p>
 
-            <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.22em] text-[#A58A64]">
-              Design Studio
-            </p>
+                <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.22em] text-[#A58A64]">
+                  Design Studio
+                </p>
 
-            <div className="mt-7 border-t border-[#343434] pt-5">
-              <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-[#777777]">
-                Private Workspace
-              </p>
-              <p className="mt-2 text-xs text-[#D8D6D0]">
-                Client Portal
-              </p>
-            </div>
+                <div className="mt-7 border-t border-[#343434] pt-5">
+                  <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-[#777777]">
+                    Private Workspace
+                  </p>
+                  <p className="mt-2 text-xs text-[#D8D6D0]">
+                    Client Portal
+                  </p>
+                </div>
+              </>
+            ) : (
+              <div
+                title="ArcheOn Design Studio — Client Portal"
+                className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#A58A64]/45 bg-[#1B1916] font-serif text-lg font-semibold text-[#C5A36D]"
+              >
+                A
+              </div>
+            )}
           </div>
 
           {/* Navigation */}
           <nav
             aria-label="Client navigation"
-            className="flex-1 overflow-y-auto px-4 py-6"
+            className={`flex-1 overflow-y-auto py-6 ${sidebarHovered ? "px-4" : "px-2.5"}`}
           >
-            <p className="mb-4 px-4 font-mono text-[9px] uppercase tracking-[0.18em] text-[#777777]">
-              My Workspace
-            </p>
+            {sidebarHovered && (
+              <p className="mb-4 px-4 font-mono text-[9px] uppercase tracking-[0.18em] text-[#777777]">
+                My Workspace
+              </p>
+            )}
 
             <div className="space-y-1">
               {NAVIGATION.map((item) => (
@@ -206,6 +226,7 @@ export function ClientPortalLayout({
                   key={item.id}
                   item={item}
                   active={activeSection === item.id}
+                  collapsed={!sidebarHovered}
                   onClick={() => handleNavigate(item.id)}
                 />
               ))}
@@ -213,29 +234,37 @@ export function ClientPortalLayout({
           </nav>
 
           {/* Client Identity */}
-          <div className="border-t border-[#343434] p-5">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center border border-[#A58A64]/40 bg-[#25221D] text-[#C5A36D]">
+          <div className={`border-t border-[#343434] ${sidebarHovered ? "p-5" : "flex flex-col items-center gap-3 p-3"}`}>
+            <div className={`flex items-center ${sidebarHovered ? "gap-3" : "justify-center"}`}>
+              <div
+                title={clientName}
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#A58A64]/40 bg-[#25221D] text-[#C5A36D]"
+              >
                 <UserRound size={18} />
               </div>
 
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-xs font-medium text-white">
-                  {clientName}
-                </p>
-                <p className="mt-1 truncate font-mono text-[9px] text-[#99958D]">
-                  {clientReference}
-                </p>
-              </div>
+              {sidebarHovered && (
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xs font-medium text-white">
+                    {clientName}
+                  </p>
+                  <p className="mt-1 truncate font-mono text-[9px] text-[#99958D]">
+                    {clientReference}
+                  </p>
+                </div>
+              )}
             </div>
 
             <button
               type="button"
               onClick={() => setLogoutConfirmation(true)}
-              className="mt-3.5 inline-flex items-center gap-2 rounded border border-[#2c2c2c] bg-[#161616] px-2.5 py-1.5 font-mono text-[9px] uppercase tracking-wider text-[#8e8a83] transition-colors hover:border-[#A58A64]/60 hover:bg-[#1f1e1a] hover:text-white"
+              title="Sign Out"
+              className={`inline-flex items-center justify-center gap-2 rounded-lg border border-[#2c2c2c] bg-[#161616] font-mono text-[9px] uppercase tracking-wider text-[#8e8a83] transition-colors hover:border-[#A58A64]/60 hover:bg-[#1f1e1a] hover:text-white ${
+                sidebarHovered ? "mt-3.5 px-2.5 py-1.5" : "h-9 w-9"
+              }`}
             >
-              <LogOut size={12} />
-              Sign Out
+              <LogOut size={13} />
+              {sidebarHovered && "Sign Out"}
             </button>
           </div>
         </aside>
@@ -283,7 +312,7 @@ export function ClientPortalLayout({
         )}
 
         {/* Main Workspace */}
-        <div className="min-w-0 flex-1 lg:ml-[270px]">
+        <div className="portal-main-column min-w-0 flex-1 lg:ml-[76px]">
 
           {/* Desktop Topbar */}
           <header className="hidden h-[76px] items-center justify-between border-b border-[#D8D6D0] bg-[#F2F0EB] px-8 md:px-10 lg:flex">
@@ -422,11 +451,13 @@ function NavigationButton({
   active,
   onClick,
   mobile = false,
+  collapsed = false,
 }: {
   item: NavigationItem;
   active: boolean;
   onClick: () => void;
   mobile?: boolean;
+  collapsed?: boolean;
 }) {
   const Icon = item.icon;
 
@@ -434,8 +465,11 @@ function NavigationButton({
     <button
       type="button"
       onClick={onClick}
+      title={collapsed ? item.label : undefined}
       aria-current={active ? "page" : undefined}
-      className={`group flex w-full items-center gap-4 px-4 py-3.5 text-left transition-colors ${
+      className={`group flex w-full items-center text-left transition-colors ${
+        collapsed ? "justify-center px-0 py-3.5" : "gap-4 px-4 py-3.5"
+      } ${
         mobile ? "min-h-[58px]" : "min-h-[52px]"
       } ${
         active
@@ -444,7 +478,7 @@ function NavigationButton({
       }`}
     >
       <Icon
-        size={17}
+        size={collapsed ? 18 : 17}
         strokeWidth={1.6}
         className={
           active
@@ -453,23 +487,27 @@ function NavigationButton({
         }
       />
 
-      <span className="min-w-0 flex-1">
-        <span className="block text-[11px] tracking-wide">
-          {item.label}
-        </span>
+      {!collapsed && (
+        <>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[11px] tracking-wide">
+              {item.label}
+            </span>
 
-        {!mobile && (
-          <span className="mt-1 block text-[9px] text-[#777777]">
-            {item.description}
+            {!mobile && (
+              <span className="mt-1 block text-[9px] text-[#777777]">
+                {item.description}
+              </span>
+            )}
           </span>
-        )}
-      </span>
 
-      {active && (
-        <ChevronRight
-          size={14}
-          className="shrink-0 text-[#A58A64]"
-        />
+          {active && (
+            <ChevronRight
+              size={14}
+              className="shrink-0 text-[#A58A64]"
+            />
+          )}
+        </>
       )}
     </button>
   );
