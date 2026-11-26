@@ -564,7 +564,7 @@ export function VillaLumiereBackground({
     // --- ENTITIES & GROUPS ---
     const villaMasterGroup = new THREE.Group();
     villaMasterGroup.position.x = shiftX;
-    villaMasterGroup.scale.setScalar(0.68);
+    villaMasterGroup.scale.setScalar(0.84);
     scene.add(villaMasterGroup);
 
     villaMasterGroup.add(new THREE.LineSegments(gridGeo, gridMat));
