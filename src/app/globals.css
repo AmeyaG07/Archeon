@@ -483,4 +483,55 @@ pre {
   -webkit-overflow-scrolling: touch;
 }
 
+/* =========================================
+   PORTAL UI: INTER TYPOGRAPHY & CURVED TILES/FIELDS
+   Applies uniformly across Admin, Client & Vendor portals
+   ========================================= */
+
+:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) .font-serif {
+  font-family: var(--font-inter), "Inter", Arial, sans-serif !important;
+  letter-spacing: -0.02em;
+  font-weight: 500;
+}
+
+:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) .grid.gap-px {
+  gap: 1rem !important;
+  border: none !important;
+  background-color: transparent !important;
+}
+
+:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) .grid.gap-px > * {
+  border: 1px solid #D8D6D0 !important;
+  border-radius: 0.75rem !important;
+  background-color: #FFFFFF;
+}
+
+:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) :is(
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea,
+  .settings-input
+) {
+  border-radius: 0.625rem !important;
+}
+
+:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) :is(
+  .rounded-sm,
+  .rounded-xs,
+  .rounded,
+  article.border,
+  div.border.bg-white,
+  div.border.bg-\[\#FAF9F6\],
+  div.border.bg-\[\#FAF9F5\],
+  div.border.bg-\[\#FAF8F5\],
+  section.border:not(.grid),
+  [role="dialog"] > div
+):not(.rounded-full):not(.rounded-2xl):not(.rounded-3xl) {
+  border-radius: 0.75rem !important;
+}
+
+:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) button:not(.rounded-full):not(.border-l-2):not(.border-b-2) {
+  border-radius: 0.625rem;
+}
+
 
