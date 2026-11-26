@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Lock, Eye, EyeOff, ArrowRight, ShieldAlert, ArrowLeft } from "lucide-react";
+import { Lock, Eye, EyeOff, ArrowRight, ShieldAlert } from "lucide-react";
 import { useAuth } from "@/providers/AuthProvider";
 
 type LoginTarget = "admin" | "client" | "vendor";
@@ -62,22 +62,21 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F2F0EB] text-[#111111] flex flex-col justify-between p-4 sm:px-10 sm:py-5 font-sans selection:bg-[#A58A64] selection:text-white">
+    <div className="min-h-screen bg-[#F2F0EB] text-[#111111] flex flex-col justify-between p-4 sm:px-8 sm:py-5 font-sans selection:bg-[#A58A64] selection:text-white">
       {/* Top Header */}
-      <header className="flex items-center justify-between max-w-4xl w-full mx-auto">
+      <header className="flex items-center justify-start max-w-6xl w-full mx-auto">
         <button
+          type="button"
           onClick={() => router.push("/")}
-          className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-[#4A4843] hover:text-[#111111] transition-colors py-1"
+          className="inline-flex items-center gap-2 rounded-lg border border-[#E5DEC9]/80 bg-white px-4 py-2 text-xs font-medium text-[#111111] shadow-[0_4px_14px_rgba(0,0,0,0.08)] hover:bg-[#FAF8F5] transition-all"
         >
-          <ArrowLeft className="w-3.5 h-3.5" /> Return to Website
+          Return To Website
         </button>
-        <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#9F7947] font-medium">
-          RESTRICTED PORTAL ACCESS
-        </span>
       </header>
 
-      {/* Main Light Golden / White Login Card with Box Shadow */}
-      <main className="max-w-md w-full mx-auto my-3 sm:my-4 rounded-2xl border border-[#E5DEC9] bg-gradient-to-br from-[#FFFFFF] via-[#FBF6EC] to-[#F4EBD9] p-5 sm:px-8 sm:py-6 shadow-[0_24px_60px_-15px_rgba(17,17,17,0.18),0_8px_24px_-6px_rgba(182,138,74,0.16)]">
+      {/* Main Light Golden / White Login Card with Colourful Border & Box Shadow */}
+      <div className="max-w-[390px] w-full mx-auto my-3 rounded-2xl p-[1.5px] bg-gradient-to-br from-[#F59E0B] via-[#06B6D4] to-[#8B5CF6] shadow-[0_24px_60px_-15px_rgba(17,17,17,0.18)]">
+        <main className="rounded-[14.5px] bg-gradient-to-br from-[#FFFFFF] via-[#FBF6EC] to-[#F4EBD9] p-5 sm:p-7">
           {/* Brand Logo */}
           <div className="mb-4 flex justify-center">
             <img
@@ -210,6 +209,7 @@ export default function LoginPage() {
             Access is monitored and audited. All communications are encrypted with TLS 1.3 and authenticated via signed JWT tokens.
           </p>
         </main>
+      </div>
 
       {/* Footer */}
       <footer className="text-center text-[11px] text-[#4A4843] font-mono uppercase tracking-wider">
