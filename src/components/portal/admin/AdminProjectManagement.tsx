@@ -58,6 +58,11 @@ interface AdminProjectManagementProps {
   onRefresh?: () => void;
   onOpenProject: (projectId: string) => void;
   onCreateProject?: () => void;
+  onAdjustMilestone?: (
+    projectId: string,
+    nextCompleted: number,
+    total: number
+  ) => Promise<void>;
 }
 
 type StatusFilter = "All" | AdminProjectStatus;
@@ -121,6 +126,7 @@ export function AdminProjectManagement({
   onRefresh,
   onOpenProject,
   onCreateProject,
+  onAdjustMilestone,
 }: AdminProjectManagementProps) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] =
@@ -431,6 +437,7 @@ export function AdminProjectManagement({
                 key={project.id}
                 project={project}
                 onOpen={() => onOpenProject(project.id)}
+                onAdjustMilestone={onAdjustMilestone}
               />
             ))}
           </div>
@@ -473,10 +480,17 @@ function SummaryCard({
 function ProjectRow({
   project,
   onOpen,
+  onAdjustMilestone,
 }: {
   project: AdminProjectRecord;
   onOpen: () => void;
+  onAdjustMilestone?: (
+    projectId: string,
+    nextCompleted: number,
+    total: number
+  ) => Promise<void>;
 }) {
+  const [savingMilestone, setSavingMilestone] = useState(false);
   const milestoneData = project.milestoneSummary;
 
   const validMilestones =
@@ -581,28 +595,114 @@ function ProjectRow({
       {/* Milestone Progress */}
       {progress !== null && milestoneData && (
         <div className="mt-7 border-t border-[#E5E2DC] pt-5">
-          <div className="flex justify-between gap-4">
+          <div className="flex items-center justify-between gap-4">
             <p className="font-mono text-[9px] uppercase tracking-widest text-[#99958D]">
-              Milestone Completion
+              Milestone Completion ({Math.round(progress)}%)
             </p>
 
-            <p className="font-mono text-[10px] text-[#77736C]">
-              {milestoneData.completed} / {milestoneData.total}
-            </p>
+            <div className="flex items-center gap-2">
+              {onAdjustMilestone && (
+                <button
+                  type="button"
+                  disabled={savingMilestone || milestoneData.completed <= 0}
+                  onClick={async () => {
+                    if (milestoneData.completed <= 0) return;
+                    setSavingMilestone(true);
+                    try {
+                      await onAdjustMilestone(
+                        project.id,
+                        milestoneData.completed - 1,
+                        milestoneData.total
+                      );
+                    } finally {
+                      setSavingMilestone(false);
+                    }
+                  }}
+                  aria-label="Decrease milestone completion"
+                  className="flex h-6 w-6 items-center justify-center border border-[#D8D6D0] bg-white text-xs font-semibold text-[#171717] transition-colors hover:border-[#A58A64] disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  −
+                </button>
+              )}
+
+              <p className="min-w-[38px] text-center font-mono text-[10px] font-semibold text-[#171717]">
+                {milestoneData.completed} / {milestoneData.total}
+              </p>
+
+              {onAdjustMilestone && (
+                <button
+                  type="button"
+                  disabled={
+                    savingMilestone ||
+                    milestoneData.completed >= milestoneData.total
+                  }
+                  onClick={async () => {
+                    if (milestoneData.completed >= milestoneData.total) return;
+                    setSavingMilestone(true);
+                    try {
+                      await onAdjustMilestone(
+                        project.id,
+                        milestoneData.completed + 1,
+                        milestoneData.total
+                      );
+                    } finally {
+                      setSavingMilestone(false);
+                    }
+                  }}
+                  aria-label="Increase milestone completion"
+                  className="flex h-6 w-6 items-center justify-center border border-[#D8D6D0] bg-white text-xs font-semibold text-[#171717] transition-colors hover:border-[#A58A64] disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  +
+                </button>
+              )}
+            </div>
           </div>
 
           <div
-            className="mt-3 h-1.5 overflow-hidden bg-[#ECEAE5]"
+            className="mt-3 grid gap-1.5"
+            style={{
+              gridTemplateColumns: `repeat(${milestoneData.total}, minmax(0, 1fr))`,
+            }}
             role="progressbar"
             aria-valuenow={Math.round(progress)}
             aria-valuemin={0}
             aria-valuemax={100}
             aria-label="Project milestone completion"
           >
-            <div
-              className="h-full bg-[#A58A64]"
-              style={{ width: `${progress}%` }}
-            />
+            {Array.from({ length: milestoneData.total }).map((_, idx) => {
+              const step = idx + 1;
+              const filled = step <= milestoneData.completed;
+              return (
+                <button
+                  key={step}
+                  type="button"
+                  disabled={!onAdjustMilestone || savingMilestone}
+                  onClick={async () => {
+                    if (!onAdjustMilestone) return;
+                    const next =
+                      step === milestoneData.completed ? step - 1 : step;
+                    setSavingMilestone(true);
+                    try {
+                      await onAdjustMilestone(
+                        project.id,
+                        next,
+                        milestoneData.total
+                      );
+                    } finally {
+                      setSavingMilestone(false);
+                    }
+                  }}
+                  title={`Set milestone completion to ${step} / ${milestoneData.total}`}
+                  className={`h-2 transition-colors ${
+                    filled ? "bg-[#A58A64]" : "bg-[#ECEAE5]"
+                  } ${
+                    onAdjustMilestone
+                      ? "cursor-pointer hover:opacity-80"
+                      : "cursor-default"
+                  }`}
+                />
+              );
+            })}
           </div>
         </div>
       )}

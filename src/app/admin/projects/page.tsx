@@ -60,7 +60,7 @@ export default function AdminProjectsPage() {
           lastVisitDate: p.lastVisitDate,
           lastUpdated: new Date().toISOString(),
           milestoneSummary: {
-            completed: p.progressPercentage ? Math.round((p.progressPercentage / 100) * 5) : 1,
+            completed: Math.round(((p.progressPercentage ?? 0) / 100) * 5),
             total: 5,
           },
         }));
@@ -83,6 +83,30 @@ export default function AdminProjectsPage() {
     }
   }, [authLoading, isAuthenticated, loadProjects, router]);
 
+  const handleAdjustMilestone = async (
+    projectId: string,
+    nextCompleted: number,
+    total: number
+  ) => {
+    const clamped = Math.max(0, Math.min(total, nextCompleted));
+    const progressPercentage = Math.round((clamped / total) * 100);
+    await apiFetch(`/api/operational-projects/${projectId}`, {
+      method: "PUT",
+      body: JSON.stringify({ progressPercentage }),
+    });
+    setProjects((prev) =>
+      prev.map((proj) =>
+        proj.id === projectId
+          ? {
+              ...proj,
+              milestoneSummary: { completed: clamped, total },
+              lastUpdated: new Date().toISOString(),
+            }
+          : proj
+      )
+    );
+  };
+
   return (
     <div className="p-4 sm:p-8 space-y-6">
       <AdminProjectManagement
@@ -92,6 +116,7 @@ export default function AdminProjectsPage() {
         onRefresh={loadProjects}
         onCreateProject={() => setShowCreateModal(true)}
         onOpenProject={(projId) => router.push(`/admin/projects/${projId}`)}
+        onAdjustMilestone={handleAdjustMilestone}
       />
 
       <AdminCreateProjectModal
