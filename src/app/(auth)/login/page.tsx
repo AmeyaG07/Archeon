@@ -62,159 +62,171 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F2F0EB] text-[#111111] flex flex-col justify-between p-4 sm:p-12 font-sans selection:bg-[#A58A64] selection:text-white">
+    <div className="relative min-h-screen overflow-hidden bg-[#F2F0EB] text-[#111111] flex flex-col justify-between p-4 sm:p-12 font-sans selection:bg-[#A58A64] selection:text-white">
+      {/* Ambient Colourful Orbs for Glassmorphism Depth */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="absolute -top-24 -left-24 h-96 w-96 rounded-full bg-[#F59E0B]/20 blur-3xl" />
+        <div className="absolute top-1/3 -right-24 h-96 w-96 rounded-full bg-[#06B6D4]/18 blur-3xl" />
+        <div className="absolute -bottom-24 left-1/3 h-96 w-96 rounded-full bg-[#8B5CF6]/18 blur-3xl" />
+      </div>
+
       {/* Top Header */}
-      <header className="flex items-center justify-between max-w-4xl w-full mx-auto">
+      <header className="relative z-10 flex items-center justify-between max-w-4xl w-full mx-auto">
         <button
           onClick={() => router.push("/")}
-          className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-[#77736C] hover:text-[#111111] transition-colors py-2"
+          className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-[#4A4843] hover:text-[#111111] transition-colors py-2"
         >
           <ArrowLeft className="w-3.5 h-3.5" /> Return to Website
         </button>
-        <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#A58A64]">
+        <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#9F7947] font-medium">
           RESTRICTED PORTAL ACCESS
         </span>
       </header>
 
-      {/* Main Login Card */}
-      <main className="max-w-md w-full mx-auto my-8 sm:my-12 bg-white border border-[#D8D6D0] p-5 sm:p-10 shadow-sm">
-        {/* Brand */}
-        <div className="text-center mb-8">
-          <p className="font-serif text-3xl tracking-wide text-[#111111]">ARCHEON</p>
-          <p className="font-mono text-[9px] uppercase tracking-[0.25em] text-[#A58A64] mt-1">
-            Design Studio
-          </p>
-        </div>
-
-        {/* Portal Tabs */}
-        <div className="grid grid-cols-3 border border-[#D8D6D0] mb-8 p-1 bg-[#F9F8F6] text-center">
-          <button
-            type="button"
-            onClick={() => setActiveTab("admin")}
-            className={`py-2.5 text-[10px] sm:text-[11px] font-mono uppercase tracking-wider transition-all ${
-              activeTab === "admin"
-                ? "bg-white text-[#111111] shadow-sm font-semibold border border-[#D8D6D0]"
-                : "text-[#77736C] hover:text-[#111111]"
-            }`}
-          >
-            Studio
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab("client")}
-            className={`py-2.5 text-[10px] sm:text-[11px] font-mono uppercase tracking-wider transition-all ${
-              activeTab === "client"
-                ? "bg-white text-[#111111] shadow-sm font-semibold border border-[#D8D6D0]"
-                : "text-[#77736C] hover:text-[#111111]"
-            }`}
-          >
-            Client
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab("vendor")}
-            className={`py-2.5 text-[10px] sm:text-[11px] font-mono uppercase tracking-wider transition-all ${
-              activeTab === "vendor"
-                ? "bg-white text-[#111111] shadow-sm font-semibold border border-[#D8D6D0]"
-                : "text-[#77736C] hover:text-[#111111]"
-            }`}
-          >
-            Vendor
-          </button>
-        </div>
-
-        {/* Description */}
-        <div className="mb-6">
-          <h1 className="font-serif text-xl text-[#111111]">
-            {activeTab === "admin"
-              ? "Studio Administration"
-              : activeTab === "client"
-              ? "Client Project Portal"
-              : "Vendor & Trade Portal"}
-          </h1>
-          <p className="text-xs text-[#77736C] mt-1 leading-relaxed">
-            {activeTab === "admin"
-              ? "Authorised studio principals, architects, and project managers."
-              : activeTab === "client"
-              ? "Sign in to review project drawings, milestones, and GST invoices."
-              : "Sign in to submit tax invoices, review payments, and cash settlements."}
-          </p>
-        </div>
-
-        {/* Error Alert */}
-        {error && (
-          <div className="mb-6 p-3 bg-red-50 border border-red-200 text-red-700 text-xs flex items-start gap-2.5">
-            <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
-            <div className="leading-relaxed">{error}</div>
-          </div>
-        )}
-
-        {/* Login Form */}
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label className="block text-[10px] font-mono uppercase tracking-widest text-[#77736C] mb-2">
-              {activeTab === "admin" ? "Studio Username" : "Registered Username or Email"}
-            </label>
-            <input
-              type="text"
-              required
-              autoComplete="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder={activeTab === "admin" ? "e.g. admin" : "e.g. client@example.com"}
-              className="w-full px-3.5 py-2.5 border border-[#D8D6D0] bg-transparent text-sm text-[#111111] focus:outline-none focus:border-[#A58A64] transition-colors"
-            />
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="block text-[10px] font-mono uppercase tracking-widest text-[#77736C]">
-                Password
-              </label>
+      {/* Main Glassmorphism Login Card with Colourful Gradient Border */}
+      <div className="relative z-10 max-w-md w-full mx-auto my-8 sm:my-12">
+        <div className="pointer-events-none absolute -inset-1 rounded-2xl bg-gradient-to-r from-[#F59E0B]/30 via-[#06B6D4]/30 to-[#8B5CF6]/30 blur-xl opacity-80" />
+        <div className="relative rounded-2xl p-[2px] bg-gradient-to-br from-[#F59E0B] via-[#06B6D4] to-[#8B5CF6] shadow-[0_24px_60px_-15px_rgba(17,17,17,0.18)]">
+          <main className="rounded-[14px] bg-white/75 backdrop-blur-2xl p-5 sm:p-10">
+            {/* Brand */}
+            <div className="text-center mb-8">
+              <p className="text-3xl font-semibold tracking-wide text-[#111111]">ARCHEON</p>
+              <p className="font-mono text-[9px] uppercase tracking-[0.25em] text-[#9F7947] mt-1">
+                Design Studio
+              </p>
             </div>
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                required
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter password"
-                className="w-full px-3.5 py-2.5 border border-[#D8D6D0] bg-transparent text-sm text-[#111111] focus:outline-none focus:border-[#A58A64] pr-10 transition-colors"
-              />
+
+            {/* Portal Tabs */}
+            <div className="grid grid-cols-3 rounded-xl border border-white/80 mb-8 p-1 bg-white/50 backdrop-blur-md text-center">
               <button
                 type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#77736C] hover:text-[#111111]"
+                onClick={() => setActiveTab("admin")}
+                className={`py-2.5 rounded-lg text-[10px] sm:text-[11px] font-mono uppercase tracking-wider transition-all ${
+                  activeTab === "admin"
+                    ? "bg-white/95 text-[#111111] shadow-sm font-semibold border border-[#D8D6D0]/70"
+                    : "text-[#52504B] hover:text-[#111111]"
+                }`}
               >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                Studio
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("client")}
+                className={`py-2.5 rounded-lg text-[10px] sm:text-[11px] font-mono uppercase tracking-wider transition-all ${
+                  activeTab === "client"
+                    ? "bg-white/95 text-[#111111] shadow-sm font-semibold border border-[#D8D6D0]/70"
+                    : "text-[#52504B] hover:text-[#111111]"
+                }`}
+              >
+                Client
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("vendor")}
+                className={`py-2.5 rounded-lg text-[10px] sm:text-[11px] font-mono uppercase tracking-wider transition-all ${
+                  activeTab === "vendor"
+                    ? "bg-white/95 text-[#111111] shadow-sm font-semibold border border-[#D8D6D0]/70"
+                    : "text-[#52504B] hover:text-[#111111]"
+                }`}
+              >
+                Vendor
               </button>
             </div>
-          </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full mt-2 inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#111111] hover:bg-[#25221D] text-white text-xs font-mono uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? (
-              <span>Authenticating...</span>
-            ) : (
-              <>
-                <Lock className="w-3.5 h-3.5" /> Sign In to Workspace <ArrowRight className="w-3.5 h-3.5" />
-              </>
+            {/* Description */}
+            <div className="mb-6">
+              <h1 className="text-xl font-semibold text-[#111111]">
+                {activeTab === "admin"
+                  ? "Studio Administration"
+                  : activeTab === "client"
+                  ? "Client Project Portal"
+                  : "Vendor & Trade Portal"}
+              </h1>
+              <p className="text-xs text-[#4A4843] mt-1 leading-relaxed">
+                {activeTab === "admin"
+                  ? "Authorised studio principals, architects, and project managers."
+                  : activeTab === "client"
+                  ? "Sign in to review project drawings, milestones, and GST invoices."
+                  : "Sign in to submit tax invoices, review payments, and cash settlements."}
+              </p>
+            </div>
+
+            {/* Error Alert */}
+            {error && (
+              <div className="mb-6 p-3 rounded-xl bg-red-50/90 border border-red-200 text-red-700 text-xs flex items-start gap-2.5">
+                <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
+                <div className="leading-relaxed">{error}</div>
+              </div>
             )}
-          </button>
-        </form>
 
-        {/* Security Note */}
-        <p className="mt-8 text-center text-[10px] text-[#99958D] leading-relaxed">
-          Access is monitored and audited. All communications are encrypted with TLS 1.3 and authenticated via signed JWT tokens.
-        </p>
-      </main>
+            {/* Login Form */}
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div>
+                <label className="block text-[10px] font-mono font-medium uppercase tracking-widest text-[#111111] mb-2">
+                  {activeTab === "admin" ? "Studio Username" : "Registered Username or Email"}
+                </label>
+                <input
+                  type="text"
+                  required
+                  autoComplete="username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder={activeTab === "admin" ? "e.g. admin" : "e.g. client@example.com"}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#D8D6D0]/90 bg-white/80 backdrop-blur-md text-sm text-[#111111] placeholder:text-[#52504B] focus:outline-none focus:border-[#B68A4A] transition-colors"
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-[10px] font-mono font-medium uppercase tracking-widest text-[#111111]">
+                    Password
+                  </label>
+                </div>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    required
+                    autoComplete="current-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter password"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#D8D6D0]/90 bg-white/80 backdrop-blur-md text-sm text-[#111111] placeholder:text-[#52504B] focus:outline-none focus:border-[#B68A4A] pr-10 transition-colors"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#4A4843] hover:text-[#111111]"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full mt-2 rounded-xl inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#111111] hover:bg-[#25221D] text-white text-xs font-mono uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+              >
+                {loading ? (
+                  <span>Authenticating...</span>
+                ) : (
+                  <>
+                    <Lock className="w-3.5 h-3.5" /> Sign In to Workspace <ArrowRight className="w-3.5 h-3.5" />
+                  </>
+                )}
+              </button>
+            </form>
+
+            {/* Security Note */}
+            <p className="mt-8 text-center text-[10px] text-[#52504B] leading-relaxed">
+              Access is monitored and audited. All communications are encrypted with TLS 1.3 and authenticated via signed JWT tokens.
+            </p>
+          </main>
+        </div>
+      </div>
 
       {/* Footer */}
-      <footer className="text-center text-[11px] text-[#77736C] font-mono uppercase tracking-wider">
+      <footer className="relative z-10 text-center text-[11px] text-[#4A4843] font-mono uppercase tracking-wider">
         © 2026 ArcheOn Design Studio · Ar. Mandar Bhalekar
       </footer>
     </div>
