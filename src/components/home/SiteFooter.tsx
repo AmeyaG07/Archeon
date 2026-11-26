@@ -680,7 +680,18 @@ export function SiteFooter({
                     </p>
 
                     <div className="flex items-center gap-2">
-                      {socialLinks.map((s) => (
+                      {socialLinks
+                        .map((s) => {
+                          const href =
+                            s.name === "Instagram"
+                              ? studioProfile.instagramUrl
+                              : s.name === "Facebook"
+                              ? studioProfile.facebookUrl
+                              : studioProfile.linkedinUrl;
+                          return { ...s, href: href?.trim() || "" };
+                        })
+                        .filter((s) => s.href.length > 0)
+                        .map((s) => (
                         <a
                           key={s.name}
                           href={s.href}

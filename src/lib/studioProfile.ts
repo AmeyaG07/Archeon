@@ -11,6 +11,9 @@ export interface StudioProfileData {
   phone: string;
   email: string;
   socialHandle: string;
+  instagramUrl: string;
+  facebookUrl: string;
+  linkedinUrl: string;
   offices: StudioOffice[];
 }
 
@@ -30,6 +33,9 @@ export const DEFAULT_STUDIO_PROFILE: StudioProfileData = {
   phone: "+91 9834653481",
   email: "dsarcheon@gmail.com",
   socialHandle: "@mbs_archeon_ds",
+  instagramUrl: "https://instagram.com/dsarcheon",
+  facebookUrl: "https://facebook.com/dsarcheon",
+  linkedinUrl: "https://linkedin.com/company/archeon-design-studio",
   offices: DEFAULT_STUDIO_OFFICES,
 };
 
@@ -67,6 +73,18 @@ export async function fetchPublicStudioProfile(): Promise<StudioProfileData> {
       phone: data.phone || DEFAULT_STUDIO_PROFILE.phone,
       email: data.email || DEFAULT_STUDIO_PROFILE.email,
       socialHandle: data.socialHandle || DEFAULT_STUDIO_PROFILE.socialHandle,
+      instagramUrl:
+        typeof data.instagramUrl === "string"
+          ? data.instagramUrl
+          : DEFAULT_STUDIO_PROFILE.instagramUrl,
+      facebookUrl:
+        typeof data.facebookUrl === "string"
+          ? data.facebookUrl
+          : DEFAULT_STUDIO_PROFILE.facebookUrl,
+      linkedinUrl:
+        typeof data.linkedinUrl === "string"
+          ? data.linkedinUrl
+          : DEFAULT_STUDIO_PROFILE.linkedinUrl,
       offices: parseOfficesJson(data.officesJson),
     };
   } catch {

@@ -15,19 +15,31 @@ public class StudioProfileController {
             "\"address\":\"1st Floor, Krishna-Kunj, 90, Dharampeth Layout, opposite Aaji Aajoba Park, Deendayal Nagar, Nagpur, Maharashtra 440022\"," +
             "\"mapsUrl\":\"https://maps.app.goo.gl/wLidaC62gQLccoNY8\",\"isPrimary\":true}]";
 
+    private static final String DEFAULT_INSTAGRAM_URL = "https://instagram.com/dsarcheon";
+    private static final String DEFAULT_FACEBOOK_URL = "https://facebook.com/dsarcheon";
+    private static final String DEFAULT_LINKEDIN_URL = "https://linkedin.com/company/archeon-design-studio";
+
     @Autowired
     private StudioProfileRepository studioProfileRepository;
 
     @GetMapping
     public ResponseEntity<StudioProfileEntity> getStudioProfile() {
         return studioProfileRepository.findAll().stream().findFirst()
-                .map(ResponseEntity::ok)
+                .map(entity -> {
+                    if (entity.getInstagramUrl() == null) entity.setInstagramUrl(DEFAULT_INSTAGRAM_URL);
+                    if (entity.getFacebookUrl() == null) entity.setFacebookUrl(DEFAULT_FACEBOOK_URL);
+                    if (entity.getLinkedinUrl() == null) entity.setLinkedinUrl(DEFAULT_LINKEDIN_URL);
+                    return ResponseEntity.ok(entity);
+                })
                 .orElseGet(() -> ResponseEntity.ok(
                         StudioProfileEntity.builder()
                                 .principalName("Ar. Mandar Bhalekar")
                                 .phone("+91 9834653481")
                                 .email("dsarcheon@gmail.com")
                                 .socialHandle("@mbs_archeon_ds")
+                                .instagramUrl(DEFAULT_INSTAGRAM_URL)
+                                .facebookUrl(DEFAULT_FACEBOOK_URL)
+                                .linkedinUrl(DEFAULT_LINKEDIN_URL)
                                 .officesJson(DEFAULT_OFFICES_JSON)
                                 .build()
                 ));
@@ -40,6 +52,9 @@ public class StudioProfileController {
             if (updated.getPhone() != null) existing.setPhone(updated.getPhone());
             if (updated.getEmail() != null) existing.setEmail(updated.getEmail());
             if (updated.getSocialHandle() != null) existing.setSocialHandle(updated.getSocialHandle());
+            if (updated.getInstagramUrl() != null) existing.setInstagramUrl(updated.getInstagramUrl());
+            if (updated.getFacebookUrl() != null) existing.setFacebookUrl(updated.getFacebookUrl());
+            if (updated.getLinkedinUrl() != null) existing.setLinkedinUrl(updated.getLinkedinUrl());
             if (updated.getOfficesJson() != null) existing.setOfficesJson(updated.getOfficesJson());
             return studioProfileRepository.save(existing);
         }).orElseGet(() -> studioProfileRepository.save(StudioProfileEntity.builder()
@@ -47,6 +62,9 @@ public class StudioProfileController {
                 .phone(updated.getPhone() != null ? updated.getPhone() : "+91 9834653481")
                 .email(updated.getEmail() != null ? updated.getEmail() : "dsarcheon@gmail.com")
                 .socialHandle(updated.getSocialHandle() != null ? updated.getSocialHandle() : "@mbs_archeon_ds")
+                .instagramUrl(updated.getInstagramUrl() != null ? updated.getInstagramUrl() : DEFAULT_INSTAGRAM_URL)
+                .facebookUrl(updated.getFacebookUrl() != null ? updated.getFacebookUrl() : DEFAULT_FACEBOOK_URL)
+                .linkedinUrl(updated.getLinkedinUrl() != null ? updated.getLinkedinUrl() : DEFAULT_LINKEDIN_URL)
                 .officesJson(updated.getOfficesJson() != null ? updated.getOfficesJson() : DEFAULT_OFFICES_JSON)
                 .build()));
         return ResponseEntity.ok(saved);

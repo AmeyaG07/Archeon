@@ -24,6 +24,12 @@ public class StudioProfileEntity {
 
     private String socialHandle;
 
+    private String instagramUrl;
+
+    private String facebookUrl;
+
+    private String linkedinUrl;
+
     @Column(columnDefinition = "TEXT")
     private String officesJson;
 }

@@ -116,6 +116,9 @@ export function AdminWebsiteProjectList() {
   const [studioPhone, setStudioPhone] = useState("+91 9834653481");
   const [studioEmail, setStudioEmail] = useState("dsarcheon@gmail.com");
   const [studioHandle, setStudioHandle] = useState("@mbs_archeon_ds");
+  const [studioInstagramUrl, setStudioInstagramUrl] = useState("https://instagram.com/dsarcheon");
+  const [studioFacebookUrl, setStudioFacebookUrl] = useState("https://facebook.com/dsarcheon");
+  const [studioLinkedinUrl, setStudioLinkedinUrl] = useState("https://linkedin.com/company/archeon-design-studio");
   const [studioPrincipal, setStudioPrincipal] = useState("Ar. Mandar Bhalekar");
   const [studioOffices, setStudioOffices] = useState<StudioOffice[]>(DEFAULT_STUDIO_OFFICES);
   const [savingContacts, setSavingContacts] = useState(false);
@@ -163,6 +166,9 @@ export function AdminWebsiteProjectList() {
         if (data.phone) setStudioPhone(data.phone);
         if (data.email) setStudioEmail(data.email);
         if (data.socialHandle) setStudioHandle(data.socialHandle);
+        if (typeof data.instagramUrl === "string") setStudioInstagramUrl(data.instagramUrl);
+        if (typeof data.facebookUrl === "string") setStudioFacebookUrl(data.facebookUrl);
+        if (typeof data.linkedinUrl === "string") setStudioLinkedinUrl(data.linkedinUrl);
         setStudioOffices(parseOfficesJson(data.officesJson));
       }
     } catch {}
@@ -387,6 +393,9 @@ export function AdminWebsiteProjectList() {
           phone: studioPhone.trim(),
           email: studioEmail.trim(),
           socialHandle: studioHandle.trim(),
+          instagramUrl: studioInstagramUrl.trim(),
+          facebookUrl: studioFacebookUrl.trim(),
+          linkedinUrl: studioLinkedinUrl.trim(),
           officesJson: JSON.stringify(cleanedOffices),
         },
       });
@@ -863,6 +872,56 @@ export function AdminWebsiteProjectList() {
                   onChange={(e) => setStudioHandle(e.target.value)}
                   className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:bg-white focus:outline-none"
                 />
+              </div>
+            </div>
+
+            {/* FOOTER FOLLOW US SOCIAL LINKS */}
+            <div className="space-y-3 pt-2 border-t border-[#EFECE6]">
+              <div>
+                <h3 className="font-mono text-[10px] uppercase tracking-wider text-[#171717] font-semibold">
+                  Follow Us — Footer Social Links
+                </h3>
+                <p className="text-[11px] text-[#77736C]">
+                  Manage the Instagram, Facebook, and LinkedIn links shown in the website footer. Leave a field blank to hide that icon.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
+                    Instagram URL
+                  </label>
+                  <input
+                    type="url"
+                    value={studioInstagramUrl}
+                    onChange={(e) => setStudioInstagramUrl(e.target.value)}
+                    placeholder="https://instagram.com/..."
+                    className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:bg-white focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
+                    Facebook URL
+                  </label>
+                  <input
+                    type="url"
+                    value={studioFacebookUrl}
+                    onChange={(e) => setStudioFacebookUrl(e.target.value)}
+                    placeholder="https://facebook.com/..."
+                    className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:bg-white focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
+                    LinkedIn URL
+                  </label>
+                  <input
+                    type="url"
+                    value={studioLinkedinUrl}
+                    onChange={(e) => setStudioLinkedinUrl(e.target.value)}
+                    placeholder="https://linkedin.com/..."
+                    className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:bg-white focus:outline-none"
+                  />
+                </div>
               </div>
             </div>
 
