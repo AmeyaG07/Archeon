@@ -38,6 +38,23 @@ interface ProjectDetail {
   startDate?: string;
   expectedCompletionDate?: string;
   lastVisitDate?: string;
+  progressPercentage?: number;
+  phases?: Array<{
+    id: string;
+    name: string;
+    description?: string;
+    status: string;
+    sequenceOrder?: number;
+  }>;
+  milestones?: Array<{
+    id: string;
+    phaseId?: string;
+    phaseName?: string;
+    title: string;
+    description?: string;
+    dueDate?: string;
+    status: string;
+  }>;
 }
 
 interface SiteUpdate {
@@ -98,6 +115,15 @@ export default function AdminProjectDetailPage() {
   const [photoUrl, setPhotoUrl] = useState("");
   const [showPhotoForm, setShowPhotoForm] = useState(false);
   const [isAssignVendorModalOpen, setIsAssignVendorModalOpen] = useState(false);
+
+  // Phases & Milestones form states
+  const [showPhaseForm, setShowPhaseForm] = useState(false);
+  const [phaseName, setPhaseName] = useState("");
+  const [phaseDescription, setPhaseDescription] = useState("");
+  const [showMilestoneForm, setShowMilestoneForm] = useState(false);
+  const [milestoneTitle, setMilestoneTitle] = useState("");
+  const [milestonePhaseId, setMilestonePhaseId] = useState("");
+  const [milestoneDueDate, setMilestoneDueDate] = useState(getLocalTodayIso);
 
   const loadData = useCallback(async () => {
     if (!projectId) return;
@@ -190,6 +216,117 @@ export default function AdminProjectDetailPage() {
     await submitSiteVisitDate(getLocalTodayIso());
   };
 
+  // Update project status (PLANNING, IN_PROGRESS, ON_HOLD, COMPLETED)
+  const handleStatusChange = async (nextStatus: string) => {
+    if (!nextStatus || !projectId) return;
+    setActionLoading(true);
+    try {
+      await apiFetch(`/api/operational-projects/${projectId}/status`, {
+        method: "PATCH",
+        body: JSON.stringify({ status: nextStatus }),
+      });
+      setMessage(`Project status updated to ${nextStatus.replace("_", " ")}.`);
+      emitToast(`Project status updated to ${nextStatus.replace("_", " ")}.`, "success");
+      await loadData();
+    } catch (err: unknown) {
+      console.error("Failed to update project status:", err);
+      setMessage("Failed to update project status.");
+      emitToast("Could not update project status.", "error");
+    } finally {
+      setActionLoading(false);
+      setTimeout(() => setMessage(null), 4000);
+    }
+  };
+
+  // Create phase
+  const handleAddPhase = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!phaseName.trim()) return;
+    setActionLoading(true);
+    try {
+      await apiFetch(`/api/operational-projects/${projectId}/phases`, {
+        method: "POST",
+        body: JSON.stringify({
+          name: phaseName.trim(),
+          description: phaseDescription.trim() || undefined,
+          sequenceOrder: (project?.phases?.length || 0) + 1,
+        }),
+      });
+      setPhaseName("");
+      setPhaseDescription("");
+      setShowPhaseForm(false);
+      emitToast("Project phase added.", "success");
+      await loadData();
+    } catch (err: unknown) {
+      console.error("Failed to add phase:", err);
+      emitToast("Could not add project phase.", "error");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handlePhaseStatusChange = async (phaseId: string, status: string) => {
+    setActionLoading(true);
+    try {
+      await apiFetch(`/api/operational-projects/${projectId}/phases/${phaseId}/status`, {
+        method: "PATCH",
+        body: JSON.stringify({ status }),
+      });
+      emitToast("Phase status updated.", "success");
+      await loadData();
+    } catch (err: unknown) {
+      console.error("Failed to update phase status:", err);
+      emitToast("Could not update phase status.", "error");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Create milestone
+  const handleAddMilestone = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!milestoneTitle.trim()) return;
+    setActionLoading(true);
+    try {
+      await apiFetch(`/api/operational-projects/${projectId}/milestones`, {
+        method: "POST",
+        body: JSON.stringify({
+          title: milestoneTitle.trim(),
+          phaseId: milestonePhaseId || undefined,
+          dueDate: milestoneDueDate || undefined,
+        }),
+      });
+      setMilestoneTitle("");
+      setMilestonePhaseId("");
+      setMilestoneDueDate(getLocalTodayIso());
+      setShowMilestoneForm(false);
+      emitToast("Project milestone added.", "success");
+      await loadData();
+    } catch (err: unknown) {
+      console.error("Failed to add milestone:", err);
+      emitToast("Could not add project milestone.", "error");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleMilestoneStatusChange = async (milestoneId: string, status: string) => {
+    setActionLoading(true);
+    try {
+      await apiFetch(`/api/operational-projects/${projectId}/milestones/${milestoneId}/status`, {
+        method: "PATCH",
+        body: JSON.stringify({ status }),
+      });
+      emitToast("Milestone status updated.", "success");
+      await loadData();
+    } catch (err: unknown) {
+      console.error("Failed to update milestone status:", err);
+      emitToast("Could not update milestone status.", "error");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   // Upload progress photo for client
   const handleUploadProgressPhoto = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -237,10 +374,24 @@ export default function AdminProjectDetailPage() {
           <ArrowLeft size={14} /> Back to Projects
         </button>
 
-        <div className="flex items-center gap-3">
-          <span className="font-mono text-xs uppercase tracking-wider px-2.5 py-1 rounded-sm bg-[#B68A4A]/10 text-[#B68A4A] border border-[#B68A4A]/30">
-            {project?.status || "IN_PROGRESS"}
-          </span>
+        <div className="flex flex-wrap items-center gap-3">
+          <label className="flex items-center gap-2">
+            <span className="font-mono text-[10px] uppercase tracking-wider text-[#777777]">
+              Status:
+            </span>
+            <select
+              aria-label="Project Status"
+              value={project?.status || "PLANNING"}
+              disabled={actionLoading}
+              onChange={(e) => void handleStatusChange(e.target.value)}
+              className="rounded-sm border border-[#B68A4A]/50 bg-[#FAF9F5] px-2.5 py-1 font-mono text-xs uppercase tracking-wider text-[#171717] focus:border-[#A58A64] focus:outline-none disabled:opacity-50"
+            >
+              <option value="PLANNING">Planning</option>
+              <option value="IN_PROGRESS">In Progress</option>
+              <option value="ON_HOLD">On Hold</option>
+              <option value="COMPLETED">Completed</option>
+            </select>
+          </label>
           <span className="font-mono text-xs text-[#777777]">
             Ref: {project?.projectReference || project?.id?.substring(0, 8)}
           </span>
@@ -441,6 +592,172 @@ export default function AdminProjectDetailPage() {
               </div>
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Phases & Milestones Management */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Card A: Project Phases */}
+        <div className="rounded-sm border border-[#D8D6D0] bg-white p-6 shadow-sm">
+          <div className="flex items-center justify-between border-b border-[#E5E2DC] pb-3">
+            <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-[#B68A4A]">
+              <Clock size={14} /> Project Phases ({project?.phases?.length || 0})
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowPhaseForm(!showPhaseForm)}
+              className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider px-2.5 py-1 bg-[#111111] text-white hover:bg-[#B68A4A] transition-colors rounded-sm"
+            >
+              <Plus size={11} /> {showPhaseForm ? "Cancel" : "Add Phase"}
+            </button>
+          </div>
+
+          {showPhaseForm && (
+            <form onSubmit={handleAddPhase} className="mt-4 border-b border-[#E5E2DC] pb-4 space-y-2.5">
+              <input
+                type="text"
+                placeholder="Phase name (e.g. Structural Shell)"
+                value={phaseName}
+                onChange={(e) => setPhaseName(e.target.value)}
+                className="w-full rounded-sm border border-[#D8D6D0] px-3 py-1.5 text-xs text-[#111111] focus:border-[#B68A4A] focus:outline-none"
+                required
+              />
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Optional scope description"
+                  value={phaseDescription}
+                  onChange={(e) => setPhaseDescription(e.target.value)}
+                  className="flex-1 rounded-sm border border-[#D8D6D0] px-3 py-1.5 text-xs text-[#111111] focus:border-[#B68A4A] focus:outline-none"
+                />
+                <button
+                  type="submit"
+                  disabled={actionLoading || !phaseName.trim()}
+                  className="px-3.5 py-1.5 bg-[#B68A4A] text-white font-mono text-[10px] uppercase tracking-wider hover:bg-[#A3783A] disabled:opacity-50"
+                >
+                  Save Phase
+                </button>
+              </div>
+            </form>
+          )}
+
+          {!project?.phases || project.phases.length === 0 ? (
+            <p className="py-6 text-center font-mono text-xs text-[#777777]">
+              No phases added yet.
+            </p>
+          ) : (
+            <div className="mt-3 divide-y divide-[#E5E2DC]">
+              {project.phases.map((phase) => (
+                <div key={phase.id} className="py-2.5 flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium text-[#111111] truncate">{phase.name}</p>
+                    {phase.description && (
+                      <p className="text-[11px] text-[#777777] truncate">{phase.description}</p>
+                    )}
+                  </div>
+                  <select
+                    aria-label={`Phase ${phase.name} status`}
+                    value={phase.status}
+                    disabled={actionLoading}
+                    onChange={(e) => void handlePhaseStatusChange(phase.id, e.target.value)}
+                    className="rounded-sm border border-[#D8D6D0] bg-[#FAF9F5] px-2 py-1 font-mono text-[10px] uppercase text-[#111111] focus:border-[#B68A4A] focus:outline-none"
+                  >
+                    <option value="PENDING">Pending</option>
+                    <option value="IN_PROGRESS">In Progress</option>
+                    <option value="COMPLETED">Completed</option>
+                  </select>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Card B: Project Milestones */}
+        <div className="rounded-sm border border-[#D8D6D0] bg-white p-6 shadow-sm">
+          <div className="flex items-center justify-between border-b border-[#E5E2DC] pb-3">
+            <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-[#B68A4A]">
+              <CheckCircle2 size={14} /> Project Milestones ({project?.milestones?.length || 0})
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowMilestoneForm(!showMilestoneForm)}
+              className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider px-2.5 py-1 bg-[#111111] text-white hover:bg-[#B68A4A] transition-colors rounded-sm"
+            >
+              <Plus size={11} /> {showMilestoneForm ? "Cancel" : "Add Milestone"}
+            </button>
+          </div>
+
+          {showMilestoneForm && (
+            <form onSubmit={handleAddMilestone} className="mt-4 border-b border-[#E5E2DC] pb-4 space-y-2.5">
+              <input
+                type="text"
+                placeholder="Milestone title (e.g. Plinth Beam Sign-off)"
+                value={milestoneTitle}
+                onChange={(e) => setMilestoneTitle(e.target.value)}
+                className="w-full rounded-sm border border-[#D8D6D0] px-3 py-1.5 text-xs text-[#111111] focus:border-[#B68A4A] focus:outline-none"
+                required
+              />
+              <div className="flex flex-wrap gap-2">
+                {project?.phases && project.phases.length > 0 && (
+                  <select
+                    value={milestonePhaseId}
+                    onChange={(e) => setMilestonePhaseId(e.target.value)}
+                    className="flex-1 rounded-sm border border-[#D8D6D0] bg-white px-2.5 py-1.5 text-xs text-[#111111] focus:border-[#B68A4A] focus:outline-none"
+                  >
+                    <option value="">All / General Phase</option>
+                    {project.phases.map((p) => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                  </select>
+                )}
+                <input
+                  type="date"
+                  value={milestoneDueDate}
+                  onChange={(e) => setMilestoneDueDate(e.target.value)}
+                  required
+                  className="rounded-sm border border-[#D8D6D0] px-2.5 py-1.5 font-mono text-xs text-[#111111] focus:border-[#B68A4A] focus:outline-none"
+                />
+                <button
+                  type="submit"
+                  disabled={actionLoading || !milestoneTitle.trim()}
+                  className="px-3.5 py-1.5 bg-[#B68A4A] text-white font-mono text-[10px] uppercase tracking-wider hover:bg-[#A3783A] disabled:opacity-50"
+                >
+                  Save Milestone
+                </button>
+              </div>
+            </form>
+          )}
+
+          {!project?.milestones || project.milestones.length === 0 ? (
+            <p className="py-6 text-center font-mono text-xs text-[#777777]">
+              No milestones added yet.
+            </p>
+          ) : (
+            <div className="mt-3 divide-y divide-[#E5E2DC]">
+              {project.milestones.map((m) => (
+                <div key={m.id} className="py-2.5 flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium text-[#111111] truncate">{m.title}</p>
+                    <p className="text-[10px] font-mono text-[#777777]">
+                      {m.phaseName ? `${m.phaseName} · ` : ""}
+                      {m.dueDate ? `Due: ${m.dueDate}` : "No due date"}
+                    </p>
+                  </div>
+                  <select
+                    aria-label={`Milestone ${m.title} status`}
+                    value={m.status}
+                    disabled={actionLoading}
+                    onChange={(e) => void handleMilestoneStatusChange(m.id, e.target.value)}
+                    className="rounded-sm border border-[#D8D6D0] bg-[#FAF9F5] px-2 py-1 font-mono text-[10px] uppercase text-[#111111] focus:border-[#B68A4A] focus:outline-none"
+                  >
+                    <option value="PENDING">Pending</option>
+                    <option value="IN_PROGRESS">In Progress</option>
+                    <option value="COMPLETED">Completed</option>
+                  </select>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

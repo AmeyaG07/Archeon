@@ -67,7 +67,6 @@ interface ExpandedProjectDetails {
   phases: Array<{ id: string; name: string; status: string }>;
   milestones: Array<{ id: string; name: string; status: string }>;
   bills: BillPhotoTarget[];
-  updates: Array<{ id: string; authorName: string; note?: string; createdAt: string }>;
 }
 
 function getStatusStyle(status: VendorProjectStatus) {
@@ -105,21 +104,19 @@ export function VendorProjectOverview({
     setDetailsByProject((prev) => ({
       ...prev,
       [project.id]: {
-        ...(prev[project.id] || { phases: [], milestones: [], bills: [], updates: [] }),
+        ...(prev[project.id] || { phases: [], milestones: [], bills: [] }),
         loading: true,
       },
     }));
 
     try {
-      const [projRes, billsRes, updRes] = await Promise.all([
+      const [projRes, billsRes] = await Promise.all([
         apiFetch(`/api/operational-projects/${project.id}`).catch(() => null),
         apiFetch("/api/billing/bills/me").catch(() => null),
-        apiFetch(`/api/site-updates/project/${project.id}`).catch(() => null),
       ]);
 
       const projData = projRes && projRes.ok ? await projRes.json().catch(() => null) : null;
       const allBills = billsRes && billsRes.ok ? await billsRes.json().catch(() => []) : [];
-      const updData = updRes && updRes.ok ? await updRes.json().catch(() => []) : [];
 
       const projKey = project.id.toLowerCase();
       const projRef = (projData?.projectReference || "").toLowerCase();
@@ -151,14 +148,13 @@ export function VendorProjectOverview({
           phases: Array.isArray(projData?.phases) ? projData.phases : [],
           milestones: Array.isArray(projData?.milestones) ? projData.milestones : [],
           bills: matchingBills,
-          updates: Array.isArray(updData) ? updData : [],
         },
       }));
     } catch {
       setDetailsByProject((prev) => ({
         ...prev,
         [project.id]: {
-          ...(prev[project.id] || { phases: [], milestones: [], bills: [], updates: [] }),
+          ...(prev[project.id] || { phases: [], milestones: [], bills: [] }),
           loading: false,
         },
       }));
