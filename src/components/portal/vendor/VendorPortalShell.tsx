@@ -7,6 +7,10 @@ import {
   type VendorPortalSection,
 } from "@/components/portal/vendor/VendorPortalLayout";
 import { useAuth } from "@/providers/AuthProvider";
+import {
+  VendorLanguageProvider,
+  useVendorLanguage,
+} from "@/providers/VendorLanguageProvider";
 
 const routes: Record<VendorPortalSection, string> = {
   dashboard: "/vendor",
@@ -33,13 +37,14 @@ function VendorPortalShellInner({ children }: { children: React.ReactNode }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { user, logout } = useAuth();
+  const { t } = useVendorLanguage();
   const currentTab = searchParams?.get("tab");
 
   return (
     <VendorPortalLayout
       activeSection={getActiveSection(pathname, currentTab)}
       vendorName={user?.username || "Trade Partner"}
-      businessName="Trade & Subcontractor Portal"
+      businessName={t("tradePortal")}
       vendorReference="VENDOR-PORTAL"
       onNavigate={(section) => router.push(routes[section])}
       onLogout={async () => {
@@ -54,8 +59,10 @@ function VendorPortalShellInner({ children }: { children: React.ReactNode }) {
 
 export function VendorPortalShell({ children }: { children: React.ReactNode }) {
   return (
-    <Suspense fallback={null}>
-      <VendorPortalShellInner>{children}</VendorPortalShellInner>
-    </Suspense>
+    <VendorLanguageProvider>
+      <Suspense fallback={null}>
+        <VendorPortalShellInner>{children}</VendorPortalShellInner>
+      </Suspense>
+    </VendorLanguageProvider>
   );
 }

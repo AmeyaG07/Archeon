@@ -23,7 +23,13 @@ import {
   ChevronRight,
   ShieldCheck,
   UserRound,
+  Languages,
 } from "lucide-react";
+import {
+  useVendorLanguage,
+  VENDOR_LANGUAGES,
+  type VendorTranslationKey,
+} from "@/providers/VendorLanguageProvider";
 
 export type VendorPortalSection =
   | "dashboard"
@@ -53,46 +59,46 @@ interface VendorPortalLayoutProps {
 
 interface NavigationItem {
   id: VendorPortalSection;
-  label: string;
-  description: string;
+  labelKey: VendorTranslationKey;
+  descriptionKey: VendorTranslationKey;
   icon: typeof LayoutDashboard;
 }
 
 const NAVIGATION: NavigationItem[] = [
   {
     id: "dashboard",
-    label: "Overview",
-    description: "Your workspace",
+    labelKey: "navOverview",
+    descriptionKey: "navOverviewDesc",
     icon: LayoutDashboard,
   },
   {
     id: "projects",
-    label: "Assigned Projects",
-    description: "Project assignments",
+    labelKey: "navProjects",
+    descriptionKey: "navProjectsDesc",
     icon: Building2,
   },
   {
     id: "invoices",
-    label: "Invoices",
-    description: "Invoice submissions",
+    labelKey: "navInvoices",
+    descriptionKey: "navInvoicesDesc",
     icon: FileText,
   },
   {
     id: "cash-settlements",
-    label: "Cash Settlements",
-    description: "Settlement acknowledgements",
+    labelKey: "navCash",
+    descriptionKey: "navCashDesc",
     icon: IndianRupee,
   },
   {
     id: "support",
-    label: "Help & Support",
-    description: "Support requests",
+    labelKey: "navSupport",
+    descriptionKey: "navSupportDesc",
     icon: LifeBuoy,
   },
   {
     id: "settings",
-    label: "Account Settings",
-    description: "Profile and security",
+    labelKey: "navSettings",
+    descriptionKey: "navSettingsDesc",
     icon: Settings,
   },
 ];
@@ -112,6 +118,7 @@ export function VendorPortalLayout({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [logoutConfirmation, setLogoutConfirmation] = useState(false);
   const sidebarHovered = true;
+  const { lang, setLang, t } = useVendorLanguage();
 
   // Lock body scroll when mobile drawer is open
   useEffect(() => {
@@ -162,23 +169,46 @@ export function VendorPortalLayout({
           </p>
 
           <p className="font-mono text-[8px] uppercase tracking-[0.2em] text-[#A58A64]">
-            Vendor Workspace
+            {t("vendorWorkspace")}
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setMobileMenuOpen((value) => !value)}
-          aria-label={
-            mobileMenuOpen
-              ? "Close navigation menu"
-              : "Open navigation menu"
-          }
-          aria-expanded={mobileMenuOpen}
-          className="flex h-10 w-10 items-center justify-center border border-[#343434] text-white"
-        >
-          {mobileMenuOpen ? <X size={19} /> : <Menu size={19} />}
-        </button>
+        <div className="flex items-center gap-2">
+          <div
+            role="group"
+            aria-label={t("languageLabel")}
+            className="flex items-center rounded border border-[#343434] bg-[#1A1917] p-0.5"
+          >
+            {VENDOR_LANGUAGES.map((opt) => (
+              <button
+                key={opt.code}
+                type="button"
+                onClick={() => setLang(opt.code)}
+                className={`px-2 py-1 text-[10px] font-medium transition-colors ${
+                  lang === opt.code
+                    ? "bg-[#A58A64] text-[#111111]"
+                    : "text-[#C7C3BA] hover:text-white"
+                }`}
+              >
+                {opt.nativeLabel}
+              </button>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen((value) => !value)}
+            aria-label={
+              mobileMenuOpen
+                ? "Close navigation menu"
+                : "Open navigation menu"
+            }
+            aria-expanded={mobileMenuOpen}
+            className="flex h-10 w-10 items-center justify-center border border-[#343434] text-white"
+          >
+            {mobileMenuOpen ? <X size={19} /> : <Menu size={19} />}
+          </button>
+        </div>
       </header>
 
       <div className="flex min-h-screen">
@@ -200,21 +230,21 @@ export function VendorPortalLayout({
                   />
                   <div className="min-w-0">
                     <p className="text-base font-semibold tracking-wide text-[#F2F0EB]">
-                      ArcheOn Studio
+                      {t("studioName")}
                     </p>
                     <p className="mt-0.5 font-mono text-[8.5px] uppercase tracking-[0.2em] text-[#A58A64]">
-                      Architecture &amp; Design
+                      {t("archDesign")}
                     </p>
                   </div>
                 </div>
 
                 <div className="mt-6 border-t border-[#343434] pt-4">
                   <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-[#777777]">
-                    Private Workspace
+                    {t("privateWorkspace")}
                   </p>
 
                   <p className="mt-1.5 text-xs text-[#D8D6D0]">
-                    Vendor Portal
+                    {t("vendorPortal")}
                   </p>
                 </div>
               </>
@@ -235,7 +265,7 @@ export function VendorPortalLayout({
           >
             {sidebarHovered && (
               <p className="mb-4 px-4 font-mono text-[9px] uppercase tracking-[0.18em] text-[#777777]">
-                Workspace
+                {t("workspaceHeading")}
               </p>
             )}
 
@@ -278,13 +308,13 @@ export function VendorPortalLayout({
             <button
               type="button"
               onClick={() => setLogoutConfirmation(true)}
-              title="Sign Out"
+              title={t("signOut")}
               className={`inline-flex items-center justify-center gap-2 rounded-lg border border-[#2c2c2c] bg-[#161616] font-mono text-[9px] uppercase tracking-wider text-[#8e8a83] transition-colors hover:border-[#A58A64]/60 hover:bg-[#1f1e1a] hover:text-white ${
                 sidebarHovered ? "mt-3.5 px-2.5 py-1.5" : "h-9 w-9"
               }`}
             >
               <LogOut size={13} />
-              {sidebarHovered && "Sign Out"}
+              {sidebarHovered && t("signOut")}
             </button>
           </div>
         </aside>
@@ -329,7 +359,7 @@ export function VendorPortalLayout({
                 className="mt-auto inline-flex items-center justify-center gap-2 rounded border border-[#2c2c2c] bg-[#161616] px-3 py-2 font-mono text-[10px] uppercase tracking-wider text-[#8e8a83] transition-colors hover:text-white"
               >
                 <LogOut size={13} />
-                Sign Out
+                {t("signOut")}
               </button>
             </div>
           </div>
@@ -346,15 +376,40 @@ export function VendorPortalLayout({
           <header className="hidden h-[76px] items-center justify-between border-b border-[#D8D6D0] bg-[#F2F0EB] px-8 md:px-10 lg:flex">
 
             <div className="flex items-center gap-3 text-[10px] uppercase tracking-widest text-[#99958D]">
-              <span>Vendor Portal</span>
+              <span>{t("vendorPortal")}</span>
               <ChevronRight size={13} />
 
               <span className="text-[#33312D]">
-                {activeItem?.label ?? "Workspace"}
+                {activeItem ? t(activeItem.labelKey) : t("workspaceHeading")}
               </span>
             </div>
 
             <div className="flex items-center gap-5">
+              {/* Language Switcher (English / Hindi / Marathi) */}
+              <div
+                role="group"
+                aria-label={t("languageLabel")}
+                className="flex items-center gap-1 rounded-full border border-[#D8D6D0] bg-white/80 px-2 py-1 shadow-sm"
+              >
+                <Languages size={14} className="ml-1 mr-1 text-[#A58A64]" />
+                {VENDOR_LANGUAGES.map((opt) => (
+                  <button
+                    key={opt.code}
+                    type="button"
+                    onClick={() => setLang(opt.code)}
+                    aria-pressed={lang === opt.code}
+                    title={opt.englishLabel}
+                    className={`rounded-full px-2.5 py-1 text-[11px] font-medium transition-colors ${
+                      lang === opt.code
+                        ? "bg-[#171717] text-white"
+                        : "text-[#66625B] hover:bg-[#ECEAE5] hover:text-[#171717]"
+                    }`}
+                  >
+                    {opt.nativeLabel}
+                  </button>
+                ))}
+              </div>
+
               <div className="text-right">
                 <p className="text-xs font-medium text-[#33312D]">
                   {vendorName}
@@ -391,7 +446,7 @@ export function VendorPortalLayout({
           {/* Page Content */}
           <main className="min-h-[calc(100vh-76px)]">
             {loading ? (
-              <PortalDashboardSkeleton label="Loading workspace..." />
+              <PortalDashboardSkeleton label={t("loadingWorkspace")} />
             ) : (
               <motion.div
                 key={activeSection}
@@ -413,7 +468,7 @@ export function VendorPortalLayout({
 
               <p className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-widest text-[#99958D]">
                 <ShieldCheck size={13} />
-                Private Vendor Workspace
+                {t("privateVendorWorkspace")}
               </p>
             </div>
           </footer>
@@ -445,12 +500,12 @@ export function VendorPortalLayout({
                 id="vendor-logout-title"
                 className="font-serif text-lg text-[#171717]"
               >
-                Sign out?
+                {t("signOutQuestion")}
               </h2>
             </div>
 
             <p className="mt-2 text-xs leading-relaxed text-[#77736C]">
-              Are you sure you want to leave your vendor workspace?
+              {t("signOutConfirmText")}
             </p>
 
             <div className="mt-5 flex gap-2">
@@ -459,7 +514,7 @@ export function VendorPortalLayout({
                 onClick={() => setLogoutConfirmation(false)}
                 className="flex-1 border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-[9px] uppercase tracking-wider text-[#77736C] hover:bg-[#e8e6e1]"
               >
-                Stay
+                {t("stay")}
               </button>
 
               <button
@@ -467,7 +522,7 @@ export function VendorPortalLayout({
                 onClick={handleLogout}
                 className="flex-1 bg-[#171717] px-3 py-2 font-mono text-[9px] uppercase tracking-wider text-white hover:bg-[#A58A64]"
               >
-                Sign Out
+                {t("signOut")}
               </button>
             </div>
           </section>
@@ -491,12 +546,15 @@ function NavigationButton({
   collapsed?: boolean;
 }) {
   const Icon = item.icon;
+  const { t } = useVendorLanguage();
+  const label = t(item.labelKey);
+  const description = t(item.descriptionKey);
 
   return (
     <button
       type="button"
       onClick={onClick}
-      title={collapsed ? item.label : undefined}
+      title={collapsed ? label : undefined}
       aria-current={active ? "page" : undefined}
       className={`group flex w-full items-center text-left transition-colors ${
         collapsed ? "justify-center px-0 py-3.5" : "gap-4 px-4 py-3.5"
@@ -522,12 +580,12 @@ function NavigationButton({
         <>
           <span className="min-w-0 flex-1">
             <span className="block text-[11px] tracking-wide">
-              {item.label}
+              {label}
             </span>
 
             {!mobile && (
               <span className="mt-1 block text-[9px] text-[#777777]">
-                {item.description}
+                {description}
               </span>
             )}
           </span>

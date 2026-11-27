@@ -2,6 +2,7 @@
 "use client";
 
 import { PortalDashboardSkeleton } from "@/components/portal/shared/PortalSkeleton";
+import { useVendorLanguage } from "@/providers/VendorLanguageProvider";
 import {
   ArrowUpRight,
   Building2,
@@ -137,6 +138,41 @@ export function VendorPortalDashboard({
   onOpenDocuments,
   onRetry,
 }: VendorPortalDashboardProps) {
+  const { t } = useVendorLanguage();
+
+  const translateStatus = (status: VendorInvoiceStatus) => {
+    switch (status) {
+      case "Draft":
+        return t("statusDraft");
+      case "Submitted":
+        return t("statusSubmitted");
+      case "Under Review":
+        return t("statusUnderReview");
+      case "Approved":
+        return t("statusApproved");
+      case "Partially Paid":
+        return t("statusPartiallyPaid");
+      case "Paid":
+        return t("statusPaid");
+      case "Rejected":
+        return t("statusRejected");
+      default:
+        return status;
+    }
+  };
+
+  const translateCategory = (cat: VendorDashboardActivity["category"]) => {
+    switch (cat) {
+      case "Project":
+        return t("catProject");
+      case "Invoice":
+        return t("catInvoice");
+      case "Payment":
+        return t("catPayment");
+      case "Announcement":
+        return t("catAnnouncement");
+    }
+  };
   const submittedTotal = data.invoices.reduce(
     (total, invoice) => total + Math.max(0, invoice.submittedAmount),
     0
@@ -154,7 +190,7 @@ export function VendorPortalDashboard({
   ).length;
 
   if (loading) {
-    return <PortalDashboardSkeleton label="Loading your vendor dashboard..." />;
+    return <PortalDashboardSkeleton label={t("loadingDashboard")} />;
   }
 
   if (error) {
@@ -166,7 +202,7 @@ export function VendorPortalDashboard({
         <AlertCircle size={22} className="text-[#9A5147]" />
 
         <h2 className="mt-4 font-serif text-2xl text-[#773B34]">
-          Vendor dashboard unavailable
+          {t("dashboardUnavailable")}
         </h2>
 
         <p className="mt-3 text-sm leading-7 text-[#805B55]">
@@ -179,7 +215,7 @@ export function VendorPortalDashboard({
             onClick={onRetry}
             className="mt-5 text-xs uppercase tracking-widest text-[#773B34] underline"
           >
-            Try Again
+            {t("tryAgain")}
           </button>
         )}
       </section>
@@ -194,11 +230,11 @@ export function VendorPortalDashboard({
         <header className="flex flex-col justify-between gap-4 border-b border-[#D8D6D0] pb-6 sm:flex-row sm:items-end">
           <div>
             <p className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-[#8A6D43]">
-              ARCHEON DESIGN STUDIO / VENDOR PORTAL
+              {t("dashboardEyebrow")}
             </p>
 
             <h1 className="mt-2.5 font-serif text-3xl text-[#171717] md:text-4xl">
-              Welcome, {data.vendorName}
+              {t("welcomePrefix")} {data.vendorName}
             </h1>
 
             {data.organisationName && (
@@ -208,8 +244,7 @@ export function VendorPortalDashboard({
             )}
 
             <p className="mt-2 text-sm leading-6 text-[#66625B]">
-              Manage your project assignments, invoices and
-              payment records.
+              {t("dashboardSubtitle")}
             </p>
           </div>
 
@@ -219,7 +254,7 @@ export function VendorPortalDashboard({
               onClick={onCreateInvoice}
               className="bg-[#171717] px-5 py-3 text-xs uppercase tracking-widest text-white transition-colors hover:bg-[#A58A64]"
             >
-              Submit Invoice
+              {t("submitInvoice")}
             </button>
           </div>
         </header>
@@ -230,25 +265,25 @@ export function VendorPortalDashboard({
           className="mt-7 grid grid-cols-1 gap-px border border-[#D8D6D0] bg-[#D8D6D0] sm:grid-cols-2 lg:grid-cols-4"
         >
           <OverviewCard
-            label="Assigned Projects"
+            label={t("assignedProjects")}
             value={String(data.projects.length)}
             icon={<Building2 size={18} />}
           />
 
           <OverviewCard
-            label="Submitted Invoice Value"
+            label={t("submittedInvoiceValue")}
             value={formatCurrency(submittedTotal)}
             icon={<Receipt size={18} />}
           />
 
           <OverviewCard
-            label="Payments Recorded"
+            label={t("paymentsRecorded")}
             value={formatCurrency(paidTotal)}
             icon={<Wallet size={18} />}
           />
 
           <OverviewCard
-            label="Pending Invoices"
+            label={t("pendingInvoices")}
             value={String(pendingInvoices)}
             icon={<Clock3 size={18} />}
           />
@@ -259,11 +294,11 @@ export function VendorPortalDashboard({
           <div className="flex items-end justify-between gap-4 border-b border-[#D8D6D0] pb-4">
             <div>
               <p className="font-mono text-xs font-semibold uppercase tracking-[0.16em] text-[#8A6D43]">
-                Work Assignments
+                {t("workAssignments")}
               </p>
 
               <h2 className="mt-2 font-serif text-2xl text-[#171717] md:text-3xl">
-                My Projects
+                {t("myProjects")}
               </h2>
             </div>
 
@@ -272,13 +307,13 @@ export function VendorPortalDashboard({
               onClick={onOpenProjects}
               className="inline-flex items-center gap-2 text-[10px] uppercase tracking-widest text-[#77736C] hover:text-[#A58A64]"
             >
-              All Projects
+              {t("allProjects")}
               <ArrowUpRight size={15} />
             </button>
           </div>
 
           {data.projects.length === 0 ? (
-            <EmptyState message="Project assignments will appear here when the studio assigns work to your account." />
+            <EmptyState message={t("emptyProjects")} />
           ) : (
             <div
               className={`grid gap-5 py-7 ${
@@ -296,7 +331,7 @@ export function VendorPortalDashboard({
                 >
                   <div className="flex items-start justify-between gap-4">
                     <span className="font-mono text-[9px] uppercase tracking-widest text-[#A58A64]">
-                      Work Assignment
+                      {t("workAssignmentTag")}
                     </span>
 
                     <ArrowUpRight
@@ -315,7 +350,7 @@ export function VendorPortalDashboard({
 
                   <div className="mt-5 border-t border-[#E5E2DC] pt-5">
                     <p className="font-mono text-[9px] uppercase tracking-widest text-[#99958D]">
-                      Assigned Scope
+                      {t("assignedScope")}
                     </p>
 
                     <p className="mt-2 text-sm text-[#33312D]">
@@ -325,11 +360,11 @@ export function VendorPortalDashboard({
 
                   <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
                     <span className="bg-[#ECEAE5] px-3 py-2 text-[9px] uppercase tracking-widest text-[#66635D]">
-                      {project.status}
+                      {project.status === "Under Execution" ? t("statusUnderExecution") : project.status}
                     </span>
 
                     <span className="font-mono text-[9px] text-[#99958D]">
-                      Updated {project.updatedAt}
+                      {t("updatedPrefix")} {project.updatedAt}
                     </span>
                   </div>
                 </button>
@@ -344,11 +379,11 @@ export function VendorPortalDashboard({
             <div className="flex items-end justify-between gap-4 border-b border-[#D8D6D0] pb-5">
               <div>
                 <p className="font-mono text-[10px] uppercase tracking-widest text-[#A58A64]">
-                  Financial Records
+                  {t("financialRecords")}
                 </p>
 
                 <h2 className="mt-3 font-serif text-3xl text-[#171717]">
-                  Recent Invoices
+                  {t("recentInvoices")}
                 </h2>
               </div>
 
@@ -357,13 +392,13 @@ export function VendorPortalDashboard({
                 onClick={onOpenInvoices}
                 className="inline-flex items-center gap-2 text-[10px] uppercase tracking-widest text-[#77736C] hover:text-[#A58A64]"
               >
-                View All
+                {t("viewAll")}
                 <ArrowUpRight size={15} />
               </button>
             </div>
 
             {data.invoices.length === 0 ? (
-              <EmptyState message="Invoices submitted by your account will appear here." />
+              <EmptyState message={t("emptyInvoices")} />
             ) : (
               <div className="mt-2">
                 {data.invoices.slice(0, 5).map((invoice) => (
@@ -383,7 +418,7 @@ export function VendorPortalDashboard({
                       </h3>
 
                       <p className="mt-2 text-[10px] text-[#99958D]">
-                        Submitted: {invoice.submittedAt}
+                        {t("submittedPrefix")} {invoice.submittedAt}
                       </p>
                     </div>
 
@@ -395,7 +430,7 @@ export function VendorPortalDashboard({
                       <span
                         className={`mt-2 inline-block px-3 py-1 text-[9px] uppercase tracking-widest ${getInvoiceStatusStyle(invoice.status)}`}
                       >
-                        {invoice.status}
+                        {translateStatus(invoice.status)}
                       </span>
                     </div>
                   </button>
@@ -409,16 +444,16 @@ export function VendorPortalDashboard({
         <section className="mt-16">
           <div className="border-b border-[#D8D6D0] pb-5">
             <p className="font-mono text-[10px] uppercase tracking-widest text-[#A58A64]">
-              Latest Activity
+              {t("latestActivity")}
             </p>
 
             <h2 className="mt-3 font-serif text-3xl text-[#171717]">
-              Recent Updates
+              {t("recentUpdates")}
             </h2>
           </div>
 
           {data.activities.length === 0 ? (
-            <EmptyState message="New project and account activity will appear here." />
+            <EmptyState message={t("emptyActivity")} />
           ) : (
             <div className="mt-3">
               {data.activities.slice(0, 6).map((activity) => (
@@ -437,7 +472,7 @@ export function VendorPortalDashboard({
                       </h3>
 
                       <span className="font-mono text-[9px] uppercase tracking-widest text-[#A58A64]">
-                        {activity.category}
+                        {translateCategory(activity.category)}
                       </span>
                     </div>
 
@@ -458,7 +493,7 @@ export function VendorPortalDashboard({
         {/* Footer */}
         <footer className="mt-14 border-t border-[#D8D6D0] pt-6">
           <p className="font-mono text-[9px] uppercase tracking-widest text-[#99958D]">
-            ARCHEON DESIGN STUDIO / PRIVATE VENDOR WORKSPACE
+            {t("footerTag")}
           </p>
         </footer>
       </div>

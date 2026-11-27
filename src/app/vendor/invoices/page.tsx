@@ -23,6 +23,7 @@ import {
 import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/providers/AuthProvider";
 import { DualImageUpload } from "@/components/ui/DualImageUpload";
+import { useVendorLanguage } from "@/providers/VendorLanguageProvider";
 
 interface BillItem {
   id: string | number;
@@ -62,6 +63,7 @@ function VendorInvoicesContent() {
   const searchParams = useSearchParams();
   const activeTab = searchParams?.get("tab") || "invoices";
   const { isAuthenticated, isLoading: authLoading, user } = useAuth();
+  const { t } = useVendorLanguage();
 
   const [bills, setBills] = useState<BillItem[]>([]);
   const [assignedProjects, setAssignedProjects] = useState<AssignedProject[]>([]);
@@ -233,17 +235,17 @@ function VendorInvoicesContent() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "PAID_CASH":
-        return <span className="px-2.5 py-1 rounded-sm bg-[#10B981]/15 text-[#10B981] font-mono text-[10px] font-semibold">PAID (CASH)</span>;
+        return <span className="px-2.5 py-1 rounded-sm bg-[#10B981]/15 text-[#10B981] font-mono text-[10px] font-semibold">{t("badgePaidCash")}</span>;
       case "PAID_ONLINE":
-        return <span className="px-2.5 py-1 rounded-sm bg-[#06B6D4]/15 text-[#06B6D4] font-mono text-[10px] font-semibold">PAID (ONLINE)</span>;
+        return <span className="px-2.5 py-1 rounded-sm bg-[#06B6D4]/15 text-[#06B6D4] font-mono text-[10px] font-semibold">{t("badgePaidOnline")}</span>;
       case "CASH_REQUESTED":
-        return <span className="px-2.5 py-1 rounded-sm bg-[#6366F1]/15 text-[#6366F1] font-mono text-[10px] font-semibold">CASH REQUESTED</span>;
+        return <span className="px-2.5 py-1 rounded-sm bg-[#6366F1]/15 text-[#6366F1] font-mono text-[10px] font-semibold">{t("badgeCashRequested")}</span>;
       case "APPROVED":
-        return <span className="px-2.5 py-1 rounded-sm bg-[#10B981]/15 text-[#10B981] font-mono text-[10px] font-semibold">APPROVED</span>;
+        return <span className="px-2.5 py-1 rounded-sm bg-[#10B981]/15 text-[#10B981] font-mono text-[10px] font-semibold">{t("badgeApproved")}</span>;
       case "REJECTED":
-        return <span className="px-2.5 py-1 rounded-sm bg-[#EF4444]/15 text-[#EF4444] font-mono text-[10px] font-semibold">REJECTED</span>;
+        return <span className="px-2.5 py-1 rounded-sm bg-[#EF4444]/15 text-[#EF4444] font-mono text-[10px] font-semibold">{t("badgeRejected")}</span>;
       default:
-        return <span className="px-2.5 py-1 rounded-sm bg-[#F59E0B]/15 text-[#D97724] font-mono text-[10px] font-semibold">PENDING</span>;
+        return <span className="px-2.5 py-1 rounded-sm bg-[#F59E0B]/15 text-[#D97724] font-mono text-[10px] font-semibold">{t("badgePending")}</span>;
     }
   };
 
@@ -253,10 +255,10 @@ function VendorInvoicesContent() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 max-w-7xl mx-auto border-b border-[#D8D6D0] pb-6">
         <div>
           <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#B68A4A]">
-            Contractor Workspace // Billing Management
+            {t("billingEyebrow")}
           </span>
           <h1 className="mt-1 font-serif text-3xl md:text-4xl text-[#111111]">
-            Trade Billing & Invoices
+            {t("billingTitle")}
           </h1>
         </div>
 
@@ -265,14 +267,14 @@ function VendorInvoicesContent() {
             onClick={() => setShowUpdateModal(true)}
             className="inline-flex items-center gap-2 px-4 py-2.5 border border-[#B68A4A] text-[#B68A4A] hover:bg-[#B68A4A] hover:text-white font-mono text-xs uppercase tracking-wider transition-colors rounded-sm"
           >
-            <Camera size={14} /> Send Architect Update
+            <Camera size={14} /> {t("sendArchitectUpdate")}
           </button>
 
           <button
             onClick={() => setShowBillModal(true)}
             className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#111111] hover:bg-[#25221D] text-white font-mono text-xs uppercase tracking-wider transition-all rounded-sm"
           >
-            <Plus size={14} /> Submit New Bill
+            <Plus size={14} /> {t("submitNewBill")}
           </button>
         </div>
       </div>
@@ -288,7 +290,7 @@ function VendorInvoicesContent() {
               : "border-transparent text-[#77736C] hover:text-[#111111]"
           }`}
         >
-          <FileText size={15} /> Trade Bills &amp; Invoices
+          <FileText size={15} /> {t("tabTradeBills")}
         </button>
 
         <button
@@ -300,7 +302,7 @@ function VendorInvoicesContent() {
               : "border-transparent text-[#77736C] hover:text-[#111111]"
           }`}
         >
-          <Banknote size={15} /> Payment History &amp; Settlements
+          <Banknote size={15} /> {t("tabPaymentHistory")}
         </button>
       </div>
 
@@ -321,26 +323,26 @@ function VendorInvoicesContent() {
           <div className="max-w-7xl mx-auto rounded-sm border border-[#D8D6D0] bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between border-b border-[#E5E2DC] pb-4">
               <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-[#B68A4A]">
-                <Users size={14} /> Assigned Clients & Site Projects
+                <Users size={14} /> {t("assignedClientsHeader")}
               </div>
               <span className="font-mono text-xs text-[#777777]">
-                {assignedProjects.length} Active Assignments
+                {assignedProjects.length} {t("activeAssignmentsCount")}
               </span>
             </div>
 
             {assignedProjects.length === 0 ? (
               <div className="py-6 text-center font-mono text-xs text-[#777777]">
-                No client projects assigned to your contractor account yet.
+                {t("noClientProjectsAssigned")}
               </div>
             ) : (
               <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {assignedProjects.map((p) => (
                   <div key={p.id} className="p-4 rounded-sm border border-[#E5E2DC] bg-[#FAF9F5]">
                     <div className="font-mono text-[9px] uppercase tracking-wider text-[#B68A4A]">
-                      Client: {p.clientName}
+                      {t("clientPrefix")} {p.clientName}
                     </div>
                     <div className="font-semibold text-sm text-[#111111] mt-1">{p.name}</div>
-                    <div className="font-mono text-[10px] text-[#777777] mt-1">Ref: {p.projectReference || String(p.id ?? "").slice(0, 8)}</div>
+                    <div className="font-mono text-[10px] text-[#777777] mt-1">{t("refPrefix")} {p.projectReference || String(p.id ?? "").slice(0, 8)}</div>
                   </div>
                 ))}
               </div>
@@ -351,32 +353,32 @@ function VendorInvoicesContent() {
           <div className="max-w-7xl mx-auto rounded-sm border border-[#D8D6D0] bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between border-b border-[#E5E2DC] pb-4">
               <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-[#B68A4A]">
-                <FileText size={14} /> Submitted Bills & Settlement Statuses
+                <FileText size={14} /> {t("submittedBillsHeader")}
               </div>
-              <span className="font-mono text-xs text-[#777777]">{bills.length} Bills Total</span>
+              <span className="font-mono text-xs text-[#777777]">{bills.length} {t("billsTotal")}</span>
             </div>
 
             {loading ? (
               <div className="py-12 text-center font-mono text-xs text-[#B68A4A]">
                 <RefreshCw className="h-4 w-4 animate-spin mx-auto mb-2" />
-                Loading submitted bills...
+                {t("loadingSubmittedBills")}
               </div>
             ) : bills.length === 0 ? (
               <div className="py-12 text-center font-mono text-xs text-[#777777]">
-                No bills submitted yet. Click &quot;Submit New Bill&quot; to upload your first trade bill.
+                {t("noBillsSubmittedYet")}
               </div>
             ) : (
               <div className="mt-4 overflow-x-auto">
                 <table className="w-full min-w-[560px] text-left font-mono text-xs">
                   <thead>
                     <tr className="border-b border-[#D8D6D0] text-[#777777] uppercase text-[10px] tracking-wider">
-                      <th className="py-3 px-4">Receipt</th>
-                      <th className="py-3 px-4">Bill # / Client</th>
-                      <th className="py-3 px-4">Trade</th>
-                      <th className="py-3 px-4 text-right">Amount</th>
-                      <th className="py-3 px-4 text-center">Status</th>
-                      <th className="py-3 px-4">Payment Proof</th>
-                      <th className="py-3 px-4 text-right">Action</th>
+                      <th className="py-3 px-4">{t("colReceipt")}</th>
+                      <th className="py-3 px-4">{t("colBillClient")}</th>
+                      <th className="py-3 px-4">{t("colTrade")}</th>
+                      <th className="py-3 px-4 text-right">{t("colAmount")}</th>
+                      <th className="py-3 px-4 text-center">{t("colStatus")}</th>
+                      <th className="py-3 px-4">{t("colPaymentProof")}</th>
+                      <th className="py-3 px-4 text-right">{t("colAction")}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#E5E2DC]">
@@ -420,7 +422,7 @@ function VendorInvoicesContent() {
                               onClick={() => setPreviewPhotoUrl(bill.paymentProofUrl || null)}
                               className="inline-flex items-center gap-1 font-mono text-[10px] text-[#06B6D4] hover:underline"
                             >
-                              <Eye size={12} /> View Screenshot
+                              <Eye size={12} /> {t("viewScreenshot")}
                             </button>
                           ) : (
                             <span className="text-[#99958D] text-[10px]">—</span>
@@ -434,17 +436,17 @@ function VendorInvoicesContent() {
                               disabled={actionLoading}
                               className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#D97724] text-white hover:bg-[#B45309] font-mono text-[10px] uppercase tracking-wider rounded-sm transition-colors disabled:opacity-50"
                             >
-                              <Banknote size={12} /> Request Cash
+                              <Banknote size={12} /> {t("requestCash")}
                             </button>
                           )}
                           {bill.status === "CASH_REQUESTED" && (
                             <span className="text-[10px] text-[#6366F1] font-mono">
-                              In Client Queue
+                              {t("inClientQueue")}
                             </span>
                           )}
                           {bill.status.includes("PAID") && (
                             <span className="text-[10px] text-[#10B981] font-mono font-semibold">
-                              Settled
+                              {t("settledLabel")}
                             </span>
                           )}
                         </td>
@@ -464,9 +466,9 @@ function VendorInvoicesContent() {
           <div className="rounded-sm border border-[#D8D6D0] bg-white p-6 shadow-sm">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E5E2DC] pb-4">
               <div>
-                <h2 className="font-serif text-2xl text-[#111111]">Payment Settlements &amp; Remittances</h2>
+                <h2 className="font-serif text-2xl text-[#111111]">{t("paymentSettlementsTitle")}</h2>
                 <p className="text-xs text-[#777777] mt-1">
-                  Track confirmed bank payments and physical cash settlement vouchers.
+                  {t("paymentSettlementsDesc")}
                 </p>
               </div>
               <button
@@ -474,7 +476,7 @@ function VendorInvoicesContent() {
                 onClick={() => router.push("/vendor/cash-settlements")}
                 className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#111111] text-white font-mono text-xs uppercase tracking-wider hover:bg-[#B68A4A] rounded-sm transition-colors"
               >
-                <Banknote size={14} /> Open Cash Settlements Vouchers ↗
+                <Banknote size={14} /> {t("openCashVouchers")} ↗
               </button>
             </div>
 
@@ -482,12 +484,12 @@ function VendorInvoicesContent() {
               <table className="w-full text-left font-mono text-xs">
                 <thead>
                   <tr className="border-b border-[#D8D6D0] text-[#777777] uppercase text-[10px] tracking-wider bg-[#FAF9F5]">
-                    <th className="py-3 px-4">Bill Reference</th>
-                    <th className="py-3 px-4">Project / Client</th>
-                    <th className="py-3 px-4 text-right">Settled Amount</th>
-                    <th className="py-3 px-4 text-center">Settlement Mode</th>
-                    <th className="py-3 px-4">Settled At</th>
-                    <th className="py-3 px-4 text-center">Status</th>
+                    <th className="py-3 px-4">{t("colBillRef")}</th>
+                    <th className="py-3 px-4">{t("colProjectClient")}</th>
+                    <th className="py-3 px-4 text-right">{t("colSettledAmount")}</th>
+                    <th className="py-3 px-4 text-center">{t("colSettlementMode")}</th>
+                    <th className="py-3 px-4">{t("colSettledAt")}</th>
+                    <th className="py-3 px-4 text-center">{t("colStatus")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#E5E2DC]">
@@ -497,11 +499,11 @@ function VendorInvoicesContent() {
                         <td className="py-3 px-4 font-bold">{bill.invoiceNumber || bill.billNumber || bill.billId || String(bill.id ?? "").slice(0, 8)}</td>
                         <td className="py-3 px-4">{bill.clientName || "Studio Client"}</td>
                         <td className="py-3 px-4 text-right font-bold text-emerald-700">₹{Number(bill.amount || 0).toLocaleString("en-IN")}</td>
-                        <td className="py-3 px-4 text-center">{bill.status === "PAID_CASH" ? "Cash Handover" : "Bank Transfer (NEFT/RTGS)"}</td>
+                        <td className="py-3 px-4 text-center">{bill.status === "PAID_CASH" ? t("cashHandover") : t("bankTransfer")}</td>
                         <td className="py-3 px-4 text-[#777777]">{new Date(bill.createdAt).toLocaleDateString("en-IN")}</td>
                         <td className="py-3 px-4 text-center">
                           <span className="px-2 py-0.5 rounded text-[9px] uppercase bg-emerald-100 text-emerald-800 border border-emerald-200">
-                            Verified Settled
+                            {t("verifiedSettled")}
                           </span>
                         </td>
                       </tr>
@@ -509,7 +511,7 @@ function VendorInvoicesContent() {
                   ) : (
                     <tr>
                       <td colSpan={6} className="py-8 text-center text-[#777777]">
-                        No verified settlements yet. Bills will appear here once marked paid by Client or Studio.
+                        {t("noVerifiedSettlements")}
                       </td>
                     </tr>
                   )}

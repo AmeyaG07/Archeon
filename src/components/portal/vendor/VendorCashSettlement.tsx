@@ -17,6 +17,7 @@ import {
   Upload,
   Camera,
 } from "lucide-react";
+import { useVendorLanguage } from "@/providers/VendorLanguageProvider";
 
 export type VendorSettlementStatus =
   | "Pending Acknowledgement"
@@ -133,6 +134,7 @@ export function VendorCashSettlement({
   const [markPaidInCash, setMarkPaidInCash] = useState(false);
   const [isRaising, setIsRaising] = useState(false);
   const [directUpdatingId, setDirectUpdatingId] = useState<string | null>(null);
+  const { t } = useVendorLanguage();
 
   const handleRaiseSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -203,7 +205,7 @@ export function VendorCashSettlement({
     return (
       <div className="min-h-80 bg-[#F2F0EB] p-8">
         <p className="text-sm text-[#77736C]">
-          Loading cash settlement records...
+          {t("loadingCashRecords")}
         </p>
       </div>
     );
@@ -218,15 +220,15 @@ export function VendorCashSettlement({
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
             <div>
               <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#A58A64]">
-                Vendor Portal / Finance
+                {t("cashEyebrow")}
               </p>
 
               <h1 className="mt-4 font-serif text-4xl text-[#171717] md:text-5xl">
-                Cash Settlements
+                {t("cashPageTitle")}
               </h1>
 
               <p className="mt-3 max-w-2xl text-sm leading-7 text-[#77736C]">
-                Review cash settlements recorded against your work. Confirm received cash or raise a new cash bill voucher directly.
+                {t("cashSubtitle")}
               </p>
             </div>
 
@@ -236,7 +238,7 @@ export function VendorCashSettlement({
                 onClick={() => setShowRaiseModal(true)}
                 className="inline-flex items-center gap-2 bg-[#171717] px-4 py-2 font-mono text-[10px] uppercase tracking-wider text-white hover:bg-[#A58A64] transition-colors shadow-sm"
               >
-                <Plus size={14} /> Raise a Cash Bill
+                <Plus size={14} /> {t("raiseCashBill")}
               </button>
             </div>
           </div>
@@ -251,13 +253,11 @@ export function VendorCashSettlement({
 
           <div>
             <h2 className="text-sm font-medium text-[#6F5C39]">
-              Two-party settlement verification
+              {t("twoPartyNoticeTitle")}
             </h2>
 
             <p className="mt-2 text-xs leading-7 text-[#806D4A]">
-              Your acknowledgement confirms your response to the
-              recorded settlement. Final financial verification
-              requires separate authorised finance verification.
+              {t("twoPartyNoticeBody")}
             </p>
           </div>
         </section>
@@ -283,11 +283,11 @@ export function VendorCashSettlement({
         <section className="mt-12">
           <div className="border-b border-[#D8D6D0] pb-5">
             <p className="font-mono text-[10px] uppercase tracking-widest text-[#A58A64]">
-              Settlement Records
+              {t("settlementRecords")}
             </p>
 
             <h2 className="mt-3 font-serif text-3xl text-[#171717]">
-              Your Settlements
+              {t("yourSettlements")}
             </h2>
           </div>
 
@@ -300,11 +300,11 @@ export function VendorCashSettlement({
               />
 
               <h3 className="mt-5 font-serif text-2xl text-[#171717]">
-                No settlement records
+                {t("noSettlementRecords")}
               </h3>
 
               <p className="mt-3 text-sm text-[#77736C]">
-                No cash settlements are currently recorded for your account.
+                {t("noSettlementsDesc")}
               </p>
             </div>
           ) : (
@@ -345,7 +345,7 @@ export function VendorCashSettlement({
                     {/* Amount */}
                     <div className="mt-7 border-y border-[#E5E2DC] py-6">
                       <p className="font-mono text-[9px] uppercase tracking-widest text-[#99958D]">
-                        Recorded Settlement Amount
+                        {t("recordedSettlementAmount")}
                       </p>
 
                       <p className="mt-3 font-serif text-3xl text-[#171717]">
@@ -357,23 +357,23 @@ export function VendorCashSettlement({
                     <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
                       <Detail
                         icon={<CalendarDays size={15} />}
-                        label="Settlement Date"
+                        label={t("settlementDate")}
                         value={formatDate(settlement.settlementDate)}
                       />
 
                       <Detail
                         icon={<FileText size={15} />}
-                        label="Recorded By"
+                        label={t("recordedBy")}
                         value={settlement.recordedBy}
                       />
 
                       <Detail
                         icon={<Clock3 size={15} />}
-                        label="Vendor Response"
+                        label={t("vendorResponse")}
                         value={
                           settlement.vendorAcknowledgedAt
                             ? formatDate(settlement.vendorAcknowledgedAt)
-                            : "Awaiting response"
+                            : t("awaitingResponse")
                         }
                       />
                     </div>
@@ -439,7 +439,7 @@ export function VendorCashSettlement({
                             className="inline-flex items-center gap-2 bg-[#171717] px-6 py-3 text-[10px] uppercase tracking-widest text-white hover:bg-[#A58A64] disabled:opacity-50"
                           >
                             <CheckCircle2 size={15} />
-                            Acknowledge Receipt
+                            {t("acknowledgeReceipt")}
                           </button>
 
                           {onDirectMarkPaidInCash && (

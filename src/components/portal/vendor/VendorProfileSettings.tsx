@@ -20,6 +20,7 @@ import {
   Building,
 } from "lucide-react";
 import { DualImageUpload } from "@/components/ui/DualImageUpload";
+import { useVendorLanguage } from "@/providers/VendorLanguageProvider";
 
 export interface VendorProfileData {
   businessName: string;
@@ -126,6 +127,7 @@ export function VendorProfileSettings({
   const [paymentSavedMessage, setPaymentSavedMessage] = useState<string | null>(null);
 
   const [validationError, setValidationError] = useState("");
+  const { t } = useVendorLanguage();
 
   function updatePreference(
     key: keyof VendorNotificationPreferences,
@@ -215,7 +217,7 @@ export function VendorProfileSettings({
     return (
       <div className="min-h-80 bg-[#F2F0EB] p-8">
         <p className="text-sm text-[#77736C]">
-          Loading vendor account settings...
+          {t("loadingSettings")}
         </p>
       </div>
     );
@@ -228,17 +230,17 @@ export function VendorProfileSettings({
   }[] = [
     {
       id: "profile",
-      label: "Business Profile",
+      label: t("tabBusinessProfile"),
       icon: <Building2 size={16} />,
     },
     {
       id: "payment",
-      label: "Payment Details & QR",
+      label: t("tabPaymentDetails"),
       icon: <CreditCard size={16} />,
     },
     {
       id: "security",
-      label: "Account Security",
+      label: t("tabAccountSecurity"),
       icon: <ShieldCheck size={16} />,
     },
   ];
@@ -250,16 +252,15 @@ export function VendorProfileSettings({
         {/* Header */}
         <header className="border-b border-[#D8D6D0] pb-9">
           <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#A58A64]">
-            Vendor Portal / Account
+            {t("profileEyebrow")}
           </p>
 
           <h1 className="mt-5 font-serif text-4xl text-[#171717] md:text-5xl">
-            Account Settings
+            {t("profilePageTitle")}
           </h1>
 
           <p className="mt-4 max-w-2xl text-sm leading-7 text-[#77736C]">
-            Manage your business information, authorised contact
-            details, communication preferences and account security.
+            {t("profileSubtitle")}
           </p>
         </header>
 
@@ -276,14 +277,14 @@ export function VendorProfileSettings({
               </h2>
 
               <p className="mt-2 font-mono text-[9px] uppercase tracking-widest text-[#99958D]">
-                Vendor Reference: {profile.vendorCode}
+                {t("vendorRefPrefix")} {profile.vendorCode}
               </p>
             </div>
           </div>
 
           <span className="inline-flex w-fit items-center gap-2 border border-[#D7E2D2] bg-[#F0F5EE] px-4 py-2 text-[9px] uppercase tracking-widest text-[#547A51]">
             <ShieldCheck size={14} />
-            Account Workspace
+            {t("accountWorkspaceBadge")}
           </span>
         </section>
 
@@ -319,35 +320,35 @@ export function VendorProfileSettings({
             <div className="border border-[#D8D6D0] bg-white p-6 md:p-9">
               <SectionHeading
                 icon={<Building2 size={19} />}
-                title="Business Information"
+                title={t("businessInformation")}
               />
 
               <div className="mt-7 grid grid-cols-1 gap-6 md:grid-cols-2">
                 <ReadOnlyField
-                  label="Registered Business Name"
+                  label={t("registeredBusinessName")}
                   value={profile.businessName}
                 />
 
                 <ReadOnlyField
-                  label="Vendor Reference"
+                  label={t("vendorReferenceLabel")}
                   value={profile.vendorCode}
                 />
 
                 <ReadOnlyField
-                  label="Business Type"
-                  value={profile.businessType || "Not provided"}
+                  label={t("businessTypeLabel")}
+                  value={profile.businessType || t("notProvided")}
                 />
 
                 <ReadOnlyField
                   label="GSTIN"
-                  value={profile.gstin || "Not provided"}
+                  value={profile.gstin || t("notProvided")}
                 />
               </div>
 
               <div className="mt-9 border-t border-[#E5E2DC] pt-8">
                 <SectionHeading
                   icon={<User size={19} />}
-                  title="Authorised Contact Details"
+                  title={t("authorisedContactDetails")}
                 />
 
                 <form
@@ -355,7 +356,7 @@ export function VendorProfileSettings({
                   className="mt-7 space-y-6"
                 >
                   <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    <Field label="Contact Person">
+                    <Field label={t("contactPersonLabel")}>
                       <input
                         value={contactPerson}
                         onChange={(event) =>
@@ -368,7 +369,7 @@ export function VendorProfileSettings({
                       />
                     </Field>
 
-                    <Field label="Registered Email">
+                    <Field label={t("registeredEmailLabel")}>
                       <input
                         type="email"
                         value={email}
@@ -382,7 +383,7 @@ export function VendorProfileSettings({
                       />
                     </Field>
 
-                    <Field label="Primary Phone">
+                    <Field label={t("primaryPhoneLabel")}>
                       <input
                         type="tel"
                         value={phone}
@@ -396,7 +397,7 @@ export function VendorProfileSettings({
                       />
                     </Field>
 
-                    <Field label="Alternate Phone">
+                    <Field label={t("alternatePhoneLabel")}>
                       <input
                         type="tel"
                         value={alternatePhone}
@@ -410,7 +411,7 @@ export function VendorProfileSettings({
                     </Field>
                   </div>
 
-                  <Field label="Business Address">
+                  <Field label={t("businessAddressLabel")}>
                     <textarea
                       value={businessAddress}
                       onChange={(event) =>
@@ -437,7 +438,7 @@ export function VendorProfileSettings({
                     className="inline-flex items-center gap-3 bg-[#171717] px-7 py-4 text-[10px] uppercase tracking-widest text-white hover:bg-[#A58A64] disabled:opacity-50"
                   >
                     <Save size={15} />
-                    {saving ? "Saving..." : "Save Contact Details"}
+                    {saving ? t("savingLabel") : t("saveContactDetails")}
                   </button>
                 </form>
               </div>
@@ -450,11 +451,11 @@ export function VendorProfileSettings({
           <section className="mt-8 border border-[#D8D6D0] bg-white p-6 md:p-9">
             <SectionHeading
               icon={<CreditCard size={19} />}
-              title="Vendor Payment Methods & QR Code"
+              title={t("paymentMethodsTitle")}
             />
 
             <p className="mt-4 text-xs leading-7 text-[#77736C]">
-              Configure your bank account and upload your UPI QR code. These details are securely displayed to clients on their portal so they can pay your bills directly via NEFT, RTGS, IMPS or instant UPI.
+              {t("paymentMethodsDesc")}
             </p>
 
             {paymentSavedMessage && (
@@ -484,10 +485,10 @@ export function VendorProfileSettings({
               {/* Bank Account Section */}
               <div className="border border-[#E5E2DC] bg-[#FAF9F5] p-6">
                 <h3 className="font-serif text-lg text-[#171717] mb-4">
-                  Bank Account Information (NEFT / RTGS / IMPS)
+                  {t("bankAccountInfo")}
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Field label="Account Holder Name">
+                  <Field label={t("accountHolderNameLabel")}>
                     <input
                       type="text"
                       placeholder="e.g. Mandar Ceramic Works Ltd."
@@ -496,7 +497,7 @@ export function VendorProfileSettings({
                       className="vendor-settings-input"
                     />
                   </Field>
-                  <Field label="Bank Name">
+                  <Field label={t("bankNameLabel")}>
                     <input
                       type="text"
                       placeholder="e.g. HDFC Bank, SBI, ICICI"
@@ -505,7 +506,7 @@ export function VendorProfileSettings({
                       className="vendor-settings-input"
                     />
                   </Field>
-                  <Field label="Account Number">
+                  <Field label={t("accountNumberLabel")}>
                     <input
                       type="text"
                       placeholder="e.g. 50200088912441"
@@ -514,7 +515,7 @@ export function VendorProfileSettings({
                       className="vendor-settings-input"
                     />
                   </Field>
-                  <Field label="IFSC Code">
+                  <Field label={t("ifscCodeLabel")}>
                     <input
                       type="text"
                       placeholder="e.g. HDFC0001234"
@@ -529,11 +530,11 @@ export function VendorProfileSettings({
               {/* QR Code & UPI Section */}
               <div className="border border-[#E5E2DC] bg-[#FAF9F5] p-6">
                 <h3 className="font-serif text-lg text-[#171717] mb-4">
-                  Instant UPI & QR Code
+                  {t("instantUpiQr")}
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-start">
                   <div>
-                    <Field label="UPI ID (VPA)">
+                    <Field label={t("upiIdLabel")}>
                       <input
                         type="text"
                         placeholder="e.g. vendor@okhdfcbank"

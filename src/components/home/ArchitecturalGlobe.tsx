@@ -62,12 +62,12 @@ export function ArchitecturalGlobe() {
 
     // --- 1. CORE PLANETARY VIDEO SPHERE ---
     const video = document.createElement("video");
-    video.src = "/earth-globe.mp4";
     video.crossOrigin = "anonymous";
     video.loop = true;
     video.muted = true;
     video.playsInline = true;
-    video.preload = "metadata";
+    video.preload = "none";
+    let videoSourceAttached = false;
 
     const videoTexture = new THREE.VideoTexture(video);
     videoTexture.minFilter = THREE.LinearFilter;
@@ -238,6 +238,10 @@ export function ArchitecturalGlobe() {
         if (nextVisible === isVisible) return;
         isVisible = nextVisible;
         if (isVisible) {
+          if (!videoSourceAttached) {
+            video.src = "/earth-globe.mp4";
+            videoSourceAttached = true;
+          }
           if (video.paused) {
             video.play().catch(() => {});
           }

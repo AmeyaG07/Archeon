@@ -156,18 +156,19 @@ export function clearAuthSession(): void {
   }
 }
 
-/** Resolve the API base URL. Prefer NEXT_PUBLIC_API_BASE_URL in client bundles. */
+/** Resolve the API base URL. Prefer NEXT_PUBLIC_API_BASE_URL in client bundles; otherwise use same-origin `/api` rewrite. */
 export function resolveApiBaseUrl(): string {
   if (typeof window !== "undefined") {
     if (process.env.NEXT_PUBLIC_API_BASE_URL) {
       return process.env.NEXT_PUBLIC_API_BASE_URL.replace(/\/$/, "");
     }
-    return "http://localhost:8080";
+    return window.location.origin;
   }
-  if (process.env.API_BASE_URL) {
-    return process.env.API_BASE_URL.replace(/\/$/, "");
-  }
-  return "http://localhost:8080";
+  const serverBase =
+    process.env.API_BASE_URL ||
+    process.env.INTERNAL_BACKEND_URL ||
+    "http://localhost:8080";
+  return serverBase.replace(/\/$/, "");
 }
 
 export interface ApiFetchOptions extends Omit<RequestInit, "body"> {

@@ -22,16 +22,29 @@ export function ArchitecturalRevealHero({
     const section = heroSectionRef.current;
     if (!video || !section) return;
 
+    let isVisible = true;
+
     if (video.readyState >= 2) {
       setVideoReady(true);
     }
 
+    const ensurePlaying = () => {
+      if (!isVisible || document.hidden) return;
+      if (video.ended || (video.duration > 0 && video.currentTime >= video.duration - 0.06)) {
+        video.currentTime = 0;
+      }
+      if (video.paused) {
+        video.play().catch(() => {
+          // Handled gracefully if autoplay blocked
+        });
+      }
+    };
+
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
-          video.play().catch(() => {
-            // Handled gracefully if autoplay blocked
-          });
+        isVisible = entry.isIntersecting;
+        if (isVisible) {
+          ensurePlaying();
         } else if (!video.paused) {
           video.pause();
         }
@@ -40,7 +53,23 @@ export function ArchitecturalRevealHero({
     );
 
     observer.observe(section);
-    return () => observer.disconnect();
+
+    const handleVisibility = () => {
+      if (!document.hidden && isVisible) {
+        ensurePlaying();
+      }
+    };
+
+    video.addEventListener("canplay", ensurePlaying);
+    video.addEventListener("ended", ensurePlaying);
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    return () => {
+      observer.disconnect();
+      video.removeEventListener("canplay", ensurePlaying);
+      video.removeEventListener("ended", ensurePlaying);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
   }, []);
 
   const handleVideoCanPlay = useCallback(() => {
@@ -99,12 +128,10 @@ export function ArchitecturalRevealHero({
               ),
               linear-gradient(
                 90deg,
-                rgba(5, 5, 5, 0.92) 0%,
-                rgba(6, 6, 6, 0.85) 20%,
-                rgba(6, 6, 6, 0.68) 36%,
-                rgba(7, 7, 7, 0.38) 52%,
-                rgba(8, 8, 8, 0.14) 68%,
-                rgba(8, 8, 8, 0.0) 82%
+                rgba(5, 5, 5, 0.85) 0%,
+                rgba(6, 6, 6, 0.68) 16%,
+                rgba(6, 6, 6, 0.36) 28%,
+                rgba(8, 8, 8, 0.0) 40%
               ),
               linear-gradient(
                 180deg,
@@ -187,32 +214,40 @@ export function ArchitecturalRevealHero({
       {/* 3. MAIN LEFT HERO CONTENT                                           */}
       {/* =================================================================== */}
       <div className="relative z-10 w-full px-4 sm:px-10 lg:px-14 my-auto py-8 lg:py-12">
-        <div className="relative max-w-[720px]">
-          {/* Subtle localized atmospheric backdrop ensuring text visibility over background bokeh */}
+        <div className="relative max-w-[380px] sm:max-w-[410px] lg:max-w-[420px]">
+          {/* Seamless feather-faded atmospheric backdrop (closest-side ensures zero visible box edges) */}
           <div
-            className="pointer-events-none absolute -inset-y-12 -inset-x-8 sm:-inset-x-12 rounded-3xl -z-10 blur-3xl"
+            className="pointer-events-none absolute -inset-y-16 -inset-x-12 sm:-inset-x-20 -z-10"
             style={{
               background:
-                "radial-gradient(ellipse 95% 85% at 20% 50%, rgba(5, 5, 5, 0.75) 0%, rgba(5, 5, 5, 0.42) 55%, transparent 95%)",
+                "radial-gradient(closest-side at 42% 50%, rgba(5, 5, 5, 0.58) 0%, rgba(5, 5, 5, 0.24) 55%, transparent 100%)",
             }}
           />
 
-          {/* Eyebrow */}
-          {/* <p className="font-mono text-[10px] sm:text-[11px] tracking-[0.24em] sm:tracking-[0.28em] uppercase text-[#B8894A] mb-4 sm:mb-6">
-            ARCHITECTURE &nbsp;·&nbsp; INTERIOR ENVIRONMENTS &nbsp;·&nbsp; LANDSCAPE
-          </p> */}
-
-          {/* Hero Heading - 3-Line Editorial Composition */}
-          <h1 className="font-sans font-bold text-[28px] xs:text-[34px] sm:text-[40px] lg:text-[54px] xl:text-[58px] leading-[1.04] sm:leading-[0.98] tracking-[-0.035em] text-[#E8E3D9] drop-shadow-[0_4px_24px_rgba(0,0,0,0.65)]">
-            <span className="italic text-[#B8A68A] font-bold">Spaces Designed</span>
-            <br />
-            <span>Around the</span>
-            <br />
-            <span className="italic text-[#B8A68A] font-bold">Way You Live.</span>
+          {/* Hero Heading - 4-Line Editorial Serif Composition */}
+          <h1 className="font-serif text-[34px] xs:text-[40px] sm:text-[48px] lg:text-[58px] xl:text-[64px] leading-[0.95] tracking-[-0.025em] [text-shadow:0_4px_24px_rgba(0,0,0,0.65)]">
+            <span className="block font-normal text-[#F5F2EB]">
+              Spaces
+            </span>
+            <span className="block font-semibold uppercase tracking-[-0.01em] text-[1.06em] leading-[0.92] bg-gradient-to-b from-[#EAD5B0] via-[#D4B480] to-[#B6925C] bg-clip-text text-transparent">
+              DESIGNED
+            </span>
+            <span className="block font-serif italic font-normal text-[#F5F2EB] leading-[1.0]">
+              Around the
+            </span>
+            <span className="block font-normal leading-[1.0]">
+              <span className="bg-gradient-to-b from-[#E5CCA2] via-[#CEA972] to-[#B08A54] bg-clip-text text-transparent">
+                Way You Live
+              </span>
+              <span
+                className="inline-block w-[0.16em] h-[0.16em] ml-[0.06em] bg-[#B91C1C] align-baseline"
+                aria-hidden="true"
+              />
+            </span>
           </h1>
 
           {/* Editorial Subcopy */}
-          <p className="mt-6 sm:mt-8 max-w-[540px] text-[14px] sm:text-[15px] lg:text-[16px] leading-[1.75] font-light text-[#C2BEB6] drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]">
+          <p className="mt-5 sm:mt-6 max-w-[360px] sm:max-w-[390px] text-[13.5px] sm:text-[14.5px] lg:text-[15px] leading-[1.7] font-light text-[#C2BEB6] drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]">
             We design thoughtful architecture and interiors that bring together beauty,
             comfort, and functionality. From your first idea to the final details,
             we create spaces that feel truly yours.

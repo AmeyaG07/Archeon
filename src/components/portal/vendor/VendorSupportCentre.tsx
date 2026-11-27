@@ -17,6 +17,7 @@ import {
   ArrowUpRight,
   X,
 } from "lucide-react";
+import { useVendorLanguage } from "@/providers/VendorLanguageProvider";
 
 export type VendorSupportCategory =
   | "Project Assignment"
@@ -200,6 +201,7 @@ export function VendorSupportCentre({
   const [relatedReference, setRelatedReference] = useState("");
   const [description, setDescription] = useState("");
   const [validationError, setValidationError] = useState("");
+  const { t } = useVendorLanguage();
 
   const openCount = tickets.filter(
     (ticket) =>
@@ -276,7 +278,7 @@ export function VendorSupportCentre({
     return (
       <div className="min-h-80 bg-[#F2F0EB] p-8">
         <p className="text-sm text-[#77736C]">
-          Loading support records...
+          {t("loadingSupportRecords")}
         </p>
       </div>
     );
@@ -289,18 +291,17 @@ export function VendorSupportCentre({
         {/* Header */}
         <header className="border-b border-[#D8D6D0] pb-9">
           <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#A58A64]">
-            Vendor Portal / Support
+            {t("supportEyebrow")}
           </p>
 
           <div className="mt-5 flex flex-col justify-between gap-6 md:flex-row md:items-end">
             <div>
               <h1 className="font-serif text-4xl text-[#171717] md:text-5xl">
-                Help & Support
+                {t("supportPageTitle")}
               </h1>
 
               <p className="mt-4 max-w-2xl text-sm leading-7 text-[#77736C]">
-                Contact the studio for assistance with assignments,
-                invoices, payments, documents and account access.
+                {t("supportSubtitle")}
               </p>
             </div>
 
@@ -310,7 +311,7 @@ export function VendorSupportCentre({
               className="inline-flex w-fit items-center gap-3 bg-[#171717] px-7 py-4 text-[10px] uppercase tracking-widest text-white hover:bg-[#A58A64]"
             >
               <Plus size={16} />
-              Create Support Ticket
+              {t("createSupportTicket")}
             </button>
           </div>
         </header>
@@ -318,19 +319,19 @@ export function VendorSupportCentre({
         {/* Summary */}
         <section className="mt-9 grid grid-cols-1 gap-px border border-[#D8D6D0] bg-[#D8D6D0] sm:grid-cols-3">
           <SummaryCard
-            label="Total Tickets"
+            label={t("totalTickets")}
             value={String(tickets.length)}
             icon={<LifeBuoy size={19} />}
           />
 
           <SummaryCard
-            label="Open Tickets"
+            label={t("openTickets")}
             value={String(openCount)}
             icon={<Clock3 size={19} />}
           />
 
           <SummaryCard
-            label="Resolved Tickets"
+            label={t("resolvedTickets")}
             value={String(resolvedCount)}
             icon={<CheckCircle2 size={19} />}
           />
@@ -509,11 +510,11 @@ export function VendorSupportCentre({
           <div className="flex flex-col justify-between gap-4 border-b border-[#D8D6D0] pb-5 md:flex-row md:items-end">
             <div>
               <p className="font-mono text-[10px] uppercase tracking-widest text-[#A58A64]">
-                Support Management
+                {t("supportManagement")}
               </p>
 
               <h2 className="mt-3 font-serif text-3xl text-[#171717]">
-                Your Support Tickets
+                {t("yourSupportTickets")}
               </h2>
             </div>
           </div>
@@ -528,7 +529,7 @@ export function VendorSupportCentre({
             <input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search ticket, subject or reference..."
+              placeholder={t("searchTicketsPlaceholder")}
               aria-label="Search support tickets"
               className="h-12 w-full border border-[#D8D6D0] bg-white pl-11 pr-4 text-sm text-[#33312D] outline-none focus:border-[#A58A64]"
             />

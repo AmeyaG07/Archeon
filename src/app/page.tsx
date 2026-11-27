@@ -1,22 +1,54 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 
 import { Header } from "@/components/ui/Header";
 import { OpeningPreloader } from "@/components/ui/OpeningPreloader";
 import { ArchitecturalRevealHero } from "@/components/home/ArchitecturalRevealHero";
 import { ServicesSection } from "@/components/home/ServicesSection";
-import { ProjectsSection } from "@/components/home/ProjectsSection";
-import { ProcessSection } from "@/components/home/ProcessSection";
-import { StudioSection } from "@/components/home/StudioSection";
-import { ContactSection } from "@/components/home/ContactSection";
-import { SiteFooter } from "@/components/home/SiteFooter";
 
-import { ServiceModal } from "@/components/ui/ServiceModal";
-import { ProjectDetailModal } from "@/components/ui/ProjectDetailModal";
-import { ConsultationModal } from "@/components/ui/ConsultationModal";
-import { ClientPortalModal } from "@/components/ui/ClientPortalModal";
-import { VendorPortalModal } from "@/components/ui/VendorPortalModal";
+const StudioSection = dynamic(
+  () => import("@/components/home/StudioSection").then((m) => m.StudioSection),
+  { ssr: false }
+);
+const ProjectsSection = dynamic(
+  () => import("@/components/home/ProjectsSection").then((m) => m.ProjectsSection),
+  { ssr: false }
+);
+const ProcessSection = dynamic(
+  () => import("@/components/home/ProcessSection").then((m) => m.ProcessSection),
+  { ssr: false }
+);
+const ContactSection = dynamic(
+  () => import("@/components/home/ContactSection").then((m) => m.ContactSection),
+  { ssr: false }
+);
+const SiteFooter = dynamic(
+  () => import("@/components/home/SiteFooter").then((m) => m.SiteFooter),
+  { ssr: false }
+);
+
+const ServiceModal = dynamic(
+  () => import("@/components/ui/ServiceModal").then((m) => m.ServiceModal),
+  { ssr: false }
+);
+const ProjectDetailModal = dynamic(
+  () => import("@/components/ui/ProjectDetailModal").then((m) => m.ProjectDetailModal),
+  { ssr: false }
+);
+const ConsultationModal = dynamic(
+  () => import("@/components/ui/ConsultationModal").then((m) => m.ConsultationModal),
+  { ssr: false }
+);
+const ClientPortalModal = dynamic(
+  () => import("@/components/ui/ClientPortalModal").then((m) => m.ClientPortalModal),
+  { ssr: false }
+);
+const VendorPortalModal = dynamic(
+  () => import("@/components/ui/VendorPortalModal").then((m) => m.VendorPortalModal),
+  { ssr: false }
+);
 
 import { AudioProvider } from "@/providers/AudioProvider";
 import { SmoothScroll } from "@/providers/SmoothScroll";
@@ -172,36 +204,46 @@ export default function Home() {
             onOpenConsultation={() => openConsultationWithService()}
           />
 
-          {/* Interactive Modals */}
-          <ServiceModal
-            service={selectedService}
-            onClose={() => setSelectedService(null)}
-            onEnquire={(serviceId) =>
-              openConsultationWithService(serviceId)
-            }
-          />
+          {/* Interactive Modals (loaded on demand when opened) */}
+          {selectedService && (
+            <ServiceModal
+              service={selectedService}
+              onClose={() => setSelectedService(null)}
+              onEnquire={(serviceId) =>
+                openConsultationWithService(serviceId)
+              }
+            />
+          )}
 
-          <ProjectDetailModal
-            project={selectedProject}
-            onClose={() => setSelectedProject(null)}
-            onEnquire={(serviceId) => openConsultationWithService(serviceId)}
-          />
+          {selectedProject && (
+            <ProjectDetailModal
+              project={selectedProject}
+              onClose={() => setSelectedProject(null)}
+              onEnquire={(serviceId) => openConsultationWithService(serviceId)}
+            />
+          )}
 
-          <ConsultationModal
-            isOpen={consultationOpen}
-            onClose={() => setConsultationOpen(false)}
-            defaultServiceId={consultationServiceId}
-          />
+          {consultationOpen && (
+            <ConsultationModal
+              isOpen={consultationOpen}
+              onClose={() => setConsultationOpen(false)}
+              defaultServiceId={consultationServiceId}
+            />
+          )}
 
-          <ClientPortalModal
-            isOpen={clientPortalOpen}
-            onClose={() => setClientPortalOpen(false)}
-          />
+          {clientPortalOpen && (
+            <ClientPortalModal
+              isOpen={clientPortalOpen}
+              onClose={() => setClientPortalOpen(false)}
+            />
+          )}
 
-          <VendorPortalModal
-            isOpen={vendorPortalOpen}
-            onClose={() => setVendorPortalOpen(false)}
-          />
+          {vendorPortalOpen && (
+            <VendorPortalModal
+              isOpen={vendorPortalOpen}
+              onClose={() => setVendorPortalOpen(false)}
+            />
+          )}
         </main>
       </SmoothScroll>
     </AudioProvider>

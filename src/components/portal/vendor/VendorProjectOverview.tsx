@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { BillPhotoModal, type BillPhotoTarget } from "@/components/portal/admin/BillPhotoModal";
+import { useVendorLanguage } from "@/providers/VendorLanguageProvider";
 
 export type VendorProjectStatus =
   | "Assigned"
@@ -99,6 +100,24 @@ export function VendorProjectOverview({
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [detailsByProject, setDetailsByProject] = useState<Record<string, ExpandedProjectDetails>>({});
   const [previewBill, setPreviewBill] = useState<BillPhotoTarget | null>(null);
+  const { t } = useVendorLanguage();
+
+  const translateProjectStatus = (status: VendorProjectStatus) => {
+    switch (status) {
+      case "Assigned":
+        return t("statusAssigned");
+      case "In Progress":
+        return t("statusInProgress");
+      case "On Hold":
+        return t("statusOnHold");
+      case "Completed":
+        return t("statusCompleted");
+      case "Cancelled":
+        return t("statusCancelled");
+      default:
+        return status;
+    }
+  };
 
   const loadProjectDetails = async (project: VendorProjectRecord) => {
     setDetailsByProject((prev) => ({
@@ -229,21 +248,20 @@ export function VendorProjectOverview({
               className="mb-8 inline-flex items-center gap-3 font-mono text-[10px] uppercase tracking-widest text-[#77736C] hover:text-[#A58A64]"
             >
               <ArrowLeft size={15} />
-              Vendor Dashboard
+              {t("backToDashboard")}
             </button>
           )}
 
           <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#A58A64]">
-            Vendor Portal / Work Assignments
+            {t("projectsEyebrow")}
           </p>
 
           <h1 className="mt-5 font-serif text-4xl text-[#171717] md:text-5xl">
-            Assigned Projects
+            {t("projectsPageTitle")}
           </h1>
 
           <p className="mt-4 max-w-2xl text-sm leading-7 text-[#77736C]">
-            Review your work assignments, project responsibilities
-            and documents shared by the studio.
+            {t("projectsSubtitle")}
           </p>
         </header>
 
@@ -253,19 +271,19 @@ export function VendorProjectOverview({
           className="mt-8 grid grid-cols-1 gap-px border border-[#D8D6D0] bg-[#D8D6D0] sm:grid-cols-3"
         >
           <SummaryCard
-            label="Total Assignments"
+            label={t("totalAssignments")}
             value={String(projects.length)}
             icon={<Building2 size={19} />}
           />
 
           <SummaryCard
-            label="Active Projects"
+            label={t("activeProjects")}
             value={String(activeProjects.length)}
             icon={<Clock3 size={19} />}
           />
 
           <SummaryCard
-            label="Completed Projects"
+            label={t("completedProjects")}
             value={String(
               projects.filter(
                 (project) => project.status === "Completed"
@@ -279,16 +297,16 @@ export function VendorProjectOverview({
         <section className="mt-14">
           <div className="border-b border-[#D8D6D0] pb-5">
             <p className="font-mono text-[10px] uppercase tracking-widest text-[#A58A64]">
-              Work Portfolio
+              {t("workPortfolio")}
             </p>
 
             <h2 className="mt-3 font-serif text-3xl text-[#171717]">
-              Project Assignments
+              {t("projectAssignments")}
             </h2>
           </div>
 
           {projects.length === 0 ? (
-            <EmptyState message="No projects have been assigned to your vendor account yet." />
+            <EmptyState message={t("noAssignedProjects")} />
           ) : (
             <div className="mt-7 space-y-4">
               {projects.map((project) => {
@@ -327,7 +345,7 @@ export function VendorProjectOverview({
                         <span
                           className={`px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider ${getStatusStyle(project.status)}`}
                         >
-                          {project.status}
+                          {translateProjectStatus(project.status)}
                         </span>
                       </div>
                     </div>
@@ -340,11 +358,11 @@ export function VendorProjectOverview({
                       </div>
                       <div className="flex items-center gap-2.5 min-w-0">
                         <CalendarDays size={13} className="shrink-0 text-[#A58A64]" />
-                        <span>Assigned: {project.assignedAt}</span>
+                        <span>{t("assignedLabel")} {project.assignedAt}</span>
                       </div>
                       <div className="flex items-center gap-2.5 min-w-0">
                         <Clock3 size={13} className="shrink-0 text-[#A58A64]" />
-                        <span>Due: {project.expectedCompletion || "Not specified"}</span>
+                        <span>{t("dueLabel")} {project.expectedCompletion || t("notSpecified")}</span>
                       </div>
                     </div>
 
@@ -359,7 +377,7 @@ export function VendorProjectOverview({
                         {project.projectManager && (
                           <span>PM: {project.projectManager}</span>
                         )}
-                        <span>{project.documents.length} shared files</span>
+                        <span>{project.documents.length} {t("sharedFiles")}</span>
                       </div>
 
                       {!isExpanded && (
@@ -368,7 +386,7 @@ export function VendorProjectOverview({
                           onClick={() => toggleExpand(project)}
                           className="inline-flex items-center gap-1 border border-[#D8D6D0] bg-[#FAF9F6] px-2 py-1 font-mono text-[7px] uppercase tracking-widest text-[#987543] hover:border-[#171717] hover:text-[#171717] transition-colors rounded-sm"
                         >
-                          Review Project
+                          {t("reviewProject")}
                           <ArrowUpRight size={9} />
                         </button>
                       )}
@@ -379,7 +397,7 @@ export function VendorProjectOverview({
                       <div className="mt-4 space-y-4 border-t border-[#D8D6D0] pt-4">
                         {details?.loading ? (
                           <div className="border border-[#E5E2DC] bg-[#FAF9F6] px-4 py-4 text-center text-xs text-[#77736C]">
-                            Loading project details...
+                            {t("loadingProjectDetails")}
                           </div>
                         ) : (
                           <>
@@ -389,7 +407,7 @@ export function VendorProjectOverview({
                                 <div className="flex items-center gap-2">
                                   <Receipt size={14} className="text-[#A58A64]" />
                                   <h4 className="font-serif text-base text-[#171717]">
-                                    Submitted Bills ({details?.bills.length || 0})
+                                    {t("submittedBillsCount")} ({details?.bills.length || 0})
                                   </h4>
                                 </div>
                               </div>
@@ -397,7 +415,7 @@ export function VendorProjectOverview({
                               <div className="mt-3">
                                 {!details || details.bills.length === 0 ? (
                                   <div className="border border-[#E5E2DC] bg-white px-4 py-3 text-center text-xs text-[#77736C]">
-                                    No bills submitted for this project yet.
+                                    {t("noBillsForProject")}
                                   </div>
                                 ) : (
                                   <div className="divide-y divide-[#E5E2DC] border border-[#D8D6D0] bg-white">
@@ -438,18 +456,18 @@ export function VendorProjectOverview({
                               <section className="flex flex-col border border-[#D8D6D0] bg-[#FAF9F6] p-4">
                                 <div className="flex items-center justify-between border-b border-[#E5E2DC] pb-2.5">
                                   <h4 className="font-serif text-base text-[#171717]">
-                                    Phases &amp; Progress
+                                    {t("phasesAndProgress")}
                                   </h4>
                                   {details?.progressPercentage !== undefined && (
                                     <span className="font-mono text-[10px] text-[#A58A64]">
-                                      {details.progressPercentage}% Complete
+                                      {details.progressPercentage}% {t("completePct")}
                                     </span>
                                   )}
                                 </div>
 
                                 {(!details || (details.phases.length === 0 && details.milestones.length === 0)) ? (
                                   <div className="mt-3 flex flex-1 items-center justify-center border border-[#E5E2DC] bg-white p-4 text-center text-xs text-[#77736C]">
-                                    Execution in progress — no phases logged yet.
+                                    {t("noPhasesLogged")}
                                   </div>
                                 ) : (
                                   <div className="mt-3 divide-y divide-[#E5E2DC] border border-[#D8D6D0] bg-white">
@@ -466,16 +484,16 @@ export function VendorProjectOverview({
                               <section className="flex flex-col border border-[#D8D6D0] bg-[#FAF9F6] p-4">
                                 <div className="flex items-center justify-between border-b border-[#E5E2DC] pb-2.5">
                                   <h4 className="font-serif text-base text-[#171717]">
-                                    Shared Project Documents
+                                    {t("sharedProjectDocs")}
                                   </h4>
                                   <span className="font-mono text-[10px] uppercase text-[#99958D]">
-                                    {project.documents.length} Files
+                                    {project.documents.length} {t("filesCount")}
                                   </span>
                                 </div>
 
                                 {project.documents.length === 0 ? (
                                   <div className="mt-3 flex flex-1 items-center justify-center border border-[#E5E2DC] bg-white p-4 text-center text-xs text-[#77736C]">
-                                    No documents shared for this assignment.
+                                    {t("noSharedDocs")}
                                   </div>
                                 ) : (
                                   <div className="mt-3 divide-y divide-[#E5E2DC] border border-[#D8D6D0] bg-white">
@@ -510,7 +528,7 @@ export function VendorProjectOverview({
                             className="inline-flex items-center gap-1 border border-[#D8D6D0] bg-white px-2 py-1 font-mono text-[7px] uppercase tracking-widest text-[#77736C] hover:border-[#171717] hover:text-[#171717] transition-colors"
                           >
                             <X size={9} />
-                            Close Review
+                            {t("closeReview")}
                           </button>
                         </div>
                       </div>
@@ -530,16 +548,14 @@ export function VendorProjectOverview({
           />
 
           <p className="text-xs leading-6 text-[#77736C]">
-            Project assignments and shared documents are restricted
-            to authorised vendor accounts. Access permissions are
-            enforced by the server.
+            {t("projectSecurityNotice")}
           </p>
         </div>
 
         {/* Footer */}
         <footer className="mt-12 border-t border-[#D8D6D0] pt-6">
           <p className="font-mono text-[9px] uppercase tracking-widest text-[#99958D]">
-            ARCHEON DESIGN STUDIO / CONFIDENTIAL VENDOR WORKSPACE
+            {t("confidentialWorkspace")}
           </p>
         </footer>
       </div>
