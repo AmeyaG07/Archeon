@@ -135,17 +135,17 @@ export function ClientPortalDashboard({
       <div className="mx-auto max-w-7xl">
 
         {/* Top Header */}
-        <header className="flex flex-col justify-between gap-6 border-b border-[#D8D6D0] pb-9 sm:flex-row sm:items-end">
+        <header className="flex flex-col justify-between gap-4 border-b border-[#D8D6D0] pb-6 sm:flex-row sm:items-end">
           <div>
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#A58A64]">
+            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-[#8A6D43]">
               ARCHEON DESIGN STUDIO / CLIENT PORTAL
             </p>
 
-            <h1 className="mt-5 font-serif text-4xl text-[#171717] md:text-5xl">
+            <h1 className="mt-2.5 font-serif text-3xl text-[#171717] md:text-4xl">
               Welcome, {data.clientName}
             </h1>
 
-            <p className="mt-4 text-sm leading-7 text-[#77736C]">
+            <p className="mt-2 text-sm leading-6 text-[#66625B]">
               Your projects, shared documents and account activity
               in one place.
             </p>
@@ -155,36 +155,36 @@ export function ClientPortalDashboard({
         {/* Overview Cards */}
         <section
           aria-label="Account overview"
-          className="mt-8 grid grid-cols-1 gap-px border border-[#D8D6D0] bg-[#D8D6D0] sm:grid-cols-3"
+          className="mt-7 grid grid-cols-1 gap-px border border-[#D8D6D0] bg-[#D8D6D0] sm:grid-cols-3"
         >
           <OverviewCard
             label="Assigned Projects"
             value={String(data.projects.length)}
-            icon={<Building2 size={19} />}
+            icon={<Building2 size={18} />}
           />
 
           <OverviewCard
             label="Outstanding Balance"
             value={formatCurrency(outstandingTotal)}
-            icon={<IndianRupee size={19} />}
+            icon={<IndianRupee size={18} />}
           />
 
           <OverviewCard
             label="Invoices"
             value={String(data.invoices.length)}
-            icon={<FileText size={19} />}
+            icon={<FileText size={18} />}
           />
         </section>
 
         {/* Projects */}
-        <section className="mt-14">
-          <div className="flex items-end justify-between gap-4 border-b border-[#D8D6D0] pb-5">
+        <section className="mt-9">
+          <div className="flex items-end justify-between gap-4 border-b border-[#D8D6D0] pb-4">
             <div>
-              <p className="font-mono text-[10px] uppercase tracking-widest text-[#A58A64]">
+              <p className="font-mono text-xs font-semibold uppercase tracking-[0.16em] text-[#8A6D43]">
                 Your Work
               </p>
 
-              <h2 className="mt-3 font-serif text-3xl text-[#171717]">
+              <h2 className="mt-2 font-serif text-2xl text-[#171717] md:text-3xl">
                 My Projects
               </h2>
             </div>
@@ -192,7 +192,7 @@ export function ClientPortalDashboard({
             <button
               type="button"
               onClick={onOpenProjects}
-              className="inline-flex items-center gap-2 text-[10px] uppercase tracking-widest text-[#77736C] hover:text-[#A58A64]"
+              className="inline-flex items-center gap-2 text-[11px] font-medium uppercase tracking-widest text-[#66625B] hover:text-[#A58A64]"
             >
               All Projects
               <ArrowUpRight size={15} />
@@ -386,16 +386,16 @@ function OverviewCard({
   icon: React.ReactNode;
 }) {
   return (
-    <div className="bg-white p-6 md:p-7">
+    <div className="bg-white p-4 sm:p-5">
       <div className="flex items-center justify-between gap-3">
-        <p className="font-mono text-[9px] uppercase tracking-widest text-[#99958D]">
+        <p className="font-mono text-xs font-medium uppercase tracking-[0.12em] text-[#55514A]">
           {label}
         </p>
 
         <span className="text-[#A58A64]">{icon}</span>
       </div>
 
-      <p className="mt-7 break-words font-serif text-2xl text-[#171717] md:text-3xl">
+      <p className="mt-3 break-words font-serif text-2xl text-[#171717] sm:text-3xl">
         {value}
       </p>
     </div>

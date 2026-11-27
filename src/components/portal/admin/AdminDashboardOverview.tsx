@@ -6,7 +6,6 @@ import {
   Activity,
   AlertCircle,
   ArrowDownRight,
-  ArrowRight,
   ArrowUpRight,
   Banknote,
   Building2,
@@ -212,17 +211,17 @@ export function AdminDashboardOverview({
     <main className="min-h-screen bg-[#F2F0EB] px-5 py-9 md:px-10 md:py-12 lg:px-12">
 
       {/* Heading */}
-      <header className="flex flex-col justify-between gap-5 border-b border-[#D8D6D0] pb-8 md:flex-row md:items-end">
+      <header className="flex flex-col justify-between gap-4 border-b border-[#D8D6D0] pb-6 md:flex-row md:items-end">
         <div>
-          <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#A58A64]">
+          <p className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-[#8A6D43]">
             Studio Operations / Dashboard
           </p>
 
-          <h1 className="mt-4 font-serif text-4xl text-[#171717] md:text-5xl">
+          <h1 className="mt-2.5 font-serif text-3xl text-[#171717] md:text-4xl">
             Operations Overview
           </h1>
 
-          <p className="mt-3 max-w-xl text-sm leading-7 text-[#77736C]">
+          <p className="mt-2 max-w-xl text-sm leading-6 text-[#66625B]">
             Monitor projects, financial activity, enquiries and
             operational decisions across the studio.
           </p>
@@ -230,7 +229,7 @@ export function AdminDashboardOverview({
 
         <div className="flex flex-wrap items-center gap-4">
           {data.lastUpdatedAt && (
-            <p className="font-mono text-[9px] text-[#99958D]">
+            <p className="font-mono text-[11px] text-[#77736C]">
               Updated: {formatDate(data.lastUpdatedAt)}
             </p>
           )}
@@ -248,48 +247,48 @@ export function AdminDashboardOverview({
       )}
 
       {/* Main Metrics */}
-      <section className="mt-9">
+      <section className="mt-7">
         <SectionLabel>Operational Summary</SectionLabel>
 
-        <div className="mt-5 grid grid-cols-1 gap-px border border-[#D8D6D0] bg-[#D8D6D0] sm:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-3.5 grid grid-cols-1 gap-px border border-[#D8D6D0] bg-[#D8D6D0] sm:grid-cols-2 xl:grid-cols-4">
           <MetricCard
             label="Active Projects"
             value={metrics.activeProjects}
-            icon={<FolderKanban size={19} />}
+            icon={<FolderKanban size={18} />}
             onClick={onOpenProjects}
           />
 
           <MetricCard
             label="Completed Projects"
             value={metrics.completedProjects}
-            icon={<CheckCircle2 size={19} />}
+            icon={<CheckCircle2 size={18} />}
             onClick={onOpenProjects}
           />
 
           <MetricCard
             label="Registered Clients"
             value={metrics.totalClients}
-            icon={<Users size={19} />}
+            icon={<Users size={18} />}
           />
 
           <MetricCard
             label="Active Vendors"
             value={metrics.activeVendors}
-            icon={<Building2 size={19} />}
+            icon={<Building2 size={18} />}
           />
         </div>
       </section>
 
       {/* Attention Required */}
-      <section className="mt-11">
+      <section className="mt-8">
         <SectionLabel>Attention Required</SectionLabel>
 
-        <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-3.5 grid grid-cols-1 gap-3.5 md:grid-cols-2 xl:grid-cols-4">
           <AttentionCard
             label="Outstanding Receivables"
             value={formatCurrency(metrics.outstandingReceivables)}
             description="Total uncollected studio client dues"
-            icon={<IndianRupee size={19} />}
+            icon={<IndianRupee size={18} />}
             onClick={onOpenFinance}
             monetary
           />
@@ -298,7 +297,7 @@ export function AdminDashboardOverview({
             label="New Enquiries"
             value={metrics.newEnquiries}
             description="Enquiries requiring follow-up"
-            icon={<Users size={19} />}
+            icon={<Users size={18} />}
             onClick={onOpenEnquiries}
           />
 
@@ -306,7 +305,7 @@ export function AdminDashboardOverview({
             label="Pending Invoices"
             value={metrics.pendingInvoices}
             description="Invoices awaiting processing"
-            icon={<FileText size={19} />}
+            icon={<FileText size={18} />}
             onClick={onOpenFinance}
           />
 
@@ -314,7 +313,7 @@ export function AdminDashboardOverview({
             label="Overdue Receivables"
             value={formatCurrency(metrics.overdueReceivables)}
             description="Outstanding amounts past due"
-            icon={<Clock3 size={19} />}
+            icon={<Clock3 size={18} />}
             onClick={onOpenFinance}
             monetary
           />
@@ -322,23 +321,23 @@ export function AdminDashboardOverview({
       </section>
 
       {/* Finance */}
-      <section className="mt-11">
+      <section className="mt-8">
         <SectionLabel>Financial Position</SectionLabel>
 
-        <div className="mt-5 grid grid-cols-1 gap-px border border-[#D8D6D0] bg-[#D8D6D0] md:grid-cols-2">
-          <div className="bg-white p-7 md:p-9">
+        <div className="mt-3.5 grid grid-cols-1 gap-px border border-[#D8D6D0] bg-[#D8D6D0] md:grid-cols-2">
+          <div className="bg-white p-5 md:p-6">
             <div className="flex items-center justify-between">
-              <p className="font-mono text-[9px] uppercase tracking-widest text-[#99958D]">
+              <p className="font-mono text-xs font-medium uppercase tracking-[0.12em] text-[#55514A]">
                 Outstanding Receivables
               </p>
-              <IndianRupee size={19} className="text-[#A58A64]" />
+              <IndianRupee size={18} className="text-[#A58A64]" />
             </div>
 
-            <p className="mt-6 font-serif text-3xl text-[#171717] md:text-4xl">
+            <p className="mt-3 font-serif text-2xl text-[#171717] md:text-3xl">
               {formatCurrency(metrics.outstandingReceivables)}
             </p>
 
-            <p className="mt-3 text-xs leading-6 text-[#77736C]">
+            <p className="mt-2 text-xs leading-5 text-[#66625B]">
               Total unpaid receivables recorded by the finance system.
             </p>
 
@@ -346,7 +345,7 @@ export function AdminDashboardOverview({
               <button
                 type="button"
                 onClick={onOpenFinance}
-                className="mt-7 inline-flex items-center gap-2 text-[9px] uppercase tracking-widest text-[#987543]"
+                className="mt-4 inline-flex items-center gap-2 text-[11px] font-medium uppercase tracking-widest text-[#987543] hover:text-[#171717]"
               >
                 View Finance Records
                 <ArrowUpRight size={14} />
@@ -354,19 +353,19 @@ export function AdminDashboardOverview({
             )}
           </div>
 
-          <div className="bg-white p-7 md:p-9">
+          <div className="bg-white p-5 md:p-6">
             <div className="flex items-center justify-between">
-              <p className="font-mono text-[9px] uppercase tracking-widest text-[#99958D]">
+              <p className="font-mono text-xs font-medium uppercase tracking-[0.12em] text-[#55514A]">
                 Overdue Receivables
               </p>
-              <Clock3 size={19} className="text-[#A58A64]" />
+              <Clock3 size={18} className="text-[#A58A64]" />
             </div>
 
-            <p className="mt-6 font-serif text-3xl text-[#171717] md:text-4xl">
+            <p className="mt-3 font-serif text-2xl text-[#171717] md:text-3xl">
               {formatCurrency(metrics.overdueReceivables)}
             </p>
 
-            <p className="mt-3 text-xs leading-6 text-[#77736C]">
+            <p className="mt-2 text-xs leading-5 text-[#66625B]">
               Unpaid receivables classified as overdue by the backend.
             </p>
 
@@ -374,7 +373,7 @@ export function AdminDashboardOverview({
               <button
                 type="button"
                 onClick={onOpenFinance}
-                className="mt-7 inline-flex items-center gap-2 text-[9px] uppercase tracking-widest text-[#987543]"
+                className="mt-4 inline-flex items-center gap-2 text-[11px] font-medium uppercase tracking-widest text-[#987543] hover:text-[#171717]"
               >
                 Review Receivables
                 <ArrowUpRight size={14} />
@@ -501,13 +500,13 @@ export function AdminDashboardOverview({
             ) : (
               data.activities.slice(0, 5).map((activity) => {
                 const Icon = getActivityIcon(activity.type);
+                const isCashSettlement = activity.title
+                  .toUpperCase()
+                  .includes("CASH_SETTLEMENT");
                 return (
-                  <button
+                  <div
                     key={activity.id}
-                    type="button"
-                    onClick={() => onOpenActivity?.(activity.id)}
-                    disabled={!onOpenActivity}
-                    className="w-full border border-[#D8D6D0] bg-white p-4 text-left transition-colors hover:border-[#A58A64] disabled:cursor-default"
+                    className="w-full border border-[#D8D6D0] bg-white p-4 text-left"
                   >
                     <div className="flex items-start gap-3.5">
                       <span className="flex h-9 w-9 shrink-0 items-center justify-center border border-[#E5E2DC] bg-[#FAF9F6] text-[#A58A64]">
@@ -515,18 +514,19 @@ export function AdminDashboardOverview({
                       </span>
                       <div className="min-w-0 flex-1">
                         <span className="block text-xs font-medium text-[#33312D]">
-                          {activity.title}
+                          {isCashSettlement ? "Cash Settlement" : activity.title}
                         </span>
-                        <span className="mt-1 block text-[11px] leading-relaxed text-[#77736C] line-clamp-2">
+                        <span className="mt-1 block text-xs leading-relaxed text-[#55514A]">
                           {activity.description}
                         </span>
-                        <span className="mt-2 block font-mono text-[9px] text-[#99958D]">
-                          {activity.actorName} · {formatDate(activity.occurredAt)}
-                        </span>
+                        {!isCashSettlement && (
+                          <span className="mt-1.5 block font-mono text-[10px] text-[#77736C]">
+                            {activity.actorName} · {formatDate(activity.occurredAt)}
+                          </span>
+                        )}
                       </div>
-                      <ArrowRight size={13} className="mt-1 shrink-0 text-[#A58A64]" />
                     </div>
-                  </button>
+                  </div>
                 );
               })
             )}
@@ -559,7 +559,7 @@ export function AdminDashboardOverview({
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#A58A64]">
+    <p className="font-mono text-xs font-semibold uppercase tracking-[0.16em] text-[#8A6D43]">
       {children}
     </p>
   );
@@ -579,14 +579,14 @@ function MetricCard({
   const content = (
     <>
       <div className="flex items-center justify-between gap-3">
-        <p className="font-mono text-[9px] uppercase tracking-widest text-[#99958D]">
+        <p className="font-mono text-xs font-medium uppercase tracking-[0.12em] text-[#55514A]">
           {label}
         </p>
 
         <span className="text-[#A58A64]">{icon}</span>
       </div>
 
-      <p className="mt-7 font-serif text-4xl text-[#171717]">
+      <p className="mt-3 font-serif text-2xl text-[#171717] sm:text-3xl">
         {value.toLocaleString("en-IN")}
       </p>
     </>
@@ -596,12 +596,12 @@ function MetricCard({
     <button
       type="button"
       onClick={onClick}
-      className="bg-white p-6 text-left transition-colors hover:bg-[#FAF9F6] md:p-7"
+      className="bg-white p-4 text-left transition-colors hover:bg-[#FAF9F6] sm:p-5"
     >
       {content}
     </button>
   ) : (
-    <div className="bg-white p-6 md:p-7">{content}</div>
+    <div className="bg-white p-4 sm:p-5">{content}</div>
   );
 }
 
@@ -623,7 +623,7 @@ function AttentionCard({
   const content = (
     <>
       <div className="flex items-center justify-between gap-3">
-        <p className="font-mono text-[9px] uppercase tracking-widest text-[#99958D]">
+        <p className="font-mono text-xs font-medium uppercase tracking-[0.12em] text-[#55514A]">
           {label}
         </p>
 
@@ -631,14 +631,14 @@ function AttentionCard({
       </div>
 
       <p
-        className={`mt-6 font-serif text-[#171717] ${
-          monetary ? "text-2xl" : "text-4xl"
+        className={`mt-3 font-serif text-[#171717] ${
+          monetary ? "text-xl sm:text-2xl" : "text-2xl sm:text-3xl"
         }`}
       >
         {monetary ? value : Number(value).toLocaleString("en-IN")}
       </p>
 
-      <p className="mt-3 text-[10px] leading-5 text-[#77736C]">
+      <p className="mt-1.5 text-xs leading-5 text-[#66625B]">
         {description}
       </p>
     </>
@@ -648,12 +648,12 @@ function AttentionCard({
     <button
       type="button"
       onClick={onClick}
-      className="border border-[#D8D6D0] bg-white p-6 text-left transition-colors hover:border-[#A58A64]"
+      className="border border-[#D8D6D0] bg-white p-4 text-left transition-colors hover:border-[#A58A64] sm:p-5"
     >
       {content}
     </button>
   ) : (
-    <div className="border border-[#D8D6D0] bg-white p-6">
+    <div className="border border-[#D8D6D0] bg-white p-4 sm:p-5">
       {content}
     </div>
   );

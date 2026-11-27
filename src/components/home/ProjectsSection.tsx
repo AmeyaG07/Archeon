@@ -23,7 +23,7 @@ export function ProjectsSection({
   return (
     <section
       id="projects"
-      className="relative overflow-hidden bg-white pt-6 pb-20 sm:pt-8 sm:pb-28"
+      className="relative overflow-hidden bg-white pt-12 pb-14 sm:pt-16 sm:pb-20"
     >
       {/* Thematic Background: Architectural Elevation Datums, Dimension Strings & Gallery Aperture */}
       <div className="pointer-events-none absolute inset-0 -z-0 overflow-hidden select-none">

@@ -2,6 +2,7 @@ package com.webui.backend.service;
 
 import com.webui.backend.dto.dashboard.DashboardDto;
 import com.webui.backend.model.AuditEventEntity;
+import com.webui.backend.model.CashSettlementEntity;
 import com.webui.backend.model.ClientEntity;
 import com.webui.backend.model.InvoiceEntity;
 import com.webui.backend.model.OperationalProjectEntity;
@@ -103,15 +104,31 @@ public class DashboardService {
         // Recent Activity Stream (last 10 events)
         List<AuditEventEntity> events = auditEventRepository.findAllByOrderByTimestampDesc(PageRequest.of(0, 10)).getContent();
         List<DashboardDto.ActivityEventSummary> activitySummaries = events.stream()
-                .map(e -> DashboardDto.ActivityEventSummary.builder()
-                        .eventId(String.valueOf(e.getId()))
-                        .actor(e.getActorId())
-                        .role(e.getActorRole())
-                        .action(e.getAction())
-                        .entityName(e.getEntityName())
-                        .summary(e.getAction() + " on " + e.getEntityName() + " (" + e.getEntityId() + ")")
-                        .timestamp(e.getTimestamp())
-                        .build())
+                .map(e -> {
+                    String summary = e.getAction() + " on " + e.getEntityName() + " (" + e.getEntityId() + ")";
+                    if ("CashSettlement".equalsIgnoreCase(e.getEntityName()) && e.getEntityId() != null) {
+                        CashSettlementEntity cs = cashSettlementRepository.findBySettlementRef(e.getEntityId()).orElse(null);
+                        if (cs != null) {
+                            String initiatorLabel = resolvePartyName(cs.getInitiatorId());
+                            String counterpartyLabel = resolvePartyName(cs.getCounterpartyId());
+                            String curr = "INR".equalsIgnoreCase(cs.getCurrency()) || cs.getCurrency() == null ? "₹" : cs.getCurrency() + " ";
+                            summary = String.format("%s%,.0f — Initiated by %s to %s",
+                                    curr,
+                                    cs.getAmount() != null ? cs.getAmount() : BigDecimal.ZERO,
+                                    initiatorLabel,
+                                    counterpartyLabel);
+                        }
+                    }
+                    return DashboardDto.ActivityEventSummary.builder()
+                            .eventId(String.valueOf(e.getId()))
+                            .actor(e.getActorId())
+                            .role(e.getActorRole())
+                            .action(e.getAction())
+                            .entityName(e.getEntityName())
+                            .summary(summary)
+                            .timestamp(e.getTimestamp())
+                            .build();
+                })
                 .collect(Collectors.toList());
 
         return DashboardDto.AdminDashboardResponse.builder()
@@ -127,6 +144,38 @@ public class DashboardService {
                 .aging(aging)
                 .recentActivities(activitySummaries)
                 .build();
+    }
+
+    private String resolvePartyName(String partyRef) {
+        if (partyRef == null || partyRef.isBlank()) {
+            return "Unknown";
+        }
+        try {
+            java.util.UUID uuid = java.util.UUID.fromString(partyRef);
+            VendorEntity vendorById = vendorRepository.findById(uuid).orElse(null);
+            if (vendorById != null && vendorById.getBusinessName() != null && !vendorById.getBusinessName().isBlank()) {
+                return vendorById.getBusinessName();
+            }
+            ClientEntity clientById = clientRepository.findById(uuid).orElse(null);
+            if (clientById != null && clientById.getFullName() != null && !clientById.getFullName().isBlank()) {
+                return clientById.getFullName();
+            }
+        } catch (IllegalArgumentException ignored) {
+            // Not a UUID, fall through to reference/username lookup
+        }
+        VendorEntity vendor = vendorRepository.findByVendorReference(partyRef).orElse(null);
+        if (vendor != null && vendor.getBusinessName() != null && !vendor.getBusinessName().isBlank()) {
+            return vendor.getBusinessName();
+        }
+        ClientEntity client = clientRepository.findByClientReference(partyRef).orElse(null);
+        if (client != null && client.getFullName() != null && !client.getFullName().isBlank()) {
+            return client.getFullName();
+        }
+        com.webui.backend.model.UserEntity user = userRepository.findByUsername(partyRef).orElse(null);
+        if (user != null && user.getFullName() != null && !user.getFullName().isBlank()) {
+            return user.getFullName();
+        }
+        return partyRef;
     }
 
     @Transactional(readOnly = true)
