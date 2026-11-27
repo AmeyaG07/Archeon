@@ -16,6 +16,7 @@ const routes: Record<AdminPortalSection, string> = {
   vendors: "/admin/vendors",
   team: "/admin/team",
   invoices: "/admin/invoices",
+  notifications: "/admin/notifications",
   "cash-settlements": "/admin/cash-settlements",
   "finance-reports": "/admin/finance-reports",
   settings: "/admin/settings",
@@ -28,6 +29,7 @@ function getActiveSection(pathname: string): AdminPortalSection {
   if (pathname.includes("/clients")) return "clients";
   if (pathname.includes("/vendors")) return "vendors";
   if (pathname.includes("/team")) return "team";
+  if (pathname.includes("/notifications")) return "notifications";
   if (pathname.includes("/invoices")) return "invoices";
   if (pathname.includes("/approvals")) return "invoices";
   if (pathname.includes("/cash")) return "cash-settlements";

@@ -21,6 +21,9 @@ public class BillingExpenseController {
     @Autowired
     private BillingExpenseService billingExpenseService;
 
+    @Autowired(required = false)
+    private com.webui.backend.service.WhatsAppAutomationService whatsAppAutomationService;
+
     // 1. Submit Bill (Vendor -> Project/Client)
     @PostMapping("/bills")
     public ResponseEntity<?> submitBill(@RequestBody SubmitBillRequest req, Authentication auth) {
@@ -178,5 +181,25 @@ public class BillingExpenseController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
+    }
+
+    // 9. Automated 3-Day Pending Vendor Bill WhatsApp Reminders (Scheduled daily at 9 AM + On-Demand Trigger)
+    @PostMapping("/reminders/run-3day")
+    public ResponseEntity<?> runThreeDayWhatsAppReminders(
+            @RequestParam(defaultValue = "false") boolean force,
+            Authentication auth
+    ) {
+        if (auth == null || !auth.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Authentication required"));
+        }
+        boolean isAdminOrFinance = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_FINANCE_MANAGER"));
+        if (!isAdminOrFinance) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Only Studio Admin or Finance can trigger 3-day payment reminders"));
+        }
+        if (whatsAppAutomationService == null) {
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(Map.of("error", "WhatsApp automation service is unavailable"));
+        }
+        return ResponseEntity.ok(whatsAppAutomationService.runThreeDayPendingBillReminders(force));
     }
 }

@@ -24,6 +24,7 @@ import {
   ShieldCheck,
   Search,
   Globe,
+  Bell,
 } from "lucide-react";
 
 export type AdminPortalSection =
@@ -35,6 +36,7 @@ export type AdminPortalSection =
   | "vendors"
   | "team"
   | "invoices"
+  | "notifications"
   | "cash-settlements"
   | "finance-reports"
   | "settings";
@@ -115,6 +117,12 @@ const NAVIGATION_GROUPS: NavigationGroup[] = [
         label: "Invoices & Bills",
         description: "Financial records",
         icon: FileText,
+      },
+      {
+        id: "notifications",
+        label: "Notifications",
+        description: "Billing alerts & receipts",
+        icon: Bell,
       },
       {
         id: "cash-settlements",

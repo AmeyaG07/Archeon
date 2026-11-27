@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { X, MessageSquare, Send, ExternalLink, CheckCircle2, AlertCircle, Phone, Receipt, Users } from "lucide-react";
+import { X, MessageSquare, Send, ExternalLink, CheckCircle2, AlertCircle, Phone, Receipt, Users, Clock3 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 
 interface ClientOption {
@@ -72,6 +72,33 @@ export function AdminNotifyBillsWhatsAppModal({
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to dispatch WhatsApp bill notification.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleRunThreeDayReminders = async () => {
+    setSubmitting(true);
+    setError(null);
+    setSuccessMessage(null);
+    try {
+      const res = await apiFetch("/api/billing/reminders/run-3day", {
+        method: "POST",
+      });
+      const data = await res.json();
+      const dispatches = Array.isArray(data?.dispatches) ? data.dispatches : [];
+      setDispatchedItems(dispatches);
+      if (dispatches.length > 0) {
+        setSuccessMessage(
+          `3-day automated reminders dispatched for ${data.clientsNotified ?? dispatches.length} client(s) across ${data.remindersDispatched ?? dispatches.length} pending vendor bill(s).`
+        );
+      } else {
+        setSuccessMessage(
+          `3-day automated schedule active (every ${data?.reminderIntervalDays ?? 3} days). No pending vendor bills are currently overdue for a reminder.`
+        );
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to run 3-day automated reminders.");
     } finally {
       setSubmitting(false);
     }
@@ -208,6 +235,30 @@ export function AdminNotifyBillsWhatsAppModal({
               </div>
             </div>
           )}
+
+          {/* 3-Day Automated Schedule Info + On-Demand Trigger */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] p-3.5 text-xs">
+            <div className="flex items-start gap-2.5">
+              <Clock3 size={15} className="shrink-0 mt-0.5 text-[#A58A64]" />
+              <div>
+                <p className="font-mono text-[10px] uppercase tracking-wider text-[#171717] font-semibold">
+                  Automated 3-Day Pending Bill Reminder · Active (Daily 9:00 AM)
+                </p>
+                <p className="text-[11px] text-[#55514A] mt-0.5">
+                  Automatically sends a WhatsApp reminder every 3 days to clients with unpaid vendor bills.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleRunThreeDayReminders}
+              disabled={submitting}
+              className="shrink-0 inline-flex items-center justify-center gap-1.5 px-3.5 py-2 border border-[#128C7E] bg-white text-[#128C7E] hover:bg-[#E8F8EE] font-mono text-[10px] uppercase tracking-wider rounded-sm transition-colors disabled:opacity-50 cursor-pointer"
+            >
+              <Clock3 size={12} />
+              Run 3-Day Due Now
+            </button>
+          </div>
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-4 border-t border-[#E8E6E0]">
