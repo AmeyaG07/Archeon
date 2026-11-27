@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion, useScroll, useSpring } from "framer-motion";
-import { ArrowUpRight, Shield, ChevronDown, Phone, Mail } from "lucide-react";
+import { ArrowUpRight, ChevronDown, Phone, Mail } from "lucide-react";
 import { useAuth } from "@/providers/AuthProvider";
 
 interface HeaderProps {
@@ -262,7 +262,6 @@ export function Header({
                   : "border-[#B68A4A]/55 bg-[#B68A4A]/10 text-[#F2F0EB] hover:border-[#B68A4A] hover:bg-[#B68A4A]/20 hover:text-white"
                   }`}
               >
-                <Shield size={14} className="text-[#B68A4A] pointer-events-none" />
                 <span className="pointer-events-none">Portals</span>
                 <ChevronDown
                   size={14}

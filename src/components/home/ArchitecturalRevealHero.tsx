@@ -239,10 +239,6 @@ export function ArchitecturalRevealHero({
               <span className="bg-gradient-to-b from-[#E5CCA2] via-[#CEA972] to-[#B08A54] bg-clip-text text-transparent">
                 Way You Live
               </span>
-              <span
-                className="inline-block w-[0.16em] h-[0.16em] ml-[0.06em] bg-[#B91C1C] align-baseline"
-                aria-hidden="true"
-              />
             </span>
           </h1>
 
