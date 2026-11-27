@@ -340,11 +340,10 @@ export function ClientProjectOverview({
               return (
                 <article
                   key={project.id}
-                  className={`border bg-white p-6 sm:p-8 transition-all duration-300 ${
-                    isExpanded
-                      ? "border-[#A58A64] shadow-md"
-                      : "border-[#D8D6D0] hover:border-[#B68A4A]"
-                  }`}
+                  className={`border bg-white p-6 sm:p-8 transition-all duration-300 ${isExpanded
+                    ? "border-[#A58A64] shadow-md"
+                    : "border-[#D8D6D0] hover:border-[#B68A4A]"
+                    }`}
                 >
                   {/* Top Summary Card Header */}
                   <div className="flex flex-wrap items-center justify-between gap-3">
