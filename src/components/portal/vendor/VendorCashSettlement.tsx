@@ -16,6 +16,7 @@ import {
   X,
   Upload,
   Camera,
+  Edit3,
 } from "lucide-react";
 import { useVendorLanguage } from "@/providers/VendorLanguageProvider";
 
@@ -40,6 +41,7 @@ export interface VendorCashSettlementRecord {
   financeVerifiedAt?: string;
   financeRemark?: string;
   disputeReason?: string;
+  receiptUrl?: string;
 }
 
 export interface VendorSettlementAcknowledgement {
@@ -57,6 +59,13 @@ interface VendorCashSettlementProps {
     decision: VendorSettlementAcknowledgement
   ) => void | Promise<void>;
   onRaiseCashBill?: (
+    photoUrl: string,
+    amount: number,
+    cashRequest: string,
+    markPaidInCash: boolean
+  ) => void | Promise<void>;
+  onEditCashBill?: (
+    settlementId: string,
     photoUrl: string,
     amount: number,
     cashRequest: string,
@@ -112,6 +121,7 @@ export function VendorCashSettlement({
   error,
   onSubmitDecision,
   onRaiseCashBill,
+  onEditCashBill,
   onDirectMarkPaidInCash,
   onOpenDetails,
   onRefresh,
@@ -126,8 +136,9 @@ export function VendorCashSettlement({
   const [disputeReason, setDisputeReason] = useState("");
   const [validationError, setValidationError] = useState("");
 
-  // Raise Cash Bill Modal State
+  // Raise / Edit Cash Bill Modal State
   const [showRaiseModal, setShowRaiseModal] = useState(false);
+  const [editingSettlement, setEditingSettlement] = useState<VendorCashSettlementRecord | null>(null);
   const [raisePhotoUrl, setRaisePhotoUrl] = useState("");
   const [raiseAmount, setRaiseAmount] = useState("");
   const [raiseRequestNotes, setRaiseRequestNotes] = useState("");
@@ -136,25 +147,63 @@ export function VendorCashSettlement({
   const [directUpdatingId, setDirectUpdatingId] = useState<string | null>(null);
   const { t } = useVendorLanguage();
 
+  function openCreateCashModal() {
+    setEditingSettlement(null);
+    setRaisePhotoUrl("");
+    setRaiseAmount("");
+    setRaiseRequestNotes("");
+    setMarkPaidInCash(false);
+    setShowRaiseModal(true);
+  }
+
+  function openEditCashModal(settlement: VendorCashSettlementRecord) {
+    setEditingSettlement(settlement);
+    setRaisePhotoUrl(settlement.receiptUrl || "");
+    setRaiseAmount(String(settlement.settlementAmount ?? ""));
+    setRaiseRequestNotes(settlement.description || "");
+    setMarkPaidInCash(
+      settlement.status === "Finance Verification Pending" ||
+      settlement.status === "Vendor Acknowledged"
+    );
+    setShowRaiseModal(true);
+  }
+
   const handleRaiseSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!raiseAmount || !raiseRequestNotes || !onRaiseCashBill) return;
+    if (!raiseAmount || !raiseRequestNotes) return;
+    if (editingSettlement && !onEditCashBill) return;
+    if (!editingSettlement && !onRaiseCashBill) return;
+
     setIsRaising(true);
     try {
-      await onRaiseCashBill(
-        raisePhotoUrl,
-        parseFloat(raiseAmount),
-        raiseRequestNotes,
-        markPaidInCash
-      );
+      if (editingSettlement && onEditCashBill) {
+        await onEditCashBill(
+          editingSettlement.id,
+          raisePhotoUrl,
+          parseFloat(raiseAmount),
+          raiseRequestNotes,
+          markPaidInCash
+        );
+      } else if (onRaiseCashBill) {
+        await onRaiseCashBill(
+          raisePhotoUrl,
+          parseFloat(raiseAmount),
+          raiseRequestNotes,
+          markPaidInCash
+        );
+      }
       setShowRaiseModal(false);
+      setEditingSettlement(null);
       setRaisePhotoUrl("");
       setRaiseAmount("");
       setRaiseRequestNotes("");
       setMarkPaidInCash(false);
     } catch (err) {
       console.error(err);
-      alert("Failed to raise cash bill: " + (err instanceof Error ? err.message : String(err)));
+      alert(
+        (editingSettlement ? "Failed to update cash bill: " : "Failed to raise cash bill: ") +
+          (err instanceof Error ? err.message : String(err))
+      );
     } finally {
       setIsRaising(false);
     }
@@ -235,7 +284,7 @@ export function VendorCashSettlement({
             <div className="flex items-center gap-3">
               <button
                 type="button"
-                onClick={() => setShowRaiseModal(true)}
+                onClick={openCreateCashModal}
                 className="inline-flex items-center gap-2 bg-[#171717] px-4 py-2 font-mono text-[10px] uppercase tracking-wider text-white hover:bg-[#A58A64] transition-colors shadow-sm"
               >
                 <Plus size={14} /> {t("raiseCashBill")}
@@ -463,6 +512,20 @@ export function VendorCashSettlement({
                         </>
                       )}
 
+                      {onEditCashBill &&
+                        settlement.status !== "Finance Verified" &&
+                        settlement.status !== "Rejected" && (
+                          <button
+                            type="button"
+                            onClick={() => openEditCashModal(settlement)}
+                            disabled={Boolean(submittingId)}
+                            className="inline-flex items-center gap-1.5 border border-[#D8D6D0] bg-white px-4 py-3 text-[10px] font-mono uppercase tracking-wider text-[#171717] hover:border-[#A58A64] transition-colors disabled:opacity-50"
+                          >
+                            <Edit3 size={14} className="text-[#A58A64]" />
+                            Edit
+                          </button>
+                        )}
+
                       {onOpenDetails && (
                         <button
                           type="button"
@@ -604,15 +667,18 @@ export function VendorCashSettlement({
               <div className="flex items-center justify-between border-b border-[#D8D6D0] pb-4">
                 <div>
                   <p className="font-mono text-[10px] uppercase tracking-widest text-[#A58A64]">
-                    Physical Site Settlement
+                    {editingSettlement ? editingSettlement.referenceCode : "Physical Site Settlement"}
                   </p>
                   <h3 className="font-serif text-xl text-[#171717]">
-                    Raise a Cash Bill
+                    {editingSettlement ? "Edit Cash Bill" : "Raise a Cash Bill"}
                   </h3>
                 </div>
                 <button
                   type="button"
-                  onClick={() => setShowRaiseModal(false)}
+                  onClick={() => {
+                    setShowRaiseModal(false);
+                    setEditingSettlement(null);
+                  }}
                   className="flex h-8 w-8 items-center justify-center border border-[#D8D6D0] bg-white text-[#777] hover:text-[#111]"
                 >
                   <X size={16} />
@@ -671,7 +737,14 @@ export function VendorCashSettlement({
 
                 {raisePhotoUrl && (
                   <div className="border border-[#D8D6D0] bg-white p-2 text-center">
-                    <img src={raisePhotoUrl} alt="Bill Preview" className="max-h-32 mx-auto object-contain" />
+                    {raisePhotoUrl.startsWith("data:application/pdf") ? (
+                      <div className="flex items-center justify-center gap-2 py-2 text-xs text-[#4F4B45]">
+                        <FileText size={16} className="text-[#A58A64]" />
+                        <span>PDF Voucher Attached</span>
+                      </div>
+                    ) : (
+                      <img src={raisePhotoUrl} alt="Bill Preview" className="max-h-32 mx-auto object-contain" />
+                    )}
                   </div>
                 )}
 
@@ -705,7 +778,13 @@ export function VendorCashSettlement({
                     disabled={isRaising}
                     className="bg-[#171717] px-5 py-2 uppercase tracking-wider text-white hover:bg-[#A58A64] disabled:opacity-50"
                   >
-                    {isRaising ? "Submitting..." : markPaidInCash ? "Raise & Mark Paid in Cash" : "Raise Cash Request"}
+                    {isRaising
+                      ? "Submitting..."
+                      : editingSettlement
+                        ? "Save Changes"
+                        : markPaidInCash
+                          ? "Raise & Mark Paid in Cash"
+                          : "Raise Cash Request"}
                   </button>
                 </div>
               </form>

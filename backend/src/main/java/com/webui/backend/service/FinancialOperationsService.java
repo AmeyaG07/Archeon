@@ -322,6 +322,48 @@ public class FinancialOperationsService {
     }
 
     @Transactional
+    public CashSettlementEntity updateCashSettlement(
+            String settlementRef,
+            BigDecimal amount,
+            String sitePurpose,
+            String receiptRef,
+            Boolean markPaidInCash) {
+
+        CashSettlementEntity csh = cashSettlementRepository.findBySettlementRef(settlementRef)
+                .orElseThrow(() -> new IllegalArgumentException("Cash settlement not found: " + settlementRef));
+
+        if ("SETTLED_VERIFIED".equals(csh.getFinanceApprovalStatus())
+                || "REJECTED_BY_FINANCE".equals(csh.getFinanceApprovalStatus())) {
+            throw new IllegalStateException("Verified or rejected cash settlements cannot be edited.");
+        }
+
+        if (amount != null) {
+            if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+                throw new IllegalArgumentException("Cash bill amount must be greater than zero.");
+            }
+            csh.setAmount(amount.setScale(2, RoundingMode.HALF_UP));
+        }
+        if (sitePurpose != null && !sitePurpose.isBlank()) {
+            csh.setSitePurpose(sitePurpose.trim());
+        }
+        if (receiptRef != null && !receiptRef.isBlank()) {
+            csh.setReceiptReference(receiptRef);
+        }
+        if (markPaidInCash != null) {
+            if (markPaidInCash) {
+                csh.setCounterpartyStatus("ACKNOWLEDGED");
+                csh.setCounterpartyRespondedAt(LocalDateTime.now());
+                csh.setCounterpartyNotes("Marked paid in cash by vendor");
+            } else {
+                csh.setCounterpartyStatus("PENDING_COUNTERPARTY_ACK");
+                csh.setCounterpartyRespondedAt(null);
+            }
+        }
+
+        return cashSettlementRepository.save(csh);
+    }
+
+    @Transactional
     public CashSettlementEntity respondToCashSettlement(
             String settlementRef, String counterpartyId, boolean acknowledge, String notes) {
 

@@ -77,6 +77,15 @@ public class FinancialOperationsController {
         private BigDecimal amount;
         private String sitePurpose;
         private String receiptRef;
+        private boolean markPaidInCash;
+    }
+
+    @Data
+    public static class CashUpdateRequest {
+        private BigDecimal amount;
+        private String sitePurpose;
+        private String receiptRef;
+        private Boolean markPaidInCash;
     }
 
     @Data
@@ -165,17 +174,62 @@ public class FinancialOperationsController {
         }
         String initiator = auth.getName();
         try {
+            if (req.getAmount() == null || req.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Cash bill amount must be greater than zero"));
+            }
+            String ref = (req.getSettlementRef() != null && !req.getSettlementRef().isBlank())
+                    ? req.getSettlementRef().trim()
+                    : "CSH-" + System.currentTimeMillis();
+            String billId = (req.getBillId() != null && !req.getBillId().isBlank()) ? req.getBillId().trim() : ref;
+            String projectId = (req.getProjectId() != null && !req.getProjectId().isBlank()) ? req.getProjectId().trim() : "SITE-CASH";
+            String counterpartyId = req.getCounterpartyId();
+            if (counterpartyId == null || counterpartyId.isBlank()) {
+                Set<String> ids = resolveCounterpartyIdentifiers(auth);
+                counterpartyId = ids.stream().filter(id -> id.startsWith("VEN-") || id.length() == 36).findFirst().orElse(initiator);
+            }
+
             CashSettlementEntity csh = financialOperationsService.initiateCashSettlement(
-                    req.getSettlementRef(), req.getBillId(), req.getProjectId(),
-                    initiator, req.getCounterpartyId(), req.getAmount(),
+                    ref, billId, projectId,
+                    initiator, counterpartyId, req.getAmount(),
                     req.getSitePurpose(), req.getReceiptRef()
             );
+            if (req.isMarkPaidInCash()) {
+                csh = financialOperationsService.updateCashSettlement(ref, null, null, null, true);
+            }
             return ResponseEntity.ok(csh);
         } catch (org.springframework.orm.ObjectOptimisticLockingFailureException | jakarta.persistence.OptimisticLockException e) {
             return ResponseEntity.status(org.springframework.http.HttpStatus.CONFLICT).body(Map.of(
                     "error", "The record was modified concurrently by another transaction. Please reload and try again.",
                     "status", 409
             ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/cash/{ref}")
+    public ResponseEntity<?> updateCash(
+            @PathVariable String ref,
+            @RequestBody CashUpdateRequest req,
+            Authentication auth) {
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getName())) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).body(Map.of("error", "Authentication required"));
+        }
+        CashSettlementEntity target = cashSettlementRepository.findBySettlementRef(ref).orElse(null);
+        if (target == null) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.NOT_FOUND).body(Map.of("error", "Cash settlement not found"));
+        }
+        Set<String> ids = resolveCounterpartyIdentifiers(auth);
+        boolean isAdminOrFinance = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_FINANCE_MANAGER"));
+        if (!isAdminOrFinance && !ids.contains(target.getCounterpartyId()) && !ids.contains(target.getInitiatorId())) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).body(Map.of("error", "Not authorized to edit this cash settlement"));
+        }
+        try {
+            CashSettlementEntity updated = financialOperationsService.updateCashSettlement(
+                    ref, req.getAmount(), req.getSitePurpose(), req.getReceiptRef(), req.getMarkPaidInCash()
+            );
+            return ResponseEntity.ok(updated);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
@@ -243,7 +297,8 @@ public class FinancialOperationsController {
         }
         Set<String> ids = resolveCounterpartyIdentifiers(auth);
         List<CashSettlementEntity> list = cashSettlementRepository.findAllByOrderByCreatedAtDesc().stream()
-                .filter(c -> c.getCounterpartyId() != null && ids.contains(c.getCounterpartyId()))
+                .filter(c -> (c.getCounterpartyId() != null && ids.contains(c.getCounterpartyId()))
+                        || (c.getInitiatorId() != null && ids.contains(c.getInitiatorId())))
                 .collect(java.util.stream.Collectors.toList());
         return ResponseEntity.ok(list);
     }

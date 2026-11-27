@@ -56,6 +56,7 @@ export default function VendorCashSettlementsPage() {
             financeVerifiedAt: s.financeApprovedAt,
             financeRemark: s.counterpartyNotes,
             disputeReason: s.counterpartyNotes,
+            receiptUrl: s.receiptReference,
           };
         });
         setSettlements(records);
@@ -95,6 +96,54 @@ export default function VendorCashSettlementsPage() {
     }
   };
 
+  const handleRaiseCashBill = async (
+    photoUrl: string,
+    amount: number,
+    cashRequest: string,
+    markPaidInCash: boolean
+  ) => {
+    await apiFetch("/api/finance/cash/initiate", {
+      method: "POST",
+      body: {
+        amount,
+        sitePurpose: cashRequest,
+        receiptRef: photoUrl || undefined,
+        markPaidInCash,
+      },
+    });
+    await loadSettlements();
+  };
+
+  const handleEditCashBill = async (
+    settlementId: string,
+    photoUrl: string,
+    amount: number,
+    cashRequest: string,
+    markPaidInCash: boolean
+  ) => {
+    await apiFetch(`/api/finance/cash/${encodeURIComponent(settlementId)}`, {
+      method: "PUT",
+      body: {
+        amount,
+        sitePurpose: cashRequest,
+        receiptRef: photoUrl || undefined,
+        markPaidInCash,
+      },
+    });
+    await loadSettlements();
+  };
+
+  const handleDirectMarkPaidInCash = async (settlementId: string) => {
+    await apiFetch(`/api/finance/cash/${encodeURIComponent(settlementId)}/respond`, {
+      method: "POST",
+      body: {
+        acknowledge: true,
+        notes: "Directly marked paid in cash on site",
+      },
+    });
+    await loadSettlements();
+  };
+
   return (
     <div className="p-4 sm:p-8">
       <VendorCashSettlement
@@ -104,6 +153,9 @@ export default function VendorCashSettlementsPage() {
         error={error ?? undefined}
         onRefresh={loadSettlements}
         onSubmitDecision={handleSubmitDecision}
+        onRaiseCashBill={handleRaiseCashBill}
+        onEditCashBill={handleEditCashBill}
+        onDirectMarkPaidInCash={handleDirectMarkPaidInCash}
       />
     </div>
   );

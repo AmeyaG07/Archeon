@@ -43,8 +43,10 @@ public class CashSettlementEntity {
     @Column(nullable = false)
     private String currency = "INR";
 
+    @Column(columnDefinition = "TEXT")
     private String sitePurpose; // e.g. Unloading raw granite on site
 
+    @Column(columnDefinition = "TEXT")
     private String receiptReference;
 
     @Column(nullable = false)

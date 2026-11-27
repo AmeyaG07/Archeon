@@ -32,7 +32,6 @@ import {
 } from "@/providers/VendorLanguageProvider";
 
 export type VendorPortalSection =
-  | "dashboard"
   | "projects"
   | "invoices"
   | "cash-settlements"
@@ -65,12 +64,6 @@ interface NavigationItem {
 }
 
 const NAVIGATION: NavigationItem[] = [
-  {
-    id: "dashboard",
-    labelKey: "navOverview",
-    descriptionKey: "navOverviewDesc",
-    icon: LayoutDashboard,
-  },
   {
     id: "projects",
     labelKey: "navProjects",

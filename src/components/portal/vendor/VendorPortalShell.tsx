@@ -13,7 +13,6 @@ import {
 } from "@/providers/VendorLanguageProvider";
 
 const routes: Record<VendorPortalSection, string> = {
-  dashboard: "/vendor",
   projects: "/vendor/projects",
   invoices: "/vendor/invoices?tab=invoices",
   "cash-settlements": "/vendor/cash-settlements",
@@ -22,14 +21,13 @@ const routes: Record<VendorPortalSection, string> = {
 };
 
 function getActiveSection(pathname: string, tab?: string | null): VendorPortalSection {
-  if (pathname.includes("/projects")) return "projects";
   if (pathname.includes("/cash-settlements")) return "cash-settlements";
   if (pathname.includes("/invoices")) {
     return "invoices";
   }
   if (pathname.includes("/support")) return "support";
   if (pathname.includes("/profile")) return "settings";
-  return "dashboard";
+  return "projects";
 }
 
 function VendorPortalShellInner({ children }: { children: React.ReactNode }) {
