@@ -20,6 +20,7 @@ export interface DashboardProject {
   location: string;
   status: string;
   updatedAt: string;
+  progressPercentage?: number;
 }
 
 export interface DashboardInvoice {
@@ -63,6 +64,19 @@ function formatCurrency(amount: number) {
     currency: "INR",
     maximumFractionDigits: 2,
   }).format(amount);
+}
+
+function formatReadableDate(value: string) {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
 }
 
 function getActivityIcon(category: DashboardActivity["category"]) {
@@ -235,13 +249,32 @@ export function ClientPortalDashboard({
                     {project.location}
                   </p>
 
+                  {typeof project.progressPercentage === "number" && (
+                    <div className="mt-5">
+                      <div className="flex items-center justify-between text-xs font-mono text-[#4F4B45]">
+                        <span>Milestone Completion</span>
+                        <span className="font-semibold text-[#171717]">
+                          {Math.max(0, Math.min(100, Math.round(project.progressPercentage)))}%
+                        </span>
+                      </div>
+                      <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-[#ECEAE5]">
+                        <div
+                          className="h-full bg-[#A58A64] transition-all duration-300"
+                          style={{
+                            width: `${Math.max(0, Math.min(100, Math.round(project.progressPercentage)))}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
                   <div className="mt-7 flex flex-wrap items-center justify-between gap-3 border-t border-[#E5E2DC] pt-5">
                     <span className="bg-[#ECEAE5] px-3 py-2 text-[9px] uppercase tracking-widest text-[#66635D]">
                       {project.status}
                     </span>
 
-                    <span className="font-mono text-[9px] text-[#99958D]">
-                      Updated {project.updatedAt}
+                    <span className="font-mono text-xs text-[#4F4B45]">
+                      Updated {formatReadableDate(project.updatedAt)}
                     </span>
                   </div>
                 </button>
@@ -294,8 +327,8 @@ export function ClientPortalDashboard({
                         {invoice.projectName}
                       </h3>
 
-                      <p className="mt-2 text-[10px] text-[#99958D]">
-                        Due: {invoice.dueDate}
+                      <p className="mt-2 text-xs text-[#4F4B45]">
+                        Due: {formatReadableDate(invoice.dueDate)}
                       </p>
                     </div>
 
@@ -356,8 +389,8 @@ export function ClientPortalDashboard({
                     </p>
                   </div>
 
-                  <span className="shrink-0 font-mono text-[9px] text-[#99958D]">
-                    {activity.date}
+                  <span className="shrink-0 font-mono text-xs text-[#4F4B45]">
+                    {formatReadableDate(activity.date)}
                   </span>
                 </article>
               ))}

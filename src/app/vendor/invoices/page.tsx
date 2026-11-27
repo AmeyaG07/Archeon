@@ -23,6 +23,7 @@ import {
 import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/providers/AuthProvider";
 import { DualImageUpload } from "@/components/ui/DualImageUpload";
+import { OptionalField } from "@/components/ui/OptionalField";
 import { useVendorLanguage } from "@/providers/VendorLanguageProvider";
 
 interface BillItem {
@@ -263,13 +264,6 @@ function VendorInvoicesContent() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <button
-            onClick={() => setShowUpdateModal(true)}
-            className="inline-flex items-center gap-2 px-4 py-2.5 border border-[#B68A4A] text-[#B68A4A] hover:bg-[#B68A4A] hover:text-white font-mono text-xs uppercase tracking-wider transition-colors rounded-sm"
-          >
-            <Camera size={14} /> {t("sendArchitectUpdate")}
-          </button>
-
           <button
             onClick={() => setShowBillModal(true)}
             className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#111111] hover:bg-[#25221D] text-white font-mono text-xs uppercase tracking-wider transition-all rounded-sm"
@@ -586,12 +580,14 @@ function VendorInvoicesContent() {
                 />
               </div>
 
-              <DualImageUpload
-                label="Physical Bill Receipt Photo (Device or Drive)"
-                value={billPhotoUrl}
-                onChange={setBillPhotoUrl}
-                placeholder="Paste Google Drive share link, Dropbox or cloud photo URL..."
-              />
+              <OptionalField label="Physical Bill Receipt Photo (Optional)">
+                <DualImageUpload
+                  label="Device or Drive Attachment"
+                  value={billPhotoUrl}
+                  onChange={setBillPhotoUrl}
+                  placeholder="Paste Google Drive share link, Dropbox or cloud photo URL..."
+                />
+              </OptionalField>
 
               <div className="mt-6 flex justify-end gap-3 pt-4 border-t border-[#E5E2DC]">
                 <button
@@ -607,83 +603,6 @@ function VendorInvoicesContent() {
                   className="px-6 py-2 bg-[#111111] text-white hover:bg-[#B68A4A] font-mono text-xs uppercase tracking-wider rounded-sm transition-colors disabled:opacity-50"
                 >
                   {submitting ? "Submitting..." : "Submit Bill"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Modal: Send Architect Update (Notes / Photos) */}
-      {showUpdateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-          <div className="relative w-full max-w-lg rounded-sm border border-[#D8D6D0] bg-white p-6 shadow-2xl">
-            <button
-              onClick={() => setShowUpdateModal(false)}
-              className="absolute top-4 right-4 p-1 text-[#777777] hover:text-[#111111]"
-            >
-              <X size={18} />
-            </button>
-
-            <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-[#B68A4A]">
-              <Send size={14} /> Architect Updates Interface
-            </div>
-            <h2 className="font-serif text-2xl text-[#111111] mt-1">Send Site Note or Photo to Architect</h2>
-
-            <form onSubmit={handleSendArchitectUpdate} className="mt-6 space-y-4">
-              <div>
-                <label className="block font-mono text-[10px] uppercase tracking-wider text-[#777777] mb-1">
-                  Target Project
-                </label>
-                <select
-                  value={updateProjectId}
-                  onChange={(e) => setUpdateProjectId(e.target.value)}
-                  className="w-full rounded-sm border border-[#D8D6D0] px-3 py-2 text-xs font-mono text-[#111111] focus:border-[#B68A4A] focus:outline-none"
-                  required
-                >
-                  {assignedProjects.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name} ({p.clientName})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <DualImageUpload
-                label="Site Photo Attachment (Device or Drive)"
-                value={updatePhotoUrl}
-                onChange={setUpdatePhotoUrl}
-                placeholder="Paste Google Drive share link, Dropbox or cloud photo URL..."
-              />
-
-              <div>
-                <label className="block font-mono text-[10px] uppercase tracking-wider text-[#777777] mb-1">
-                  Descriptive Site Note / Query
-                </label>
-                <textarea
-                  placeholder="Report site progress, material delivery status, or technical questions for the architect..."
-                  rows={3}
-                  value={updateNote}
-                  onChange={(e) => setUpdateNote(e.target.value)}
-                  className="w-full rounded-sm border border-[#D8D6D0] px-3 py-2 text-xs text-[#111111] focus:border-[#B68A4A] focus:outline-none"
-                  required
-                />
-              </div>
-
-              <div className="mt-6 flex justify-end gap-3 pt-4 border-t border-[#E5E2DC]">
-                <button
-                  type="button"
-                  onClick={() => setShowUpdateModal(false)}
-                  className="px-4 py-2 border border-[#D8D6D0] font-mono text-xs uppercase tracking-wider text-[#777777] hover:bg-[#FAF9F5] rounded-sm"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={actionLoading}
-                  className="px-6 py-2 bg-[#B68A4A] text-white hover:bg-[#A3783A] font-mono text-xs uppercase tracking-wider rounded-sm transition-colors disabled:opacity-50"
-                >
-                  {actionLoading ? "Sending..." : "Send Update"}
                 </button>
               </div>
             </form>

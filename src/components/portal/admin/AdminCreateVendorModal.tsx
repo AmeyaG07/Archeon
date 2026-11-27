@@ -1,5 +1,7 @@
 "use client";
 
+import { OptionalField } from "@/components/ui/OptionalField";
+
 import React, { useState, useRef } from "react";
 import { X, UserPlus, Mail, Phone, Building2, MapPin, CreditCard, ShieldCheck, AlertCircle, CheckCircle2, QrCode, Image as ImageIcon, Trash2, UploadCloud } from "lucide-react";
 import { apiFetch } from "@/lib/api";
@@ -268,18 +270,21 @@ export function AdminCreateVendorModal({
                 className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
               />
             </div>
-            <div>
-              <label className="flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
-                <MapPin size={12} /> Workshop / Base City
-              </label>
+            <OptionalField
+              label={
+                <span className="inline-flex items-center gap-1">
+                  <MapPin size={12} /> Workshop / Base City (Optional)
+                </span>
+              }
+            >
               <input
                 type="text"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 placeholder="Mumbai, Maharashtra"
-                className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
+                className="w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
               />
-            </div>
+            </OptionalField>
           </div>
 
           {/* Email & Phone (GSTIN / Tax ID removed as requested) */}

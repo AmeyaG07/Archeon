@@ -12,12 +12,16 @@ import {
   MapPin,
   Clock3,
   AlertCircle,
+  Plus,
   Receipt,
   ShieldCheck,
   X,
 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { BillPhotoModal, type BillPhotoTarget } from "@/components/portal/admin/BillPhotoModal";
+import { DualImageUpload } from "@/components/ui/DualImageUpload";
+import { OptionalField } from "@/components/ui/OptionalField";
+import { emitToast } from "@/providers/ToastProvider";
 import { useVendorLanguage } from "@/providers/VendorLanguageProvider";
 
 export type VendorProjectStatus =
@@ -37,6 +41,7 @@ export interface VendorProjectDocument {
 
 export interface VendorProjectRecord {
   id: string;
+  clientId?: string;
   projectName: string;
   location: string;
   assignment: string;
@@ -100,7 +105,59 @@ export function VendorProjectOverview({
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [detailsByProject, setDetailsByProject] = useState<Record<string, ExpandedProjectDetails>>({});
   const [previewBill, setPreviewBill] = useState<BillPhotoTarget | null>(null);
+  const [billTargetProject, setBillTargetProject] = useState<VendorProjectRecord | null>(null);
+  const [billAmount, setBillAmount] = useState("");
+  const [billTradeCategory, setBillTradeCategory] = useState("Civil Contractor");
+  const [billPhotoUrl, setBillPhotoUrl] = useState("");
+  const [submittingBill, setSubmittingBill] = useState(false);
+  const [billError, setBillError] = useState<string | null>(null);
   const { t } = useVendorLanguage();
+
+  const handleOpenAddBill = (project: VendorProjectRecord) => {
+    setBillTargetProject(project);
+    setBillAmount("");
+    setBillTradeCategory(project.assignment || "Civil Contractor");
+    setBillPhotoUrl("");
+    setBillError(null);
+  };
+
+  const handleSubmitBill = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!billTargetProject || !billAmount) return;
+
+    setSubmittingBill(true);
+    setBillError(null);
+    try {
+      const res = await apiFetch("/api/billing/bills", {
+        method: "POST",
+        body: JSON.stringify({
+          projectId: billTargetProject.id,
+          clientId: billTargetProject.clientId || undefined,
+          amount: parseFloat(billAmount),
+          tradeCategory: billTradeCategory,
+          billPhotoUrl: billPhotoUrl || undefined,
+        }),
+      });
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => null);
+        throw new Error(errBody?.error || errBody?.message || "Failed to submit bill.");
+      }
+
+      const targetProj = billTargetProject;
+      setBillTargetProject(null);
+      setBillAmount("");
+      setBillPhotoUrl("");
+      emitToast(`Bill submitted for ${targetProj.projectName}.`, "success");
+      setExpandedId(targetProj.id);
+      await loadProjectDetails(targetProj);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to submit bill.";
+      setBillError(msg);
+      emitToast(msg, "error");
+    } finally {
+      setSubmittingBill(false);
+    }
+  };
 
   const translateProjectStatus = (status: VendorProjectStatus) => {
     switch (status) {
@@ -380,16 +437,26 @@ export function VendorProjectOverview({
                         <span>{project.documents.length} {t("sharedFiles")}</span>
                       </div>
 
-                      {!isExpanded && (
+                      <div className="flex flex-wrap items-center gap-2">
                         <button
                           type="button"
-                          onClick={() => toggleExpand(project)}
-                          className="inline-flex items-center gap-1 border border-[#D8D6D0] bg-[#FAF9F6] px-2 py-1 font-mono text-[7px] uppercase tracking-widest text-[#987543] hover:border-[#171717] hover:text-[#171717] transition-colors rounded-sm"
+                          onClick={() => handleOpenAddBill(project)}
+                          className="inline-flex items-center gap-1.5 bg-[#171717] hover:bg-[#A58A64] px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-white transition-colors rounded-sm cursor-pointer"
                         >
-                          {t("reviewProject")}
-                          <ArrowUpRight size={9} />
+                          <Plus size={12} />
+                          Add Bill
                         </button>
-                      )}
+                        {!isExpanded && (
+                          <button
+                            type="button"
+                            onClick={() => toggleExpand(project)}
+                            className="inline-flex items-center gap-1 border border-[#D8D6D0] bg-[#FAF9F6] px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-[#987543] hover:border-[#171717] hover:text-[#171717] transition-colors rounded-sm cursor-pointer"
+                          >
+                            {t("reviewProject")}
+                            <ArrowUpRight size={11} />
+                          </button>
+                        )}
+                      </div>
                     </div>
 
                     {/* Inline Expanded Details */}
@@ -410,6 +477,14 @@ export function VendorProjectOverview({
                                     {t("submittedBillsCount")} ({details?.bills.length || 0})
                                   </h4>
                                 </div>
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenAddBill(project)}
+                                  className="inline-flex items-center gap-1 border border-[#D8D6D0] bg-white px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-[#171717] hover:border-[#A58A64] hover:text-[#A58A64] transition-colors rounded-sm cursor-pointer"
+                                >
+                                  <Plus size={11} />
+                                  Add Bill
+                                </button>
                               </div>
 
                               <div className="mt-3">
@@ -582,6 +657,96 @@ export function VendorProjectOverview({
           }
         }}
       />
+
+      {/* Add Bill Modal */}
+      {billTargetProject && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="vendor-add-bill-title"
+            className="w-full max-w-md border border-[#D8D6D0] bg-white p-6 shadow-xl"
+          >
+            <div className="flex items-start justify-between gap-4 border-b border-[#E5E2DC] pb-4">
+              <div>
+                <p className="font-mono text-[10px] uppercase tracking-widest text-[#A58A64]">
+                  Submit Vendor Bill
+                </p>
+                <h2 id="vendor-add-bill-title" className="mt-1 font-serif text-2xl text-[#171717]">
+                  {billTargetProject.projectName}
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setBillTargetProject(null)}
+                aria-label="Close modal"
+                className="p-1 text-[#77736C] hover:text-[#171717] cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmitBill} className="mt-5 space-y-4">
+              {billError && (
+                <div className="border border-[#E3C9C5] bg-[#FAF3F1] px-3.5 py-2.5 text-xs text-[#9A5147]">
+                  {billError}
+                </div>
+              )}
+
+              <div>
+                <label className="block font-mono text-[10px] uppercase tracking-wider text-[#55514A]">
+                  Bill Amount (INR) *
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  step="0.01"
+                  required
+                  value={billAmount}
+                  onChange={(e) => setBillAmount(e.target.value)}
+                  placeholder="e.g. 45000"
+                  className="mt-1.5 w-full border border-[#D8D6D0] bg-[#FAF9F6] px-3 py-2 text-sm text-[#171717] focus:border-[#A58A64] focus:bg-white focus:outline-none"
+                />
+              </div>
+
+              <OptionalField label="Trade / Work Category (Optional)">
+                <input
+                  type="text"
+                  value={billTradeCategory}
+                  onChange={(e) => setBillTradeCategory(e.target.value)}
+                  placeholder="e.g. Civil Contractor, Stonework, MEP"
+                  className="w-full border border-[#D8D6D0] bg-[#FAF9F6] px-3 py-2 text-sm text-[#171717] focus:border-[#A58A64] focus:bg-white focus:outline-none"
+                />
+              </OptionalField>
+
+              <OptionalField label="Bill / Receipt Photo (Optional)">
+                <DualImageUpload
+                  label="Upload or Attach Receipt"
+                  value={billPhotoUrl}
+                  onChange={setBillPhotoUrl}
+                />
+              </OptionalField>
+
+              <div className="flex items-center justify-end gap-3 border-t border-[#E5E2DC] pt-4">
+                <button
+                  type="button"
+                  onClick={() => setBillTargetProject(null)}
+                  className="border border-[#D8D6D0] bg-white px-4 py-2 font-mono text-[10px] uppercase tracking-wider text-[#55514A] hover:border-[#171717] cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submittingBill || !billAmount}
+                  className="bg-[#171717] hover:bg-[#A58A64] px-5 py-2 font-mono text-[10px] uppercase tracking-wider text-white transition-colors disabled:opacity-50 cursor-pointer"
+                >
+                  {submittingBill ? "Submitting..." : "Submit Bill"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

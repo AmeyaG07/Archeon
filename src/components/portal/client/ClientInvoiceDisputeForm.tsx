@@ -1,6 +1,8 @@
 
 "use client";
 
+import { OptionalField } from "@/components/ui/OptionalField";
+
 import { useRef, useState, type FormEvent } from "react";
 import {
   AlertCircle,
@@ -262,12 +264,11 @@ export function ClientInvoiceDisputeForm({
           </div>
 
           {/* Evidence */}
-          <div>
-            <label className="block text-xs font-medium text-[#33312D]">
-              Supporting Evidence (Optional)
-            </label>
-
-            <p className="mt-2 text-xs leading-6 text-[#99958D]">
+          <OptionalField
+            label="Supporting Evidence (Optional)"
+            labelClassName="text-xs font-medium text-[#33312D]"
+          >
+            <p className="text-xs leading-6 text-[#99958D]">
               Attach relevant receipts, correspondence or documents
               that help explain your dispute.
             </p>
@@ -345,7 +346,7 @@ export function ClientInvoiceDisputeForm({
                 ))}
               </div>
             )}
-          </div>
+          </OptionalField>
 
           {/* Error */}
           {(validationError || error) && (

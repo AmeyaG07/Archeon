@@ -1,5 +1,7 @@
 "use client";
 
+import { OptionalField } from "@/components/ui/OptionalField";
+
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -445,13 +447,10 @@ export function ConsultationModal({
                 </div>
 
                 {/* 04 · Concise Project Brief */}
-                <div>
-                  <label
-                    htmlFor="consult-brief"
-                    className="block text-[10.5px] font-mono uppercase tracking-wider text-stone-400 mb-1.5"
-                  >
-                    Project Brief
-                  </label>
+                <OptionalField
+                  label="Project Brief (Optional)"
+                  labelClassName="text-[10.5px] font-mono uppercase tracking-wider text-stone-400 hover:text-white"
+                >
                   <textarea
                     id="consult-brief"
                     rows={2}
@@ -462,7 +461,7 @@ export function ConsultationModal({
                     }
                     className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.035] border border-white/12 hover:border-white/25 focus:border-[#C6A779] text-sm font-['Outfit',sans-serif] text-white placeholder:text-stone-500 focus:outline-none transition-colors resize-y min-h-[72px]"
                   />
-                </div>
+                </OptionalField>
 
                 {/* Compact WhatsApp Opt-In */}
                 <label

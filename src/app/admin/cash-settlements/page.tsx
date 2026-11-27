@@ -122,6 +122,18 @@ export default function AdminArchitectRevenuePage() {
     await loadAll();
   };
 
+  const handleClearAllData = async () => {
+    setError(null);
+    const res = await apiFetch("/api/architect-ledger/clear", {
+      method: "DELETE",
+    });
+    if (!res.ok) {
+      setError(`Failed to empty Excel & ledger data (HTTP ${res.status})`);
+      return;
+    }
+    await loadAll();
+  };
+
   const handleGenerateReport = async (payload: {
     periodFilter: "MONTHLY" | "QUARTERLY" | "YEARLY" | "ALL";
     year: number;
@@ -170,6 +182,7 @@ export default function AdminArchitectRevenuePage() {
       error={error}
       onAddEntry={handleAddEntry}
       onDeleteEntry={handleDeleteEntry}
+      onClearAllData={handleClearAllData}
       onGenerateReport={handleGenerateReport}
       onDownloadReport={handleDownloadReport}
     />

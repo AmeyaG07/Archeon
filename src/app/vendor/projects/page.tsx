@@ -27,6 +27,7 @@ export default function VendorProjectsPage() {
       if (Array.isArray(list)) {
         const records: VendorProjectRecord[] = list.map((p: any) => ({
           id: p.id || "",
+          clientId: p.clientId || undefined,
           projectName: p.name || "Site Package Execution",
           location: p.siteAddress || "Maharashtra",
           assignment: p.projectType || "Trade Contractor",

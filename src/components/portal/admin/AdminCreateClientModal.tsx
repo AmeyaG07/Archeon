@@ -1,5 +1,7 @@
 "use client";
 
+import { OptionalField } from "@/components/ui/OptionalField";
+
 import React, { useState } from "react";
 import { X, UserPlus, Mail, Phone, Building2, MapPin, FileText, AlertCircle, CheckCircle2 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
@@ -188,30 +190,36 @@ export function AdminCreateClientModal({
 
           {/* Organization & Location Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
-                <Building2 size={12} /> Organization / Company
-              </label>
+            <OptionalField
+              label={
+                <span className="inline-flex items-center gap-1">
+                  <Building2 size={12} /> Organization / Company (Optional)
+                </span>
+              }
+            >
               <input
                 type="text"
                 value={organization}
                 onChange={(e) => setOrganization(e.target.value)}
                 placeholder="Singhania Estates / Private"
-                className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
+                className="w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
               />
-            </div>
-            <div>
-              <label className="flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
-                <MapPin size={12} /> Location / City
-              </label>
+            </OptionalField>
+            <OptionalField
+              label={
+                <span className="inline-flex items-center gap-1">
+                  <MapPin size={12} /> Location / City (Optional)
+                </span>
+              }
+            >
               <input
                 type="text"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 placeholder="Alibaug, Maharashtra"
-                className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
+                className="w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
               />
-            </div>
+            </OptionalField>
           </div>
 
           {/* Client Specifications */}

@@ -18,6 +18,7 @@ import {
   X,
 } from "lucide-react";
 import { useVendorLanguage } from "@/providers/VendorLanguageProvider";
+import { OptionalField } from "@/components/ui/OptionalField";
 
 export type VendorSupportCategory =
   | "Project Assignment"
@@ -430,7 +431,7 @@ export function VendorSupportCentre({
                   </select>
                 </Field>
 
-                <Field label="Related Reference (Optional)">
+                <OptionalField label="Related Reference (Optional)">
                   <input
                     value={relatedReference}
                     onChange={(event) =>
@@ -441,7 +442,7 @@ export function VendorSupportCentre({
                     disabled={submitting}
                     className="vendor-support-input"
                   />
-                </Field>
+                </OptionalField>
               </div>
 
               <Field label="Issue Description" required>

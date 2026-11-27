@@ -45,6 +45,7 @@ export interface AdminProjectRecord {
   expectedCompletion?: string;
   lastVisitDate?: string;
   lastUpdated: string;
+  progressPercentage?: number;
   milestoneSummary?: {
     completed: number;
     total: number;
@@ -62,6 +63,10 @@ interface AdminProjectManagementProps {
     projectId: string,
     nextCompleted: number,
     total: number
+  ) => Promise<void>;
+  onUpdateProgress?: (
+    projectId: string,
+    progressPercentage: number
   ) => Promise<void>;
 }
 
@@ -127,6 +132,7 @@ export function AdminProjectManagement({
   onOpenProject,
   onCreateProject,
   onAdjustMilestone,
+  onUpdateProgress,
 }: AdminProjectManagementProps) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] =
@@ -438,6 +444,7 @@ export function AdminProjectManagement({
                 project={project}
                 onOpen={() => onOpenProject(project.id)}
                 onAdjustMilestone={onAdjustMilestone}
+                onUpdateProgress={onUpdateProgress}
               />
             ))}
           </div>
@@ -481,6 +488,7 @@ function ProjectRow({
   project,
   onOpen,
   onAdjustMilestone,
+  onUpdateProgress,
 }: {
   project: AdminProjectRecord;
   onOpen: () => void;
@@ -488,6 +496,10 @@ function ProjectRow({
     projectId: string,
     nextCompleted: number,
     total: number
+  ) => Promise<void>;
+  onUpdateProgress?: (
+    projectId: string,
+    progressPercentage: number
   ) => Promise<void>;
 }) {
   const [savingMilestone, setSavingMilestone] = useState(false);
@@ -501,9 +513,40 @@ function ProjectRow({
     milestoneData.completed >= 0 &&
     milestoneData.completed <= milestoneData.total;
 
-  const progress = validMilestones
-    ? (milestoneData.completed / milestoneData.total) * 100
-    : null;
+  const progress =
+    typeof project.progressPercentage === "number"
+      ? Math.max(0, Math.min(100, Math.round(project.progressPercentage)))
+      : validMilestones
+      ? Math.round((milestoneData.completed / milestoneData.total) * 100)
+      : null;
+
+  const [pctDraft, setPctDraft] = useState<string>(
+    progress !== null ? String(progress) : "0"
+  );
+  const [lastSyncedPct, setLastSyncedPct] = useState<number | null>(progress);
+  if (progress !== null && progress !== lastSyncedPct) {
+    setLastSyncedPct(progress);
+    setPctDraft(String(progress));
+  }
+
+  const canEditProgress = Boolean(onUpdateProgress || onAdjustMilestone);
+
+  const commitPercentage = async (rawPct: number) => {
+    if (!canEditProgress) return;
+    const clamped = Math.max(0, Math.min(100, Math.round(rawPct)));
+    setPctDraft(String(clamped));
+    setSavingMilestone(true);
+    try {
+      if (onUpdateProgress) {
+        await onUpdateProgress(project.id, clamped);
+      } else if (onAdjustMilestone && milestoneData) {
+        const nextCompleted = Math.round((clamped / 100) * milestoneData.total);
+        await onAdjustMilestone(project.id, nextCompleted, milestoneData.total);
+      }
+    } finally {
+      setSavingMilestone(false);
+    }
+  };
 
   return (
     <article className="border border-[#D8D6D0] bg-white p-5 transition-colors hover:border-[#A58A64] md:p-7">
@@ -593,64 +636,66 @@ function ProjectRow({
       </div>
 
       {/* Milestone Progress */}
-      {progress !== null && milestoneData && (
+      {progress !== null && (
         <div className="mt-7 border-t border-[#E5E2DC] pt-5">
           <div className="flex items-center justify-between gap-4">
-            <p className="font-mono text-[9px] uppercase tracking-widest text-[#99958D]">
-              Milestone Completion ({Math.round(progress)}%)
+            <p className="font-mono text-xs uppercase tracking-widest text-[#4F4B45]">
+              Milestone Completion ({progress}%)
             </p>
 
             <div className="flex items-center gap-2">
-              {onAdjustMilestone && (
+              {canEditProgress && (
                 <button
                   type="button"
-                  disabled={savingMilestone || milestoneData.completed <= 0}
-                  onClick={async () => {
-                    if (milestoneData.completed <= 0) return;
-                    setSavingMilestone(true);
-                    try {
-                      await onAdjustMilestone(
-                        project.id,
-                        milestoneData.completed - 1,
-                        milestoneData.total
-                      );
-                    } finally {
-                      setSavingMilestone(false);
-                    }
-                  }}
-                  aria-label="Decrease milestone completion"
-                  className="flex h-6 w-6 items-center justify-center border border-[#D8D6D0] bg-white text-xs font-semibold text-[#171717] transition-colors hover:border-[#A58A64] disabled:cursor-not-allowed disabled:opacity-40"
+                  disabled={savingMilestone || progress <= 0}
+                  onClick={() => void commitPercentage(progress - 5)}
+                  aria-label="Decrease milestone completion percentage"
+                  className="flex h-7 w-7 items-center justify-center border border-[#D8D6D0] bg-white text-xs font-semibold text-[#171717] transition-colors hover:border-[#A58A64] disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   −
                 </button>
               )}
 
-              <p className="min-w-[38px] text-center font-mono text-[10px] font-semibold text-[#171717]">
-                {milestoneData.completed} / {milestoneData.total}
-              </p>
+              {canEditProgress ? (
+                <div className="flex items-center border border-[#D8D6D0] bg-white px-2 py-0.5 focus-within:border-[#A58A64]">
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={pctDraft}
+                    disabled={savingMilestone}
+                    onChange={(e) => setPctDraft(e.target.value)}
+                    onBlur={() => {
+                      const parsed = Number(pctDraft);
+                      if (Number.isFinite(parsed) && parsed !== progress) {
+                        void commitPercentage(parsed);
+                      } else {
+                        setPctDraft(String(progress));
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.currentTarget.blur();
+                      }
+                    }}
+                    aria-label="Milestone completion percentage"
+                    className="w-11 bg-transparent text-center font-mono text-xs font-semibold text-[#171717] focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                  />
+                  <span className="font-mono text-xs font-semibold text-[#55514A]">%</span>
+                </div>
+              ) : (
+                <p className="min-w-[44px] text-center font-mono text-xs font-semibold text-[#171717]">
+                  {progress}%
+                </p>
+              )}
 
-              {onAdjustMilestone && (
+              {canEditProgress && (
                 <button
                   type="button"
-                  disabled={
-                    savingMilestone ||
-                    milestoneData.completed >= milestoneData.total
-                  }
-                  onClick={async () => {
-                    if (milestoneData.completed >= milestoneData.total) return;
-                    setSavingMilestone(true);
-                    try {
-                      await onAdjustMilestone(
-                        project.id,
-                        milestoneData.completed + 1,
-                        milestoneData.total
-                      );
-                    } finally {
-                      setSavingMilestone(false);
-                    }
-                  }}
-                  aria-label="Increase milestone completion"
-                  className="flex h-6 w-6 items-center justify-center border border-[#D8D6D0] bg-white text-xs font-semibold text-[#171717] transition-colors hover:border-[#A58A64] disabled:cursor-not-allowed disabled:opacity-40"
+                  disabled={savingMilestone || progress >= 100}
+                  onClick={() => void commitPercentage(progress + 5)}
+                  aria-label="Increase milestone completion percentage"
+                  className="flex h-7 w-7 items-center justify-center border border-[#D8D6D0] bg-white text-xs font-semibold text-[#171717] transition-colors hover:border-[#A58A64] disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   +
                 </button>
@@ -659,50 +704,30 @@ function ProjectRow({
           </div>
 
           <div
-            className="mt-3 grid gap-1.5"
-            style={{
-              gridTemplateColumns: `repeat(${milestoneData.total}, minmax(0, 1fr))`,
-            }}
+            className="mt-3 relative h-2.5 w-full overflow-hidden rounded-full bg-[#ECEAE5]"
             role="progressbar"
-            aria-valuenow={Math.round(progress)}
+            aria-valuenow={progress}
             aria-valuemin={0}
             aria-valuemax={100}
             aria-label="Project milestone completion"
           >
-            {Array.from({ length: milestoneData.total }).map((_, idx) => {
-              const step = idx + 1;
-              const filled = step <= milestoneData.completed;
-              return (
-                <button
-                  key={step}
-                  type="button"
-                  disabled={!onAdjustMilestone || savingMilestone}
-                  onClick={async () => {
-                    if (!onAdjustMilestone) return;
-                    const next =
-                      step === milestoneData.completed ? step - 1 : step;
-                    setSavingMilestone(true);
-                    try {
-                      await onAdjustMilestone(
-                        project.id,
-                        next,
-                        milestoneData.total
-                      );
-                    } finally {
-                      setSavingMilestone(false);
-                    }
-                  }}
-                  title={`Set milestone completion to ${step} / ${milestoneData.total}`}
-                  className={`h-2 transition-colors ${
-                    filled ? "bg-[#A58A64]" : "bg-[#ECEAE5]"
-                  } ${
-                    onAdjustMilestone
-                      ? "cursor-pointer hover:opacity-80"
-                      : "cursor-default"
-                  }`}
-                />
-              );
-            })}
+            <div
+              className="h-full bg-[#A58A64] transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            />
+            {canEditProgress && (
+              <input
+                type="range"
+                min={0}
+                max={100}
+                step={5}
+                value={progress}
+                disabled={savingMilestone}
+                onChange={(e) => void commitPercentage(Number(e.target.value))}
+                aria-label="Adjust milestone completion percentage"
+                className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+              />
+            )}
           </div>
         </div>
       )}

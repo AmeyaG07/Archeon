@@ -1,5 +1,7 @@
 "use client";
 
+import { OptionalField } from "@/components/ui/OptionalField";
+
 import React, { useMemo, useState } from "react";
 import {
   UserPlus,
@@ -940,10 +942,7 @@ export function AdminTeamManagement({
               </div>
             )}
 
-            <div>
-              <label className="mb-1 block font-mono text-[10px] uppercase tracking-wider text-[#66635D]">
-                Reset Password (Optional — leave blank to keep current)
-              </label>
+            <OptionalField label="Reset Password (Optional — leave blank to keep current)">
               <div className="flex border border-[#D8D6D0] bg-white">
                 <input
                   minLength={editForm.newPassword ? 8 : undefined}
@@ -962,7 +961,7 @@ export function AdminTeamManagement({
                   {editShowPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
-            </div>
+            </OptionalField>
 
             <div className="flex justify-end gap-3 border-t border-[#EAE8E2] pt-4">
               <button

@@ -59,6 +59,7 @@ export default function AdminProjectsPage() {
           expectedCompletion: p.expectedCompletionDate,
           lastVisitDate: p.lastVisitDate,
           lastUpdated: new Date().toISOString(),
+          progressPercentage: p.progressPercentage ?? 0,
           milestoneSummary: {
             completed: Math.round(((p.progressPercentage ?? 0) / 100) * 5),
             total: 5,
@@ -82,6 +83,32 @@ export default function AdminProjectsPage() {
       }
     }
   }, [authLoading, isAuthenticated, loadProjects, router]);
+
+  const handleUpdateProgress = async (
+    projectId: string,
+    nextPercentage: number
+  ) => {
+    const progressPercentage = Math.max(0, Math.min(100, Math.round(nextPercentage)));
+    await apiFetch(`/api/operational-projects/${projectId}`, {
+      method: "PUT",
+      body: JSON.stringify({ progressPercentage }),
+    });
+    setProjects((prev) =>
+      prev.map((proj) =>
+        proj.id === projectId
+          ? {
+              ...proj,
+              progressPercentage,
+              milestoneSummary: {
+                completed: Math.round((progressPercentage / 100) * 5),
+                total: 5,
+              },
+              lastUpdated: new Date().toISOString(),
+            }
+          : proj
+      )
+    );
+  };
 
   const handleAdjustMilestone = async (
     projectId: string,
@@ -117,6 +144,7 @@ export default function AdminProjectsPage() {
         onCreateProject={() => setShowCreateModal(true)}
         onOpenProject={(projId) => router.push(`/admin/projects/${projId}`)}
         onAdjustMilestone={handleAdjustMilestone}
+        onUpdateProgress={handleUpdateProgress}
       />
 
       <AdminCreateProjectModal

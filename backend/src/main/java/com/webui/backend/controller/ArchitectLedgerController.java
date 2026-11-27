@@ -150,6 +150,13 @@ public class ArchitectLedgerController {
         return ResponseEntity.noContent().build();
     }
 
+    @DeleteMapping("/clear")
+    public ResponseEntity<?> clearAllLedgerAndReports() {
+        reportRepository.deleteAll();
+        ledgerRepository.deleteAll();
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/reports")
     public ResponseEntity<List<Map<String, Object>>> listReports() {
         List<ArchitectAuditReportEntity> all = reportRepository.findAllByOrderByGeneratedAtDesc();

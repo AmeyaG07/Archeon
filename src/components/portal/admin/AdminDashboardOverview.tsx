@@ -320,69 +320,6 @@ export function AdminDashboardOverview({
         </div>
       </section>
 
-      {/* Finance */}
-      <section className="mt-8">
-        <SectionLabel>Financial Position</SectionLabel>
-
-        <div className="mt-3.5 grid grid-cols-1 gap-px border border-[#D8D6D0] bg-[#D8D6D0] md:grid-cols-2">
-          <div className="bg-white p-5 md:p-6">
-            <div className="flex items-center justify-between">
-              <p className="font-mono text-xs font-medium uppercase tracking-[0.12em] text-[#55514A]">
-                Outstanding Receivables
-              </p>
-              <IndianRupee size={18} className="text-[#A58A64]" />
-            </div>
-
-            <p className="mt-3 font-serif text-2xl text-[#171717] md:text-3xl">
-              {formatCurrency(metrics.outstandingReceivables)}
-            </p>
-
-            <p className="mt-2 text-xs leading-5 text-[#66625B]">
-              Total unpaid receivables recorded by the finance system.
-            </p>
-
-            {onOpenFinance && (
-              <button
-                type="button"
-                onClick={onOpenFinance}
-                className="mt-4 inline-flex items-center gap-2 text-[11px] font-medium uppercase tracking-widest text-[#987543] hover:text-[#171717]"
-              >
-                View Finance Records
-                <ArrowUpRight size={14} />
-              </button>
-            )}
-          </div>
-
-          <div className="bg-white p-5 md:p-6">
-            <div className="flex items-center justify-between">
-              <p className="font-mono text-xs font-medium uppercase tracking-[0.12em] text-[#55514A]">
-                Overdue Receivables
-              </p>
-              <Clock3 size={18} className="text-[#A58A64]" />
-            </div>
-
-            <p className="mt-3 font-serif text-2xl text-[#171717] md:text-3xl">
-              {formatCurrency(metrics.overdueReceivables)}
-            </p>
-
-            <p className="mt-2 text-xs leading-5 text-[#66625B]">
-              Unpaid receivables classified as overdue by the backend.
-            </p>
-
-            {onOpenFinance && (
-              <button
-                type="button"
-                onClick={onOpenFinance}
-                className="mt-4 inline-flex items-center gap-2 text-[11px] font-medium uppercase tracking-widest text-[#987543] hover:text-[#171717]"
-              >
-                Review Receivables
-                <ArrowUpRight size={14} />
-              </button>
-            )}
-          </div>
-        </div>
-      </section>
-
       {/* Recent Projects */}
       <section className="mt-12">
         <div>

@@ -36,6 +36,7 @@ export interface VendorDashboardProject {
 
 export interface VendorDashboardInvoice {
   id: string;
+  billId?: string;
   invoiceNumber: string;
   projectName: string;
   submittedAmount: number;
@@ -43,6 +44,7 @@ export interface VendorDashboardInvoice {
   paidAmount: number;
   status: VendorInvoiceStatus;
   submittedAt: string;
+  billPhotoUrl?: string;
 }
 
 export interface VendorDashboardActivity {
@@ -84,6 +86,19 @@ function formatCurrency(amount: number) {
     currency: "INR",
     maximumFractionDigits: 2,
   }).format(amount);
+}
+
+function formatReadableDate(value: string) {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
 }
 
 function getInvoiceStatusStyle(status: VendorInvoiceStatus) {
@@ -363,8 +378,8 @@ export function VendorPortalDashboard({
                       {project.status === "Under Execution" ? t("statusUnderExecution") : project.status}
                     </span>
 
-                    <span className="font-mono text-[9px] text-[#99958D]">
-                      {t("updatedPrefix")} {project.updatedAt}
+                    <span className="font-mono text-xs text-[#4F4B45]">
+                      {t("updatedPrefix")} {formatReadableDate(project.updatedAt)}
                     </span>
                   </div>
                 </button>
@@ -417,8 +432,8 @@ export function VendorPortalDashboard({
                         {invoice.projectName}
                       </h3>
 
-                      <p className="mt-2 text-[10px] text-[#99958D]">
-                        {t("submittedPrefix")} {invoice.submittedAt}
+                      <p className="mt-2 text-xs text-[#4F4B45]">
+                        {t("submittedPrefix")} {formatReadableDate(invoice.submittedAt)}
                       </p>
                     </div>
 
@@ -481,8 +496,8 @@ export function VendorPortalDashboard({
                     </p>
                   </div>
 
-                  <span className="shrink-0 font-mono text-[9px] text-[#99958D]">
-                    {activity.date}
+                  <span className="shrink-0 font-mono text-xs text-[#4F4B45]">
+                    {formatReadableDate(activity.date)}
                   </span>
                 </article>
               ))}

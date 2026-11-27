@@ -1,5 +1,7 @@
 "use client";
 
+import { OptionalField } from "@/components/ui/OptionalField";
+
 import { useState, type FormEvent, useEffect } from "react";
 import Link from "next/link";
 import {
@@ -228,13 +230,7 @@ export function PortalInvitationActivation({
         </div>
 
         {/* Full Name */}
-        <div>
-          <label
-            htmlFor="activation-fullname"
-            className="font-mono text-[11px] uppercase tracking-wider text-[#77736C]"
-          >
-            Full Name (Optional)
-          </label>
+        <OptionalField label="Full Name (Optional)">
           <input
             id="activation-fullname"
             type="text"
@@ -245,16 +241,16 @@ export function PortalInvitationActivation({
             placeholder="e.g. Rohan Verma"
             className={inputClass}
           />
-        </div>
+        </OptionalField>
 
         {/* Phone */}
-        <div>
-          <label
-            htmlFor="activation-phone"
-            className="font-mono text-[11px] uppercase tracking-wider text-[#77736C] flex items-center gap-1.5"
-          >
-            <Phone className="w-3 h-3 text-[#A58A64]" /> Phone Number (Optional)
-          </label>
+        <OptionalField
+          label={
+            <span className="inline-flex items-center gap-1.5">
+              <Phone className="w-3 h-3 text-[#A58A64]" /> Phone Number (Optional)
+            </span>
+          }
+        >
           <input
             id="activation-phone"
             type="tel"
@@ -265,7 +261,7 @@ export function PortalInvitationActivation({
             placeholder="+91-9876543200"
             className={inputClass}
           />
-        </div>
+        </OptionalField>
 
         {/* Password */}
         <div>

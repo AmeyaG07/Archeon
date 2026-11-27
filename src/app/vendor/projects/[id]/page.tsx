@@ -324,15 +324,6 @@ export default function VendorProjectDetailPage() {
             <div className="flex flex-wrap items-center gap-3">
               <button
                 type="button"
-                onClick={() => setShowUpdateModal(true)}
-                className="inline-flex items-center gap-2 rounded-sm border border-[#D8D6D0] bg-white px-4 py-2 font-mono text-xs uppercase tracking-wider text-[#111111] hover:border-[#B68A4A] hover:bg-[#FAF9F5] transition-all"
-              >
-                <Camera size={14} className="text-[#B68A4A]" />
-                <span>Post Site Update</span>
-              </button>
-
-              <button
-                type="button"
                 onClick={() => setShowBillModal(true)}
                 className="inline-flex items-center gap-2 rounded-sm bg-[#B68A4A] px-5 py-2 font-mono text-xs uppercase tracking-wider text-white hover:bg-[#9E7336] transition-all shadow-sm"
               >
@@ -354,21 +345,6 @@ export default function VendorProjectDetailPage() {
               }`}
             >
               Overview &amp; Scope
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveTab("updates")}
-              className={`pb-3 font-mono text-xs uppercase tracking-wider transition-colors border-b-2 flex items-center gap-2 ${
-                activeTab === "updates"
-                  ? "border-[#B68A4A] text-[#111111] font-semibold"
-                  : "border-transparent text-[#77736C] hover:text-[#111111]"
-              }`}
-            >
-              <span>Site Updates &amp; Photos</span>
-              <span className="rounded-full bg-[#FAF9F5] px-2 py-0.5 text-[10px] text-[#B68A4A] border border-[#B68A4A]/20">
-                {updates.length}
-              </span>
             </button>
 
             <button

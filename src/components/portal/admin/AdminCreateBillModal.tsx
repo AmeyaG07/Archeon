@@ -16,6 +16,7 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
+import { OptionalField } from "@/components/ui/OptionalField";
 
 export interface AdminCreateBillModalProps {
   isOpen: boolean;
@@ -341,33 +342,27 @@ export function AdminCreateBillModal({
               </div>
             </div>
 
-            <div>
-              <label className="block font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
-                Bill / Invoice No. (Optional)
-              </label>
+            <OptionalField label="Bill / Invoice No. (Optional)">
               <input
                 type="text"
                 placeholder="e.g. BILL-2026-042"
                 value={invoiceNumber}
                 onChange={(e) => setInvoiceNumber(e.target.value)}
-                className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
+                className="w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
               />
-            </div>
+            </OptionalField>
           </div>
 
           {/* Details (Optional) */}
-          <div>
-            <label className="block font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
-              Details / Scope Description (Optional)
-            </label>
+          <OptionalField label="Details / Scope Description (Optional)">
             <textarea
               rows={2}
               placeholder="e.g. 1st Running Account bill for RCC foundation casting & structural columns..."
               value={details}
               onChange={(e) => setDetails(e.target.value)}
-              className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
+              className="w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
             />
-          </div>
+          </OptionalField>
 
           {/* Attach Bill Image */}
           <div className="rounded-sm border border-[#D8D6D0] bg-white p-4">

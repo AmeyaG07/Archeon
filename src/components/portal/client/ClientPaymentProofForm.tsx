@@ -1,6 +1,8 @@
 
 "use client";
 
+import { OptionalField } from "@/components/ui/OptionalField";
+
 import { useRef, useState, type FormEvent } from "react";
 import {
   Upload,
@@ -368,14 +370,7 @@ export function ClientPaymentProofForm({
           </div>
 
           {/* Notes */}
-          <div>
-            <label
-              htmlFor="payment-notes"
-              className="block text-xs font-medium text-[#33312D]"
-            >
-              Additional Notes (Optional)
-            </label>
-
+          <OptionalField label="Additional Notes (Optional)" labelClassName="text-xs font-medium text-[#33312D]">
             <textarea
               id="payment-notes"
               rows={4}
@@ -384,9 +379,9 @@ export function ClientPaymentProofForm({
               onChange={(event) => setNotes(event.target.value)}
               placeholder="Add any relevant payment details..."
               disabled={submitting}
-              className="mt-3 w-full resize-y border border-[#D8D6D0] bg-white px-4 py-4 text-sm text-[#171717] outline-none focus:border-[#A58A64]"
+              className="w-full resize-y border border-[#D8D6D0] bg-white px-4 py-4 text-sm text-[#171717] outline-none focus:border-[#A58A64]"
             />
-          </div>
+          </OptionalField>
 
           {/* Validation / API Error */}
           {(validationError || error) && (

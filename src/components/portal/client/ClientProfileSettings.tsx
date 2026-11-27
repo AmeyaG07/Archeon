@@ -1,6 +1,8 @@
 
 "use client";
 
+import { OptionalField } from "@/components/ui/OptionalField";
+
 import { useState, type FormEvent } from "react";
 import {
   UserRound,
@@ -175,7 +177,7 @@ export function ClientProfileSettings({
                 />
               </Field>
 
-              <Field label="Organisation (Optional)">
+              <OptionalField label="Organisation (Optional)">
                 <input
                   type="text"
                   value={organisation}
@@ -187,7 +189,7 @@ export function ClientProfileSettings({
                   placeholder="Company or organisation"
                   className="settings-input"
                 />
-              </Field>
+              </OptionalField>
 
               <Field label="Registered Email">
                 <div className="flex gap-3">

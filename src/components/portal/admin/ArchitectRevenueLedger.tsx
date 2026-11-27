@@ -1,5 +1,7 @@
 "use client";
 
+import { OptionalField } from "@/components/ui/OptionalField";
+
 import React, { useMemo, useState } from "react";
 import {
   TrendingUp,
@@ -76,6 +78,7 @@ interface ArchitectRevenueLedgerProps {
     notes?: string;
   }) => Promise<void>;
   onDeleteEntry: (id: string) => Promise<void>;
+  onClearAllData?: () => Promise<void>;
   onGenerateReport: (payload: {
     periodFilter: "MONTHLY" | "QUARTERLY" | "YEARLY" | "ALL";
     year: number;
@@ -131,9 +134,12 @@ export function ArchitectRevenueLedger({
   error,
   onAddEntry,
   onDeleteEntry,
+  onClearAllData,
   onGenerateReport,
   onDownloadReport,
 }: ArchitectRevenueLedgerProps) {
+  const [clearingAll, setClearingAll] = useState(false);
+  const [confirmClearAll, setConfirmClearAll] = useState(false);
   const now = new Date();
   const [selectedYear, setSelectedYear] = useState<number>(now.getFullYear());
   const [selectedMonth, setSelectedMonth] = useState<number>(now.getMonth() + 1);
@@ -461,14 +467,14 @@ export function ArchitectRevenueLedger({
             </p>
           </div>
 
-          <div className="rounded-sm border border-[#171717] bg-[#171717] text-white p-5 space-y-1.5">
-            <p className="font-mono text-[9px] uppercase tracking-widest text-[#C6A779]">
+          <div className="rounded-sm border border-[#D8D6D0] bg-white p-5 space-y-1.5">
+            <p className="font-mono text-xs uppercase tracking-widest text-[#7D5E32]">
               Net Balance ({selectedYear})
             </p>
-            <p className="font-serif text-2xl sm:text-3xl text-white">
+            <p className="font-serif text-2xl sm:text-3xl text-[#171717]">
               {formatInr(analytics.netBalance)}
             </p>
-            <p className="font-mono text-[10px] text-white/70">
+            <p className="font-mono text-xs text-[#4F4B45]">
               Client: {formatCompactInr(analytics.clientRev)} · Vendor: {formatCompactInr(analytics.vendorRev)}
             </p>
           </div>
@@ -857,31 +863,25 @@ export function ArchitectRevenueLedger({
                   </select>
                 </div>
 
-                <div>
-                  <label className="block font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
-                    Reference / UTR / Bill No. (Optional)
-                  </label>
+                <OptionalField label="Reference / UTR / Bill No. (Optional)">
                   <input
                     type="text"
                     value={referenceNumber}
                     onChange={(e) => setReferenceNumber(e.target.value)}
                     placeholder="e.g. UTR-994120 / VOUCHER-12"
-                    className="mt-1.5 w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3.5 py-2.5 font-mono text-xs text-[#171717]"
+                    className="w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3.5 py-2.5 font-mono text-xs text-[#171717]"
                   />
-                </div>
+                </OptionalField>
 
-                <div>
-                  <label className="block font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
-                    Audit Notes / Remarks (Optional)
-                  </label>
+                <OptionalField label="Audit Notes / Remarks (Optional)">
                   <input
                     type="text"
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     placeholder="Optional remark for Chartered Accountant audit..."
-                    className="mt-1.5 w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3.5 py-2.5 text-xs text-[#171717]"
+                    className="w-full rounded-sm border border-[#D8D6D0] bg-[#FAF9F6] px-3.5 py-2.5 text-xs text-[#171717]"
                   />
-                </div>
+                </OptionalField>
               </div>
 
               <div className="pt-1">
@@ -934,15 +934,66 @@ export function ArchitectRevenueLedger({
                   </select>
                 </div>
 
-                <button
-                  type="button"
-                  disabled={generatingReport}
-                  onClick={handleCreateAndDownloadCaReport}
-                  className="inline-flex items-center justify-center gap-2 rounded-sm border border-[#2e7d32] bg-[#f1f8e9] px-5 py-2.5 font-mono text-[11px] uppercase tracking-wider text-[#1b5e20] hover:bg-[#2e7d32] hover:text-white transition-colors font-semibold cursor-pointer disabled:opacity-50"
-                >
-                  <FileSpreadsheet size={15} />
-                  {generatingReport ? "Generating & Storing..." : "Generate & Store CA Excel (.xls)"}
-                </button>
+                <div className="flex flex-wrap items-center gap-2.5">
+                  {onClearAllData && (
+                    confirmClearAll ? (
+                      <div className="inline-flex items-center gap-2 rounded-sm border border-red-300 bg-red-50 px-3 py-1.5">
+                        <span className="font-mono text-xs text-red-800">
+                          Empty all ledger &amp; Excel data?
+                        </span>
+                        <button
+                          type="button"
+                          disabled={clearingAll}
+                          onClick={async () => {
+                            setClearingAll(true);
+                            try {
+                              await onClearAllData();
+                              setConfirmClearAll(false);
+                              setFormFeedback({
+                                type: "ok",
+                                msg: "All Excel reports and ledger data have been emptied.",
+                              });
+                              setTimeout(() => setFormFeedback(null), 4000);
+                            } finally {
+                              setClearingAll(false);
+                            }
+                          }}
+                          className="rounded-sm bg-red-600 px-3 py-1 font-mono text-xs uppercase tracking-wider text-white hover:bg-red-700 disabled:opacity-50 cursor-pointer"
+                        >
+                          {clearingAll ? "Emptying..." : "Confirm"}
+                        </button>
+                        <button
+                          type="button"
+                          disabled={clearingAll}
+                          onClick={() => setConfirmClearAll(false)}
+                          className="rounded-sm border border-[#D8D6D0] bg-white px-2.5 py-1 font-mono text-xs uppercase tracking-wider text-[#4F4B45] hover:border-[#171717] cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled={clearingAll || generatingReport || (entries.length === 0 && reports.length === 0)}
+                        onClick={() => setConfirmClearAll(true)}
+                        className="inline-flex items-center justify-center gap-2 rounded-sm border border-red-200 bg-red-50/70 px-4 py-2.5 font-mono text-xs uppercase tracking-wider text-red-700 hover:bg-red-600 hover:border-red-600 hover:text-white transition-colors font-semibold cursor-pointer disabled:opacity-40"
+                      >
+                        <Trash2 size={14} />
+                        Empty Excel Data
+                      </button>
+                    )
+                  )}
+
+                  <button
+                    type="button"
+                    disabled={generatingReport}
+                    onClick={handleCreateAndDownloadCaReport}
+                    className="inline-flex items-center justify-center gap-2 rounded-sm border border-[#2e7d32] bg-[#f1f8e9] px-5 py-2.5 font-mono text-[11px] uppercase tracking-wider text-[#1b5e20] hover:bg-[#2e7d32] hover:text-white transition-colors font-semibold cursor-pointer disabled:opacity-50"
+                  >
+                    <FileSpreadsheet size={15} />
+                    {generatingReport ? "Generating & Storing..." : "Generate & Store CA Excel (.xls)"}
+                  </button>
+                </div>
               </div>
             </div>
 

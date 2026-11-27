@@ -43,6 +43,7 @@ export interface ClientProject {
   lastVisitDate?: string;
   projectManager?: string;
   description?: string;
+  progressPercentage?: number;
 }
 
 interface SiteUpdateItem {
@@ -383,6 +384,33 @@ export function ClientProjectOverview({
                     </div>
                   </div>
 
+                  {/* Milestone Completion */}
+                  <div className="mt-6 border-t border-[#E5E2DC] pt-5">
+                    <div className="flex items-center justify-between gap-4">
+                      <p className="font-mono text-xs uppercase tracking-widest text-[#4F4B45]">
+                        Milestone Completion
+                      </p>
+                      <span className="font-mono text-xs font-semibold text-[#171717]">
+                        {Math.max(0, Math.min(100, Math.round(project.progressPercentage ?? 0)))}%
+                      </span>
+                    </div>
+                    <div
+                      className="mt-2.5 h-2 w-full overflow-hidden rounded-full bg-[#ECEAE5]"
+                      role="progressbar"
+                      aria-valuenow={Math.max(0, Math.min(100, Math.round(project.progressPercentage ?? 0)))}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-label="Project milestone completion"
+                    >
+                      <div
+                        className="h-full bg-[#A58A64] transition-all duration-300"
+                        style={{
+                          width: `${Math.max(0, Math.min(100, Math.round(project.progressPercentage ?? 0)))}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+
                   {/* Action Trigger Row: View Details / Hide Details (No Redirection!) */}
                   <button
                     type="button"
@@ -590,62 +618,7 @@ export function ClientProjectOverview({
                             )}
                           </div>
 
-                          {/* 3. Progress Gallery & Architect Notes */}
-                          <div className="rounded-sm border border-[#E4E1DA] bg-[#FAF9F6] p-5 space-y-4">
-                            <div className="flex items-center justify-between border-b border-[#E4E1DA] pb-3">
-                              <div className="flex items-center gap-2">
-                                <Camera size={16} className="text-[#A58A64]" />
-                                <h3 className="font-serif text-lg text-[#171717]">Site Progress Photos &amp; Architect Notes</h3>
-                              </div>
-                              <span className="font-mono text-[10px] text-[#77736C]">
-                                {architectUpdates.length} Updates
-                              </span>
-                            </div>
-
-                            {architectUpdates.length === 0 ? (
-                              <p className="py-4 text-center font-mono text-xs text-[#77736C]">
-                                No site progress updates uploaded yet.
-                              </p>
-                            ) : (
-                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {architectUpdates.map((u) => (
-                                  <div
-                                    key={u.id}
-                                    className="rounded-sm border border-[#D8D6D0] bg-white overflow-hidden"
-                                  >
-                                    {u.photoUrl ? (
-                                      <button
-                                        type="button"
-                                        onClick={() => setPreviewPhotoUrl(u.photoUrl || null)}
-                                        className="block relative h-40 w-full bg-stone-100 overflow-hidden cursor-pointer"
-                                      >
-                                        <img
-                                          src={u.photoUrl}
-                                          alt="Site update"
-                                          className="h-full w-full object-cover hover:scale-105 transition-transform duration-300"
-                                        />
-                                      </button>
-                                    ) : (
-                                      <div className="h-24 flex items-center justify-center bg-[#F2F0EB] text-[#77736C]">
-                                        <ImageIcon size={20} />
-                                      </div>
-                                    )}
-                                    <div className="p-3.5 space-y-1.5">
-                                      <div className="flex justify-between font-mono text-[9px] text-[#77736C]">
-                                        <span>{formatDateReadable(u.createdAt)}</span>
-                                        <span className="text-[#9F7947]">{u.authorName}</span>
-                                      </div>
-                                      <p className="text-xs text-[#33312D] leading-relaxed">
-                                        {u.note || "Site progress note logged."}
-                                      </p>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-
-                          {/* 4. Assigned Vendors Breakdown */}
+                          {/* 3. Assigned Vendors Breakdown */}
                           <div className="rounded-sm border border-[#E4E1DA] bg-[#FAF9F6] p-5 space-y-4">
                             <div className="flex items-center justify-between border-b border-[#E4E1DA] pb-3">
                               <div className="flex items-center gap-2">

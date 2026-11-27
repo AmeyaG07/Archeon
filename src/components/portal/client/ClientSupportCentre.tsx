@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { OptionalField } from "@/components/ui/OptionalField";
 import {
   LifeBuoy,
   Plus,
@@ -551,18 +552,15 @@ export function ClientSupportCentre({
                 </div>
               </div>
 
-              <div>
-                <label className="block font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
-                  Related Project or Reference (Optional)
-                </label>
+              <OptionalField label="Related Project or Reference (Optional)">
                 <input
                   type="text"
                   value={relatedReference}
                   onChange={(e) => setRelatedReference(e.target.value)}
                   placeholder="e.g. The Monolith Sanctuary / Milestone 2"
-                  className="mt-1 w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
+                  className="w-full rounded-sm border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-xs text-[#171717] focus:border-[#A58A64] focus:outline-none"
                 />
-              </div>
+              </OptionalField>
 
               <div>
                 <label className="block font-mono text-[10px] uppercase tracking-wider text-[#77736C]">

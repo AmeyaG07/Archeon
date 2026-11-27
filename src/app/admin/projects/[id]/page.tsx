@@ -95,7 +95,6 @@ export default function AdminProjectDetailPage() {
 
   const [project, setProject] = useState<ProjectDetail | null>(null);
   const [updates, setUpdates] = useState<SiteUpdate[]>([]);
-  const [vendorUpdates, setVendorUpdates] = useState<SiteUpdate[]>([]);
   const [expenseSummary, setExpenseSummary] = useState<ProjectExpenseSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -151,19 +150,7 @@ export default function AdminProjectDetailPage() {
         setUpdates([]);
       }
 
-      // 3. Fetch vendor updates specifically
-      try {
-        const res = await apiFetch(`/api/site-updates/projects/${projectId}/vendor-updates`);
-        const vUpdates = await res.json();
-        const dedupedVendor = Array.isArray(vUpdates)
-          ? [...new Map(vUpdates.map((u: SiteUpdate) => [u.id, u])).values()]
-          : [];
-        setVendorUpdates(dedupedVendor);
-      } catch {
-        setVendorUpdates([]);
-      }
-
-      // 4. Fetch expense summary
+      // 3. Fetch expense summary
       try {
         const res = await apiFetch(`/api/billing/project/${projectId}/expenses`);
         const exp = await res.json();
@@ -595,84 +582,9 @@ export default function AdminProjectDetailPage() {
         </div>
       </div>
 
-      {/* Phases & Milestones Management */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Card A: Project Phases */}
-        <div className="rounded-sm border border-[#D8D6D0] bg-white p-6 shadow-sm">
-          <div className="flex items-center justify-between border-b border-[#E5E2DC] pb-3">
-            <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-[#B68A4A]">
-              <Clock size={14} /> Project Phases ({project?.phases?.length || 0})
-            </div>
-            <button
-              type="button"
-              onClick={() => setShowPhaseForm(!showPhaseForm)}
-              className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider px-2.5 py-1 bg-[#111111] text-white hover:bg-[#B68A4A] transition-colors rounded-sm"
-            >
-              <Plus size={11} /> {showPhaseForm ? "Cancel" : "Add Phase"}
-            </button>
-          </div>
-
-          {showPhaseForm && (
-            <form onSubmit={handleAddPhase} className="mt-4 border-b border-[#E5E2DC] pb-4 space-y-2.5">
-              <input
-                type="text"
-                placeholder="Phase name (e.g. Structural Shell)"
-                value={phaseName}
-                onChange={(e) => setPhaseName(e.target.value)}
-                className="w-full rounded-sm border border-[#D8D6D0] px-3 py-1.5 text-xs text-[#111111] focus:border-[#B68A4A] focus:outline-none"
-                required
-              />
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Optional scope description"
-                  value={phaseDescription}
-                  onChange={(e) => setPhaseDescription(e.target.value)}
-                  className="flex-1 rounded-sm border border-[#D8D6D0] px-3 py-1.5 text-xs text-[#111111] focus:border-[#B68A4A] focus:outline-none"
-                />
-                <button
-                  type="submit"
-                  disabled={actionLoading || !phaseName.trim()}
-                  className="px-3.5 py-1.5 bg-[#B68A4A] text-white font-mono text-[10px] uppercase tracking-wider hover:bg-[#A3783A] disabled:opacity-50"
-                >
-                  Save Phase
-                </button>
-              </div>
-            </form>
-          )}
-
-          {!project?.phases || project.phases.length === 0 ? (
-            <p className="py-6 text-center font-mono text-xs text-[#777777]">
-              No phases added yet.
-            </p>
-          ) : (
-            <div className="mt-3 divide-y divide-[#E5E2DC]">
-              {project.phases.map((phase) => (
-                <div key={phase.id} className="py-2.5 flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="text-xs font-medium text-[#111111] truncate">{phase.name}</p>
-                    {phase.description && (
-                      <p className="text-[11px] text-[#777777] truncate">{phase.description}</p>
-                    )}
-                  </div>
-                  <select
-                    aria-label={`Phase ${phase.name} status`}
-                    value={phase.status}
-                    disabled={actionLoading}
-                    onChange={(e) => void handlePhaseStatusChange(phase.id, e.target.value)}
-                    className="rounded-sm border border-[#D8D6D0] bg-[#FAF9F5] px-2 py-1 font-mono text-[10px] uppercase text-[#111111] focus:border-[#B68A4A] focus:outline-none"
-                  >
-                    <option value="PENDING">Pending</option>
-                    <option value="IN_PROGRESS">In Progress</option>
-                    <option value="COMPLETED">Completed</option>
-                  </select>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Card B: Project Milestones */}
+      {/* Milestones Management */}
+      <div className="grid grid-cols-1 gap-6">
+        {/* Project Milestones */}
         <div className="rounded-sm border border-[#D8D6D0] bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between border-b border-[#E5E2DC] pb-3">
             <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-[#B68A4A]">
@@ -826,51 +738,6 @@ export default function AdminProjectDetailPage() {
         )}
       </div>
 
-      {/* Vendor Updates (moved below Bills) */}
-      <div className="rounded-sm border border-[#D8D6D0] bg-white p-6 shadow-sm">
-        <div className="flex items-center justify-between border-b border-[#D8D6D0] pb-4">
-          <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-[#B68A4A]">
-            <FileText size={14} /> Vendor Updates
-          </div>
-          <span className="font-mono text-xs text-[#777777]">
-            {vendorUpdates.length} Updates Received
-          </span>
-        </div>
-
-        {vendorUpdates.length === 0 ? (
-          <div className="py-8 text-center font-mono text-xs text-[#777777]">
-            No site notes or updates submitted by vendors for this project yet.
-          </div>
-        ) : (
-          <div className="mt-4 divide-y divide-[#E5E3DE]">
-            {vendorUpdates.map((vu) => (
-              <div key={vu.id} className="py-4 flex flex-col md:flex-row gap-4">
-                {vu.photoUrl && (
-                  <div className="shrink-0 w-32 h-24 rounded-sm overflow-hidden border border-[#D8D6D0] bg-black/5">
-                    <img src={vu.photoUrl} alt="Vendor upload" className="w-full h-full object-cover" />
-                  </div>
-                )}
-                <div className="flex-1">
-                  <div className="flex items-center gap-3">
-                    <span className="font-semibold text-xs text-[#111111]">{vu.authorName}</span>
-                    <span className="font-mono text-[10px] text-[#777777]">
-                      {new Date(vu.createdAt).toLocaleString("en-IN", {
-                        day: "numeric",
-                        month: "short",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
-                  </div>
-                  <p className="mt-2 text-xs text-[#333333] leading-relaxed whitespace-pre-line">
-                    {vu.note || "No additional text note provided."}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
       {/* Assign Vendor Modal */}
       <AdminAssignVendorModal
         projectId={projectId}

@@ -43,6 +43,7 @@ export default function ClientProjectsPage() {
           lastVisitDate: p.lastVisitDate,
           projectManager: p.projectManagerUsername || "Ar. Mandar Bhalekar",
           description: p.description,
+          progressPercentage: typeof p.progressPercentage === "number" ? p.progressPercentage : 0,
         }));
         setProjects(records);
       }

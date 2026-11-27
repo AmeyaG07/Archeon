@@ -992,30 +992,6 @@ function InvoiceCard({
         </div>
       )}
 
-      {invoice.billPhotoUrl && (
-        <div className="mt-3 flex items-center gap-3 rounded-xs border border-[#E5E2DC] bg-white p-2">
-          <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-xs border border-[#D8D6D0]">
-            <img src={invoice.billPhotoUrl} alt="Bill Voucher" className="h-full w-full object-cover" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-mono text-[9.5px] font-semibold text-[#171717] truncate">
-              Attached Physical Bill Voucher
-            </p>
-            <p className="font-mono text-[8.5px] uppercase tracking-wider text-[#A58A64]">
-              Available to Client &amp; Vendor
-            </p>
-          </div>
-          <a
-            href={invoice.billPhotoUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[9px] font-mono uppercase tracking-wider text-[#987543] hover:underline shrink-0"
-          >
-            View Full Voucher ↗
-          </a>
-        </div>
-      )}
-
       <div className="mt-6 flex flex-col justify-between gap-4 border-t border-[#E5E2DC] pt-5 sm:flex-row sm:items-center">
         <div className="flex flex-wrap gap-x-6 gap-y-2 text-[10px] text-[#77736C]">
           <span>

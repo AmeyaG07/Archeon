@@ -1,5 +1,7 @@
 "use client";
 
+import { OptionalField } from "@/components/ui/OptionalField";
+
 import React, { useEffect, useState, useCallback, Suspense, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -625,10 +627,7 @@ function SubmitPaymentProofTileModal({
               </select>
             </div>
 
-            <div>
-              <label className="block font-mono text-[9px] uppercase tracking-widest text-[#77736C] mb-1.5">
-                UTR / Reference Number (Optional)
-              </label>
+            <OptionalField label="UTR / Reference Number (Optional)">
               <input
                 type="text"
                 value={utrNumber}
@@ -636,7 +635,7 @@ function SubmitPaymentProofTileModal({
                 placeholder="e.g. 432109876543"
                 className="w-full border border-[#D8D6D0] bg-white px-3 py-2 text-xs outline-none focus:border-[#A58A64]"
               />
-            </div>
+            </OptionalField>
           </div>
 
           {/* Instant Verification Callout */}

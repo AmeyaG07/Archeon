@@ -577,27 +577,44 @@ pre {
   div.border.bg-\[\#FAF9F6\],
   div.border.bg-\[\#FAF9F5\],
   div.border.bg-\[\#FAF8F5\],
-  section.border:not(.grid)):not(.rounded-full):not(.rounded-2xl):not(.rounded-3xl):not(button):not(a) {
+  section.border:not(.grid)):not(.rounded-full):not(.rounded-2xl):not(.rounded-3xl):not(button):not(a):not([role="dialog"]):not([role="dialog"] *):not(.fixed.inset-0 *) {
   border-radius: 0.875rem !important;
-  background: rgba(255, 255, 255, 0.58) !important;
+  background: rgba(255, 255, 255, 0.72) !important;
   backdrop-filter: blur(18px) saturate(160%);
   -webkit-backdrop-filter: blur(18px) saturate(160%);
-  border-color: rgba(255, 255, 255, 0.75) !important;
+  border-color: rgba(255, 255, 255, 0.85) !important;
   box-shadow:
     0 8px 30px rgba(17, 17, 17, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
-:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) :is([role="dialog"] > div, .fixed.inset-0.z-50 > div) {
+:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) :is([role="dialog"], .fixed.inset-0.z-50 > div, .fixed.inset-0.z-\[60\] > div, .fixed.inset-0.z-\[70\] > div, .fixed.inset-0.z-\[80\] > div) {
   border-radius: 1rem !important;
-  background: rgba(255, 255, 255, 0.96) !important;
-  backdrop-filter: blur(24px) saturate(165%);
-  -webkit-backdrop-filter: blur(24px) saturate(165%);
-  border: 1px solid rgba(216, 214, 208, 0.95) !important;
-  box-shadow: 0 24px 60px rgba(17, 17, 17, 0.22);
+  background: #FFFFFF !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid #D8D6D0 !important;
+  box-shadow: 0 24px 60px rgba(17, 17, 17, 0.25) !important;
   color: #111111;
 }
 
 :is(.admin-portal-root, .client-portal-root, .vendor-portal-root) button:not(.rounded-full):not(.border-l-2):not(.border-b-2) {
   border-radius: 0.625rem;
+}
+
+/* Global Portal Readability & Contrast Floor (Admin, Client, Vendor main surfaces & top bars) */
+:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) main :is(.text-\[\#99958D\], .text-\[\#AAA69D\], .text-\[\#888\], .text-\[\#77736C\], .text-\[\#777\], .text-\[\#66635D\]),
+:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) > div > div > header :is(.text-\[\#99958D\], .text-\[\#77736C\], .text-\[\#66635D\]) {
+  color: #4F4B45 !important;
+}
+
+:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) main :is(.text-\[\#A58A64\], .text-\[\#987543\]),
+:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) > div > div > header :is(.text-\[\#A58A64\], .text-\[\#987543\]) {
+  color: #7D5E32 !important;
+}
+
+:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) main :is(.text-\[7px\], .text-\[8px\], .text-\[8\.5px\], .text-\[9px\], .text-\[10px\]),
+:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) > div > div > header :is(.text-\[9px\], .text-\[10px\]) {
+  font-size: 0.75rem !important;
+  line-height: 1.35 !important;
 }

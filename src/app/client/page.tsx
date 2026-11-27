@@ -48,6 +48,21 @@ export default function ClientPortalPage() {
         // Tolerant fallback
       }
 
+      let progressByProjectId: Record<string, number> = {};
+      try {
+        const opRes = await apiFetch("/api/operational-projects");
+        const opList = await opRes.json();
+        if (Array.isArray(opList)) {
+          for (const op of opList) {
+            if (op?.id && typeof op.progressPercentage === "number") {
+              progressByProjectId[String(op.id)] = op.progressPercentage;
+            }
+          }
+        }
+      } catch {
+        // Tolerant fallback
+      }
+
       const projects: DashboardProject[] = Array.isArray(d.projects)
         ? d.projects.map((p: any) => ({
             id: p.projectId || "",
@@ -55,6 +70,10 @@ export default function ClientPortalPage() {
             location: "Maharashtra",
             status: p.status || "Under Design",
             updatedAt: new Date().toISOString(),
+            progressPercentage:
+              typeof p.progressPercentage === "number"
+                ? p.progressPercentage
+                : progressByProjectId[String(p.projectId || "")] ?? 0,
           }))
         : [];
 

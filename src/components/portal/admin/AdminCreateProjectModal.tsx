@@ -1,5 +1,7 @@
 "use client";
 
+import { OptionalField } from "@/components/ui/OptionalField";
+
 import React, { useState, useEffect } from "react";
 import { X, FolderPlus, Building2, Calendar, MapPin, IndianRupee, AlertCircle, CheckCircle2 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
@@ -239,10 +241,7 @@ export function AdminCreateProjectModal({
             </div>
           </div>
 
-          <div>
-            <label className="block font-mono text-[9px] uppercase tracking-widest text-[#77736C] mb-1">
-              Site Address / Location
-            </label>
+          <OptionalField label="Site Address / Location (Optional)">
             <div className="relative">
               <input
                 type="text"
@@ -253,7 +252,7 @@ export function AdminCreateProjectModal({
               />
               <MapPin size={14} className="absolute left-2.5 top-2.5 text-[#99958D]" />
             </div>
-          </div>
+          </OptionalField>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
