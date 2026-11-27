@@ -47,9 +47,14 @@ public class OperationalProjectController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getProjectById(@PathVariable UUID id, Authentication auth) {
+    public ResponseEntity<?> getProjectById(@PathVariable String id, Authentication auth) {
         try {
-            OperationalProjectResponse res = projectService.getProjectById(id, auth);
+            OperationalProjectResponse res;
+            try {
+                res = projectService.getProjectById(UUID.fromString(id), auth);
+            } catch (IllegalArgumentException notUuid) {
+                res = projectService.getProjectByReference(id, auth);
+            }
             return ResponseEntity.ok(res);
         } catch (AccessDeniedException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));

@@ -362,10 +362,7 @@ export function AdminCreateProjectModal({
             </div>
           </div>
 
-          <div>
-            <label className="block font-mono text-[9px] uppercase tracking-widest text-[#77736C] mb-1">
-              Project Brief / Architectural Notes
-            </label>
+          <OptionalField label="Project Brief / Architectural Notes (Optional)">
             <textarea
               rows={3}
               placeholder="Architectural scope, initial site condition, client expectations..."
@@ -373,7 +370,7 @@ export function AdminCreateProjectModal({
               onChange={(e) => setNotes(e.target.value)}
               className="w-full border border-[#D8D6D0] bg-white p-3 text-xs outline-none focus:border-[#A58A64]"
             />
-          </div>
+          </OptionalField>
 
           <div className="flex justify-end gap-3 pt-3 border-t border-[#D8D6D0]">
             <button

@@ -184,19 +184,19 @@ export function ConsultationModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 16 }}
             transition={{ type: "spring", stiffness: 320, damping: 30 }}
-            className="relative w-full max-w-2xl max-h-[92dvh] overflow-y-auto rounded-3xl border border-[#C6A779]/30 bg-[#0D0C0B]/96 backdrop-blur-2xl p-5 sm:p-7 md:p-8 shadow-[0_25px_80px_rgba(0,0,0,0.95),inset_0_1px_1px_rgba(255,255,255,0.1)] text-[#F2F0EB] [scrollbar-width:thin] [scrollbar-color:#2a2725_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-stone-800 [&::-webkit-scrollbar-thumb]:rounded-full"
+            className="relative w-full max-w-2xl max-h-[92dvh] overflow-y-auto rounded-3xl border border-[#D8D6D0] bg-white p-5 sm:p-7 md:p-8 shadow-[0_24px_70px_rgba(0,0,0,0.22)] text-[#111111] [scrollbar-width:thin] [scrollbar-color:#d8d6d0_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-stone-300 [&::-webkit-scrollbar-thumb]:rounded-full"
           >
             {/* Clean Modal Header */}
-            <div className="mb-5 pb-4 border-b border-white/10 flex items-start justify-between gap-4">
+            <div className="mb-5 pb-4 border-b border-[#E5E3DD] flex items-start justify-between gap-4">
               <div className="space-y-1.5">
                 <h2
                   id="consultation-modal-title"
-                  className="font-serif text-2xl sm:text-3xl text-white tracking-tight"
+                  className="font-serif text-2xl sm:text-3xl text-[#111111] tracking-tight"
                 >
                   Discuss Your Project
                 </h2>
                 <div className="flex flex-wrap items-center gap-2.5">
-                  <p className="font-['Outfit',sans-serif] text-[13px] text-[#B8B4AC] font-light">
+                  <p className="font-['Outfit',sans-serif] text-[13px] text-[#5C5852] font-normal">
                     Direct consultation with Ar. Mandar Bhalekar.
                   </p>
                   {primaryOffice && (
@@ -204,11 +204,11 @@ export function ConsultationModal({
                       href={getOfficeMapsHref(primaryOffice)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.03] hover:border-[#C6A779]/45 px-2.5 py-0.5 text-[10px] font-mono text-[#D4D0C5] hover:text-[#F4E6C8] transition-colors shrink-0"
+                      className="inline-flex items-center gap-1 rounded-full border border-[#D8D6D0] bg-[#FAF9F7] hover:border-[#8D6E3D] px-2.5 py-0.5 text-[10px] font-mono text-[#4F4B45] hover:text-[#111111] transition-colors shrink-0"
                     >
-                      <MapPin className="w-2.5 h-2.5 text-[#C6A779]" />
+                      <MapPin className="w-2.5 h-2.5 text-[#8D6E3D]" />
                       <span>{primaryOffice.label}</span>
-                      <ArrowUpRight className="w-2.5 h-2.5 text-[#C6A779]" />
+                      <ArrowUpRight className="w-2.5 h-2.5 text-[#8D6E3D]" />
                     </a>
                   )}
                 </div>
@@ -220,7 +220,7 @@ export function ConsultationModal({
                   playSfx("ui-short");
                   resetForm();
                 }}
-                className="w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.15] border border-white/10 flex items-center justify-center text-stone-400 hover:text-white transition-all cursor-pointer shrink-0"
+                className="w-8 h-8 rounded-full bg-[#F5F4F1] hover:bg-[#EAE8E2] border border-[#D8D6D0] flex items-center justify-center text-[#5C5852] hover:text-[#111111] transition-all cursor-pointer shrink-0"
                 aria-label="Close modal"
               >
                 <X className="w-4 h-4" />
@@ -230,19 +230,19 @@ export function ConsultationModal({
             {submittedRef ? (
               /* Clean Success State */
               <div className="py-10 text-center space-y-4">
-                <div className="w-14 h-14 rounded-full bg-[#C6A779]/20 border border-[#C6A779]/45 text-[#C6A779] mx-auto flex items-center justify-center">
+                <div className="w-14 h-14 rounded-full bg-[#8D6E3D]/10 border border-[#8D6E3D]/30 text-[#8D6E3D] mx-auto flex items-center justify-center">
                   <CheckCircle2 className="w-7 h-7" />
                 </div>
-                <h3 className="font-serif text-2xl sm:text-3xl text-white">
+                <h3 className="font-serif text-2xl sm:text-3xl text-[#111111]">
                   Commission Enquiry Registered
                 </h3>
-                <div className="inline-block px-4 py-2 rounded-xl bg-black/55 border border-[#C6A779]/40 text-[#C6A779] font-mono text-xs tracking-wider">
+                <div className="inline-block px-4 py-2 rounded-xl bg-[#FAF9F7] border border-[#D8D6D0] text-[#8D6E3D] font-mono text-xs tracking-wider">
                   REFERENCE: {submittedRef}
                 </div>
-                <p className="text-sm font-['Outfit',sans-serif] text-stone-300 max-w-md mx-auto font-light leading-relaxed">
+                <p className="text-sm font-['Outfit',sans-serif] text-[#4F4B45] max-w-md mx-auto font-normal leading-relaxed">
                   Thank you for reaching out. Ar. Mandar Bhalekar&apos;s studio team
                   will review your brief and respond via{" "}
-                  <span className="text-[#E0D8C3] font-medium">
+                  <span className="text-[#111111] font-medium">
                     {formData.preferredContact}
                   </span>
                   .
@@ -250,7 +250,7 @@ export function ConsultationModal({
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="mt-4 px-7 py-3 rounded-full bg-[#C6A779] hover:bg-[#D97724] text-stone-950 font-semibold text-xs font-mono uppercase tracking-wider transition-all cursor-pointer shadow-md"
+                  className="mt-4 px-7 py-3 rounded-full bg-[#171717] hover:bg-[#2A2927] text-white font-semibold text-xs font-mono uppercase tracking-wider transition-all cursor-pointer shadow-md"
                 >
                   Return to Studio
                 </button>
@@ -261,9 +261,9 @@ export function ConsultationModal({
                 {submitError && (
                   <div
                     role="alert"
-                    className="flex items-start gap-2.5 rounded-xl border border-red-400/35 bg-red-500/10 p-3 text-xs text-red-200"
+                    className="flex items-start gap-2.5 rounded-xl border border-red-300 bg-red-50 p-3 text-xs text-red-700"
                   >
-                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-400" />
+                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-600" />
                     <span>{submitError}</span>
                   </div>
                 )}
@@ -273,7 +273,7 @@ export function ConsultationModal({
                   <div>
                     <label
                       htmlFor="consult-name"
-                      className="block text-[10.5px] font-mono uppercase tracking-wider text-stone-400 mb-1.5"
+                      className="block text-[10.5px] font-mono uppercase tracking-wider text-[#4F4B45] mb-1.5"
                     >
                       Full Name *
                     </label>
@@ -286,14 +286,14 @@ export function ConsultationModal({
                       onChange={(e) =>
                         setFormData({ ...formData, name: e.target.value })
                       }
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.035] border border-white/12 hover:border-white/25 focus:border-[#C6A779] text-sm font-['Outfit',sans-serif] text-white placeholder:text-stone-500 focus:outline-none transition-colors"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#D8D6D0] hover:border-[#B8B4AC] focus:border-[#8D6E3D] text-sm font-['Outfit',sans-serif] text-[#111111] placeholder:text-[#8E8980] focus:outline-none transition-colors"
                     />
                   </div>
 
                   <div>
                     <label
                       htmlFor="consult-mobile"
-                      className="block text-[10.5px] font-mono uppercase tracking-wider text-stone-400 mb-1.5"
+                      className="block text-[10.5px] font-mono uppercase tracking-wider text-[#4F4B45] mb-1.5"
                     >
                       Mobile Number *
                     </label>
@@ -306,14 +306,14 @@ export function ConsultationModal({
                       onChange={(e) =>
                         setFormData({ ...formData, mobile: e.target.value })
                       }
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.035] border border-white/12 hover:border-white/25 focus:border-[#C6A779] text-sm font-['Outfit',sans-serif] text-white placeholder:text-stone-500 focus:outline-none transition-colors"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#D8D6D0] hover:border-[#B8B4AC] focus:border-[#8D6E3D] text-sm font-['Outfit',sans-serif] text-[#111111] placeholder:text-[#8E8980] focus:outline-none transition-colors"
                     />
                   </div>
 
                   <div>
                     <label
                       htmlFor="consult-email"
-                      className="block text-[10.5px] font-mono uppercase tracking-wider text-stone-400 mb-1.5"
+                      className="block text-[10.5px] font-mono uppercase tracking-wider text-[#4F4B45] mb-1.5"
                     >
                       Email Address *
                     </label>
@@ -326,14 +326,14 @@ export function ConsultationModal({
                       onChange={(e) =>
                         setFormData({ ...formData, email: e.target.value })
                       }
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.035] border border-white/12 hover:border-white/25 focus:border-[#C6A779] text-sm font-['Outfit',sans-serif] text-white placeholder:text-stone-500 focus:outline-none transition-colors"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#D8D6D0] hover:border-[#B8B4AC] focus:border-[#8D6E3D] text-sm font-['Outfit',sans-serif] text-[#111111] placeholder:text-[#8E8980] focus:outline-none transition-colors"
                     />
                   </div>
 
                   <div>
                     <label
                       htmlFor="consult-location"
-                      className="block text-[10.5px] font-mono uppercase tracking-wider text-stone-400 mb-1.5"
+                      className="block text-[10.5px] font-mono uppercase tracking-wider text-[#4F4B45] mb-1.5"
                     >
                       Site City / Location *
                     </label>
@@ -346,14 +346,14 @@ export function ConsultationModal({
                       onChange={(e) =>
                         setFormData({ ...formData, location: e.target.value })
                       }
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.035] border border-white/12 hover:border-white/25 focus:border-[#C6A779] text-sm font-['Outfit',sans-serif] text-white placeholder:text-stone-500 focus:outline-none transition-colors"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#D8D6D0] hover:border-[#B8B4AC] focus:border-[#8D6E3D] text-sm font-['Outfit',sans-serif] text-[#111111] placeholder:text-[#8E8980] focus:outline-none transition-colors"
                     />
                   </div>
                 </div>
 
                 {/* 02 · Interactive Discipline Pills */}
                 <div>
-                  <span className="block text-[10.5px] font-mono uppercase tracking-wider text-stone-400 mb-2">
+                  <span className="block text-[10.5px] font-mono uppercase tracking-wider text-[#4F4B45] mb-2">
                     Discipline *
                   </span>
                   <div
@@ -373,8 +373,8 @@ export function ConsultationModal({
                           }
                           className={`px-3.5 py-1.5 rounded-full border text-xs font-['Outfit',sans-serif] transition-all cursor-pointer ${
                             active
-                              ? "border-[#C6A779] bg-[#B68A4A]/25 text-[#F4E6C8] shadow-[0_0_12px_rgba(182,138,74,0.25)] font-medium"
-                              : "border-white/12 bg-white/[0.03] text-stone-300 hover:border-[#C6A779]/45 hover:text-white"
+                              ? "border-[#8D6E3D] bg-[#F5EFE4] text-[#111111] font-medium"
+                              : "border-[#D8D6D0] bg-white text-[#4F4B45] hover:border-[#8D6E3D] hover:text-[#111111]"
                           }`}
                         >
                           {srv.title}
@@ -389,7 +389,7 @@ export function ConsultationModal({
                   <div>
                     <label
                       htmlFor="consult-budget"
-                      className="block text-[10.5px] font-mono uppercase tracking-wider text-stone-400 mb-1.5"
+                      className="block text-[10.5px] font-mono uppercase tracking-wider text-[#4F4B45] mb-1.5"
                     >
                       Estimated Budget (INR)
                     </label>
@@ -400,7 +400,7 @@ export function ConsultationModal({
                         onChange={(e) =>
                           setFormData({ ...formData, budgetBand: e.target.value })
                         }
-                        className="w-full appearance-none px-3.5 py-2.5 pr-9 rounded-xl bg-[#151311] border border-white/12 hover:border-white/25 focus:border-[#C6A779] text-sm font-['Outfit',sans-serif] text-white focus:outline-none transition-colors cursor-pointer"
+                        className="w-full appearance-none px-3.5 py-2.5 pr-9 rounded-xl bg-white border border-[#D8D6D0] hover:border-[#B8B4AC] focus:border-[#8D6E3D] text-sm font-['Outfit',sans-serif] text-[#111111] focus:outline-none transition-colors cursor-pointer"
                       >
                         {BUDGET_OPTIONS.map((opt) => (
                           <option key={opt} value={opt}>
@@ -410,16 +410,16 @@ export function ConsultationModal({
                       </select>
                       <ChevronDown
                         size={15}
-                        className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#C6A779]"
+                        className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#8D6E3D]"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <span className="block text-[10.5px] font-mono uppercase tracking-wider text-stone-400 mb-1.5">
+                    <span className="block text-[10.5px] font-mono uppercase tracking-wider text-[#4F4B45] mb-1.5">
                       Preferred Contact
                     </span>
-                    <div className="grid grid-cols-3 rounded-xl border border-white/12 bg-white/[0.03] p-1">
+                    <div className="grid grid-cols-3 rounded-xl border border-[#D8D6D0] bg-[#FAF9F7] p-1">
                       {CONTACT_MODES.map((mode) => {
                         const active = formData.preferredContact === mode.value;
                         return (
@@ -434,8 +434,8 @@ export function ConsultationModal({
                             }
                             className={`py-1.5 rounded-lg text-xs font-['Outfit',sans-serif] transition-all cursor-pointer ${
                               active
-                                ? "bg-[#B68A4A]/25 text-[#F4E6C8] border border-[#C6A779]/45 font-medium"
-                                : "text-stone-400 hover:text-white border border-transparent"
+                                ? "bg-white text-[#111111] border border-[#D8D6D0] font-medium shadow-xs"
+                                : "text-[#5C5852] hover:text-[#111111] border border-transparent"
                             }`}
                           >
                             {mode.label}
@@ -449,7 +449,7 @@ export function ConsultationModal({
                 {/* 04 · Concise Project Brief */}
                 <OptionalField
                   label="Project Brief (Optional)"
-                  labelClassName="text-[10.5px] font-mono uppercase tracking-wider text-stone-400 hover:text-white"
+                  labelClassName="text-[10.5px] font-mono uppercase tracking-wider text-[#4F4B45] hover:text-[#111111]"
                 >
                   <textarea
                     id="consult-brief"
@@ -459,14 +459,14 @@ export function ConsultationModal({
                     onChange={(e) =>
                       setFormData({ ...formData, brief: e.target.value })
                     }
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.035] border border-white/12 hover:border-white/25 focus:border-[#C6A779] text-sm font-['Outfit',sans-serif] text-white placeholder:text-stone-500 focus:outline-none transition-colors resize-y min-h-[72px]"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#D8D6D0] hover:border-[#B8B4AC] focus:border-[#8D6E3D] text-sm font-['Outfit',sans-serif] text-[#111111] placeholder:text-[#8E8980] focus:outline-none transition-colors resize-y min-h-[72px]"
                   />
                 </OptionalField>
 
                 {/* Compact WhatsApp Opt-In */}
                 <label
                   htmlFor="whatsappConsent"
-                  className="flex items-center gap-2.5 text-xs font-['Outfit',sans-serif] text-stone-300 cursor-pointer select-none"
+                  className="flex items-center gap-2.5 text-xs font-['Outfit',sans-serif] text-[#4F4B45] cursor-pointer select-none"
                 >
                   <input
                     type="checkbox"
@@ -478,7 +478,7 @@ export function ConsultationModal({
                         whatsappConsent: e.target.checked,
                       })
                     }
-                    className="w-4 h-4 rounded border-stone-700 bg-stone-900 text-[#C6A779] accent-[#C6A779] focus:ring-0 cursor-pointer"
+                    className="w-4 h-4 rounded border-[#D8D6D0] bg-white text-[#8D6E3D] accent-[#8D6E3D] focus:ring-0 cursor-pointer"
                   />
                   <span>
                     Send consultation schedule &amp; updates via WhatsApp
@@ -486,22 +486,20 @@ export function ConsultationModal({
                 </label>
 
                 {/* Clean Action Footer */}
-                <div className="pt-3 border-t border-white/10 flex flex-col-reverse sm:flex-row items-center justify-between gap-3">
-                  <span className="text-[10.5px] text-stone-500 font-mono">
+                <div className="pt-3 border-t border-[#E5E3DD] flex flex-col-reverse sm:flex-row items-center justify-between gap-3">
+                  <span className="text-[10.5px] text-[#7A756D] font-mono">
                     DPDP Act 2023 · Private &amp; Encrypted
                   </span>
 
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="group relative w-full sm:w-auto inline-flex items-center justify-center gap-3 px-7 py-3 rounded-full bg-gradient-to-r from-[#C6A779]/35 via-[#B68A4A]/30 to-[#C8621E]/20 hover:from-[#C6A779]/55 hover:via-[#B68A4A]/45 hover:to-[#C8621E]/30 backdrop-blur-2xl border border-[#C6A779]/65 hover:border-[#C6A779] text-[#F2EFE9] font-['Outfit',sans-serif] text-[12.5px] font-medium tracking-[0.1em] uppercase shadow-[inset_0_1px_1px_rgba(255,255,255,0.35),0_8px_28px_rgba(182,138,74,0.35)] transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer disabled:opacity-60 overflow-hidden"
+                    className="group relative w-full sm:w-auto inline-flex items-center justify-center gap-3 px-7 py-3 rounded-full bg-[#171717] hover:bg-[#2A2927] text-white font-['Outfit',sans-serif] text-[12.5px] font-medium tracking-[0.1em] uppercase shadow-sm transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer disabled:opacity-60 overflow-hidden"
                   >
-                    <span className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/25 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-[300%] transition-transform duration-1000 ease-out pointer-events-none" />
-
                     <span className="relative z-10">
                       {isSubmitting ? "Registering..." : "Submit Project Enquiry"}
                     </span>
-                    <span className="relative z-10 w-6 h-6 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-[#E0D8C3] group-hover:bg-[#C6A779] group-hover:text-black transition-all">
+                    <span className="relative z-10 w-6 h-6 rounded-full bg-white/15 border border-white/20 flex items-center justify-center text-white group-hover:bg-[#8D6E3D] transition-all">
                       <Send size={12} />
                     </span>
                   </button>

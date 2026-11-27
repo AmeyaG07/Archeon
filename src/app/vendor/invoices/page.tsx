@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
+  AlertCircle,
   Banknote,
   Camera,
   CheckCircle2,
@@ -75,6 +76,7 @@ function VendorInvoicesContent() {
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [previewPhotoUrl, setPreviewPhotoUrl] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  const [billError, setBillError] = useState<string | null>(null);
 
   // New Bill Form State
   const [selectedProjectId, setSelectedProjectId] = useState("");
@@ -143,6 +145,17 @@ function VendorInvoicesContent() {
     e.preventDefault();
     if (!selectedProjectId || !billAmount) return;
 
+    const parsedAmount = Number(billAmount);
+    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+      setBillError("Bill amount must be greater than zero.");
+      return;
+    }
+    if (parsedAmount > 999999999999.99) {
+      setBillError("Bill amount is too large. Please enter an amount up to ₹999,999,999,999.99.");
+      return;
+    }
+
+    setBillError(null);
     setSubmitting(true);
     try {
       const proj = assignedProjects.find((p) => p.id === selectedProjectId);
@@ -151,7 +164,7 @@ function VendorInvoicesContent() {
         body: JSON.stringify({
           projectId: selectedProjectId,
           clientId: proj?.clientId || undefined,
-          amount: parseFloat(billAmount),
+          amount: parsedAmount,
           tradeCategory: billTradeCategory,
           billPhotoUrl: billPhotoUrl || undefined,
         }),
@@ -166,9 +179,11 @@ function VendorInvoicesContent() {
       });
       await loadData();
     } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to submit bill.";
+      setBillError(msg);
       setFeedback({
         type: "error",
-        message: err instanceof Error ? err.message : "Failed to submit bill.",
+        message: msg,
       });
     } finally {
       setSubmitting(false);
@@ -532,6 +547,13 @@ function VendorInvoicesContent() {
             </div>
             <h2 className="font-serif text-2xl text-[#111111] mt-1">Upload Bill for Client</h2>
 
+            {billError && (
+              <div className="mt-4 flex items-start gap-2 rounded-sm border border-red-200 bg-red-50 p-3 text-xs text-red-700">
+                <AlertCircle size={15} className="shrink-0 mt-0.5 text-red-600" />
+                <span>{billError}</span>
+              </div>
+            )}
+
             <form onSubmit={handleBillSubmit} className="mt-6 space-y-4">
               <div>
                 <label className="block font-mono text-[10px] uppercase tracking-wider text-[#777777] mb-1">
@@ -558,9 +580,14 @@ function VendorInvoicesContent() {
                 <input
                   type="number"
                   placeholder="e.g. 45000"
+                  min="1"
+                  max="999999999999.99"
                   step="0.01"
                   value={billAmount}
-                  onChange={(e) => setBillAmount(e.target.value)}
+                  onChange={(e) => {
+                    setBillError(null);
+                    setBillAmount(e.target.value);
+                  }}
                   className="w-full rounded-sm border border-[#D8D6D0] px-3 py-2 text-xs font-mono text-[#111111] focus:border-[#B68A4A] focus:outline-none"
                   required
                 />

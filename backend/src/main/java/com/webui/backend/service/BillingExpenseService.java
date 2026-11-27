@@ -153,6 +153,9 @@ public class BillingExpenseService {
         if (req.getAmount() == null || req.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Bill amount must be greater than zero");
         }
+        if (req.getAmount().compareTo(new BigDecimal("999999999999.99")) > 0) {
+            throw new IllegalArgumentException("Bill amount is too large. Maximum allowed is ₹999,999,999,999.99");
+        }
 
         OperationalProjectEntity project = null;
         if (req.getProjectId() != null) {

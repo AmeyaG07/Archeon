@@ -8,10 +8,12 @@ import com.webui.backend.model.ManifestoEntity;
 import com.webui.backend.model.OperationalProjectEntity;
 import com.webui.backend.model.ProjectEntity;
 import com.webui.backend.model.ProjectVendorAssignmentEntity;
+import com.webui.backend.model.SiteUpdateEntity;
 import com.webui.backend.model.StudioProfileEntity;
 import com.webui.backend.model.SupportTicketEntity;
 import com.webui.backend.model.UserEntity;
 import com.webui.backend.model.VendorEntity;
+import com.webui.backend.model.VendorPaymentMethodEntity;
 import com.webui.backend.repository.BillApprovalRepository;
 import com.webui.backend.repository.InvoiceRepository;
 import com.webui.backend.repository.LeadRepository;
@@ -19,9 +21,11 @@ import com.webui.backend.repository.ManifestoRepository;
 import com.webui.backend.repository.OperationalProjectRepository;
 import com.webui.backend.repository.ProjectRepository;
 import com.webui.backend.repository.ProjectVendorAssignmentRepository;
+import com.webui.backend.repository.SiteUpdateRepository;
 import com.webui.backend.repository.StudioProfileRepository;
 import com.webui.backend.repository.SupportTicketRepository;
 import com.webui.backend.repository.UserRepository;
+import com.webui.backend.repository.VendorPaymentMethodRepository;
 import com.webui.backend.service.MakerCheckerApprovalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -85,6 +89,12 @@ public class DataInitializer implements CommandLineRunner {
 
     @Autowired(required = false)
     private SupportTicketRepository supportTicketRepository;
+
+    @Autowired(required = false)
+    private SiteUpdateRepository siteUpdateRepository;
+
+    @Autowired(required = false)
+    private VendorPaymentMethodRepository vendorPaymentMethodRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -227,6 +237,29 @@ public class DataInitializer implements CommandLineRunner {
             if (existingVendors.size() > 1) demoVendor2 = existingVendors.get(1);
         }
 
+        if (vendorPaymentMethodRepository != null && vendorPaymentMethodRepository.count() == 0) {
+            if (demoVendor1 != null) {
+                vendorPaymentMethodRepository.save(VendorPaymentMethodEntity.builder()
+                        .vendorId(demoVendor1.getId())
+                        .accountHolderName("Stellar Joinery & Architectural Millwork")
+                        .bankName("HDFC Bank · Koregaon Park Branch")
+                        .accountNumber("50200048912345")
+                        .ifscCode("HDFC0001428")
+                        .upiId("stellar.joinery@okhdfcbank")
+                        .build());
+            }
+            if (demoVendor2 != null) {
+                vendorPaymentMethodRepository.save(VendorPaymentMethodEntity.builder()
+                        .vendorId(demoVendor2.getId())
+                        .accountHolderName("Deccan Basalt & Stoneworks")
+                        .bankName("ICICI Bank · Civil Lines Nagpur")
+                        .accountNumber("031905008742")
+                        .ifscCode("ICIC0000319")
+                        .upiId("deccan.basalt@okicici")
+                        .build());
+            }
+        }
+
         // 2. Seed ArcheOn Philosophy & Mission (PDF Section 1.1)
         if (manifestoRepository.count() == 0) {
             manifestoRepository.save(ManifestoEntity.builder()
@@ -309,81 +342,11 @@ public class DataInitializer implements CommandLineRunner {
                     .build());
         }
 
-        // 4. Seed Initial Maker-Checker Bills (PDF Decision 2)
-        String c1Id = demoClient1 != null ? demoClient1.getId().toString() : null;
-        String c2Id = demoClient2 != null ? demoClient2.getId().toString() : c1Id;
-        String v1Id = demoVendor1 != null ? demoVendor1.getId().toString() : "VEN-DEMO-01";
-        String v2Id = demoVendor2 != null ? demoVendor2.getId().toString() : "VEN-DEMO-02";
-
-        if (billApprovalRepository.count() == 0) {
-            // Bill 1: Below ₹1,00,000 threshold (Needs 1 checker)
-            var b1 = approvalService.initiateBillApproval(
-                    "BILL-2026-081",
-                    new BigDecimal("45000.00"),
-                    v1Id,
-                    c1Id,
-                    "the-monolith-sanctuary",
-                    "site_engineer_rahul"
-            );
-            b1.setTradeCategory("CARPENTRY");
-            b1.setInvoiceNumber("VND-INV-081");
-            billApprovalRepository.save(b1);
-
-            // Bill 2: High Value >= ₹1,00,000 (Needs 2 checkers)
-            var b2 = approvalService.initiateBillApproval(
-                    "BILL-2026-094",
-                    new BigDecimal("385000.00"),
-                    v2Id,
-                    c1Id,
-                    "the-monolith-sanctuary",
-                    "procurement_lead_vikas"
-            );
-            b2.setTradeCategory("STONEWORK");
-            b2.setInvoiceNumber("VND-INV-094");
-            billApprovalRepository.save(b2);
-
-            // Bill 3: High Value with 1st Approval Completed (Pending Checker 2)
-            var b3 = approvalService.initiateBillApproval(
-                    "BILL-2026-102",
-                    new BigDecimal("120000.00"),
-                    v1Id,
-                    c2Id,
-                    "carrara-stone-penthouse",
-                    "ar_mandar_lead"
-            );
-            b3.setTradeCategory("CARPENTRY");
-            b3.setInvoiceNumber("VND-INV-102");
-            billApprovalRepository.save(b3);
-            approvalService.approvePrimary("BILL-2026-102", "finance_checker_anita");
-        }
-
-        // 5. Seed Two-Party Cash Settlement Requests (Section 11)
-        if (cashSettlementRepository.count() == 0) {
-            financialOperationsService.initiateCashSettlement(
-                    "CSH-SETTLE-409",
-                    "BILL-2026-081",
-                    "the-monolith-sanctuary",
-                    "site_supervisor_arun",
-                    v1Id,
-                    new BigDecimal("35000.00"),
-                    "Raw granite unloading and manual site transit (Khandala Project)",
-                    "RCPT-GRANITE-881"
-            );
-            financialOperationsService.initiateCashSettlement(
-                    "CSH-SETTLE-410",
-                    "BILL-2026-094",
-                    "carrara-stone-penthouse",
-                    "supervisor_raj",
-                    v2Id,
-                    new BigDecimal("18500.00"),
-                    "On-site basalt dressing and edge chamfering labour",
-                    "RCPT-BASALT-882"
-            );
-        }
-
-        // 6. Seed Operational Projects & Vendor Assignments
+        // 4. Seed Operational Projects & Vendor Assignments (before bills so bills reference real project UUIDs)
+        OperationalProjectEntity op1 = null;
+        OperationalProjectEntity op2 = null;
         if (operationalProjectRepository != null && operationalProjectRepository.count() == 0 && demoClient1 != null) {
-            OperationalProjectEntity op1 = operationalProjectRepository.save(OperationalProjectEntity.builder()
+            op1 = operationalProjectRepository.save(OperationalProjectEntity.builder()
                     .projectReference("OPJ-2026-001")
                     .name("The Monolith Sanctuary")
                     .description("Cliffside basalt residence with travertine light-wells and reflecting pools.")
@@ -401,7 +364,7 @@ public class DataInitializer implements CommandLineRunner {
                     .notes("Structural shell complete; bespoke joinery and stone cladding underway.")
                     .build());
 
-            OperationalProjectEntity op2 = operationalProjectRepository.save(OperationalProjectEntity.builder()
+            op2 = operationalProjectRepository.save(OperationalProjectEntity.builder()
                     .projectReference("OPJ-2026-002")
                     .name("Mehta Heritage Courtyard")
                     .description("Turnkey courtyard residence with native landscape bioswales and custom teak millwork.")
@@ -446,6 +409,144 @@ public class DataInitializer implements CommandLineRunner {
                             .assignedBy("admin_mandar")
                             .build());
                 }
+            }
+        } else if (operationalProjectRepository != null) {
+            List<OperationalProjectEntity> existingOps = operationalProjectRepository.findAll();
+            if (!existingOps.isEmpty()) op1 = existingOps.get(0);
+            if (existingOps.size() > 1) op2 = existingOps.get(1);
+        }
+
+        // 5. Seed Initial Maker-Checker Bills linked to seeded Operational Projects
+        String c1Id = demoClient1 != null ? demoClient1.getId().toString() : null;
+        String c2Id = demoClient2 != null ? demoClient2.getId().toString() : c1Id;
+        String v1Id = demoVendor1 != null ? demoVendor1.getId().toString() : "VEN-DEMO-01";
+        String v2Id = demoVendor2 != null ? demoVendor2.getId().toString() : "VEN-DEMO-02";
+        String p1Id = op1 != null ? op1.getId().toString() : "the-monolith-sanctuary";
+        String p2Id = op2 != null ? op2.getId().toString() : "carrara-stone-penthouse";
+
+        if (billApprovalRepository.count() == 0) {
+            // Bill 1: Below ₹1,00,000 threshold (Pending payment with bill photo)
+            var b1 = approvalService.initiateBillApproval(
+                    "BILL-2026-081",
+                    new BigDecimal("45000.00"),
+                    v1Id,
+                    c1Id,
+                    p1Id,
+                    "site_engineer_rahul"
+            );
+            b1.setTradeCategory("CARPENTRY");
+            b1.setInvoiceNumber("VND-INV-081");
+            b1.setBillPhotoUrl("/architectural-cad-villa.jpg");
+            billApprovalRepository.save(b1);
+
+            // Bill 2: High Value >= ₹1,00,000 (Needs 2 checkers)
+            var b2 = approvalService.initiateBillApproval(
+                    "BILL-2026-094",
+                    new BigDecimal("385000.00"),
+                    v2Id,
+                    c1Id,
+                    p1Id,
+                    "procurement_lead_vikas"
+            );
+            b2.setTradeCategory("STONEWORK");
+            b2.setInvoiceNumber("VND-INV-094");
+            b2.setBillPhotoUrl("/projects/monolith-sanctuary.png");
+            billApprovalRepository.save(b2);
+
+            // Bill 3: Paid Stonework Tranche on The Monolith Sanctuary
+            var bPaid = approvalService.initiateBillApproval(
+                    "BILL-2026-099",
+                    new BigDecimal("175000.00"),
+                    v2Id,
+                    c1Id,
+                    p1Id,
+                    "procurement_lead_vikas"
+            );
+            bPaid.setTradeCategory("STONEWORK");
+            bPaid.setInvoiceNumber("VND-INV-099");
+            bPaid.setBillPhotoUrl("/projects/monolith-sanctuary.png");
+            bPaid.setPaidAmount(new BigDecimal("175000.00"));
+            bPaid.setStatus("PAID");
+            bPaid.setPaidAt(java.time.LocalDateTime.now().minusDays(6));
+            bPaid.setPaymentProofUtr("UTR431209876541");
+            billApprovalRepository.save(bPaid);
+
+            // Bill 4: High Value with 1st Approval Completed (Pending Checker 2) on Project 2
+            var b3 = approvalService.initiateBillApproval(
+                    "BILL-2026-102",
+                    new BigDecimal("120000.00"),
+                    v1Id,
+                    c2Id,
+                    p2Id,
+                    "ar_mandar_lead"
+            );
+            b3.setTradeCategory("CARPENTRY");
+            b3.setInvoiceNumber("VND-INV-102");
+            b3.setBillPhotoUrl("/projects/travertine-penthouse.png");
+            billApprovalRepository.save(b3);
+            approvalService.approvePrimary("BILL-2026-102", "finance_checker_anita");
+        }
+
+        // 5b. Seed Two-Party Cash Settlement Requests (Section 11)
+        if (cashSettlementRepository.count() == 0) {
+            financialOperationsService.initiateCashSettlement(
+                    "CSH-SETTLE-409",
+                    "BILL-2026-081",
+                    p1Id,
+                    "site_supervisor_arun",
+                    v1Id,
+                    new BigDecimal("35000.00"),
+                    "Raw granite unloading and manual site transit (Khandala Project)",
+                    "RCPT-GRANITE-881"
+            );
+            financialOperationsService.initiateCashSettlement(
+                    "CSH-SETTLE-410",
+                    "BILL-2026-094",
+                    p2Id,
+                    "supervisor_raj",
+                    v2Id,
+                    new BigDecimal("18500.00"),
+                    "On-site basalt dressing and edge chamfering labour",
+                    "RCPT-BASALT-882"
+            );
+        }
+
+        // 6. Seed Site Progress Updates & Architect Notes with Photos
+        if (siteUpdateRepository != null && siteUpdateRepository.count() == 0 && op1 != null) {
+            java.time.LocalDateTime now = java.time.LocalDateTime.now();
+            siteUpdateRepository.save(SiteUpdateEntity.builder()
+                    .projectId(op1.getId())
+                    .authorRole("ARCHITECT")
+                    .authorName("Ar. Mandar Bhalekar")
+                    .photoUrl("/projects/monolith-sanctuary.png")
+                    .note("Cantilevered basalt terrace slab cured and formwork stripped. North light-well travertine cladding mock-up approved on site.")
+                    .createdAt(now.minusDays(5))
+                    .build());
+            siteUpdateRepository.save(SiteUpdateEntity.builder()
+                    .projectId(op1.getId())
+                    .authorRole("VENDOR")
+                    .authorName("Stellar Joinery & Architectural Millwork")
+                    .photoUrl("/architectural-cad-villa.jpg")
+                    .note("Burma teak pivot door frames and concealed acoustic mullions delivered to Khandala site; moisture check passed at 9.2%.")
+                    .createdAt(now.minusDays(2))
+                    .build());
+            siteUpdateRepository.save(SiteUpdateEntity.builder()
+                    .projectId(op1.getId())
+                    .authorRole("ARCHITECT")
+                    .authorName("Ar. Mandar Bhalekar")
+                    .photoUrl("/projects/travertine-penthouse.png")
+                    .note("Atrium reflecting pool waterproofing hydro-test completed (72 hrs zero drop). Lighting channel conduits positioned.")
+                    .createdAt(now.minusHours(14))
+                    .build());
+            if (op2 != null) {
+                siteUpdateRepository.save(SiteUpdateEntity.builder()
+                        .projectId(op2.getId())
+                        .authorRole("ARCHITECT")
+                        .authorName("Ar. Mandar Bhalekar")
+                        .photoUrl("/projects/terracotta-courtyard-estate.png")
+                        .note("Courtyard plinth marking and rainwater bioswale excavation verified on site.")
+                        .createdAt(now.minusDays(1))
+                        .build());
             }
         }
 

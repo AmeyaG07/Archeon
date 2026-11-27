@@ -48,14 +48,25 @@ export default function ClientPortalPage() {
         // Tolerant fallback
       }
 
-      let progressByProjectId: Record<string, number> = {};
+      const progressByProjectId: Record<string, number> = {};
+      const uuidByKey: Record<string, string> = {};
       try {
         const opRes = await apiFetch("/api/operational-projects");
         const opList = await opRes.json();
         if (Array.isArray(opList)) {
           for (const op of opList) {
-            if (op?.id && typeof op.progressPercentage === "number") {
-              progressByProjectId[String(op.id)] = op.progressPercentage;
+            if (op?.id) {
+              const opUuid = String(op.id);
+              uuidByKey[opUuid] = opUuid;
+              if (op.projectReference) {
+                uuidByKey[String(op.projectReference)] = opUuid;
+              }
+              if (typeof op.progressPercentage === "number") {
+                progressByProjectId[opUuid] = op.progressPercentage;
+                if (op.projectReference) {
+                  progressByProjectId[String(op.projectReference)] = op.progressPercentage;
+                }
+              }
             }
           }
         }
@@ -64,17 +75,21 @@ export default function ClientPortalPage() {
       }
 
       const projects: DashboardProject[] = Array.isArray(d.projects)
-        ? d.projects.map((p: any) => ({
-            id: p.projectId || "",
-            name: p.projectTitle || "Studio Project",
-            location: "Maharashtra",
-            status: p.status || "Under Design",
-            updatedAt: new Date().toISOString(),
-            progressPercentage:
-              typeof p.progressPercentage === "number"
-                ? p.progressPercentage
-                : progressByProjectId[String(p.projectId || "")] ?? 0,
-          }))
+        ? d.projects.map((p: any) => {
+            const rawKey = String(p.projectId || "");
+            const resolvedId = uuidByKey[rawKey] || rawKey;
+            return {
+              id: resolvedId,
+              name: p.projectTitle || "Studio Project",
+              location: "Maharashtra",
+              status: p.status || "Under Design",
+              updatedAt: new Date().toISOString(),
+              progressPercentage:
+                typeof p.progressPercentage === "number"
+                  ? p.progressPercentage
+                  : progressByProjectId[resolvedId] ?? progressByProjectId[rawKey] ?? 0,
+            };
+          })
         : [];
 
       setData({
@@ -115,7 +130,9 @@ export default function ClientPortalPage() {
       error={error ?? undefined}
       onRetry={loadClientDashboard}
       onOpenProjects={() => router.push("/client/projects")}
-      onOpenProject={() => router.push("/client/projects")}
+      onOpenProject={(proj) =>
+        router.push(proj.id ? `/client/projects/${proj.id}` : "/client/projects")
+      }
       onOpenInvoices={() => router.push("/client/invoices")}
       onOpenInvoice={() => router.push("/client/invoices")}
     />

@@ -730,6 +730,143 @@ export function AdminVendorManagement({
                                 <p className="mt-0.5 text-xs text-[#33312D]">{formatDate(selectedVendor.lastUpdated)}</p>
                               </div>
                             </div>
+
+                            {/* Portal Invitation & Set Password Controls */}
+                            <div className="mt-4 border-t border-[#E5E2DC] pt-3.5 space-y-3">
+                              <div className="flex flex-wrap items-center justify-between gap-2">
+                                <span className="font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
+                                  Portal Access
+                                </span>
+                                <span
+                                  className={`px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider ${portalStatusStyle(selectedVendor.portalAccess)}`}
+                                >
+                                  {selectedVendor.portalAccess}
+                                </span>
+                              </div>
+
+                              <div className="flex flex-wrap gap-2">
+                                <button
+                                  type="button"
+                                  disabled={actionLoading}
+                                  onClick={() =>
+                                    void runAction(() =>
+                                      selectedVendor.portalAccess === "Not Invited"
+                                        ? onInviteVendor(selectedVendor.id)
+                                        : onUpdatePortalAccess(selectedVendor.id, "resend")
+                                    )
+                                  }
+                                  className="inline-flex items-center gap-1.5 bg-[#171717] px-3 py-2 font-mono text-[10px] uppercase tracking-wider text-white hover:bg-[#A58A64] disabled:opacity-50 transition-colors cursor-pointer"
+                                >
+                                  <Mail size={12} />
+                                  {selectedVendor.portalAccess === "Not Invited"
+                                    ? "Send Portal Invitation"
+                                    : "Resend Invitation"}
+                                </button>
+
+                                {onCreatePortalAccount && (
+                                  <button
+                                    type="button"
+                                    disabled={actionLoading || credentialsLoading}
+                                    onClick={() => {
+                                      setCredentialError(null);
+                                      setShowDirectCredentials((prev) => !prev);
+                                    }}
+                                    className="inline-flex items-center gap-1.5 border border-[#D8D6D0] bg-white px-3 py-2 font-mono text-[10px] uppercase tracking-wider text-[#171717] hover:border-[#A58A64] transition-colors cursor-pointer"
+                                  >
+                                    <KeyRound size={12} className="text-[#A58A64]" />
+                                    {showDirectCredentials ? "Hide Password Form" : "Set Username & Password"}
+                                  </button>
+                                )}
+                              </div>
+
+                              {showDirectCredentials && onCreatePortalAccount && (
+                                <div className="border border-[#D8D6D0] bg-white p-3.5 space-y-3">
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                                    <label className="block">
+                                      <span className="mb-1 block font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
+                                        Portal Username *
+                                      </span>
+                                      <input
+                                        type="text"
+                                        value={portalUsername}
+                                        onChange={(e) => setPortalUsername(e.target.value)}
+                                        placeholder="e.g. vendor_studio"
+                                        className="h-9 w-full border border-[#D8D6D0] bg-white px-2.5 text-xs outline-none focus:border-[#A58A64]"
+                                      />
+                                    </label>
+
+                                    <label className="block">
+                                      <span className="mb-1 block font-mono text-[10px] uppercase tracking-wider text-[#77736C]">
+                                        Portal Password *
+                                      </span>
+                                      <div className="relative">
+                                        <input
+                                          type={showPassword ? "text" : "password"}
+                                          value={portalPassword}
+                                          onChange={(e) => setPortalPassword(e.target.value)}
+                                          placeholder="Minimum 6 characters"
+                                          className="h-9 w-full border border-[#D8D6D0] bg-white pl-2.5 pr-8 text-xs outline-none focus:border-[#A58A64]"
+                                        />
+                                        <button
+                                          type="button"
+                                          onClick={() => setShowPassword((prev) => !prev)}
+                                          className="absolute right-2 top-1/2 -translate-y-1/2 text-[#77736C] hover:text-[#171717] cursor-pointer"
+                                          aria-label={showPassword ? "Hide password" : "Show password"}
+                                        >
+                                          {showPassword ? <EyeOff size={13} /> : <Eye size={13} />}
+                                        </button>
+                                      </div>
+                                    </label>
+                                  </div>
+
+                                  {credentialError && (
+                                    <p className="text-xs text-red-700">{credentialError}</p>
+                                  )}
+
+                                  {credentialSuccess && (
+                                    <div className="border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-900">
+                                      Credentials active — Username:{" "}
+                                      <span className="font-mono font-semibold">{credentialSuccess.username}</span>{" "}
+                                      · Password:{" "}
+                                      <span className="font-mono font-semibold">{credentialSuccess.password}</span>
+                                    </div>
+                                  )}
+
+                                  <div className="flex justify-end">
+                                    <button
+                                      type="button"
+                                      disabled={credentialsLoading || !portalUsername.trim() || portalPassword.length < 6}
+                                      onClick={async () => {
+                                        setCredentialsLoading(true);
+                                        setCredentialError(null);
+                                        setCredentialSuccess(null);
+                                        try {
+                                          await onCreatePortalAccount(
+                                            selectedVendor.id,
+                                            portalUsername.trim(),
+                                            portalPassword
+                                          );
+                                          setCredentialSuccess({
+                                            username: portalUsername.trim(),
+                                            password: portalPassword,
+                                          });
+                                        } catch (err: unknown) {
+                                          setCredentialError(
+                                            err instanceof Error ? err.message : "Failed to save portal credentials."
+                                          );
+                                        } finally {
+                                          setCredentialsLoading(false);
+                                        }
+                                      }}
+                                      className="inline-flex items-center gap-1.5 bg-[#171717] px-3.5 py-2 font-mono text-[10px] uppercase tracking-wider text-white hover:bg-[#A58A64] disabled:opacity-50 transition-colors cursor-pointer"
+                                    >
+                                      <ShieldCheck size={12} />
+                                      {credentialsLoading ? "Saving..." : "Save Portal Login"}
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
                           </section>
 
                           <section className="flex flex-col border border-[#D8D6D0] bg-[#FAF9F6] p-4">

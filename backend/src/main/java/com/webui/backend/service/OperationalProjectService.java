@@ -332,10 +332,12 @@ public class OperationalProjectService {
             throw new IllegalArgumentException("Client ID is mandatory for operational project");
         }
 
-        String projectType = req.getProjectType().trim().toUpperCase();
-        if (!ALLOWED_PROJECT_TYPES.contains(projectType)) {
-            throw new IllegalArgumentException("Invalid project type: " + req.getProjectType() + ". Allowed: " + ALLOWED_PROJECT_TYPES);
+        String rawType = req.getProjectType() != null ? req.getProjectType().trim() : "";
+        if (rawType.isEmpty()) {
+            throw new IllegalArgumentException("Project category/type is required");
         }
+        String upperType = rawType.toUpperCase();
+        String projectType = ALLOWED_PROJECT_TYPES.contains(upperType) ? upperType : rawType;
 
         ClientEntity client = clientRepository.findById(req.getClientId())
                 .orElseThrow(() -> new IllegalArgumentException("Client not found: " + req.getClientId()));
@@ -536,10 +538,9 @@ public class OperationalProjectService {
             p.setDescription(req.getDescription().trim());
         }
         if (StringUtils.hasText(req.getProjectType())) {
-            String pt = req.getProjectType().trim().toUpperCase();
-            if (ALLOWED_PROJECT_TYPES.contains(pt)) {
-                p.setProjectType(pt);
-            }
+            String rawPt = req.getProjectType().trim();
+            String upperPt = rawPt.toUpperCase();
+            p.setProjectType(ALLOWED_PROJECT_TYPES.contains(upperPt) ? upperPt : rawPt);
         }
         if (req.getProjectManagerUsername() != null) {
             String validatedPm = validateAndResolveProjectManager(req.getProjectManagerUsername());

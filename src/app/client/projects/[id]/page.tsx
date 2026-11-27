@@ -148,18 +148,27 @@ export default function ClientProjectWorkspacePage() {
     if (!projectId) return;
     setLoading(true);
     try {
-      // 1. Project details
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(projectId);
+      let resolvedId = projectId;
+
+      // 1. Project details (support both UUID and project reference e.g. OPR-2026-XXXX)
       try {
-        const res = await apiFetch(`/api/operational-projects/${projectId}`);
+        const endpoint = isUuid
+          ? `/api/operational-projects/${projectId}`
+          : `/api/operational-projects/ref/${encodeURIComponent(projectId)}`;
+        const res = await apiFetch(endpoint);
         const proj = await res.json();
         setProject(proj);
+        if (proj?.id) {
+          resolvedId = String(proj.id);
+        }
       } catch (err) {
         console.error("Failed to load project details:", err);
       }
 
       // 2. Site updates (Architect notes & progress photos)
       try {
-        const res = await apiFetch(`/api/site-updates/projects/${projectId}`);
+        const res = await apiFetch(`/api/site-updates/projects/${resolvedId}`);
         const uList = await res.json();
         setUpdates(Array.isArray(uList) ? uList : []);
       } catch {
@@ -168,7 +177,7 @@ export default function ClientProjectWorkspacePage() {
 
       // 3. Project Expenses & Vendor Breakdown
       try {
-        const res = await apiFetch(`/api/billing/project/${projectId}/expenses`);
+        const res = await apiFetch(`/api/billing/project/${resolvedId}/expenses`);
         const exp = await res.json();
         setExpenseSummary(exp);
       } catch {
@@ -186,7 +195,7 @@ export default function ClientProjectWorkspacePage() {
 
       // 5. All Project Bills (sorted latest first)
       try {
-        const res = await apiFetch(`/api/billing/bills?projectId=${projectId}`);
+        const res = await apiFetch(`/api/billing/bills?projectId=${resolvedId}`);
         const bList = await res.json();
         if (Array.isArray(bList)) {
           const sorted = [...bList].sort((a: any, b: any) =>

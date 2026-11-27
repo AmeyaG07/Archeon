@@ -553,9 +553,9 @@ pre {
   textarea,
   .settings-input) {
   border-radius: 0.625rem !important;
-  background: rgba(255, 255, 255, 0.92) !important;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: #FFFFFF !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border-color: rgba(180, 176, 168, 0.85) !important;
   color: #111111 !important;
 }
@@ -588,7 +588,13 @@ pre {
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
-:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) :is([role="dialog"], .fixed.inset-0.z-50 > div, .fixed.inset-0.z-\[60\] > div, .fixed.inset-0.z-\[70\] > div, .fixed.inset-0.z-\[80\] > div) {
+:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) :is(.fixed.inset-0.z-50, .fixed.inset-0.z-\[60\], .fixed.inset-0.z-\[70\], .fixed.inset-0.z-\[80\]) {
+  background: rgba(20, 19, 17, 0.45) !important;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+:is(.admin-portal-root, .client-portal-root, .vendor-portal-root) :is([role="dialog"]:not(.fixed):not(.inset-0), .fixed.inset-0.z-50 > div, .fixed.inset-0.z-\[60\] > div, .fixed.inset-0.z-\[70\] > div, .fixed.inset-0.z-\[80\] > div) {
   border-radius: 1rem !important;
   background: #FFFFFF !important;
   backdrop-filter: none !important;
